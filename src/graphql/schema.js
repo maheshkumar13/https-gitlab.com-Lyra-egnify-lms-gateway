@@ -16,6 +16,10 @@ import createCurriculum from './settings/curriculum/curriculum.mutation';
 import { SingleStudent, Students } from './settings/student/student.query';
 import { createStudent } from './settings/student/student.mutation';
 import { createTestPattern, updateTestPattern, removeTestPattern } from './settings/testPattern/testPattern.mutation';
+import InstituteHierarchy from './settings/instituteHierarchy/instituteHierarchy.query';
+import InstituteHierarchyGrid from './settings/instituteHierarchy/instituteHierarchyGrid.query';
+import { CreateInstituteHierarchyNode, UpdateInstituteHierarchyNode } from './settings/instituteHierarchy/instituteHierarchy.muatation';
+import Institute from './settings/institute/institute.query';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -26,6 +30,8 @@ const schema = new Schema({
       Curriculum,
       SingleStudent,
       Students,
+      InstituteHierarchy,
+      InstituteHierarchyGrid,
     },
   }),
   mutation: new ObjectType({
@@ -36,6 +42,9 @@ const schema = new Schema({
       updateTestPattern,
       removeTestPattern,
       createCurriculum,
+      CreateInstituteHierarchyNode,
+      UpdateInstituteHierarchyNode,
+      Institute,
     },
   }),
 });
