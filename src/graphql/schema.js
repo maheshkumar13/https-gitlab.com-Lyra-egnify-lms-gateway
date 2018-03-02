@@ -12,6 +12,10 @@ import {
 import GradeSystem from './settings/grade/grade.query';
 import TestPattern from './settings/testPattern/testPattern.query';
 import Curriculum from './settings/curriculum/curriculum.query';
+import createCurriculum from './settings/curriculum/curriculum.mutation';
+import { SingleStudent, Students } from './settings/student/student.query';
+import { createStudent } from './settings/student/student.mutation';
+import { createTestPattern, updateTestPattern, removeTestPattern } from './settings/testPattern/testPattern.mutation';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -20,13 +24,20 @@ const schema = new Schema({
       GradeSystem,
       TestPattern,
       Curriculum,
+      SingleStudent,
+      Students,
     },
   }),
-  // mutation: new ObjectType({
-  //   name: 'Mutation',
-  //   fields: {
-  //   },
-  // }),
+  mutation: new ObjectType({
+    name: 'Mutation',
+    fields: {
+      createStudent,
+      createTestPattern,
+      updateTestPattern,
+      removeTestPattern,
+      createCurriculum,
+    },
+  }),
 });
 
 export default schema;
