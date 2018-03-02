@@ -12,7 +12,7 @@ import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
-import { makeExecutableSchema } from 'graphql-tools';
+import schema from './graphql/schema';
 
 import { config } from './config/environment';
 
@@ -24,35 +24,6 @@ mongoose.connect(config.mongo.uri, config.mongo.options);
 mongoose.connection.on('error', (err) => {
   console.info(`MongoDB connection error: ${err}`);
   process.exit(-1); // eslint-disable-line no-process-exit
-});
-
-// Some fake data
-const books = [
-  {
-    title: "Harry Potter and the Sorcerer's stone",
-    author: 'J.K. Rowling',
-  },
-  {
-    title: 'Jurassic Park',
-    author: 'Michael Crichton',
-  },
-];
-
-// The GraphQL schema in string form
-const typeDefs = `
-  type Query { books: [Book] }
-  type Book { title: String, author: String }
-`;
-
-// The resolvers
-const resolvers = {
-  Query: { books: () => books },
-};
-
-// Put together a schema
-const schema = makeExecutableSchema({
-  typeDefs,
-  resolvers,
 });
 
 const app = express();
