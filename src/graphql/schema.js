@@ -12,6 +12,7 @@ import {
 import GradeSystem from './settings/grade/grade.query';
 import TestPattern from './settings/testPattern/testPattern.query';
 import Curriculum from './settings/curriculum/curriculum.query';
+import Institute from './settings/institute/institute.query';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -20,6 +21,7 @@ const schema = new Schema({
       GradeSystem,
       TestPattern,
       Curriculum,
+      Institute,
     },
   }),
   // mutation: new ObjectType({
