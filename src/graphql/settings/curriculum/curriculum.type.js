@@ -34,7 +34,7 @@ const CurriculumType = new ObjectType({
     code: { type: StringType },
     parent: { type: StringType },
     child: { type: StringType },
-
+    subCode: { type: StringType },
     subject: {
       // args: {
       //   type: { type: new NonNull(PatternEnumType) },
