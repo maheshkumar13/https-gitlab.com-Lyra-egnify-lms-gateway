@@ -12,6 +12,10 @@ import {
 import GradeSystem from './settings/grade/grade.query';
 import TestPattern from './settings/testPattern/testPattern.query';
 import Curriculum from './settings/curriculum/curriculum.query';
+import { createCurriculum, removeSubjectTaxonomy, updateSubjectTaxonomy, createSubjects } from './settings/curriculum/curriculum.mutation';
+import { SingleStudent, Students } from './settings/student/student.query';
+import { createStudent } from './settings/student/student.mutation';
+import { createTestPattern, updateTestPattern, removeTestPattern } from './settings/testPattern/testPattern.mutation';
 import InstituteHierarchy from './settings/instituteHierarchy/instituteHierarchy.query';
 import InstituteHierarchyGrid from './settings/instituteHierarchy/instituteHierarchyGrid.query';
 import { CreateInstituteHierarchyNode, UpdateInstituteHierarchyNode } from './settings/instituteHierarchy/instituteHierarchy.muatation';
@@ -25,6 +29,8 @@ const schema = new Schema({
       GradeSystem,
       TestPattern,
       Curriculum,
+      SingleStudent,
+      Students,
       InstituteHierarchy,
       InstituteHierarchyGrid,
     },
@@ -32,9 +38,17 @@ const schema = new Schema({
   mutation: new ObjectType({
     name: 'Mutation',
     fields: {
+      createStudent,
+      createTestPattern,
+      updateTestPattern,
+      removeTestPattern,
+      Institute,
       CreateInstituteHierarchyNode,
       UpdateInstituteHierarchyNode,
-      Institute,
+      createCurriculum,
+      createSubjects,
+      updateSubjectTaxonomy,
+      removeSubjectTaxonomy,
       createInstitute,
     },
   }),
