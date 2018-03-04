@@ -16,6 +16,7 @@ import InstituteHierarchy from './settings/instituteHierarchy/instituteHierarchy
 import InstituteHierarchyGrid from './settings/instituteHierarchy/instituteHierarchyGrid.query';
 import { CreateInstituteHierarchyNode, UpdateInstituteHierarchyNode } from './settings/instituteHierarchy/instituteHierarchy.muatation';
 import Institute from './settings/institute/institute.query';
+import { createInstitute } from './settings/institute/institute.mutation';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -34,6 +35,7 @@ const schema = new Schema({
       CreateInstituteHierarchyNode,
       UpdateInstituteHierarchyNode,
       Institute,
+      createInstitute,
     },
   }),
 });
