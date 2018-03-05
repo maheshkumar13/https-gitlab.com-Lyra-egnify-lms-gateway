@@ -3,9 +3,9 @@
    @date    XX/XX/XXXX
    @version 1.0.0
 */
-
+/* eslint max-len: 0 */
 import {
-  GraphQLList as List,
+  // GraphQLList as List,
   GraphQLString as StringType,
   GraphQLNonNull as NonNull,
   GraphQLBoolean as BooleanType,
@@ -15,17 +15,29 @@ import fetch from 'universal-fetch';
 
 import CurriculumType from './grade.type';
 
+/*
+mutation ($patches:JSON!) {
+createGradePattern(pattern:$patches) {
+level
+data
+}
+}
+
+{
+"patches":{"type":"overall","patternName":"C1","minMarks":50,"maxMarks":60,"remarks":"dsds","gradePoint":10,"systemName":"a", "systemCode":"a"}
+}
+*/
+
 export const createGradePattern = {
   args: {
-    curriculumList: { type: GraphQLJSON },
-    dumb: { type: StringType },
+    input: { type: new NonNull(GraphQLJSON) },
   },
-  type: new List(CurriculumType),
+  type: CurriculumType,
   async resolve(obj, args) {
-    args.curriculumList = JSON.stringify(args.curriculumList);//eslint-disable-line
+    const pattern = JSON.stringify(args.input);//eslint-disable-line
     // console.log(args);
-    const url = 'http://localhost:5001/api/subjectTaxonomy/create/curriculum';
-    return fetch(url, { method: 'POST', body: JSON.stringify(args), headers: { 'Content-Type': 'application/json' } })
+    const url = 'http://localhost:5001/api/grade/create/pattern/';
+    return fetch(url, { method: 'POST', body: pattern, headers: { 'Content-Type': 'application/json' } })
       .then(response => response.json())
       .then(json => json)
       .catch((err) => {
@@ -37,14 +49,14 @@ export const createGradePattern = {
 
 export const createGradeSystem = {
   args: {
-    data: { type: GraphQLJSON },
+    input: { type: new NonNull(GraphQLJSON) },
   },
-  type: new List(CurriculumType),
+  type: CurriculumType,
   async resolve(obj, args) {
-    args.data = JSON.stringify(args.data);//eslint-disable-line
+    // args.data = JSON.stringify(args.gradeSystem);//eslint-disable-line
     // console.log(args);
-    const url = 'http://localhost:5001/api/subjectTaxonomy/saveSubject';
-    return fetch(url, { method: 'POST', body: JSON.stringify(args), headers: { 'Content-Type': 'application/json' } })
+    const url = 'http://localhost:5001/api/grade/create/system';
+    return fetch(url, { method: 'POST', body: JSON.stringify(args.input), headers: { 'Content-Type': 'application/json' } })
       .then(response => response.json())
       .then(json => json)
       .catch((err) => {
@@ -81,13 +93,13 @@ export const removeGradeSystem = {
 
 export const removeGradePattern = {
   args: {
-    code: { type: new NonNull(StringType) },
+    id: { type: new NonNull(StringType) },
   },
   type: BooleanType,
   async resolve(obj, args) {
-    const url = 'http://localhost:5001/api/subjectTaxonomy/delete/'.concat(args.code);
+    const url = 'http://localhost:5001/api/grade/delete/pattern/';
     return fetch(url, {
-      method: 'DELETE',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(args),
     })
@@ -109,6 +121,6 @@ export const removeGradePattern = {
 export default {
   createGradeSystem,
   createGradePattern,
-  removeGradeSystem,
+  // removeGradeSystem,
   removeGradePattern,
 };

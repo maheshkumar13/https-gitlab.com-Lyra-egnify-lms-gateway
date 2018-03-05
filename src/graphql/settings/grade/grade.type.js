@@ -33,6 +33,7 @@ const PatternEnumType = new GraphQLEnumType({
 const PatternType = new ObjectType({
   name: 'PatternType',
   fields: {
+    _id: { type: new NonNull(StringType) },
     level: { type: new NonNull(StringType) },
     nextLevel: { type: new NonNull(StringType) },
     parent: { type: new NonNull(StringType) },
