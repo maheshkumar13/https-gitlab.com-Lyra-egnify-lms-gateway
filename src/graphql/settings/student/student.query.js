@@ -47,6 +47,7 @@ export const SingleStudent = {
 
 export const Students = {
   args: {
+    egnifyId: {type: StringType },
     sortyby: { type: StringType },
     order: { type: IntType },
   },
@@ -61,9 +62,7 @@ export const Students = {
     })
       .then(response => response.json())
       .then(json =>{
-        // console.log(json);
-        return json.csvString})
-
+        return json})
       .catch((err) => {
         console.error(err);
       });
@@ -80,9 +79,8 @@ export const downloadStudentSample = {
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     })
       .then(response => response.json())
-      .then(json =>
-        // console.log(json);
-        json)
+      .then(json => {
+        return json})
       .catch((err) => {
         console.error(err);
       });
