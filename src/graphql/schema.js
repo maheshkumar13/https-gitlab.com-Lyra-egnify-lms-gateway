@@ -13,7 +13,7 @@ import GradeSystem from './settings/grade/grade.query';
 import TestPattern from './settings/testPattern/testPattern.query';
 import Curriculum from './settings/curriculum/curriculum.query';
 import { createCurriculum, removeSubjectTaxonomy, updateSubjectTaxonomy, createSubjects } from './settings/curriculum/curriculum.mutation';
-import { SingleStudent, Students, downloadStudentSample } from './settings/student/student.query';
+import { Students, downloadStudentSample } from './settings/student/student.query';
 import { createStudent } from './settings/student/student.mutation';
 import { createTestPattern, updateTestPattern, removeTestPattern } from './settings/testPattern/testPattern.mutation';
 import InstituteHierarchy from './settings/instituteHierarchy/instituteHierarchy.query';
@@ -32,7 +32,6 @@ new ObjectType({
       GradeSystem,
       TestPattern,
       Curriculum,
-      SingleStudent,
       Students,
       Institute,
       InstituteHierarchy,
