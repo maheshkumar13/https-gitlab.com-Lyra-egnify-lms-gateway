@@ -9,10 +9,18 @@ import {
   GraphQLNonNull as NonNull,
   GraphQLInt as IntType,
   GraphQLString as StringType,
+  GraphQLObjectType as ObjectType,
 } from 'graphql';
 import fetch from 'universal-fetch';
 
 import StudentType from './student.type';
+
+const sampleStudentType = new ObjectType({
+  name: 'downloadStudentSampleType',
+  fields: {
+    csvString: { type: StringType },
+  },
+});
 
 export const SingleStudent = {
   args: {
@@ -52,6 +60,26 @@ export const Students = {
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     })
       .then(response => response.json())
+      .then(json =>{
+        // console.log(json);
+        return json.csvString})
+
+      .catch((err) => {
+        console.error(err);
+      });
+  },
+};
+export const downloadStudentSample = {
+
+  type: sampleStudentType,
+  async resolve(obj, args) {
+    // console.log(args);
+    const url = 'http://localhost:5001/api/student/downloadStudentSample';
+    return fetch(url, {
+      method: 'POST',
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then(response => response.json())
       .then(json =>
         // console.log(json);
         json)
@@ -62,6 +90,7 @@ export const Students = {
 };
 
 export default{
+  downloadStudentSample,
   SingleStudent,
   Students,
 };
