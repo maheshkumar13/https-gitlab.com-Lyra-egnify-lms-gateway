@@ -22,28 +22,7 @@ const sampleStudentType = new ObjectType({
   },
 });
 
-export const SingleStudent = {
-  args: {
-    egnifyId: { type: new NonNull(StringType) },
-  },
-  type: new List(StudentType),
-  async resolve(obj, args) {
-    // console.log(args);
-    const url = 'http://localhost:5001/api/student/getSingleStudent';
-    return fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(args),
-	    headers: { 'Content-Type': 'application/json' }, //eslint-disable-line
-    })
-      .then(response => response.json())
-      .then(json =>
-        // console.log(json);
-        json)
-      .catch((err) => {
-        console.error(err);
-      });
-  },
-};
+
 
 export const Students = {
   args: {
@@ -89,6 +68,5 @@ export const downloadStudentSample = {
 
 export default{
   downloadStudentSample,
-  SingleStudent,
   Students,
 };
