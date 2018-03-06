@@ -5,7 +5,7 @@
 */
 
 import {
-  // GraphQLList as List,
+  GraphQLList as List,
   GraphQLNonNull as NonNull,
   // GraphQLInt as IntType,
   GraphQLString as StringType,
@@ -44,6 +44,37 @@ export const createStudent = {
       });
   },
 };
+
+export const createManyStudents = {
+  args: {
+    url: { type: new NonNull(StringType) },
+  },
+  type: new List(StudentType),
+  async resolve(obj, args) {
+    args.hierarchy = JSON.stringify(args.hierarchy);//eslint-disable-line
+    const url = 'http://localhost:5001/api/student/create/studentList';
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then(response => response.json())
+      .then(json =>
+        // console.log(json);
+        json)
+      .catch((err) => {
+        console.error(err);
+        return err.json();
+      })
+      .catch((errjson) => { //eslint-disable-line
+        // console.log(errjson);
+      });
+  },
+  description: 'This will take csv file url as input and populate the students',
+};
+
+
 export default{
   createStudent,
+  createManyStudents,
 };
