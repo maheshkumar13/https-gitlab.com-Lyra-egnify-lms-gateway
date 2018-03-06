@@ -11,8 +11,10 @@ import {
 
 import GradeSystem from './settings/grade/grade.query';
 import TestPattern from './settings/testPattern/testPattern.query';
-import Curriculum from './settings/curriculum/curriculum.query';
-import { createCurriculum, removeSubjectTaxonomy, updateSubjectTaxonomy, createSubjects } from './settings/curriculum/curriculum.mutation';
+import { Curriculum } from './settings/curriculum/curriculum.query';
+import { SubjectList, SubjectTaxonomy } from './settings/subject/subjectTaxonomy.query';
+import { removeSubjectTaxonomy, updateSubjectTaxonomy, createSubjects } from './settings/subject/subjectTaxonomy.mutation';
+import { createCurriculum } from './settings/curriculum/curriculum.mutation';
 import { Students, downloadStudentSample } from './settings/student/student.query';
 import { createStudent, createManyStudents } from './settings/student/student.mutation';
 import { createTestPattern, updateTestPattern, removeTestPattern } from './settings/testPattern/testPattern.mutation';
@@ -37,6 +39,8 @@ new ObjectType({
       InstituteHierarchy,
       InstituteHierarchyGrid,
       downloadStudentSample,
+      SubjectList,
+      SubjectTaxonomy,
     },
   }),
   mutation: new ObjectType({
