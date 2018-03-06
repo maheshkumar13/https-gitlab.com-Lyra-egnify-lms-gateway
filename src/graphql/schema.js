@@ -21,7 +21,7 @@ import InstituteHierarchyGrid from './settings/instituteHierarchy/instituteHiera
 import { CreateInstituteHierarchyNode, UpdateInstituteHierarchyNode } from './settings/instituteHierarchy/instituteHierarchy.muatation';
 import Institute from './settings/institute/institute.query';
 import { createInstitute } from './settings/institute/institute.mutation';
-import { createGradeSystem, createGradePattern, removeGradePattern } from './settings/grade/grade.mutation';
+import { createGradeSystem, createGradePattern, removeGradePattern, removeGradeSystem, updateGradeSystem } from './settings/grade/grade.mutation';
 
 const schema = new Schema({
   query:
@@ -54,6 +54,8 @@ new ObjectType({
       removeSubjectTaxonomy,
       createInstitute,
       createGradeSystem,
+      removeGradeSystem,
+      updateGradeSystem,
       createGradePattern,
       removeGradePattern,
     },
