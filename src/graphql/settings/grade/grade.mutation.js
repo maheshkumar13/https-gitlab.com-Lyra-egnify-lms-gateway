@@ -65,32 +65,6 @@ export const createGradeSystem = {
   },
 };
 
-export const removeGradeSystem = {
-  args: {
-    code: { type: new NonNull(StringType) },
-  },
-  type: BooleanType,
-  async resolve(obj, args) {
-    const url = 'http://localhost:5001/api/subjectTaxonomy/delete/'.concat(args.code);
-    return fetch(url, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(args),
-    })
-      .then(response => response.json())
-      .then(json =>
-        // console.log(json);
-        json)
-      .catch((err) => {
-        console.error(err);
-        return err.json();
-      })
-      .catch((errjson) => {//eslint-disable-line
-        // console.log(errjson);
-      });
-  },
-};
-
 export const removeGradePattern = {
   args: {
     id: { type: new NonNull(StringType) },
@@ -103,7 +77,12 @@ export const removeGradePattern = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(args),
     })
-      .then(response => response.json())
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
       .then(json =>
         // console.log(json);
         json)
