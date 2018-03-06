@@ -14,7 +14,7 @@ import TestPattern from './settings/testPattern/testPattern.query';
 import Curriculum from './settings/curriculum/curriculum.query';
 import { createCurriculum, removeSubjectTaxonomy, updateSubjectTaxonomy, createSubjects } from './settings/curriculum/curriculum.mutation';
 import { Students, downloadStudentSample } from './settings/student/student.query';
-import { createStudent } from './settings/student/student.mutation';
+import { createStudent, createManyStudents } from './settings/student/student.mutation';
 import { createTestPattern, updateTestPattern, removeTestPattern } from './settings/testPattern/testPattern.mutation';
 import InstituteHierarchy from './settings/instituteHierarchy/instituteHierarchy.query';
 import InstituteHierarchyGrid from './settings/instituteHierarchy/instituteHierarchyGrid.query';
@@ -43,6 +43,7 @@ new ObjectType({
     name: 'Mutation',
     fields: {
       createStudent,
+      createManyStudents,
       createTestPattern,
       updateTestPattern,
       removeTestPattern,
