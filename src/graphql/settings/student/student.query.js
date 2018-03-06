@@ -6,7 +6,7 @@
 
 import {
   GraphQLList as List,
-  GraphQLNonNull as NonNull,
+  // GraphQLNonNull as NonNull,
   GraphQLInt as IntType,
   GraphQLString as StringType,
   GraphQLObjectType as ObjectType,
@@ -23,10 +23,9 @@ const sampleStudentType = new ObjectType({
 });
 
 
-
 export const Students = {
   args: {
-    egnifyId: {type: StringType },
+    egnifyId: { type: StringType },
     sortyby: { type: StringType },
     order: { type: IntType },
   },
@@ -40,8 +39,7 @@ export const Students = {
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     })
       .then(response => response.json())
-      .then(json =>{
-        return json})
+      .then(json => json)
       .catch((err) => {
         console.error(err);
       });
@@ -50,7 +48,7 @@ export const Students = {
 export const downloadStudentSample = {
 
   type: sampleStudentType,
-  async resolve(obj, args) {
+  async resolve(obj, args) { // eslint-disable-line
     // console.log(args);
     const url = 'http://localhost:5001/api/student/downloadStudentSample';
     return fetch(url, {
@@ -58,8 +56,7 @@ export const downloadStudentSample = {
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     })
       .then(response => response.json())
-      .then(json => {
-        return json})
+      .then(json => json)
       .catch((err) => {
         console.error(err);
       });
