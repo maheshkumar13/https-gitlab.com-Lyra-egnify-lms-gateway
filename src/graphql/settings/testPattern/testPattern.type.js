@@ -7,7 +7,7 @@
 import {
   GraphQLObjectType as ObjectType,
   GraphQLString as StringType,
-  GraphQLNonNull as NonNull,
+  // GraphQLNonNull as NonNull,
   // GraphQLInt as IntType,
 } from 'graphql';
 
@@ -15,8 +15,8 @@ import {
 const TestPatternType = new ObjectType({
   name: 'TestPatternType',
   fields: {
-    name: { type: new NonNull(StringType) },
-    patternCode: { type: new NonNull(StringType) },
+    name: { type: StringType },
+    patternCode: { type: StringType },
     code: { type: StringType },
     description: { type: StringType },
   },

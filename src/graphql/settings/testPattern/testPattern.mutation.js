@@ -30,7 +30,12 @@ export const createTestPattern = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(args),
     })
-      .then(response => response.json())
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
       .then(json =>
         // console.log(json);
         json)
@@ -58,7 +63,12 @@ export const updateTestPattern = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(args),
     })
-      .then(response => response.json())
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
       .then(json =>
         // console.log(json);
         json)
@@ -78,13 +88,18 @@ export const removeTestPattern = {
   },
   type: TestPatternType,
   async resolve(obj, args) {
-    const url = 'http://localhost:5001/api/testPattern/delete/'.concat(args.code);
+    const url = 'http://localhost:5001/api/testPattern/remove/'.concat(args.code);
     return fetch(url, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(args),
     })
-      .then(response => response.json())
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
       .then(json =>
         // console.log(json);
         json)

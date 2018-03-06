@@ -17,7 +17,6 @@ import CurriculumType from './curriculum.type';
 export const createCurriculum = {
   args: {
     curriculumList: { type: GraphQLJSON },
-    dumb: { type: StringType },
   },
   type: new List(CurriculumType),
   async resolve(obj, args) {

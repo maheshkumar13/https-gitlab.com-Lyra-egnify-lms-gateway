@@ -47,7 +47,7 @@ export const createStudent = {
 
 export const createManyStudents = {
   args: {
-    url: { type: new NonNull(StringType)},
+    url: { type: new NonNull(StringType) },
   },
   type: new List(StudentType),
   async resolve(obj, args) {
@@ -70,7 +70,7 @@ export const createManyStudents = {
         // console.log(errjson);
       });
   },
-  description: "This will take csv file url as input and populate the students"
+  description: 'This will take csv file url as input and populate the students',
 };
 
 
