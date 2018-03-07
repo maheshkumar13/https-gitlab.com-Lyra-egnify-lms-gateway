@@ -13,7 +13,7 @@ import {
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import fetch from 'universal-fetch';
-
+import { config } from '../../../config/environment';
 import StudentType from './student.type';
 
 export const createStudent = {
@@ -25,7 +25,7 @@ export const createStudent = {
   type: StudentType,
   async resolve(obj, args) {
     args.hierarchy = JSON.stringify(args.hierarchy);//eslint-disable-line
-    const url = 'http://localhost:5001/api/student/create/student';
+    const url = `${config.services.settings}/api/student/create/student`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
@@ -57,7 +57,7 @@ export const createManyStudents = {
   type: new List(StudentType),
   async resolve(obj, args) {
     args.hierarchy = JSON.stringify(args.hierarchy);//eslint-disable-line
-    const url = 'http://localhost:5001/api/student/create/studentList';
+    const url = `${config.services.settings}/api/student/create/studentList`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),

@@ -6,7 +6,7 @@
 
 import { GraphQLList as List } from 'graphql';
 import fetch from 'universal-fetch';
-
+import { config } from '../../../config/environment';
 import TestPatternType from './testPattern.type';
 
 const TestPattern = {
@@ -15,7 +15,7 @@ const TestPattern = {
   // },
   type: new List(TestPatternType),
   async resolve() {
-    const url = 'http://localhost:5001/api/testPattern';
+    const url = `${config.services.settings}/api/testPattern`;
     return fetch(url)
       .then(response => response.json())
       .then(json => json.testPatterns)

@@ -11,7 +11,7 @@ import {
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import fetch from 'universal-fetch';
-
+import { config } from '../../../config/environment';
 import { SubjectTaxonomyType } from './subjectTaxonomy.type';
 
 export const createSubjects = {
@@ -22,7 +22,7 @@ export const createSubjects = {
   async resolve(obj, args) {
     args.data = JSON.stringify(args.data);//eslint-disable-line
     // console.log(args);
-    const url = 'http://localhost:5001/api/subjectTaxonomy/create/subjects';
+    const url = `${config.services.settings}/api/subjectTaxonomy/create/subjects`;
     return fetch(url, { method: 'POST', body: JSON.stringify(args), headers: { 'Content-Type': 'application/json' } })
       .then((response) => {
         if (response.status >= 400) {
@@ -43,7 +43,7 @@ export const removeSubjectTaxonomy = {
   },
   type: SubjectTaxonomyType,
   async resolve(obj, args) {
-    const url = 'http://localhost:5001/api/subjectTaxonomy/remove/'.concat(args.code);
+    const url = `${config.services.settings}/api/subjectTaxonomy/remove/`.concat(args.code);
     return fetch(url, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
@@ -76,7 +76,7 @@ export const updateSubjectTaxonomy = {
   },
   type: SubjectTaxonomyType,
   async resolve(obj, args) {
-    const url = 'http://localhost:5001/api/subjectTaxonomy/update/'.concat(args.code);
+    const url = `${config.services.settings}/api/subjectTaxonomy/update/`.concat(args.code);
     return fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

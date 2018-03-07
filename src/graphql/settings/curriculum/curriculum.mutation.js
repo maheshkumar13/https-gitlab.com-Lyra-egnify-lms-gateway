@@ -11,7 +11,7 @@ import {
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import fetch from 'universal-fetch';
-
+import { config } from '../../../config/environment';
 import { SubjectTaxonomyType } from '../subject/subjectTaxonomy.type';
 
 export const createCurriculum = {
@@ -22,7 +22,7 @@ export const createCurriculum = {
   async resolve(obj, args) {
     args.curriculumList = JSON.stringify(args.curriculumList);//eslint-disable-line
     // console.log(args);
-    const url = 'http://localhost:5001/api/subjectTaxonomy/create/curriculum';
+    const url = `${config.services.settings}/api/subjectTaxonomy/create/curriculum`;
     return fetch(url, { method: 'POST', body: JSON.stringify(args), headers: { 'Content-Type': 'application/json' } })
       .then((response) => {
         if (response.status >= 400) {
