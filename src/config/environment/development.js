@@ -11,5 +11,6 @@ module.exports = {
   seedDB: true,
   services: {
     settings: 'http://localhost:5001',
+    test: 'http://localhost:5002',
   },
 };
