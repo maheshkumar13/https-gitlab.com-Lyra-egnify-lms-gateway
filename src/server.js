@@ -55,6 +55,8 @@ app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }));
 
 require('./api').default(app);
 
+app.get('/', (req, res) => res.send('Oh!! Yeah.'));
+
 app.listen(config.port, () => {
   console.info(`The server is running at http://localhost:${config.port}/`);
 });
