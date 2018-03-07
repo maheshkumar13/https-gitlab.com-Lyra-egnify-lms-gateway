@@ -21,6 +21,7 @@ const GradeSystem = {
   type: new List(GradeType),
   async resolve() {
     const url = `${config.services.settings}/api/grade/read/system/`;
+    console.log(url);
     return fetch(url, { method: 'POST' })
       .then((response) => {
         if (response.status >= 400) {

@@ -17,6 +17,7 @@ import schema from './graphql/schema';
 import { config } from './config/environment';
 
 const morgan = require('morgan');
+const cors = require('cors');
 
 mongoose.Promise = require('bluebird');
 // Connect to MongoDB
@@ -27,6 +28,7 @@ mongoose.connection.on('error', (err) => {
 });
 
 const app = express();
+app.use(cors());
 app.use(morgan('short'));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));

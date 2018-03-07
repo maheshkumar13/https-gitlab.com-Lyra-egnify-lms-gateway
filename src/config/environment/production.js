@@ -15,7 +15,7 @@ module.exports = {
   },
 
   services: {
-    settings: 'http://localhost:5001',
+    settings: 'http://settings.gitlab-managed-apps.svc.cluster.local',
     test: 'http://localhost:5002',
   },
 };
