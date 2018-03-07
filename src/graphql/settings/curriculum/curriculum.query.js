@@ -6,7 +6,7 @@
 
 import { GraphQLList as List } from 'graphql';
 import fetch from 'universal-fetch';
-
+import { config } from '../../../config/environment';
 import { SubjectTaxonomyType } from '../subject/subjectTaxonomy.type';
 
 export const Curriculum = {
@@ -15,7 +15,7 @@ export const Curriculum = {
   // },
   type: new List(SubjectTaxonomyType),
   async resolve() {
-    const url = 'http://localhost:5001/api/subjectTaxonomy';
+    const url = `${config.services.settings}/api/subjectTaxonomy`;
     return fetch(url, { method: 'POST' })
       .then((response) => {
         if (response.status >= 400) {

@@ -13,7 +13,7 @@ import {
 } from 'graphql';
 // import GraphQLJSON from 'graphql-type-json';
 import fetch from 'universal-fetch';
-
+import { config } from '../../../config/environment';
 import TestPatternType from './testPattern.type';
 
 export const createTestPattern = {
@@ -24,7 +24,7 @@ export const createTestPattern = {
   },
   type: TestPatternType,
   async resolve(obj, args) {
-    const url = 'http://localhost:5001/api/testPattern/create';
+    const url = `${config.services.settings}/api/testPattern/create`;
     return fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -57,7 +57,7 @@ export const updateTestPattern = {
   },
   type: TestPatternType,
   async resolve(obj, args) {
-    const url = 'http://localhost:5001/api/testPattern/update/'.concat(args.code);
+    const url = `${config.services.settings}/api/testPattern/update/`.concat(args.code);
     return fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -88,7 +88,7 @@ export const removeTestPattern = {
   },
   type: TestPatternType,
   async resolve(obj, args) {
-    const url = 'http://localhost:5001/api/testPattern/remove/'.concat(args.code);
+    const url = `${config.services.settings}/api/testPattern/remove/`.concat(args.code);
     return fetch(url, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
