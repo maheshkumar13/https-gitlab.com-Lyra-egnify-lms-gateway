@@ -16,6 +16,8 @@ import {
 
 import GraphQLJSON from 'graphql-type-json';
 
+import { config } from '../../../config/environment';
+
 const PatternEnumType = new GraphQLEnumType({
   name: 'PatternEnumType',
   values: {
@@ -74,7 +76,7 @@ export const GradeType = new ObjectType({
       },
       type: new List(PatternType),
       async resolve(obj, args) {
-        const url = 'http://localhost:5001/api/grade/read/pattern/';
+        const url = `${config.services.settings}/api/grade/read/pattern/`;
         return fetch(url, {
           method: 'POST',
           body: JSON.stringify({ parent: obj.data.systemCode, type: args.type }),

@@ -12,13 +12,15 @@ import fetch from 'universal-fetch';
 
 import { GradeType } from './grade.type';
 
+import { config } from '../../../config/environment';
+
 const GradeSystem = {
   args: {
     _id: { type: StringType },
   },
   type: new List(GradeType),
   async resolve() {
-    const url = 'http://localhost:5001/api/grade/read/system/';
+    const url = `${config.services.settings}/api/grade/read/system/`;
     return fetch(url, { method: 'POST' })
       .then((response) => {
         if (response.status >= 400) {

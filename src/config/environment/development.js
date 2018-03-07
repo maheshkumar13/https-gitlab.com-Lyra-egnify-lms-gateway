@@ -9,4 +9,7 @@ module.exports = {
   },
   // Seed database on startup
   seedDB: true,
+  services: {
+    settings: 'http://localhost:5001',
+  },
 };

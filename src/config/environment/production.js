@@ -13,4 +13,8 @@ module.exports = {
       process.env.MONGODB_URL ||
       'mongodb://localhost/vega-dev',
   },
+
+  services: {
+    settings: 'http://localhost:5001',
+  },
 };
