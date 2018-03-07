@@ -22,11 +22,9 @@ const sampleStudentType = new ObjectType({
   },
 });
 
-
-
 export const Students = {
   args: {
-    egnifyId: {type: StringType },
+    egnifyId: { type: StringType },
     sortyby: { type: StringType },
     order: { type: IntType },
   },
@@ -40,8 +38,7 @@ export const Students = {
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     })
       .then(response => response.json())
-      .then(json =>{
-        return json})
+      .then(json => json)
       .catch((err) => {
         console.error(err);
       });
@@ -58,8 +55,7 @@ export const downloadStudentSample = {
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     })
       .then(response => response.json())
-      .then(json => {
-        return json})
+      .then(json => json)
       .catch((err) => {
         console.error(err);
       });

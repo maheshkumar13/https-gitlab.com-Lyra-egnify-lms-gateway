@@ -5,7 +5,7 @@
 module.exports = {
   // MongoDB connection options
   mongo: {
-    uri: 'mongodb://localhost/vega-dev',
+    uri: 'mongodb://localhost/hydra-settings-dev',
   },
   // Seed database on startup
   seedDB: true,

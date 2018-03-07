@@ -7,13 +7,53 @@
 import {
   GraphQLList as List,
   GraphQLString as StringType,
+  GraphQLObjectType as ObjectType,
   GraphQLInt as IntType,
+  GraphQLInputObjectType as InputType,
 } from 'graphql';
 import fetch from 'universal-fetch';
 
 import InstituteHierarchyType from './instituteHierarchy.type';
 
-const InstituteHierarchy = {
+const sampleInstituteHierarchyType = new ObjectType({
+  name: 'downloadInstituteBasicDetailsSample',
+  fields: {
+    csvString: { type: StringType },
+  },
+});
+
+const downloadSampleInputType = new InputType({
+  name: 'downloadSampleInputType',
+  fields: {
+    level: { type: IntType },
+  },
+});
+
+export const InstituteHierarchySample = {
+  args: {
+    input: { type: downloadSampleInputType },
+  },
+  type: sampleInstituteHierarchyType,
+  async resolve(obj, args) {
+    const url = 'http://localhost:5001/api/instituteHierarchy/get/sampleCSV';
+    const body = args.input;
+    return fetch(
+      url,
+      {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
+      .then(response => response.json())
+      .then((json) => {
+        console.error(json);
+        return { csvString: json.headers };
+      });
+  },
+};
+
+export const InstituteHierarchy = {
   args: {
     parentCode: { type: StringType },
     childCode: { type: StringType },
@@ -60,4 +100,4 @@ const InstituteHierarchy = {
   },
 };
 
-export default InstituteHierarchy;
+export default { InstituteHierarchy, InstituteHierarchySample };
