@@ -17,6 +17,7 @@ import schema from './graphql/schema';
 import { config } from './config/environment';
 
 const morgan = require('morgan');
+const cors = require('cors');
 
 mongoose.Promise = require('bluebird');
 // Connect to MongoDB
@@ -27,6 +28,7 @@ mongoose.connection.on('error', (err) => {
 });
 
 const app = express();
+app.use(cors());
 app.use(morgan('short'));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -54,6 +56,8 @@ app.use(
 app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }));
 
 require('./api').default(app);
+
+app.get('/', (req, res) => res.send('Oh!! Yeah.'));
 
 app.listen(config.port, () => {
   console.info(`The server is running at http://localhost:${config.port}/`);

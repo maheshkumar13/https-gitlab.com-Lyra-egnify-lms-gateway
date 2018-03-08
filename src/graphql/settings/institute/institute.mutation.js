@@ -14,6 +14,7 @@ import {
 import fetch from 'universal-fetch';
 import GraphQLJSON from 'graphql-type-json';
 import { InstituteType, HierarchyType } from './institute.type';
+import { config } from '../../../config/environment';
 
 
 const InstitutePatchType = new InputType({
@@ -31,16 +32,13 @@ const InstitutePatchType = new InputType({
 export const HierarchyPatchType = new InputType({
   name: 'HierarchyPatchType',
   fields: {
-    parent: { type: StringType },
-    child: { type: StringType },
-    level: { type: IntType },
-    code: { type: StringType },
-    noOfNodes: { type: IntType },
+    value: { type: StringType },
   },
 });
 
-export const createInstitute = {
-  args: {
+const CreateInstituteInputType = new InputType({
+  name: 'CreateInstituteInputType',
+  fields: {
     instituteName: { type: new NonNull(StringType) },
     establishmentYear: { type: new NonNull(IntType) },
     academicSchedule: { type: new NonNull(GraphQLJSON) },
@@ -49,10 +47,16 @@ export const createInstitute = {
     proofOfRegistrationUrl: { type: StringType },
     hierarchy: { type: new NonNull(GraphQLJSON) },
   },
+});
+
+export const createInstitute = {
+  args: {
+    input: { type: CreateInstituteInputType },
+  },
   type: new List(InstituteType),
   async resolve(obj, args) {
-    const url = 'http://localhost:5001/api/institute/enrollInstitute';
-    const body = args;
+    const url = `${config.services.settings}/api/institute/enrollInstitute`;
+    const body = args.input;
 
     if (body.hierarchy) {
       body.hierarchy = JSON.stringify(body.hierarchy);
@@ -70,10 +74,15 @@ export const createInstitute = {
         headers: { 'Content-Type': 'application/json' },
       },
     )
-      .then(response => response.json())
+      .then(async (response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
       .then((json) => {
         console.error(json);
-        return json.data;
+        return json;
       })
       .catch((err) => {
         console.error(err);
@@ -87,7 +96,7 @@ export const updateInstitute = {
   },
   type: new List(InstituteType),
   async resolve(obj, args) {
-    const url = 'http://localhost:5001/api/institute/update/InstituteBasicDetails';
+    const url = `${config.services.settings}/api/institute/update/InstituteBasicDetails`;
     const body = args.patch;
 
     if (body.academicSchedule) {
@@ -102,10 +111,15 @@ export const updateInstitute = {
         headers: { 'Content-Type': 'application/json' },
       },
     )
-      .then(response => response.json())
+      .then(async (response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
       .then((json) => {
         console.error(json);
-        return json.data;
+        return json;
       })
       .catch((err) => {
         console.error(err);
@@ -113,14 +127,22 @@ export const updateInstitute = {
   },
 };
 
+const HierarchyPatchListType = new InputType({
+  name: 'HierarchyPatchListType',
+  fields: {
+    hierarchy: { type: new NonNull(new List(HierarchyPatchType)) },
+  },
+});
 
 export const updateHierarchy = {
   args: {
-    patch: { type: new NonNull(new List(HierarchyPatchType)) },
+    patch: {
+      type: HierarchyPatchListType,
+    },
   },
   type: new List(HierarchyType),
   async resolve(obj, args) {
-    const url = 'http://localhost:5001/api/institute/update/Hierarchy';
+    const url = `${config.services.settings}/api/institute/update/Hierarchy`;
     const body = args.patch;
 
     if (body.hierarchy) {
@@ -135,10 +157,15 @@ export const updateHierarchy = {
         headers: { 'Content-Type': 'application/json' },
       },
     )
-      .then(response => response.json())
+      .then(async (response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
       .then((json) => {
         console.error(json);
-        return json.data;
+        return json;
       })
       .catch((err) => {
         console.error(err);
@@ -146,4 +173,4 @@ export const updateHierarchy = {
   },
 };
 
-export default { createInstitute, updateInstitute };
+export default { createInstitute, updateInstitute, updateHierarchy };

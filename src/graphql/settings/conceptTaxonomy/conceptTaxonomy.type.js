@@ -2,6 +2,7 @@ import {
   GraphQLObjectType as ObjectType,
   GraphQLStringType as StringType,
   // GraphQLNonNull as NonNull,
+  GraphQLInputObjectType as InputType,
   // GraphQLInt as IntType,
   GraphQLList as List,
   // GraphQLBoolean as BooleanType,
@@ -57,5 +58,15 @@ export const ConceptTaxonomy = new ObjectType({
   }),
 });
 
+export const SubjectTaxonomyInputType = new InputType({
+  name: 'SubjectTaxonomyInputType',
+  fields: {
+    code: { type: StringType },
+    parent: { type: StringType },
+    child: { type: StringType },
+    subCode: { type: StringType },
+    parentCode: { type: StringType },
+  },
+});
 
-export default { TaxonomyDataType, ConceptTaxonomy };
+export default { TaxonomyDataType, ConceptTaxonomy, SubjectTaxonomyInputType };

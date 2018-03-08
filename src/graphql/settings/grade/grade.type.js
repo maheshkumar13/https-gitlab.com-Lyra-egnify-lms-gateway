@@ -7,6 +7,7 @@
 import {
   GraphQLList as List,
   GraphQLObjectType as ObjectType,
+  GraphQLInputObjectType as InputObjectType,
   GraphQLString as StringType,
   GraphQLNonNull as NonNull,
   GraphQLEnumType,
@@ -14,6 +15,8 @@ import {
 } from 'graphql';
 
 import GraphQLJSON from 'graphql-type-json';
+
+import { config } from '../../../config/environment';
 
 const PatternEnumType = new GraphQLEnumType({
   name: 'PatternEnumType',
@@ -30,7 +33,23 @@ const PatternEnumType = new GraphQLEnumType({
   },
 });
 
-const PatternType = new ObjectType({
+export const PatternPatchType = new InputObjectType({
+  name: 'PatternPatchType',
+  fields: {
+    _id: { type: new NonNull(StringType) },
+    patch: { type: GraphQLJSON },
+  },
+});
+
+export const GradePatchType = new InputObjectType({
+  name: 'GradePatchType',
+  fields: {
+    _id: { type: new NonNull(StringType) },
+    patch: { type: GraphQLJSON },
+  },
+});
+
+export const PatternType = new ObjectType({
   name: 'PatternType',
   fields: {
     _id: { type: new NonNull(StringType) },
@@ -41,9 +60,10 @@ const PatternType = new ObjectType({
   },
 });
 
-const GradeType = new ObjectType({
+export const GradeType = new ObjectType({
   name: 'GradeType',
   fields: {
+    _id: { type: new NonNull(StringType) },
     level: { type: new NonNull(StringType) },
     nextLevel: { type: new NonNull(StringType) },
     parent: { type: new NonNull(StringType) },
@@ -53,13 +73,15 @@ const GradeType = new ObjectType({
     pattern: {
       args: {
         type: { type: new NonNull(PatternEnumType) },
-        parent: { type: StringType },
       },
       type: new List(PatternType),
-      async resolve() {
-        // console.log(obj);
-        const url = 'http://localhost:5001/api/grade/read/pattern/';
-        return fetch(url, { method: 'POST' })
+      async resolve(obj, args) {
+        const url = `${config.services.settings}/api/grade/read/pattern/`;
+        return fetch(url, {
+          method: 'POST',
+          body: JSON.stringify({ parent: obj.data.systemCode, type: args.type }),
+          headers: { 'Content-Type': 'application/json' },
+        })
           .then(response => response.json())
           .catch((err) => {
             console.error(err);
@@ -69,4 +91,9 @@ const GradeType = new ObjectType({
   },
 });
 
-export default GradeType;
+export default {
+  GradeType,
+  PatternType,
+  PatternPatchType,
+  GradePatchType,
+};

@@ -12,8 +12,18 @@ import {
   GraphQLInputObjectType as InputType,
 } from 'graphql';
 import fetch from 'universal-fetch';
+import { config } from '../../../config/environment';
 
 import InstituteHierarchyType from './instituteHierarchy.type';
+
+const InstituteHierarchyFilterType = new InputType({
+  name: 'InstituteHierarchyFilterType',
+  fields: {
+    parentCode: { type: StringType },
+    childCode: { type: StringType },
+    level: { type: IntType },
+  },
+});
 
 const sampleInstituteHierarchyType = new ObjectType({
   name: 'downloadInstituteBasicDetailsSample',
@@ -35,7 +45,7 @@ export const InstituteHierarchySample = {
   },
   type: sampleInstituteHierarchyType,
   async resolve(obj, args) {
-    const url = 'http://localhost:5001/api/instituteHierarchy/get/sampleCSV';
+    const url = `${config.services.settings}/api/instituteHierarchy/get/sampleCSV`;
     const body = args.input;
     return fetch(
       url,
@@ -55,14 +65,13 @@ export const InstituteHierarchySample = {
 
 export const InstituteHierarchy = {
   args: {
-    parentCode: { type: StringType },
-    childCode: { type: StringType },
-    level: { type: IntType },
+    input: { type: InstituteHierarchyFilterType },
   },
   type: new List(InstituteHierarchyType),
   async resolve(obj, args) {
     const filters = {};
-    const url = 'http://localhost:5001/api/instituteHierarchy/filter/nodes';
+    const url = `${config.services.settings}/api/instituteHierarchy/filter/nodes`;
+    args = args.input; // eslint-disable-line
 
     let filterStatus = false;
     if (args.level) {
@@ -92,7 +101,12 @@ export const InstituteHierarchy = {
         headers: { 'Content-Type': 'application/json' },
       },
     )
-      .then(response => response.json())
+      .then(async (response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
       .then(json => json)
       .catch((err) => {
         console.error(err);

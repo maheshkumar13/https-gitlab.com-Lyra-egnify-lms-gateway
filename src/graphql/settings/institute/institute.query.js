@@ -8,6 +8,7 @@ import { GraphQLList as List } from 'graphql';
 import fetch from 'universal-fetch';
 
 import { InstituteType } from './institute.type';
+import { config } from '../../../config/environment';
 
 const Institute = {
   // args: {
@@ -15,7 +16,7 @@ const Institute = {
   // },
   type: new List(InstituteType),
   async resolve() {
-    const url = 'http://localhost:5001/api/institute/getInstituteDetails';
+    const url = `${config.services.settings}/api/institute/getInstituteDetails`;
     return fetch(url)
       .then(response => response.json())
       .then((json) => {

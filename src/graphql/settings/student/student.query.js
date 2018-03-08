@@ -6,7 +6,7 @@
 
 import {
   GraphQLList as List,
-  GraphQLNonNull as NonNull,
+  // GraphQLNonNull as NonNull,
   GraphQLInt as IntType,
   GraphQLString as StringType,
   GraphQLObjectType as ObjectType,
@@ -21,6 +21,7 @@ const sampleStudentType = new ObjectType({
     csvString: { type: StringType },
   },
 });
+
 
 export const Students = {
   args: {
@@ -47,7 +48,7 @@ export const Students = {
 export const downloadStudentSample = {
 
   type: sampleStudentType,
-  async resolve(obj, args) {
+  async resolve(obj, args) { // eslint-disable-line
     // console.log(args);
     const url = 'http://localhost:5001/api/student/downloadStudentSample';
     return fetch(url, {

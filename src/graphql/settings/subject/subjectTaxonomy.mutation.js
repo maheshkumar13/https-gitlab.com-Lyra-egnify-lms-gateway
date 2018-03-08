@@ -1,94 +1,49 @@
 /**
-   @author Aslam Shaik
-   @date    02/03/2018
+   @author Rahul Islam
+   @date    XX/XX/XXXX
    @version 1.0.0
 */
 
 import {
-  // GraphQLList as List,
-  GraphQLNonNull as NonNull,
-  // GraphQLInt as IntType,
+  GraphQLList as List,
   GraphQLString as StringType,
-
+  GraphQLNonNull as NonNull,
 } from 'graphql';
-// import GraphQLJSON from 'graphql-type-json';
+import GraphQLJSON from 'graphql-type-json';
 import fetch from 'universal-fetch';
 
-import TestPatternType from './testPattern.type';
+import { SubjectTaxonomyType } from './subjectTaxonomy.type';
 
-export const createTestPattern = {
+export const createSubjects = {
   args: {
-    name: { type: new NonNull(StringType) },
-    patternCode: { type: new NonNull(StringType) },
-    description: { type: StringType },
+    data: { type: GraphQLJSON },
   },
-  type: TestPatternType,
+  type: new List(SubjectTaxonomyType),
   async resolve(obj, args) {
-    const url = 'http://localhost:5001/api/testPattern/create';
-    return fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(args),
-    })
+    args.data = JSON.stringify(args.data);//eslint-disable-line
+    // console.log(args);
+    const url = 'http://localhost:5001/api/subjectTaxonomy/create/subjects';
+    return fetch(url, { method: 'POST', body: JSON.stringify(args), headers: { 'Content-Type': 'application/json' } })
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
         }
         return response.json();
       })
-      .then(json =>
-        // console.log(json);
-        json)
+      .then(json => json)
       .catch((err) => {
         console.error(err);
-        return err.json();
-      })
-      .catch((errjson) => { //eslint-disable-line
-        // console.log(errjson);
       });
   },
 };
 
-export const updateTestPattern = {
-  args: {
-    code: { type: new NonNull(StringType) },
-    name: { type: StringType },
-    patternCode: { type: StringType },
-  },
-  type: TestPatternType,
-  async resolve(obj, args) {
-    const url = 'http://localhost:5001/api/testPattern/update/'.concat(args.code);
-    return fetch(url, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(args),
-    })
-      .then((response) => {
-        if (response.status >= 400) {
-          return new Error(response.statusText);
-        }
-        return response.json();
-      })
-      .then(json =>
-        // console.log(json);
-        json)
-      .catch((err) => {
-        console.error(err);
-        return err.json();
-      })
-      .catch((errjson) => {//eslint-disable-line
-        // console.log(errjson);
-      });
-  },
-};
-
-export const removeTestPattern = {
+export const removeSubjectTaxonomy = {
   args: {
     code: { type: new NonNull(StringType) },
   },
-  type: TestPatternType,
+  type: SubjectTaxonomyType,
   async resolve(obj, args) {
-    const url = 'http://localhost:5001/api/testPattern/remove/'.concat(args.code);
+    const url = 'http://localhost:5001/api/subjectTaxonomy/remove/'.concat(args.code);
     return fetch(url, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
@@ -113,9 +68,42 @@ export const removeTestPattern = {
   },
 };
 
+export const updateSubjectTaxonomy = {
+  args: {
+    code: { type: new NonNull(StringType) },
+    name: { type: StringType },
+    subCode: { type: StringType },
+  },
+  type: SubjectTaxonomyType,
+  async resolve(obj, args) {
+    const url = 'http://localhost:5001/api/subjectTaxonomy/update/'.concat(args.code);
+    return fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(args),
+    })
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then(json =>
+        // console.log('getting is',json);
+        json)
+      .catch((err) => {
+        console.error(err);
+        return err.json();
+      })
+      .catch((errjson) => {//eslint-disable-line
+        // console.log(errjson);
+      });
+  },
+};
 
-export default{
-  createTestPattern,
-  updateTestPattern,
-  removeTestPattern,
+
+export default {
+  createSubjects,
+  removeSubjectTaxonomy,
+  updateSubjectTaxonomy,
 };

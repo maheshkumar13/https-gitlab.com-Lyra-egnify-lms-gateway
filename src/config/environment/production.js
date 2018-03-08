@@ -13,4 +13,9 @@ module.exports = {
       process.env.MONGODB_URL ||
       'mongodb://localhost/hydra-settings-prod',
   },
+
+  services: {
+    settings: 'http://settings.gitlab-managed-apps.svc.cluster.local',
+    test: 'http://localhost:5002',
+  },
 };

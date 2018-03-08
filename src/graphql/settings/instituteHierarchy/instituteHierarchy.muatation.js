@@ -8,29 +8,39 @@ import {
   GraphQLList as List,
   GraphQLString as StringType,
   GraphQLInt as IntType,
+  GraphQLInputObjectType as InputType,
+  GraphQLNonNull as NonNull,
 } from 'graphql';
 import fetch from 'universal-fetch';
 
 import InstituteHierarchyType from './instituteHierarchy.type';
+import { config } from '../../../config/environment';
+
+const CreateInstituteHierarchyNodeInputType = new InputType({
+  name: 'CreateInstituteHierarchyNodeInputType',
+  fields: {
+    parentCode: { type: new NonNull(StringType) },
+    child: { type: new NonNull(StringType) },
+    level: { type: new NonNull(IntType) },
+    description: { type: StringType },
+  },
+});
 
 export const CreateInstituteHierarchyNode = {
   args: {
-    parentCode: { type: StringType },
-    child: { type: StringType },
-    level: { type: IntType },
-    description: { type: StringType },
+    input: { type: CreateInstituteHierarchyNodeInputType },
   },
   type: new List(InstituteHierarchyType),
   async resolve(obj, args) {
-    const url = 'http://localhost:5001/api/instituteHierarchy/create/node';
+    const url = `${config.services.settings}/api/instituteHierarchy/create/node`;
 
-    const body = {
-      parentCode: args.parentCode,
-      child: args.child,
-      level: args.level,
-      description: args.description,
-    };
-    console.error(body);
+    // const body = {
+    //   parentCode: args.parentCode,
+    //   child: args.child,
+    //   level: args.level,
+    //   description: args.description,
+    // };
+    const body = args.input;
 
     return fetch(
       url,
@@ -40,10 +50,15 @@ export const CreateInstituteHierarchyNode = {
         headers: { 'Content-Type': 'application/json' },
       },
     )
-      .then(response => response.json())
+      .then(async (response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
       .then((json) => {
         console.error(json);
-        return [json.data];
+        return json;
       })
       .catch((err) => {
         console.error(err);
@@ -51,18 +66,25 @@ export const CreateInstituteHierarchyNode = {
   },
 };
 
+const InstituteHierarchyPatchType = new InputType({
+  name: 'InstituteHierarchyPatchType',
+  fields: {
+    child: { type: new NonNull(StringType) },
+  },
+});
+
 export const UpdateInstituteHierarchyNode = {
   args: {
-    child: { type: StringType },
-    childCode: { type: StringType },
+    id: { type: new NonNull(StringType) },
+    patch: { type: InstituteHierarchyPatchType },
   },
   type: new List(InstituteHierarchyType),
   async resolve(obj, args) {
-    const url = 'http://localhost:5001/api/instituteHierarchy/update/node/onCode';
+    const url = `${config.services.settings}/api/instituteHierarchy/update/node/onCode`;
 
     const body = {
-      childCode: args.childCode,
-      child: args.child,
+      childCode: args.id,
+      child: args.patch.child,
     };
 
     return fetch(
@@ -73,14 +95,13 @@ export const UpdateInstituteHierarchyNode = {
         headers: { 'Content-Type': 'application/json' },
       },
     )
-      .then(response => response.json())
-      .then((json) => {
-        console.error(json);
-        return json.data;
+      .then(async (response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
       })
-      .catch((err) => {
-        console.error(err);
-      });
+      .then(json => json);
   },
 };
 
