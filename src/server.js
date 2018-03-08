@@ -55,7 +55,7 @@ app.use(
 // GraphiQL, a visual editor for queries
 app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }));
 
-require('./api').default(app);
+require('./api/v1').default(app);
 
 app.get('/', (req, res) => res.send('Oh!! Yeah.'));
 
