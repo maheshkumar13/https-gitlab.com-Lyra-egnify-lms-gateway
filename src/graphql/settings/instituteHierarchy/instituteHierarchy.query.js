@@ -7,22 +7,71 @@
 import {
   GraphQLList as List,
   GraphQLString as StringType,
+  GraphQLObjectType as ObjectType,
   GraphQLInt as IntType,
+  GraphQLInputObjectType as InputType,
 } from 'graphql';
 import fetch from 'universal-fetch';
+import { config } from '../../../config/environment';
 
 import InstituteHierarchyType from './instituteHierarchy.type';
 
-const InstituteHierarchy = {
-  args: {
+const InstituteHierarchyFilterType = new InputType({
+  name: 'InstituteHierarchyFilterType',
+  fields: {
     parentCode: { type: StringType },
     childCode: { type: StringType },
     level: { type: IntType },
   },
+});
+
+const sampleInstituteHierarchyType = new ObjectType({
+  name: 'downloadInstituteBasicDetailsSample',
+  fields: {
+    csvString: { type: StringType },
+  },
+});
+
+const downloadSampleInputType = new InputType({
+  name: 'downloadSampleInputType',
+  fields: {
+    level: { type: IntType },
+  },
+});
+
+export const InstituteHierarchySample = {
+  args: {
+    input: { type: downloadSampleInputType },
+  },
+  type: sampleInstituteHierarchyType,
+  async resolve(obj, args) {
+    const url = `${config.services.settings}/api/instituteHierarchy/get/sampleCSV`;
+    const body = args.input;
+    return fetch(
+      url,
+      {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
+      .then(response => response.json())
+      .then((json) => {
+        console.error(json);
+        return { csvString: json.headers };
+      });
+  },
+};
+
+export const InstituteHierarchy = {
+  args: {
+    input: { type: InstituteHierarchyFilterType },
+  },
   type: new List(InstituteHierarchyType),
   async resolve(obj, args) {
     const filters = {};
-    const url = 'http://localhost:5001/api/instituteHierarchy/filter/nodes';
+    const url = `${config.services.settings}/api/instituteHierarchy/filter/nodes`;
+    args = args.input; // eslint-disable-line
 
     let filterStatus = false;
     if (args.level) {
@@ -52,7 +101,12 @@ const InstituteHierarchy = {
         headers: { 'Content-Type': 'application/json' },
       },
     )
-      .then(response => response.json())
+      .then(async (response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
       .then(json => json)
       .catch((err) => {
         console.error(err);
@@ -60,4 +114,4 @@ const InstituteHierarchy = {
   },
 };
 
-export default InstituteHierarchy;
+export default { InstituteHierarchy, InstituteHierarchySample };

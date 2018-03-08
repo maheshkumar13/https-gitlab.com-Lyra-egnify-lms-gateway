@@ -11,7 +11,7 @@ module.exports = {
     uri:
       process.env.MONGODB_URI ||
       process.env.MONGODB_URL ||
-      'mongodb://localhost/vega-dev',
+      'mongodb://localhost/hydra-settings-prod',
   },
 
   services: {

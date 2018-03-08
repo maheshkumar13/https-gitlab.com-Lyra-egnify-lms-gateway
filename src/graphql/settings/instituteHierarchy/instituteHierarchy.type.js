@@ -6,6 +6,7 @@ import {
   GraphQLNonNull as NonNull,
   GraphQLInt as IntType,
 } from 'graphql';
+import { config } from '../../../config/environment';
 
 const anscetors = new ObjectType({
   name: 'AnscetorsType',
@@ -34,7 +35,7 @@ const InstituteHierarchyType = new ObjectType({
       type: new List(InstituteHierarchyType),
       async resolve(obj) {
         const filters = {};
-        const url = 'http://localhost:5001/api/instituteHierarchy/filter/nodes';
+        const url = `${config.services.settings}/api/instituteHierarchy/filter/nodes`;
         filters.parentCode = obj.childCode;
         return fetch(url, {
           method: 'POST',

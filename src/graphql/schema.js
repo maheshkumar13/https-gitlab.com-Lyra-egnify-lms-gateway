@@ -18,11 +18,13 @@ import { createCurriculum } from './settings/curriculum/curriculum.mutation';
 import { Students, downloadStudentSample } from './settings/student/student.query';
 import { createStudent, createManyStudents } from './settings/student/student.mutation';
 import { createTestPattern, updateTestPattern, removeTestPattern } from './settings/testPattern/testPattern.mutation';
-import InstituteHierarchy from './settings/instituteHierarchy/instituteHierarchy.query';
+import { InstituteHierarchy, InstituteHierarchySample } from './settings/instituteHierarchy/instituteHierarchy.query';
 import InstituteHierarchyGrid from './settings/instituteHierarchy/instituteHierarchyGrid.query';
 import { CreateInstituteHierarchyNode, UpdateInstituteHierarchyNode } from './settings/instituteHierarchy/instituteHierarchy.muatation';
 import Institute from './settings/institute/institute.query';
-import { createInstitute } from './settings/institute/institute.mutation';
+import { createInstitute, updateInstitute, updateHierarchy } from './settings/institute/institute.mutation';
+import { saveTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.mutation';
+import { GenerateConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.query';
 import { createGradeSystem, createGradePattern, removeGradePattern, removeGradeSystem, updateGradeSystem, updateGradePattern } from './settings/grade/grade.mutation';
 
 const schema = new Schema({
@@ -39,6 +41,8 @@ new ObjectType({
       InstituteHierarchy,
       InstituteHierarchyGrid,
       downloadStudentSample,
+      GenerateConceptTaxonomy,
+      InstituteHierarchySample,
       SubjectList,
       SubjectTaxonomy,
     },
@@ -58,12 +62,15 @@ new ObjectType({
       updateSubjectTaxonomy,
       removeSubjectTaxonomy,
       createInstitute,
+      updateInstitute,
       createGradeSystem,
       removeGradeSystem,
       updateGradeSystem,
       createGradePattern,
       removeGradePattern,
+      saveTaxonomy,
       updateGradePattern,
+      updateHierarchy,
     },
   }),
 });

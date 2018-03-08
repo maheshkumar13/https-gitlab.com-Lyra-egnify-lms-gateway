@@ -13,9 +13,9 @@ import {
   GraphQLBoolean as BooleanType,
 } from 'graphql';
 
-import GraphQLJSON from 'graphql-type-json';
+// import GraphQLJSON from 'graphql-type-json';
 
-const HierarchyType = new ObjectType({
+export const HierarchyType = new ObjectType({
   name: 'HierarchyType',
   fields: {
     parent: { type: StringType },
@@ -26,12 +26,25 @@ const HierarchyType = new ObjectType({
   },
 });
 
-const InstituteType = new ObjectType({
+const MonthType = new ObjectType({
+  name: 'MonthType',
+  fields: {
+    month: { type: IntType },
+  },
+});
+
+const AcademicScheduleType = new ObjectType({
+  name: 'AcademicSchedule',
+  fields: {
+    start: { type: MonthType },
+    end: { type: MonthType },
+  },
+});
+
+export const InstituteType = new ObjectType({
   name: 'InstituteType',
   fields: {
     hierarchy: { type: new List(HierarchyType) },
-    orientationType: { type: new List(StringType) },
-
     email: { type: StringType },
     phone: { type: IntType },
     instituteName: { type: StringType },
@@ -39,18 +52,14 @@ const InstituteType = new ObjectType({
     ownerName: { type: StringType },
     // __subdomain: { type: StringType },
     url: { type: StringType },
-    acadYearDetails: { type: GraphQLJSON },
     registrationStatus: { type: BooleanType },
-    gstDocFileSize: { type: IntType },
-    gstDocOrginalName: { type: StringType },
     logoUrl: { type: StringType },
-    gstDocUrl: { type: StringType },
     establishmentYear: { type: IntType },
     registrationId: { type: StringType },
     instituteId: { type: StringType },
     proofOfRegistrationUrl: { type: StringType },
-    academicSchedule: { type: StringType },
+    academicSchedule: { type: AcademicScheduleType },
   },
 });
 
-export default InstituteType;
+export default { InstituteType, HierarchyType };

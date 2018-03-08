@@ -10,6 +10,7 @@ import {
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import fetch from 'universal-fetch';
+import { config } from '../../../config/environment';
 
 // import InstituteHierarchyGridType from './instituteHierarchyGrid.type';
 
@@ -20,7 +21,7 @@ const InstituteHierarchyGrid = {
   },
   type: new List(GraphQLJSON),
   async resolve(obj, args) {
-    const url = 'http://localhost:5001/api/instituteHierarchy/get/dataGrid';
+    const url = `${config.services.settings}/api/instituteHierarchy/get/dataGrid`;
 
     let limit = 1000;
     if (args.limit) limit = args.limit; // eslint-disable-line
@@ -39,7 +40,12 @@ const InstituteHierarchyGrid = {
         headers: { 'Content-Type': 'application/json' },
       },
     )
-      .then(response => response.json())
+      .then(async (response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
       .then(json => json)
       .catch((err) => {
         console.error(err);
