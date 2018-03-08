@@ -24,7 +24,7 @@ export function index(req, res) {
   // Was an image uploaded? If so, we'll use its public URL
   // in cloud storage.
   if (req.file && req.file.cloudStoragePublicUrl) {
-    data.imageUrl = req.file.cloudStoragePublicUrl;
+    data.fileUrl = req.file.cloudStoragePublicUrl;
     return res.status(200).send(data);
   }
   if (req.file) {
