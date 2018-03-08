@@ -12,7 +12,7 @@ import {
   GraphQLObjectType as ObjectType,
 } from 'graphql';
 import fetch from 'universal-fetch';
-
+import { config } from '../../../config/environment';
 import StudentType from './student.type';
 
 const sampleStudentType = new ObjectType({
@@ -32,7 +32,7 @@ export const Students = {
   type: new List(StudentType),
   async resolve(obj, args) {
     // console.log(args);
-    const url = 'http://localhost:5001/api/student/students';
+    const url = `${config.services.settings}/api/student/students`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
@@ -50,7 +50,7 @@ export const downloadStudentSample = {
   type: sampleStudentType,
   async resolve(obj, args) { // eslint-disable-line
     // console.log(args);
-    const url = 'http://localhost:5001/api/student/downloadStudentSample';
+    const url = `${config.services.settings}/api/student/downloadStudentSample`;
     return fetch(url, {
       method: 'POST',
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
