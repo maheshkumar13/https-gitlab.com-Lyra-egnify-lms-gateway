@@ -138,11 +138,8 @@ export const removeGradeSystem = {
         if (response.status >= 400) {
           return new Error(response.statusText);
         }
-        return response.json();
+        return response.statusText;
       })
-      .then(json =>
-        // console.log(json);
-        json)
       .catch((err) => {
         console.error(err);
         return err.json();
@@ -157,7 +154,7 @@ export const removeGradePattern = {
   args: {
     id: { type: new NonNull(StringType) },
   },
-  type: BooleanType,
+  type: StringType,
   async resolve(obj, args) {
     const url = `${config.services.settings}/api/grade/delete/pattern/`;
     return fetch(url, {
@@ -169,11 +166,8 @@ export const removeGradePattern = {
         if (response.status >= 400) {
           return new Error(response.statusText);
         }
-        return response.json();
+        return response.statusText;
       })
-      .then(json =>
-        // console.log(json);
-        json)
       .catch((err) => {
         console.error(err);
         return err.json();
