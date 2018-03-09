@@ -25,8 +25,8 @@ export const TaxonomyDataType = new ObjectType({
   }),
 });
 
-export const ConceptTaxonomy = new ObjectType({
-  name: 'ConceptTaxonomy',
+export const ConceptTaxonomyType = new ObjectType({
+  name: 'ConceptTaxonomyType',
   fields: () => ({
     level: { type: StringType },
     nextLevel: { type: StringType },
@@ -37,7 +37,7 @@ export const ConceptTaxonomy = new ObjectType({
     childCode: { type: StringType },
     taxonomyTag: { type: StringType },
     next: {
-      type: new List(ConceptTaxonomy),
+      type: new List(ConceptTaxonomyType),
       async resolve(obj) {
         const filters = {};
         const url = 'http://localhost:5001/api/conceptTaxonomy/filter/nodes';
@@ -69,4 +69,4 @@ export const SubjectTaxonomyInputType = new InputType({
   },
 });
 
-export default { TaxonomyDataType, ConceptTaxonomy, SubjectTaxonomyInputType };
+export default { TaxonomyDataType, ConceptTaxonomyType, SubjectTaxonomyInputType };

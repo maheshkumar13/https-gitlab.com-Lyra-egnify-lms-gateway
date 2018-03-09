@@ -1,8 +1,9 @@
 import {
-  // GraphQLList as List
+  GraphQLList as List,
   GraphQLString as StringType,
   GraphQLInt as IntType,
   GraphQLInputObjectType as InputType,
+  GraphQLObjectType as ObjectType,
   GraphQLNonNull as NonNull,
 } from 'graphql';
 import fetch from 'universal-fetch';
@@ -23,7 +24,6 @@ export const SubjectTaxonomyInputType = new InputType({
 const GenerateTaxonomyInputType = new InputType({
   name: 'GenerateTaxonomyInputType',
   fields: {
-    url: { type: new NonNull(StringType) },
     subjectDetails: { type: SubjectTaxonomyInputType },
     level: { type: new NonNull(IntType) },
     child: { type: new NonNull(StringType) },
@@ -38,7 +38,6 @@ const ConceptTaxonomyInputType = new InputType({
     child: { type: new NonNull(StringType) },
   },
 });
-
 
 export const GenerateConceptTaxonomy = {
   args: {
@@ -78,20 +77,52 @@ export const GenerateConceptTaxonomy = {
       });
   },
 };
+
+export const ConceptTaxonomyType = new ObjectType({
+  name: 'ConceptTaxonomyType',
+  fields: () => ({
+    level: { type: StringType },
+    nextLevel: { type: StringType },
+    code: { type: StringType },
+    parent: { type: StringType },
+    parentCode: { type: StringType },
+    child: { type: StringType },
+    childCode: { type: StringType },
+    taxonomyTag: { type: StringType },
+    next: {
+      type: new List(ConceptTaxonomyType),
+      async resolve(obj) {
+        console.error(obj);
+        const filters = {};
+        const url = `${config.services.settings}/api/conceptTaxonomy/get/taxonomy`;
+        filters.parentCode = obj.childCode;
+        filters.taxonomyTag = obj.taxonomyTag;
+        return fetch(url, {
+          method: 'POST',
+          body: JSON.stringify({ filters: JSON.stringify(filters) }),
+          headers: { 'Content-Type': 'application/json' },
+        })
+          .then(response => response.json())
+          .then(json => json);
+      },
+    },
+  }),
+});
+
+
 export const conceptTaxonomy = {
   args: {
     input: { type: ConceptTaxonomyInputType },
   },
-  type: GraphQLJSON,
+  type: new List(ConceptTaxonomyType),
   async resolve(obj, args) {
     const body = args.input;
-    console.error(body);
 
     if (body.subjectDetails) {
-      body.subjectDetails = JSON.stringify(body.subjectDetails);
+      body.subjectCode = body.subjectDetails.code;
     }
 
-    const url = `${config.services.settings}/api/conceptTaxonomy/get/conceptTaxonomyfromCSV`;
+    const url = `${config.services.settings}/api/conceptTaxonomy/get/taxonomy`;
     return fetch(
       url,
       {
@@ -106,14 +137,7 @@ export const conceptTaxonomy = {
         }
         return response.json();
       })
-      .then(json => json)
-      .catch((err) => {
-        console.error(err);
-        return err.json();
-      })
-      .catch((errjson) => {//eslint-disable-line
-        // console.log(errjson);
-      });
+      .then(json => json);
   },
 };
 

@@ -24,7 +24,7 @@ import { CreateInstituteHierarchyNode, UpdateInstituteHierarchyNode } from './se
 import Institute from './settings/institute/institute.query';
 import { createInstitute, updateInstitute, updateHierarchy } from './settings/institute/institute.mutation';
 import { saveTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.mutation';
-import { GenerateConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.query';
+import { GenerateConceptTaxonomy, conceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.query';
 import { createGradeSystem, createGradePattern, removeGradePattern, removeGradeSystem, updateGradeSystem, updateGradePattern } from './settings/grade/grade.mutation';
 
 const schema = new Schema({
@@ -45,6 +45,7 @@ new ObjectType({
       InstituteHierarchySample,
       SubjectList,
       SubjectTaxonomy,
+      conceptTaxonomy,
     },
   }),
   mutation: new ObjectType({
