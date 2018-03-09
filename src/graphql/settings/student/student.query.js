@@ -6,7 +6,7 @@
 
 import {
   GraphQLList as List,
-  // GraphQLNonNull as NonNull,
+  GraphQLNonNull as NonNull,
   GraphQLInt as IntType,
   GraphQLString as StringType,
   GraphQLObjectType as ObjectType,
@@ -63,7 +63,33 @@ export const downloadStudentSample = {
   },
 };
 
+export const studentSearch = {
+  args: {
+    regex: { type: new NonNull(StringType) },
+    limit: { type: IntType },
+  },
+  type: new List(StudentType),
+  async resolve(obj, args) { // eslint-disable-line
+    args.regex = args.regex.replace(/\s\s+/g, ' '); //eslint-disable-line
+    if (args.regex === '' || args.regex === ' ') {
+      return null;
+    }
+    const url = `${config.services.settings}/api/student/search`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then(response => response.json())
+      .then(json => json)
+      .catch((err) => {
+        console.error(err);
+      });
+  },
+};
+
 export default{
   downloadStudentSample,
   Students,
+  studentSearch,
 };
