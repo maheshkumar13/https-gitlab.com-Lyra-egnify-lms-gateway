@@ -65,6 +65,7 @@ export const createInstitute = {
     if (body.academicSchedule) {
       body.academicSchedule = JSON.stringify(body.academicSchedule);
     }
+    console.error(body);
 
     return fetch(
       url,
