@@ -10,6 +10,7 @@ import {
   GraphQLInt as IntType,
   GraphQLString as StringType,
   GraphQLObjectType as ObjectType,
+  GraphQLBoolean as BooleanType,
 } from 'graphql';
 import fetch from 'universal-fetch';
 import { config } from '../../../config/environment';
@@ -22,16 +23,59 @@ const sampleStudentType = new ObjectType({
   },
 });
 
+const pageInfoType = new ObjectType({
+  name: 'StudentpageInfo',
+  fields() {
+    return {
+      pageNumber: {
+        type: IntType,
+      },
+      nextPage: {
+        type: BooleanType,
+      },
+      prevPage: {
+        type: BooleanType,
+      },
+      totalPages: {
+        type: IntType,
+      },
+      totalStudents: {
+        type: IntType,
+      },
+    };
+  },
+});
+
+const studentDetailsType = new ObjectType({
+  name: 'StudentDetailsType',
+  fields() {
+    return {
+      students: {
+        type: new List(StudentType),
+      },
+      pageInfo: {
+        type: pageInfoType,
+      },
+    };
+  },
+});
 
 export const Students = {
   args: {
     egnifyId: { type: StringType },
-    sortyby: { type: StringType },
+    sortby: { type: StringType },
     order: { type: IntType },
+    pageNumber: { type: IntType },
+    limit: { type: IntType },
   },
-  type: new List(StudentType),
+  type: studentDetailsType,
   async resolve(obj, args) {
     // console.log(args);
+    if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
+    if (!args.limit) args.limit = 100; // eslint-disable-line
+    if (args.pageNumber < 1) {
+      return new Error('Page Number must be positive');
+    }
     const url = `${config.services.settings}/api/student/students`;
     return fetch(url, {
       method: 'POST',
@@ -39,7 +83,32 @@ export const Students = {
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     })
       .then(response => response.json())
-      .then(json => json)
+      .then((json) => {
+        const data = {};
+        data.students = json.students;
+        // console.log('cc', json.count);
+        const pageInfo = {};
+        pageInfo.prevPage = true;
+        pageInfo.nextPage = true;
+        pageInfo.pageNumber = args.pageNumber;
+        pageInfo.totalPages = Math.ceil(json.count / args.limit)
+          ? Math.ceil(json.count / args.limit)
+          : 1;
+        pageInfo.totalStudents = json.count;
+
+        if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+          return new Error('Page Number is invalid');
+        }
+
+        if (args.pageNumber === pageInfo.totalPages) {
+          pageInfo.nextPage = false;
+        }
+        if (args.pageNumber === 1) {
+          pageInfo.prevPage = false;
+        }
+        data.pageInfo = pageInfo;
+        return data;
+      })
       .catch((err) => {
         console.error(err);
       });

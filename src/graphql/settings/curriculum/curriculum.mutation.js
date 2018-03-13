@@ -6,17 +6,18 @@
 
 import {
   GraphQLList as List,
-  // GraphQLString as StringType,
+  GraphQLString as StringType,
+  // GraphQLBoolean as BooleanType,
   // GraphQLNonNull as NonNull,
 } from 'graphql';
-import GraphQLJSON from 'graphql-type-json';
+// import GraphQLJSON from 'graphql-type-json';
 import fetch from 'universal-fetch';
 import { config } from '../../../config/environment';
 import { SubjectTaxonomyType } from '../subject/subjectTaxonomy.type';
 
 export const createCurriculum = {
   args: {
-    curriculumList: { type: GraphQLJSON },
+    curriculumList: { type: new List(StringType) },
   },
   type: new List(SubjectTaxonomyType),
   async resolve(obj, args) {
