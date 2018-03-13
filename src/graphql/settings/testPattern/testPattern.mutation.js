@@ -54,6 +54,7 @@ export const updateTestPattern = {
     code: { type: new NonNull(StringType) },
     name: { type: StringType },
     patternCode: { type: StringType },
+    description: { type: StringType },
   },
   type: TestPatternType,
   async resolve(obj, args) {

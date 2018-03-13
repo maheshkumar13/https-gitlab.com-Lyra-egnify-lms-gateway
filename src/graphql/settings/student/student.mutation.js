@@ -16,11 +16,18 @@ import fetch from 'universal-fetch';
 import { config } from '../../../config/environment';
 import StudentType from './student.type';
 
+const GraphQLDate = require('graphql-date');
+
 export const createStudent = {
   args: {
     studentName: { type: new NonNull(StringType) },
     studentId: { type: new NonNull(StringType) },
     hierarchy: { type: GraphQLJSON },
+    fatherName: { type: StringType },
+    phone: { type: StringType },
+    email: { type: StringType },
+    gender: { type: StringType },
+    dob: { type: GraphQLDate },
   },
   type: StudentType,
   async resolve(obj, args) {

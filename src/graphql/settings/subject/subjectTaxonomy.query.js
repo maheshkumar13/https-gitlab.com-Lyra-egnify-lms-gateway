@@ -8,6 +8,7 @@ import {
   GraphQLList as List,
   GraphQLNonNull as NonNull,
   GraphQLString as StringType,
+
 } from 'graphql';
 import fetch from 'universal-fetch';
 import { config } from '../../../config/environment';
@@ -21,7 +22,12 @@ export const SubjectList = {
   async resolve(obj, args) {
     const url = `${config.services.settings}/api/subjectTaxonomy/curriculum/`.concat(args.code);
     return fetch(url, { method: 'GET' })
-      .then(response => response.json())
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
       .then(json =>
         // console.log('json is',json)
         json.subjectList)
@@ -39,7 +45,12 @@ export const SubjectTaxonomy = {
   async resolve(obj, args) {
     const url = `${config.services.settings}/api/subjectTaxonomy/read/`.concat(args.code);
     return fetch(url, { method: 'GET' })
-      .then(response => response.json())
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
       .then(json => json)
       .catch((err) => {
         console.error(err);
