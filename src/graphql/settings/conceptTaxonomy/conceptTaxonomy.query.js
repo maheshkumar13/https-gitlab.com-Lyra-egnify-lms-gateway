@@ -14,10 +14,8 @@ export const SubjectTaxonomyInputType = new InputType({
   name: 'SubjectTaxonomyInputType',
   fields: {
     code: { type: new NonNull(StringType) },
-    parent: { type: new NonNull(StringType) },
     child: { type: new NonNull(StringType) },
     subCode: { type: new NonNull(StringType) },
-    parentCode: { type: new NonNull(StringType) },
   },
 });
 
@@ -27,6 +25,7 @@ const GenerateTaxonomyInputType = new InputType({
     subjectDetails: { type: SubjectTaxonomyInputType },
     level: { type: new NonNull(IntType) },
     child: { type: new NonNull(StringType) },
+    url: { type: new NonNull(StringType) },
   },
 });
 
@@ -92,18 +91,19 @@ export const ConceptTaxonomyType = new ObjectType({
     next: {
       type: new List(ConceptTaxonomyType),
       async resolve(obj) {
-        console.error(obj);
-        const filters = {};
         const url = `${config.services.settings}/api/conceptTaxonomy/get/taxonomy`;
-        filters.parentCode = obj.childCode;
-        filters.taxonomyTag = obj.taxonomyTag;
         return fetch(url, {
           method: 'POST',
-          body: JSON.stringify({ filters: JSON.stringify(filters) }),
+          body: JSON.stringify({
+            taxonomyTag: obj.taxonomyTag,
+          }),
           headers: { 'Content-Type': 'application/json' },
         })
           .then(response => response.json())
-          .then(json => json);
+          .then((json) => {
+            console.error(json);
+            return json;
+          });
       },
     },
   }),
