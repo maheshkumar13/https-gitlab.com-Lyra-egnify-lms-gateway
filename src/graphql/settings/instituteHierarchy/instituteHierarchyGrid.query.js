@@ -96,7 +96,7 @@ const InstituteHierarchyGrid = {
           pageInfo.totalPages = Math.ceil(json.count / args.limit)
             ? Math.ceil(json.count / args.limit)
             : 1;
-          pageInfo.totalQuestions = json.count;
+          pageInfo.totalEntries = json.count;
           resp.data = json.data;
 
           if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {

@@ -109,6 +109,7 @@ const InstituteHierarchyPatchType = new InputType({
   name: 'InstituteHierarchyPatchType',
   fields: {
     child: { type: new NonNull(StringType) },
+    description: { type: StringType },
   },
 });
 
@@ -124,6 +125,7 @@ export const UpdateInstituteHierarchyNode = {
     const body = {
       childCode: args.id,
       child: args.patch.child,
+      description: args.patch.description,
     };
 
     return fetch(
