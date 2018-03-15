@@ -6,7 +6,7 @@
 
 import {
   GraphQLList as List,
-  GraphQLNonNull as NonNull,
+  // GraphQLNonNull as NonNull,
   GraphQLInt as IntType,
   GraphQLString as StringType,
   GraphQLObjectType as ObjectType,
@@ -58,16 +58,16 @@ const StatusEnumType = new GraphQLEnumType({
   name: 'StatusEnumType',
   values: {
     draft: {
-      value: "draft",
+      value: 'draft',
     },
     upcoming: {
-      value: "upcoming",
+      value: 'upcoming',
     },
     inprogress: {
-      value: "inprogress",
+      value: 'inprogress',
     },
-    completed:{
-      value: "completed"
+    completed: {
+      value: 'completed',
     },
   },
 });
@@ -83,10 +83,10 @@ export const Tests = {
   type: TestsDetailsType,
   async resolve(obj, args) {
     // console.log(args);
-    if(args.regex !== undefined)
-      args.regex = args.regex.replace(/\s\s+/g, ' '); //eslint-disable-line
-      if (args.regex === '' || args.regex === ' ') {
-        return null;
+    if (args.regex !== undefined)
+      {args.regex = args.regex.replace(/\s\s+/g, ' ');} //eslint-disable-line
+    if (args.regex === '' || args.regex === ' ') {
+      return null;
     }
     if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
     if (args.pageNumber < 1) {
