@@ -22,7 +22,7 @@ import { createStudent, createManyStudents } from './settings/student/student.mu
 import { createTestPattern, updateTestPattern, removeTestPattern } from './settings/testPattern/testPattern.mutation';
 import { InstituteHierarchy, InstituteHierarchySample } from './settings/instituteHierarchy/instituteHierarchy.query';
 import InstituteHierarchyGrid from './settings/instituteHierarchy/instituteHierarchyGrid.query';
-import { CreateInstituteHierarchyNode, UpdateInstituteHierarchyNode } from './settings/instituteHierarchy/instituteHierarchy.muatation';
+import { CreateInstituteHierarchyNode, UpdateInstituteHierarchyNode, createInstituteHierarchyNodesFromCSV } from './settings/instituteHierarchy/instituteHierarchy.muatation';
 import Institute from './settings/institute/institute.query';
 import { createInstitute, updateInstitute, updateHierarchy } from './settings/institute/institute.mutation';
 import { saveTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.mutation';
@@ -77,6 +77,7 @@ new ObjectType({
       updateGradePattern,
       updateHierarchy,
       removeTest,
+      createInstituteHierarchyNodesFromCSV,
     },
   }),
 });
