@@ -9,7 +9,7 @@ import {
   GraphQLNonNull as NonNull,
   // GraphQLInt as IntType,
   GraphQLString as StringType,
-  GraphQLObjectType as ObjectType,
+  // GraphQLObjectType as ObjectType,
   // GraphQLBoolean as BooleanType,
   // GraphQLEnumType,
 } from 'graphql';
@@ -31,15 +31,15 @@ export const removeTest = {
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     })
-    .then((response) => {
-      if (response.status >= 400) {
-        return new Error(response.statusText);
-      }
-      return response.json();
-    })
-    .then(json => json)
-  }
-}
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then(json => json);
+  },
+};
 
 export default{
   removeTest,
