@@ -5,8 +5,11 @@
 */
 
 import {
-  GraphQLList as List,
+  // GraphQLList as List,
   GraphQLInt as IntType,
+  GraphQLBoolean as BooleanType,
+  GraphQLObjectType as ObjectType,
+  GraphQLNonNull as NonNull,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import fetch from 'universal-fetch';
@@ -14,12 +17,50 @@ import { config } from '../../../config/environment';
 
 // import InstituteHierarchyGridType from './instituteHierarchyGrid.type';
 
+const pageInfoType = new ObjectType({
+  name: 'InstituteHierarchypageInfoType',
+  fields() {
+    return {
+      pageNumber: {
+        type: IntType,
+      },
+      nextPage: {
+        type: BooleanType,
+      },
+      prevPage: {
+        type: BooleanType,
+      },
+      totalPages: {
+        type: IntType,
+      },
+      totalEntries: {
+        type: IntType,
+      },
+    };
+  },
+});
+
+const InstituteHierarchyGridType = new ObjectType({
+  name: 'InstituteHierarchyGridType',
+  fields() {
+    return {
+      data: {
+        type: GraphQLJSON,
+      },
+      pageInfo: {
+        type: pageInfoType,
+      },
+    };
+  },
+});
+
+
 const InstituteHierarchyGrid = {
   args: {
-    pageNo: { type: IntType },
-    limit: { type: IntType },
+    pageNumber: { type: NonNull(IntType) },
+    limit: { type: NonNull(IntType) },
   },
-  type: new List(GraphQLJSON),
+  type: InstituteHierarchyGridType,
   async resolve(obj, args) {
     const url = `${config.services.settings}/api/instituteHierarchy/get/dataGrid`;
 
@@ -27,10 +68,9 @@ const InstituteHierarchyGrid = {
     if (args.limit) limit = args.limit; // eslint-disable-line
 
     const pagination = {
-      pageNo: args.pageNo,
+      pageNumber: args.pageNumber,
       limit,
     };
-    console.error(pagination);
 
     return fetch(
       url,
@@ -46,7 +86,35 @@ const InstituteHierarchyGrid = {
         }
         return response.json();
       })
-      .then(json => json)
+      .then((json) => {
+        if (json.data) {
+          const pageInfo = {};
+          const resp = {};
+          pageInfo.prevPage = true;
+          pageInfo.nextPage = true;
+          pageInfo.pageNumber = args.pageNumber;
+          pageInfo.totalPages = Math.ceil(json.count / args.limit)
+            ? Math.ceil(json.count / args.limit)
+            : 1;
+          pageInfo.totalEntries = json.count;
+          resp.data = json.data;
+
+          if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+            throw new Error('Page Number is invalid');
+          }
+
+          if (args.pageNumber === pageInfo.totalPages) {
+            pageInfo.nextPage = false;
+          }
+          if (args.pageNumber === 1) {
+            pageInfo.prevPage = false;
+          }
+
+          resp.pageInfo = pageInfo;
+          return resp;
+        }
+        return json;
+      })
       .catch((err) => {
         console.error(err);
       });

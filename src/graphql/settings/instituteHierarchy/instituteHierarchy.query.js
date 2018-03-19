@@ -1,6 +1,8 @@
 /**
-   @author Rahul Islam
-   @date    XX/XX/XXXX
+   @description GraphQl queries for Institute Hierarchy.
+
+   @author Bharath Vemula
+   @date   14/03/2018
    @version 1.0.0
 */
 

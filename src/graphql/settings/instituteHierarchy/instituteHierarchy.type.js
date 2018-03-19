@@ -31,6 +31,7 @@ const InstituteHierarchyType = new ObjectType({
     levelName: { type: IntType },
     isLeafNode: { type: BooleanType },
     anscetors: { type: new List(anscetors) },
+    description: { type: StringType },
     next: {
       type: new List(InstituteHierarchyType),
       async resolve(obj) {

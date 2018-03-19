@@ -11,6 +11,8 @@ import {
 
 import GradeSystem from './settings/grade/grade.query';
 import TestPattern from './settings/testPattern/testPattern.query';
+import { Tests, QuestionTypes } from './test-management/test/test.query';
+import { removeTest, createDummyTest, createDuplicateTest } from './test-management/test/test.mutation';
 import { Curriculum } from './settings/curriculum/curriculum.query';
 import { SubjectList, SubjectTaxonomy } from './settings/subject/subjectTaxonomy.query';
 import { removeSubjectTaxonomy, updateSubjectTaxonomy, createSubjects } from './settings/subject/subjectTaxonomy.mutation';
@@ -20,7 +22,7 @@ import { createStudent, createManyStudents } from './settings/student/student.mu
 import { createTestPattern, updateTestPattern, removeTestPattern } from './settings/testPattern/testPattern.mutation';
 import { InstituteHierarchy, InstituteHierarchySample } from './settings/instituteHierarchy/instituteHierarchy.query';
 import InstituteHierarchyGrid from './settings/instituteHierarchy/instituteHierarchyGrid.query';
-import { CreateInstituteHierarchyNode, UpdateInstituteHierarchyNode } from './settings/instituteHierarchy/instituteHierarchy.muatation';
+import { CreateInstituteHierarchyNode, UpdateInstituteHierarchyNode, createInstituteHierarchyNodesFromCSV } from './settings/instituteHierarchy/instituteHierarchy.muatation';
 import Institute from './settings/institute/institute.query';
 import { createInstitute, updateInstitute, updateHierarchy } from './settings/institute/institute.mutation';
 import { saveTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.mutation';
@@ -48,6 +50,8 @@ new ObjectType({
       SubjectTaxonomy,
       conceptTaxonomy,
       ConceptTaxonomyTree,
+      Tests,
+      QuestionTypes,
     },
   }),
   mutation: new ObjectType({
@@ -74,6 +78,10 @@ new ObjectType({
       saveTaxonomy,
       updateGradePattern,
       updateHierarchy,
+      removeTest,
+      createDummyTest,
+      createDuplicateTest,
+      createInstituteHierarchyNodesFromCSV,
     },
   }),
 });

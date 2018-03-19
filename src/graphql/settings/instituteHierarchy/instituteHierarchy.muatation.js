@@ -1,6 +1,8 @@
 /**
-   @author Rahul Islam
-   @date    XX/XX/XXXX
+   @description GraphQl mutations for Institute Hierarchy.
+
+   @author Bharath Vemula
+   @date   14/03/2018
    @version 1.0.0
 */
 
@@ -23,6 +25,14 @@ const CreateInstituteHierarchyNodeInputType = new InputType({
     child: { type: new NonNull(StringType) },
     level: { type: new NonNull(IntType) },
     description: { type: StringType },
+  },
+});
+
+const IHBulkUploadInputType = new InputType({
+  name: 'IHBulkUploadInputType',
+  fields: {
+    level: { type: new NonNull(IntType) },
+    fileUrl: { type: new NonNull(StringType) },
   },
 });
 
@@ -66,10 +76,40 @@ export const CreateInstituteHierarchyNode = {
   },
 };
 
+export const createInstituteHierarchyNodesFromCSV = {
+  args: {
+    input: { type: IHBulkUploadInputType },
+  },
+  type: new List(InstituteHierarchyType),
+  async resolve(obj, args) {
+    const url = `${config.services.settings}/api/instituteHierarchy/create/nodesFromCSV`;
+
+    const body = args.input;
+
+    return fetch(
+      url,
+      {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
+      .then(async (response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then(json => json);
+  },
+};
+
+
 const InstituteHierarchyPatchType = new InputType({
   name: 'InstituteHierarchyPatchType',
   fields: {
     child: { type: new NonNull(StringType) },
+    description: { type: StringType },
   },
 });
 
@@ -85,6 +125,7 @@ export const UpdateInstituteHierarchyNode = {
     const body = {
       childCode: args.id,
       child: args.patch.child,
+      description: args.patch.description,
     };
 
     return fetch(
