@@ -6,7 +6,7 @@
 
 import {
   GraphQLList as List,
-  GraphQLNonNull as NonNull,
+  // GraphQLNonNull as NonNull,
   GraphQLInt as IntType,
   GraphQLString as StringType,
   GraphQLObjectType as ObjectType,
@@ -39,7 +39,7 @@ const pageInfoType = new ObjectType({
       totalPages: {
         type: IntType,
       },
-      totalStudents: {
+      totalEntries: {
         type: IntType,
       },
     };
@@ -50,7 +50,7 @@ const studentDetailsType = new ObjectType({
   name: 'StudentDetailsType',
   fields() {
     return {
-      students: {
+      page: {
         type: new List(StudentType),
       },
       pageInfo: {
@@ -67,14 +67,21 @@ export const Students = {
     order: { type: IntType },
     pageNumber: { type: IntType },
     limit: { type: IntType },
+    regex: { type: StringType },
   },
   type: studentDetailsType,
   async resolve(obj, args) {
     // console.log(args);
     if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
-    if (!args.limit) args.limit = 100; // eslint-disable-line
+    // if (!args.limit) args.limit = 100; // eslint-disable-line
     if (args.pageNumber < 1) {
       return new Error('Page Number must be positive');
+    }
+    if (args.regex !== undefined) {
+      args.regex = args.regex.replace(/\s\s+/g, ' ').trim(); //eslint-disable-line
+      if (args.regex === '') {
+        args.regex = undefined; //eslint-disable-line
+      }
     }
     const url = `${config.services.settings}/api/student/students`;
     return fetch(url, {
@@ -85,7 +92,7 @@ export const Students = {
       .then(response => response.json())
       .then((json) => {
         const data = {};
-        data.students = json.students;
+        data.page = json.students;
         // console.log('cc', json.count);
         const pageInfo = {};
         pageInfo.prevPage = true;
@@ -94,7 +101,7 @@ export const Students = {
         pageInfo.totalPages = Math.ceil(json.count / args.limit)
           ? Math.ceil(json.count / args.limit)
           : 1;
-        pageInfo.totalStudents = json.count;
+        pageInfo.totalEntries = json.count;
 
         if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
           return new Error('Page Number is invalid');
@@ -132,33 +139,8 @@ export const downloadStudentSample = {
   },
 };
 
-export const studentSearch = {
-  args: {
-    regex: { type: new NonNull(StringType) },
-    limit: { type: IntType },
-  },
-  type: new List(StudentType),
-  async resolve(obj, args) { // eslint-disable-line
-    args.regex = args.regex.replace(/\s\s+/g, ' '); //eslint-disable-line
-    if (args.regex === '' || args.regex === ' ') {
-      return null;
-    }
-    const url = `${config.services.settings}/api/student/search`;
-    return fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(args),
-      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
-      .then(response => response.json())
-      .then(json => json)
-      .catch((err) => {
-        console.error(err);
-      });
-  },
-};
 
 export default{
   downloadStudentSample,
   Students,
-  studentSearch,
 };
