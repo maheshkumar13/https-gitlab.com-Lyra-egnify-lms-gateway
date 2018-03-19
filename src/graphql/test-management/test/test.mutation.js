@@ -43,13 +43,13 @@ export const removeTest = {
 };
 
 
-export const createTest = {
+export const createDummyTest = {
   args: {
     input: { type: GraphQLJSON },
   },
   type: TestType,
   async resolve(obj, args) {
-    const url = `${config.services.test}/api/v1/test/create`;
+    const url = `${config.services.test}/api/v1/test/create/dummy`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args.input),
@@ -88,6 +88,6 @@ export const createDuplicateTest = {
 };
 export default{
   removeTest,
-  createTest,
+  createDummyTest,
   createDuplicateTest,
 };
