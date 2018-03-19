@@ -14,6 +14,7 @@ import {
   // GraphQLEnumType,
 } from 'graphql';
 
+import GraphQLJSON from 'graphql-type-json';
 import fetch from 'universal-fetch';
 import { config } from '../../../config/environment';
 import TestType from './test.type';
@@ -41,6 +42,52 @@ export const removeTest = {
   },
 };
 
+
+export const createTest = {
+  args: {
+    input: { type: GraphQLJSON },
+  },
+  type: TestType,
+  async resolve(obj, args) {
+    const url = `${config.services.test}/api/v1/test/create`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args.input),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then(json => json);
+  },
+};
+
+export const createDuplicateTest = {
+  args: {
+    testId: { type: new NonNull(StringType) },
+  },
+  type: TestType,
+  async resolve(obj, args) {
+    const url = `${config.services.test}/api/v1/test/create/duplicate`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then(json => json);
+  },
+};
 export default{
   removeTest,
+  createTest,
+  createDuplicateTest,
 };
