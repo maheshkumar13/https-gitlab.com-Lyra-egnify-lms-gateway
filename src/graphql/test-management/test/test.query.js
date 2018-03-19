@@ -132,6 +132,20 @@ export const Tests = {
   },
 };
 
+export const QuestionTypes = {
+  type: new List(StringType),
+  async resolve(obj, args) {
+    const url = `${config.services.test}/api/v1/test/questionTypes`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then(response => response.json());
+  },
+};
+
 export default{
   Tests,
+  QuestionTypes,
 };

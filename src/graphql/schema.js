@@ -11,7 +11,7 @@ import {
 
 import GradeSystem from './settings/grade/grade.query';
 import TestPattern from './settings/testPattern/testPattern.query';
-import { Tests } from './test-management/test/test.query';
+import { Tests, QuestionTypes } from './test-management/test/test.query';
 import { removeTest, createTest, createDuplicateTest } from './test-management/test/test.mutation';
 import { Curriculum } from './settings/curriculum/curriculum.query';
 import { SubjectList, SubjectTaxonomy } from './settings/subject/subjectTaxonomy.query';
@@ -50,6 +50,7 @@ new ObjectType({
       SubjectTaxonomy,
       conceptTaxonomy,
       Tests,
+      QuestionTypes,
     },
   }),
   mutation: new ObjectType({
