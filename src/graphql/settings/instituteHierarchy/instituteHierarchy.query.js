@@ -22,6 +22,7 @@ const InstituteHierarchyFilterType = new InputType({
     parentCode: { type: StringType },
     childCode: { type: StringType },
     level: { type: IntType },
+    ancestorCode: { type: StringType },
   },
 });
 
@@ -86,6 +87,11 @@ export const InstituteHierarchy = {
 
     if (args.childCode) {
       filters.childCode = args.childCode;
+      filterStatus = true;
+    }
+
+    if (args.ancestorCode) {
+      filters.ancestorCode = args.ancestorCode;
       filterStatus = true;
     }
 

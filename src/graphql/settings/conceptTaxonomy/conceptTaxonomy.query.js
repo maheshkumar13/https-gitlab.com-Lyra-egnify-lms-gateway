@@ -109,7 +109,6 @@ export const ConceptTaxonomyType = new ObjectType({
   }),
 });
 
-
 export const conceptTaxonomy = {
   args: {
     input: { type: ConceptTaxonomyInputType },
@@ -141,4 +140,36 @@ export const conceptTaxonomy = {
   },
 };
 
-export default { GenerateConceptTaxonomy };
+export const ConceptTaxonomyTree = {
+  args: {
+    input: { type: ConceptTaxonomyInputType },
+  },
+  type: GraphQLJSON,
+  async resolve(obj, args) {
+    const body = args.input;
+
+    if (body.subjectDetails) {
+      body.subjectCode = body.subjectDetails.code;
+    }
+
+    const url = `${config.services.settings}/api/conceptTaxonomy/get/taxonomyTree`;
+    return fetch(
+      url,
+      {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
+      .then(async (response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then(json => json);
+  },
+
+};
+
+export default { GenerateConceptTaxonomy, ConceptTaxonomyTree };
