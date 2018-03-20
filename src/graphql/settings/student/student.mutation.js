@@ -9,7 +9,7 @@ import {
   GraphQLNonNull as NonNull,
   // GraphQLInt as IntType,
   GraphQLString as StringType,
-
+  GraphQLEnumType,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import fetch from 'universal-fetch';
@@ -17,6 +17,18 @@ import { config } from '../../../config/environment';
 import StudentType from './student.type';
 
 const GraphQLDate = require('graphql-date');
+
+const GenderEnumType = new GraphQLEnumType({
+  name: 'GenderEnumType',
+  values: {
+    Male: {
+      value: 'M',
+    },
+    Female: {
+      value: 'F',
+    },
+  },
+});
 
 export const createStudent = {
   args: {
@@ -26,7 +38,7 @@ export const createStudent = {
     fatherName: { type: StringType },
     phone: { type: StringType },
     email: { type: StringType },
-    gender: { type: StringType },
+    gender: { type: GenderEnumType },
     dob: { type: GraphQLDate },
   },
   type: StudentType,
