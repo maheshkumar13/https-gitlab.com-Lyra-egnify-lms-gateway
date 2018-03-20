@@ -21,7 +21,7 @@ import { Students, downloadStudentSample } from './settings/student/student.quer
 import { createStudent, createManyStudents } from './settings/student/student.mutation';
 import { createTestPattern, updateTestPattern, removeTestPattern } from './settings/testPattern/testPattern.mutation';
 import { InstituteHierarchy, InstituteHierarchySample } from './settings/instituteHierarchy/instituteHierarchy.query';
-import InstituteHierarchyGrid from './settings/instituteHierarchy/instituteHierarchyGrid.query';
+import { InstituteHierarchyGrid, LevelFilters } from './settings/instituteHierarchy/instituteHierarchyGrid.query';
 import { CreateInstituteHierarchyNode, UpdateInstituteHierarchyNode, createInstituteHierarchyNodesFromCSV } from './settings/instituteHierarchy/instituteHierarchy.muatation';
 import Institute from './settings/institute/institute.query';
 import { createInstitute, updateInstitute, updateHierarchy } from './settings/institute/institute.mutation';
@@ -51,6 +51,7 @@ new ObjectType({
       ConceptTaxonomyTree,
       Tests,
       QuestionTypes,
+      LevelFilters,
     },
   }),
   mutation: new ObjectType({

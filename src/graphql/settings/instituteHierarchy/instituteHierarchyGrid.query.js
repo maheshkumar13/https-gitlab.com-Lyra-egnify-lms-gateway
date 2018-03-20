@@ -1,14 +1,16 @@
 /**
    @author  Bharath Vemula
-   @date    XX/XX/XXXX
+   @date
    @version 1.0.0
 */
 
 import {
-  // GraphQLList as List,
+  GraphQLList as List,
   GraphQLInt as IntType,
+  GraphQLInputObjectType as InputType,
   GraphQLBoolean as BooleanType,
   GraphQLObjectType as ObjectType,
+  GraphQLString as StringType,
   GraphQLNonNull as NonNull,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
@@ -54,11 +56,64 @@ const InstituteHierarchyGridType = new ObjectType({
   },
 });
 
+const FilterInputType = new InputType({
+  name: 'FilterInputType',
+  fields: {
+    level: { type: IntType },
+    data: { type: new List(StringType) },
+  },
+});
 
-const InstituteHierarchyGrid = {
+const TableFiltersInputType = new InputType({
+  name: 'TableFiltersInputType',
+  fields: {
+    tableFilters: { type: new List(FilterInputType) },
+  },
+});
+
+const InstituteHierarchyGridInputType = new InputType({
+  name: 'InstituteHierarchyGridInputType',
+  fields: {
+    filters: { type: TableFiltersInputType },
+  },
+});
+
+const LevelFiltersInputType = new InputType({
+  name: 'LevelFiltersInputType',
+  fields: {
+    level: { type: new NonNull(IntType) },
+  },
+});
+
+// Endpoint to fetch filters on a level.
+export const LevelFilters = {
+  args: {
+    input: { type: LevelFiltersInputType },
+  },
+  type: new List(StringType),
+  async resolve(obj, args) {
+    const url = `${config.services.settings}/api/instituteHierarchy/get/filtersOnALevel`;
+    const body = args.input;
+
+    return fetch(
+      url,
+      {
+        method: 'POST',
+        body: JSON.stringify({ level: body.level }),
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
+      .then(response => response.json())
+      .then(json => json.data);
+  },
+};
+
+// Endpoint to fetch institute Hierarchy Table.
+export const InstituteHierarchyGrid = {
   args: {
     pageNumber: { type: NonNull(IntType) },
     limit: { type: NonNull(IntType) },
+    input: { type: NonNull(InstituteHierarchyGridInputType) },
   },
   type: InstituteHierarchyGridType,
   async resolve(obj, args) {
@@ -66,6 +121,12 @@ const InstituteHierarchyGrid = {
 
     let limit = 1000;
     if (args.limit) limit = args.limit; // eslint-disable-line
+
+    const inputArgs = args.input;
+    let filters = [];
+    if (inputArgs.filters) {
+      filters = inputArgs.filters; // eslint-disable-line
+    }
 
     const pagination = {
       pageNumber: args.pageNumber,
@@ -76,7 +137,11 @@ const InstituteHierarchyGrid = {
       url,
       {
         method: 'POST',
-        body: JSON.stringify({ pagination: JSON.stringify(pagination) }),
+        body:
+        JSON.stringify({
+          pagination: JSON.stringify(pagination),
+          filters: JSON.stringify(filters),
+        }),
         headers: { 'Content-Type': 'application/json' },
       },
     )
@@ -121,4 +186,4 @@ const InstituteHierarchyGrid = {
   },
 };
 
-export default InstituteHierarchyGrid;
+export default { InstituteHierarchyGrid, LevelFilters };
