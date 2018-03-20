@@ -99,7 +99,12 @@ export const Students = {
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     })
-      .then(response => response.json())
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
       .then((json) => {
         const data = {};
         data.page = json.students;
