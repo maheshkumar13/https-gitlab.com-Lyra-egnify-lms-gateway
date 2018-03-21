@@ -6,7 +6,7 @@
 
 import {
   GraphQLList as List,
-  // GraphQLNonNull as NonNull,
+  GraphQLNonNull as NonNull,
   GraphQLInt as IntType,
   GraphQLString as StringType,
   GraphQLObjectType as ObjectType,
@@ -178,9 +178,35 @@ export const StudentUniqueValues = {
   },
 };
 
+export const StudentsByLastNode = {
+  args: {
+    list: { type: new NonNull(new List(StringType)) },
+  },
+  type: GraphQLJSON,
+  async resolve(obj, args) { // eslint-disable-line
+    // console.log(args);
+    args.list = JSON.stringify(args.list) // eslint-disable-line
+    const url = `${config.services.settings}/api/student/numberOfStudentsByLastNode`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then(json => json)
+      .catch(err =>
+        new Error(err.message));
+  },
+};
 
 export default{
   downloadStudentSample,
   StudentUniqueValues,
   Students,
+  StudentsByLastNode,
 };

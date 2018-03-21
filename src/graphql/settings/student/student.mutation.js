@@ -18,7 +18,7 @@ import StudentType from './student.type';
 
 const GraphQLDate = require('graphql-date');
 
-const GenderEnumType = new GraphQLEnumType({
+const GenderEnumType = new GraphQLEnumType({ // eslint-disable-line
   name: 'GenderEnumType',
   values: {
     Male: {
@@ -38,7 +38,7 @@ export const createStudent = {
     fatherName: { type: StringType },
     phone: { type: StringType },
     email: { type: StringType },
-    gender: { type: GenderEnumType },
+    gender: { type: StringType },
     dob: { type: GraphQLDate },
   },
   type: StudentType,
