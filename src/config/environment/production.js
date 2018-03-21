@@ -15,7 +15,7 @@ module.exports = {
   },
 
   services: {
-    settings: 'http://settings.gitlab-managed-apps.svc.cluster.local',
-    test: 'http://localhost:5002',
+    settings: process.env.SVC_SETTINGS || 'http://settings-dev-hydra.dev.svc.cluster.local',
+    test: process.env.SVC_TEST || 'http://test-dev-hydra.dev.svc.cluster.local',
   },
 };
