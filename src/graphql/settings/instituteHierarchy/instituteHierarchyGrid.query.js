@@ -113,7 +113,9 @@ export const InstituteHierarchyGrid = {
   args: {
     pageNumber: { type: NonNull(IntType) },
     limit: { type: NonNull(IntType) },
-    input: { type: NonNull(InstituteHierarchyGridInputType) },
+    sortBy: { type: StringType },
+    order: { type: IntType },
+    input: { type: InstituteHierarchyGridInputType },
   },
   type: InstituteHierarchyGridType,
   async resolve(obj, args) {
@@ -124,8 +126,10 @@ export const InstituteHierarchyGrid = {
 
     const inputArgs = args.input;
     let filters = [];
-    if (inputArgs.filters) {
+    if (inputArgs) {
+      if (inputArgs.filters) {
       filters = inputArgs.filters; // eslint-disable-line
+      }
     }
 
     const pagination = {
@@ -141,6 +145,8 @@ export const InstituteHierarchyGrid = {
         JSON.stringify({
           pagination: JSON.stringify(pagination),
           filters: JSON.stringify(filters),
+          sortBy: args.sortBy,
+          order: args.order,
         }),
         headers: { 'Content-Type': 'application/json' },
       },
