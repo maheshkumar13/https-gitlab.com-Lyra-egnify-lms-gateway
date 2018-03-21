@@ -17,7 +17,7 @@ import { Curriculum } from './settings/curriculum/curriculum.query';
 import { SubjectList, SubjectTaxonomy } from './settings/subject/subjectTaxonomy.query';
 import { removeSubjectTaxonomy, updateSubjectTaxonomy, createSubjects } from './settings/subject/subjectTaxonomy.mutation';
 import { createCurriculum } from './settings/curriculum/curriculum.mutation';
-import { Students, downloadStudentSample, StudentUniqueValues } from './settings/student/student.query';
+import { Students, downloadStudentSample, StudentUniqueValues, StudentsByLastNode } from './settings/student/student.query';
 import { createStudent, createManyStudents } from './settings/student/student.mutation';
 import { createTestPattern, updateTestPattern, removeTestPattern } from './settings/testPattern/testPattern.mutation';
 import { InstituteHierarchy, InstituteHierarchySample } from './settings/instituteHierarchy/instituteHierarchy.query';
@@ -51,6 +51,7 @@ new ObjectType({
       Tests,
       QuestionTypes,
       StudentUniqueValues,
+      StudentsByLastNode,
     },
   }),
   mutation: new ObjectType({
