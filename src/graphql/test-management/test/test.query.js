@@ -34,7 +34,7 @@ const pageInfoType = new ObjectType({
       totalPages: {
         type: IntType,
       },
-      totalTests: {
+      totalEntries: {
         type: IntType,
       },
     };
@@ -84,9 +84,9 @@ export const Tests = {
   async resolve(obj, args) {
     // console.log(args);
     if (args.regex !== undefined)
-      {args.regex = args.regex.replace(/\s\s+/g, ' ');} //eslint-disable-line
+      {args.regex = args.regex.replace(/\s\s+/g, ' ').trim();} //eslint-disable-line
     if (args.regex === '' || args.regex === ' ') {
-      return null;
+      args.regex = undefined; // eslint-disable-line
     }
     if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
     if (args.pageNumber < 1) {
@@ -111,7 +111,7 @@ export const Tests = {
         pageInfo.totalPages = Math.ceil(json.count / args.limit)
           ? Math.ceil(json.count / args.limit)
           : 1;
-        pageInfo.totalTests = json.count;
+        pageInfo.totalEntries = json.count;
 
         if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
           return new Error('Page Number is invalid');
@@ -123,12 +123,13 @@ export const Tests = {
         if (args.pageNumber === 1) {
           pageInfo.prevPage = false;
         }
+        if (pageInfo.totalEntries === 0) {
+          pageInfo.totalPages = 0;
+        }
         data.pageInfo = pageInfo;
         return data;
       })
-      .catch((err) => {
-        console.error(err);
-      });
+      .catch(err => new Error(err.message));
   },
 };
 
@@ -141,7 +142,8 @@ export const QuestionTypes = {
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     })
-      .then(response => response.json());
+      .then(response => response.json())
+      .catch(err => new Error(err.message));
   },
 };
 
