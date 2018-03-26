@@ -16,6 +16,6 @@ module.exports = {
 
   services: {
     settings: process.env.SVC_SETTINGS || 'http://settings-dev-hydra.dev.svc.cluster.local',
-    test: process.env.SVC_TEST || 'http://test-dev-hydra.dev.svc.cluster.local',
+    test: process.env.SVC_TEST || 'http://test-management-dev-hydra.dev.svc.cluster.local',
   },
 };
