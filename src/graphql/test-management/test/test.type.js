@@ -10,12 +10,13 @@ import {
   // GraphQLNonNull as NonNull,
   GraphQLBoolean as BooleanType,
   GraphQLInt as IntType,
+  GraphQLInputObjectType as InputObjectType,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 
+const GraphQLDate = require('graphql-date');
 // const GraphQLStringType = require('graphql-StringType');
-
-const TestType = new ObjectType({
+export const TestType = new ObjectType({
   name: 'TestType',
   fields: {
     testId: { type: StringType },
@@ -42,4 +43,22 @@ const TestType = new ObjectType({
   },
 });
 
-export default TestType;
+export const InputTestType = new InputObjectType({
+  name: 'InputTestType',
+  fields: {
+    testName: { type: StringType, description: 'Define a non-Empty testName' },
+    totalMarks: { type: IntType, description: 'totalMarks in the test' },
+    date: { type: GraphQLDate, description: 'Define date' },
+    startTime: { type: StringType, description: 'startTime should be in range 00:00 to 23:59' },
+    duration: { type: StringType, description: 'should be a string, ex: 2.30 (which defines 2h 30mns)' },
+    selectedHierarchy: { type: GraphQLJSON, description: 'should be in the following format { parent :"Country", child :"Institute Ty"level:2code:"lvl1 }", ' },
+    testType: { type: GraphQLJSON, description: '{"code": "TP0001","name": "fi1","patternCode": "123"}' },
+    hierarchy: { type: GraphQLJSON, description: '[{"child": "andhra","childCode": "egnixeos_l11-l21","parent": "India","parentCode": "egnixeos_l11","level": 2,"selected": true,"next": [{"child": "HYD","childCode": "egnixeos_l11-l21-l31","parent": "andhra","parentCode": "egnixeos_l11-l21", "level": 3, "selected": true}]], Please look at the sample queries for better understanding'}, // eslint-disable-line
+    subjects: { type: GraphQLJSON, description: '"subjects": [{"code": "CUR0001_SUB0001","subject":"Maths", subjectCode:"MAT101"}]' },
+  },
+});
+
+export default{
+  TestType,
+  InputTestType,
+};

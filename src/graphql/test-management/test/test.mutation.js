@@ -17,7 +17,7 @@ import {
 import GraphQLJSON from 'graphql-type-json';
 import fetch from 'universal-fetch';
 import { config } from '../../../config/environment';
-import TestType from './test.type';
+import { TestType, InputTestType } from './test.type';
 
 // const GraphQLDate = require('graphql-date');
 
@@ -100,7 +100,7 @@ export const createTest = {
   //   subjects: { type: new NonNull(GraphQLJSON) },
   // },
   args: {
-    input: { type: new NonNull(GraphQLJSON) },
+    input: { type: new NonNull(InputTestType) },
   },
   type: TestType,
   async resolve(obj, args) {
