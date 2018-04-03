@@ -31,6 +31,7 @@ const TestType = new ObjectType({
     questionTypes: { type: GraphQLJSON },
     markingSchema: { type: GraphQLJSON },
     Qmap: { type: GraphQLJSON },
+    selectedHierarchy: { type: GraphQLJSON },
     totalStudents: { type: IntType },
     resultsUploaded: { type: IntType },
     resultsUploadedPercentage: { type: IntType },
