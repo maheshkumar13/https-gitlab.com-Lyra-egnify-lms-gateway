@@ -19,6 +19,7 @@ import fetch from 'universal-fetch';
 import { config } from '../../../config/environment';
 import TestType from './test.type';
 
+// const GraphQLDate = require('graphql-date');
 
 export const removeTest = {
   args: {
@@ -86,8 +87,43 @@ export const createDuplicateTest = {
       .then(json => json);
   },
 };
+
+export const createTest = {
+  // args: {
+  //   testName: { type: new NonNull(StringType) },
+  //   totalMarks: { type: new NonNull(IntType) },
+  //   date: { type: new NonNull(GraphQLDate) },
+  //   startTime: { type: new NonNull(StringType) },
+  //   duration: { type: new NonNull(StringType) },
+  //   testType: { type: new NonNull(GraphQLJSON) },
+  //   hierarchy: { type: new NonNull(GraphQLJSON) },
+  //   subjects: { type: new NonNull(GraphQLJSON) },
+  // },
+  args: {
+    input: { type: new NonNull(GraphQLJSON) },
+  },
+  type: TestType,
+  async resolve(obj, args) {
+    const url = `${config.services.test}/api/v1/test/create`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args.input),
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then(json => json);
+  },
+};
+
+
 export default{
   removeTest,
   createDummyTest,
   createDuplicateTest,
+  createTest,
 };

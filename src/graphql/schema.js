@@ -12,7 +12,7 @@ import {
 import GradeSystem from './settings/grade/grade.query';
 import TestPattern from './settings/testPattern/testPattern.query';
 import { Tests, QuestionTypes } from './test-management/test/test.query';
-import { removeTest, createDummyTest, createDuplicateTest } from './test-management/test/test.mutation';
+import { removeTest, createDummyTest, createDuplicateTest, createTest } from './test-management/test/test.mutation';
 import { Curriculum } from './settings/curriculum/curriculum.query';
 import { SubjectList, SubjectTaxonomy } from './settings/subject/subjectTaxonomy.query';
 import { removeSubjectTaxonomy, updateSubjectTaxonomy, createSubjects } from './settings/subject/subjectTaxonomy.mutation';
@@ -84,6 +84,7 @@ new ObjectType({
       createDummyTest,
       createDuplicateTest,
       createInstituteHierarchyNodesFromCSV,
+      createTest,
     },
   }),
 });
