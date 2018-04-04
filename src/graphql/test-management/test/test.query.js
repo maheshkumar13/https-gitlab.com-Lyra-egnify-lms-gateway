@@ -16,7 +16,7 @@ import {
 
 import fetch from 'universal-fetch';
 import { config } from '../../../config/environment';
-import TestType from './test.type';
+import { TestType } from './test.type';
 
 const pageInfoType = new ObjectType({
   name: 'TestPageInfo',
