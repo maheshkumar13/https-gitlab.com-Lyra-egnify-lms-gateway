@@ -112,7 +112,7 @@ export const TestType = new ObjectType({
     totalMarks: { type: IntType, description: 'Total marks in the test' },
     startTime: { type: StringType, description: 'Time of exam starts' },
     date: { type: StringType, description: 'Date of conducting the test.' },
-    duration: { type: StringType, description: 'Test duration in number of minutes' },
+    duration: { type: IntType, description: 'Test duration in number of minutes' },
     subjects: { type: new List(SubjectType), description: 'Subjects in the test' },
     hierarchyTag: { type: StringType, description: 'Unique identifier for hierarchy' },
     markingSchema: { type: GraphQLJSON, description: 'Marks distribution' },
