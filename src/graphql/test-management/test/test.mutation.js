@@ -118,6 +118,7 @@ export const createTest = {
       })
       .then(json => json);
   },
+  description: 'Create test',
 };
 
 
