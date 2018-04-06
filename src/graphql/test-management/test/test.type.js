@@ -7,54 +7,138 @@
 import {
   GraphQLObjectType as ObjectType,
   GraphQLString as StringType,
-  // GraphQLNonNull as NonNull,
+  GraphQLNonNull as NonNull,
   GraphQLBoolean as BooleanType,
   GraphQLInt as IntType,
+  GraphQLList as List,
   GraphQLInputObjectType as InputObjectType,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 
 const GraphQLDate = require('graphql-date');
 // const GraphQLStringType = require('graphql-StringType');
-export const TestType = new ObjectType({
-  name: 'TestType',
+const InputSubjectType = new InputObjectType({
+  name: 'InputSubjectType',
+  description: 'Subjects selected for the test',
   fields: {
-    testId: { type: StringType },
-    testName: { type: StringType },
-    testType: { type: GraphQLJSON },
-    totalMarks: { type: IntType },
-    startTime: { type: StringType },
-    date: { type: StringType },
-    duration: { type: StringType },
-    subjects: { type: GraphQLJSON },
-    hierarchyTag: { type: StringType },
-    creationMetadata: { type: GraphQLJSON },
-    questionTypes: { type: GraphQLJSON },
-    markingSchema: { type: GraphQLJSON },
-    Qmap: { type: GraphQLJSON },
-    selectedHierarchy: { type: GraphQLJSON },
-    totalStudents: { type: IntType },
-    resultsUploaded: { type: IntType },
-    resultsUploadedPercentage: { type: IntType },
-    stepsCompleted: { type: IntType },
-    totalSteps: { type: IntType },
-    status: { type: StringType },
-    active: { type: BooleanType },
+    code: { type: StringType, description: 'Internal code for the subject' },
+    parentCode: { type: StringType, description: 'Internal parent code for the subject' },
+    subject: { type: StringType, description: 'Name of the subject' },
+    subjectCode: { type: StringType, description: 'User defined subject code' },
   },
 });
 
+const SubjectType = new ObjectType({
+  name: 'SubjectType_',
+  description: 'Subjects selected for the test',
+  fields: {
+    code: { type: StringType, description: 'Internal code for the subject' },
+    parentCode: { type: StringType, description: 'Internal parent code for the subject' },
+    subject: { type: StringType, description: 'Name of the subject' },
+    subjectCode: { type: StringType, description: 'User defined subject code' },
+    totalQuestions: { type: IntType, description: 'Total number of question in this subject' },
+    qmapCompletion: { type: IntType, description: 'Number of questions completed in question mapping from this subject' },
+  },
+});
+
+
+const InputTesttypeType = new InputObjectType({
+  name: 'InputTesttypeType',
+  description: 'Mode of exam for the test',
+  fields: {
+    name: { type: StringType, description: 'Name of the testType' },
+    patternCode: { type: StringType, description: 'User defined pattern code' },
+    code: { type: StringType, description: 'Internal code for testType' },
+    description: { type: StringType, description: 'description of the testType' },
+  },
+});
+
+const TesttypeType = new ObjectType({
+  name: 'TesttypeType',
+  description: 'Mode of exam for the test',
+  fields: {
+    name: { type: StringType, description: 'Name of the testType' },
+    patternCode: { type: StringType, description: 'User defined pattern code' },
+    code: { type: StringType, description: 'Internal code for testType' },
+    description: { type: StringType, description: 'description of the testType' },
+  },
+});
+
+const InputSelectedHierarhcyType = new InputObjectType({
+  name: 'InputSelectedHierarhcyType',
+  description: 'Highest level of hierarchy selected for the test',
+  fields: {
+    parent: { type: StringType, description: 'Name of the parent of the node' },
+    child: { type: StringType, description: 'Name of the node' },
+    level: { type: IntType, description: 'Level of the node' },
+    code: { type: StringType, description: 'Internal code for the node' },
+  },
+});
+
+
+const SelectedHierarhcyType = new ObjectType({
+  name: 'SelectedHierarhcyType',
+  description: 'Highest level of hierarchy selected for the test',
+  fields: {
+    parent: { type: StringType, description: 'Name of the parent of the node' },
+    child: { type: StringType, description: 'Name of the node' },
+    level: { type: IntType, description: 'Level of the node' },
+    code: { type: StringType, description: 'Internal code for the node' },
+  },
+});
+
+const InputHierarchyType = new InputObjectType({
+  name: 'InputHierarchyType',
+  description: 'Institute Hierarchy',
+  fields: {
+    child: { type: StringType, description: 'Name of the node' },
+    childCode: { type: StringType, description: 'Internal code of the node' },
+    parent: { type: StringType, description: 'Parent name of the node' },
+    parentCode: { type: StringType, description: 'Internal code for the parent of the node' },
+    level: { type: IntType, description: 'Level of the node' },
+    selected: { type: BooleanType, description: 'Selected status of the node' },
+    next: { type: GraphQLJSON, description: 'List of child nodes with above described JSON' },
+  },
+});
+
+
+export const TestType = new ObjectType({
+  name: 'TestType',
+  description: 'Test data',
+  fields: {
+    testId: { type: StringType, description: 'Unique identifier for the test' },
+    testName: { type: StringType, description: 'Name of the test' },
+    testType: { type: TesttypeType, description: 'User defined test pattern' },
+    totalMarks: { type: IntType, description: 'Total marks in the test' },
+    startTime: { type: StringType, description: 'Time of exam starts' },
+    date: { type: StringType, description: 'Date of conducting the test.' },
+    duration: { type: IntType, description: 'Test duration in number of minutes' },
+    subjects: { type: new List(SubjectType), description: 'Subjects in the test' },
+    hierarchyTag: { type: StringType, description: 'Unique identifier for hierarchy' },
+    markingSchema: { type: GraphQLJSON, description: 'Marks distribution' },
+    Qmap: { type: GraphQLJSON, description: 'Individual question information' },
+    selectedHierarchy: { type: SelectedHierarhcyType, description: 'Highest level of hierarchy selected by the user' },
+    totalStudents: { type: IntType, description: 'Number of students participating in the test' },
+    resultsUploaded: { type: IntType, description: 'Number of student whose results uploaded' },
+    resultsUploadedPercentage: { type: IntType, description: 'Percentage of result uploaded students' },
+    stepsCompleted: { type: IntType, description: 'Number of steps completed in test creation' },
+    totalSteps: { type: IntType, description: 'Total steps in test creation' },
+    status: { type: StringType, description: 'Current status of the test' },
+  },
+});
 export const InputTestType = new InputObjectType({
   name: 'InputTestType',
+  description: 'Input for the test',
   fields: {
-    testName: { type: StringType, description: 'Define a non-Empty testName' },
-    totalMarks: { type: IntType, description: 'totalMarks in the test' },
-    date: { type: GraphQLDate, description: 'Define date' },
-    startTime: { type: StringType, description: 'startTime should be in range 00:00 to 23:59' },
-    duration: { type: StringType, description: 'should be a string, ex: 2.30 (which defines 2h 30mns)' },
-    selectedHierarchy: { type: GraphQLJSON, description: 'should be in the following format { parent :"Country", child :"Institute Ty"level:2code:"lvl1 }", ' },
-    testType: { type: GraphQLJSON, description: '{"code": "TP0001","name": "fi1","patternCode": "123"}' },
-    hierarchy: { type: GraphQLJSON, description: '[{"child": "andhra","childCode": "egnixeos_l11-l21","parent": "India","parentCode": "egnixeos_l11","level": 2,"selected": true,"next": [{"child": "HYD","childCode": "egnixeos_l11-l21-l31","parent": "andhra","parentCode": "egnixeos_l11-l21", "level": 3, "selected": true}]], Please look at the sample queries for better understanding'}, // eslint-disable-line
-    subjects: { type: GraphQLJSON, description: '"subjects": [{"code": "CUR0001_SUB0001","subject":"Maths", subjectCode:"MAT101"}]' },
+    testName: { type: new NonNull(StringType), description: 'Name of the test, testName should not be empty! ' },
+    totalMarks: { type: new NonNull(IntType), description: 'totalMarks in the test' },
+    date: { type: new NonNull(GraphQLDate), description: 'Date of conducting the test.' },
+    startTime: { type: new NonNull(StringType), description: 'Time of test starts, should be in range 00:00 to 23:59' },
+    duration: { type: new NonNull(IntType), description: 'Number of minutes of the test duration' },
+    selectedHierarchy: { type: new NonNull(InputSelectedHierarhcyType), description: '  Highest level of hierarchy selected by the user' },
+    testType: { type: new NonNull(InputTesttypeType), description: 'Mode of exam for the test' },
+    hierarchy: { type: new NonNull(new List(InputHierarchyType)), description: 'Selected hierarchy for the test'}, // eslint-disable-line
+    subjects: { type: new NonNull(new List(InputSubjectType)), description: 'Selected subjects for the test' },
   },
 });
 
