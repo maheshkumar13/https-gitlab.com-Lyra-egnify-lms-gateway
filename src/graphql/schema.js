@@ -11,8 +11,8 @@ import {
 
 import GradeSystem from './settings/grade/grade.query';
 import TestPattern from './settings/testPattern/testPattern.query';
-import { Tests, QuestionTypes } from './test-management/test/test.query';
-import { removeTest, createDummyTest, createDuplicateTest, createTest } from './test-management/test/test.mutation';
+import { Tests, QuestionTypes, DefaultMarkingSchemas, TestHierarchyNodes } from './test-management/test/test.query';
+import { removeTest, createDummyTest, createDuplicateTest, createTest, updateTest } from './test-management/test/test.mutation';
 import { Curriculum } from './settings/curriculum/curriculum.query';
 import { SubjectList, SubjectTaxonomy } from './settings/subject/subjectTaxonomy.query';
 import { removeSubjectTaxonomy, updateSubjectTaxonomy, createSubjects } from './settings/subject/subjectTaxonomy.mutation';
@@ -54,6 +54,8 @@ new ObjectType({
       LevelFilters,
       StudentUniqueValues,
       StudentsByLastNode,
+      DefaultMarkingSchemas,
+      TestHierarchyNodes,
     },
   }),
   mutation: new ObjectType({
@@ -85,6 +87,7 @@ new ObjectType({
       createDuplicateTest,
       createInstituteHierarchyNodesFromCSV,
       createTest,
+      updateTest,
     },
   }),
 });
