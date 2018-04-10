@@ -117,6 +117,9 @@ export const TestType = new ObjectType({
     hierarchyTag: { type: StringType, description: 'Unique identifier for hierarchy' },
     markingSchema: { type: GraphQLJSON, description: 'Marks distribution' },
     Qmap: { type: GraphQLJSON, description: 'Individual question information' },
+    questionPaperUrl: { type: StringType, description: 'Question paper url' },
+    questionPaperId: { type: StringType, description: 'Question paper ID' },
+    qPageMapping: { type: GraphQLJSON, description: 'Question number page mapping to scroll pdf' },
     selectedHierarchy: { type: SelectedHierarhcyType, description: 'Highest level of hierarchy selected by the user' },
     totalStudents: { type: IntType, description: 'Number of students participating in the test' },
     resultsUploaded: { type: IntType, description: 'Number of student whose results uploaded' },
@@ -142,7 +145,18 @@ export const InputTestType = new InputObjectType({
   },
 });
 
+export const FileStatusType = new ObjectType({
+  name: 'FileStatusType',
+  description: 'Check status of the parsing document file',
+  fields: {
+    fileStatusId: { type: StringType, description: 'Unique identifier for a specific file passed to the parser' },
+    status: { type: IntType, description: 'Status of the file' },
+    statusMessage: { type: StringType, description: 'Message about current status of the file' },
+  },
+});
+
 export default{
   TestType,
   InputTestType,
+  FileStatusType,
 };

@@ -11,7 +11,7 @@ import {
 
 import GradeSystem from './settings/grade/grade.query';
 import TestPattern from './settings/testPattern/testPattern.query';
-import { Tests, QuestionTypes } from './test-management/test/test.query';
+import { Tests, QuestionTypes, FileStatus } from './test-management/test/test.query';
 import { removeTest, createDummyTest, createDuplicateTest, createTest } from './test-management/test/test.mutation';
 import { Curriculum } from './settings/curriculum/curriculum.query';
 import { SubjectList, SubjectTaxonomy } from './settings/subject/subjectTaxonomy.query';
@@ -54,6 +54,7 @@ new ObjectType({
       LevelFilters,
       StudentUniqueValues,
       StudentsByLastNode,
+      FileStatus,
     },
   }),
   mutation: new ObjectType({
