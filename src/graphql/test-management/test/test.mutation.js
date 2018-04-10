@@ -17,7 +17,7 @@ import {
 import GraphQLJSON from 'graphql-type-json';
 import fetch from 'universal-fetch';
 import { config } from '../../../config/environment';
-import { TestType, InputTestType } from './test.type';
+import { TestType, InputTestType, UpdateTestType } from './test.type';
 
 // const GraphQLDate = require('graphql-date');
 
@@ -121,10 +121,35 @@ export const createTest = {
   description: 'Create test',
 };
 
+export const updateTest = {
+  args: {
+    input: { type: new NonNull(UpdateTestType) },
+  },
+  type: TestType,
+  async resolve(obj, args) {
+    const url = `${config.services.test}/api/v1/test/update`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args.input),
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then((response) => {
+        // console.log(response.status);
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then(json => json)
+      .catch(err => new Error(response.statusText)); // eslint-disable-line
+  },
+  description: 'Defined fields get updated',
+};
 
 export default{
   removeTest,
   createDummyTest,
   createDuplicateTest,
   createTest,
+  updateTest,
 };

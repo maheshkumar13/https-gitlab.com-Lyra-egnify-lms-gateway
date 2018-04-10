@@ -101,6 +101,46 @@ const InputHierarchyType = new InputObjectType({
   },
 });
 
+const SubjectMarksInMarkingSchemaType = new InputObjectType({
+  name: 'SubjectMarksInMarkingSchemaType',
+  description: 'Section wise marks in subject',
+  fields: {
+    questionType: { type: StringType, description: 'Type of question' },
+    numberOfQuestions: { type: IntType, description: 'Number o question in this question' },
+    section: { type: IntType, description: 'Section number' },
+    C: { type: StringType, description: 'Marks for each correct answered question in this question' },
+    W: { type: StringType, description: 'Marks for each wrong answered question in this question' },
+    U: { type: StringType, description: 'Marks for each Unattempted question' },
+    start: { type: IntType, description: 'First question number in this section' },
+    end: { type: IntType, description: 'Last question number in this section' },
+    totalMarks: { type: IntType, description: 'Total marks in this section' },
+  },
+});
+
+
+const SubjectMarkingSchemaType = new InputObjectType({
+  name: 'SubjectMarkingSchemaType',
+  description: 'Subject wise marks distribution',
+  fields: {
+    start: { type: IntType, description: 'First question number in this subject' },
+    end: { type: IntType, description: 'Last question number in this subject' },
+    subject: { type: StringType, description: 'Name of the subject' },
+    totalQuestions: { type: IntType, description: 'Total questions in this subject' },
+    totalMarks: { type: IntType, description: 'Total marks in this subject' },
+    marks: { type: new List(SubjectMarksInMarkingSchemaType), description: 'Section wise marks distribution for this subject' },
+  },
+});
+
+export const MarkingSchemaType = new InputObjectType({
+  name: 'MarkingSchemaType',
+  description: 'Marks distribution subjects and questions wise',
+  fields: {
+    totalQuestions: { type: IntType, description: 'Total number of questions in the test' },
+    totalMarks: { type: IntType, description: 'Total marks in the test' },
+    subjects: { type: new List(SubjectMarkingSchemaType), description: 'Marks distribution' },
+  },
+});
+
 
 export const TestType = new ObjectType({
   name: 'TestType',
@@ -114,6 +154,7 @@ export const TestType = new ObjectType({
     date: { type: StringType, description: 'Date of conducting the test.' },
     duration: { type: IntType, description: 'Test duration in number of minutes' },
     subjects: { type: new List(SubjectType), description: 'Subjects in the test' },
+    subjectsordered: { type: BooleanType, description: 'Subjects ordered or not' },
     hierarchyTag: { type: StringType, description: 'Unique identifier for hierarchy' },
     markingSchema: { type: GraphQLJSON, description: 'Marks distribution' },
     Qmap: { type: GraphQLJSON, description: 'Individual question information' },
@@ -139,10 +180,54 @@ export const InputTestType = new InputObjectType({
     testType: { type: new NonNull(InputTesttypeType), description: 'Mode of exam for the test' },
     hierarchy: { type: new NonNull(new List(InputHierarchyType)), description: 'Selected hierarchy for the test'}, // eslint-disable-line
     subjects: { type: new NonNull(new List(InputSubjectType)), description: 'Selected subjects for the test' },
+    subjectsordered: { type: BooleanType, description: 'Subjects ordered or not' },
+    markingSchema: { type: MarkingSchemaType, description: 'Marks distribution' },
+    // Qmap:{type: QmapSchema, description: 'Question wise description'},
   },
 });
+
+export const UpdateTestType = new InputObjectType({
+  name: 'UpdateTestType',
+  description: 'Any number of defined fields get updated',
+  fields: {
+    testId: { type: new NonNull(StringType), description: 'Unique identifier for test' },
+    testName: { type: StringType, description: 'Name of the test, testName should not be empty! ' },
+    totalMarks: { type: IntType, description: 'totalMarks in the test' },
+    date: { type: StringType, description: 'Date of conducting the test.' },
+    startTime: { type: StringType, description: 'Time of test starts, should be in range 00:00 to 23:59' },
+    duration: { type: IntType, description: 'Number of minutes of the test duration' },
+    selectedHierarchy: { type: InputSelectedHierarhcyType, description: '  Highest level of hierarchy selected by the user' },
+    testType: { type: InputTesttypeType, description: 'Mode of exam for the test' },
+    hierarchy: { type: new List(InputHierarchyType), description: 'Selected hierarchy for the test'}, // eslint-disable-line
+    subjectsordered: { type: BooleanType, description: 'Subjects ordered or not' },
+    subjects: { type: new List(InputSubjectType), description: 'Selected subjects for the test' },
+    markingSchema: { type: MarkingSchemaType, description: 'Marks distribution' },
+    // Qmap:{ type: QmapSchema, description: 'Question wise description' },
+  },
+});
+
+export const TestHierarchyNodesType = new ObjectType({
+  name: 'TestHierarchyNodesType',
+  description: 'Hierarchy nodes of the test',
+  fields: {
+    isLeafNode: { type: BooleanType, description: 'Node is a leaf node or not' },
+    childCode: { type: StringType, description: 'Internal code for the node' },
+    child: { type: StringType, description: 'Name of the node' },
+    parentCode: { type: StringType, description: 'Internal code of the parent' },
+    parent: { type: StringType, description: 'Name of the paretn' },
+    level: { type: IntType, description: 'Level of the node' },
+    hierarchyTag: { type: StringType, description: 'Unique identifier of the test hierarchy nodes' },
+    selected: { type: BooleanType, description: 'Node is selected in the hierarchy or not' },
+    numberOfStudents: { type: IntType, description: 'Total number of students participating in this node' },
+    // Qmap:{ type: QmapSchema, description: 'Question wise description' },
+  },
+});
+
 
 export default{
   TestType,
   InputTestType,
+  UpdateTestType,
+  MarkingSchemaType,
+  TestHierarchyNodesType,
 };
