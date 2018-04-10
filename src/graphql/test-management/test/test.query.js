@@ -15,8 +15,11 @@ import {
 } from 'graphql';
 
 import fetch from 'universal-fetch';
+import GraphQLJSON from 'graphql-type-json';
 import { config } from '../../../config/environment';
-import { TestType, FileStatusType } from './test.type';
+
+import { TestType, TestHierarchyNodesType, FileStatusType } from './test.type';
+
 
 const pageInfoType = new ObjectType({
   name: 'TestPageInfo',
@@ -166,6 +169,48 @@ export const FileStatus = {
         return response.json();
       })
       .then(json => json);
+
+export const DefaultMarkingSchemas = {
+  args: {
+    testName: { type: StringType },
+  },
+  type: GraphQLJSON, // new List(MarkingSchemaType),
+  async resolve(obj, args) {
+    const url = `${config.services.test}/api/v1/test/defaultMarkingSchemas`;
+    // console.log('sending', JSON.stringify(args));
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then(response => response.json())
+      .catch(err => new Error(err.message));
+  },
+};
+
+export const TestHierarchyNodes = {
+  args: {
+    isLeafNode: { type: BooleanType },
+    childCode: { type: StringType },
+    child: { type: StringType },
+    parentCode: { type: StringType },
+    parent: { type: StringType },
+    level: { type: IntType },
+    hierarchyTag: { type: StringType },
+    selected: { type: BooleanType },
+    numberOfStudents: { type: IntType },
+  },
+  type: new List(TestHierarchyNodesType), // new List(MarkingSchemaType),
+  async resolve(obj, args) {
+    const url = `${config.services.test}/api/v1/hierarchy`;
+    // console.log('sending', JSON.stringify(args));
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then(response => response.json())
+      .catch(err => new Error(err.message));
   },
 };
 
@@ -173,4 +218,8 @@ export default{
   Tests,
   QuestionTypes,
   FileStatus,
+
+  DefaultMarkingSchemas,
+  TestHierarchyNodes,
+
 };
