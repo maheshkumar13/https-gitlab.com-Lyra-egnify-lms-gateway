@@ -18,14 +18,8 @@ import { config } from './config/environment';
 import * as auth from './auth/auth.service';
 import seedDatabaseIfNeeded from './config/seed';
 
-const Buffer = require('safe-buffer').Buffer;
 const morgan = require('morgan');
 const cors = require('cors');
-
-const swaggerTools = require('swagger-tools');
-const YAML = require('yamljs');
-
-const swaggerDoc = YAML.load('./src/openapi.yaml');
 
 mongoose.Promise = require('bluebird');
 // Connect to MongoDB
@@ -70,11 +64,6 @@ require('./api/v1').default(app);
 // app.get('/', (req, res) => res.send('Oh!! Yeah.'));
 
 seedDatabaseIfNeeded();
-
-swaggerTools.initializeMiddleware(swaggerDoc, function (middleware) {
-  // Serve the Swagger documents and Swagger UI
-  app.use(middleware.swaggerUi());
-});
 
 app.listen(config.port, () => {
   console.info(`The server is running at http://localhost:${config.port}/`);
