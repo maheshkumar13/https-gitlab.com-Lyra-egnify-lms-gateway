@@ -31,6 +31,10 @@ const all = {
   // Should we populate the DB with sample data?
   seedDB: false,
 
+  secrets: {
+    session: 'vega-secret',
+  },
+
   // MongoDB connection options
   mongo: {
     options: {
@@ -46,6 +50,7 @@ const all = {
 // ==============================================
 export const config = _.merge(
   all,
+  require('./shared'),
   require(`./${process.env.NODE_ENV}.js`) || {},
 );
 

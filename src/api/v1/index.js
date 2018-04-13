@@ -8,5 +8,8 @@ const uploadFile = require('./uploadFile');
 export default function (app) {
   //  Insert API below
   app.use('/api/v1/uploadFile', uploadFile);
-  // app.use('/api/conceptTaxonomy', conceptTaxonomy);
+  app.use('/api/v1/users', require('./user'));
+
+  app.use('/auth', require('./../../auth').default);
+  
 }

@@ -15,9 +15,17 @@ import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
 import schema from './graphql/schema';
 
 import { config } from './config/environment';
+import * as auth from './auth/auth.service';
+import seedDatabaseIfNeeded from './config/seed';
 
+const Buffer = require('safe-buffer').Buffer;
 const morgan = require('morgan');
 const cors = require('cors');
+
+const swaggerTools = require('swagger-tools');
+const YAML = require('yamljs');
+
+const swaggerDoc = YAML.load('./src/openapi.yaml');
 
 mongoose.Promise = require('bluebird');
 // Connect to MongoDB
@@ -33,12 +41,15 @@ app.use(morgan('short'));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
+app.use(express.static(__dirname));
 /* eslint no-unused-vars: 0 */
 // The GraphQL endpoint
 // app.use('/graphql', bodyParser.json(), graphqlExpress({ schema }));
+// GraphiQL, a visual editor for queries
+app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql', passHeader: "'Authorization': localStorage.getItem('jwt_token')" }));
 app.use(
   '/graphql',
+  auth.isAuthenticated(),
   bodyParser.json(),
   graphqlExpress((req) => {
     // Some sort of auth function
@@ -52,12 +63,18 @@ app.use(
     };
   }),
 );
-// GraphiQL, a visual editor for queries
-app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }));
+
 
 require('./api/v1').default(app);
 
-app.get('/', (req, res) => res.send('Oh!! Yeah.'));
+// app.get('/', (req, res) => res.send('Oh!! Yeah.'));
+
+seedDatabaseIfNeeded();
+
+swaggerTools.initializeMiddleware(swaggerDoc, function (middleware) {
+  // Serve the Swagger documents and Swagger UI
+  app.use(middleware.swaggerUi());
+});
 
 app.listen(config.port, () => {
   console.info(`The server is running at http://localhost:${config.port}/`);
