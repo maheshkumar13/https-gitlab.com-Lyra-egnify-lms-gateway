@@ -6,7 +6,7 @@
 
 import {
   GraphQLList as List,
-  // GraphQLNonNull as NonNull,
+  GraphQLNonNull as NonNull,
   GraphQLInt as IntType,
   GraphQLString as StringType,
   GraphQLObjectType as ObjectType,
@@ -17,7 +17,9 @@ import {
 import fetch from 'universal-fetch';
 import GraphQLJSON from 'graphql-type-json';
 import { config } from '../../../config/environment';
-import { TestType, TestHierarchyNodesType } from './test.type';
+
+import { TestType, TestHierarchyNodesType, FileStatusType } from './test.type';
+
 
 const pageInfoType = new ObjectType({
   name: 'TestPageInfo',
@@ -148,6 +150,25 @@ export const QuestionTypes = {
   },
 };
 
+export const FileStatus = {
+  args: {
+    fileStatusId: { type: new NonNull(StringType), description: 'Unique identifier for a specific file passed to the parser' },
+  },
+  type: FileStatusType,
+  async resolve(obj, args) {
+    const url = `${config.services.test}/api/v1/question/fileStatus`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then(json => json);
 
 export const DefaultMarkingSchemas = {
   args: {
@@ -196,6 +217,9 @@ export const TestHierarchyNodes = {
 export default{
   Tests,
   QuestionTypes,
+  FileStatus,
+
   DefaultMarkingSchemas,
   TestHierarchyNodes,
+
 };
