@@ -169,7 +169,8 @@ export const FileStatus = {
         return response.json();
       })
       .then(json => json);
-
+  },
+};
 export const DefaultMarkingSchemas = {
   args: {
     testName: { type: StringType },
