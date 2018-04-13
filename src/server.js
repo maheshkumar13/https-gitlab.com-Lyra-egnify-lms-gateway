@@ -35,7 +35,9 @@ app.use(morgan('short'));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(express.static(__dirname));
+
+app.use('/', express.static(`${__dirname}/public`));
+
 /* eslint no-unused-vars: 0 */
 // The GraphQL endpoint
 // app.use('/graphql', bodyParser.json(), graphqlExpress({ schema }));
