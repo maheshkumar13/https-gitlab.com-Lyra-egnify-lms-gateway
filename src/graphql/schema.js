@@ -29,13 +29,15 @@ import { createInstitute, updateInstitute, updateHierarchy } from './settings/in
 import { saveTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.mutation';
 import { GenerateConceptTaxonomy, conceptTaxonomy, ConceptTaxonomyTree } from './settings/conceptTaxonomy/conceptTaxonomy.query';
 import { createGradeSystem, createGradePattern, removeGradePattern, removeGradeSystem, updateGradeSystem, updateGradePattern } from './settings/grade/grade.mutation';
+import { uploadResult, updateUploadedResult, comfirmMissing, deleteResult } from './test-management/result-upload/result-upload.mutation';
+import { Results, ResultsSampleDownload } from './test-management/result-upload/result-upload.query';
 
 const schema = new Schema({
-  query:
-
-new ObjectType({
+  query: new ObjectType({
     name: 'Query',
     fields: {
+      Results,
+      ResultsSampleDownload,
       GradeSystem,
       TestPattern,
       Curriculum,
@@ -90,6 +92,10 @@ new ObjectType({
       createInstituteHierarchyNodesFromCSV,
       createTest,
       updateTest,
+      uploadResult,
+      updateUploadedResult,
+      comfirmMissing,
+      deleteResult,
     },
   }),
 });

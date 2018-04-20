@@ -200,8 +200,6 @@ export const FileStatusType = new ObjectType({
   },
 });
 
-
-
 export const UpdateTestType = new InputObjectType({
   name: 'UpdateTestType',
   description: 'Any number of defined fields get updated',
