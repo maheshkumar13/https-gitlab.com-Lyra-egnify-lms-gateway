@@ -105,6 +105,7 @@ export const Tests = {
       .then((json) => {
         const data = {};
         data.page = json.tests;
+        console.error(data.page);
         // console.log('getting data is',data)
         // console.log('cc', json.count);
         const pageInfo = {};

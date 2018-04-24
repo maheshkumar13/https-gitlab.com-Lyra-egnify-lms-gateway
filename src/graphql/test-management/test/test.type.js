@@ -11,6 +11,7 @@ import {
   GraphQLBoolean as BooleanType,
   GraphQLInt as IntType,
   GraphQLList as List,
+  GraphQLFloat as FloatType,
   GraphQLInputObjectType as InputObjectType,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
@@ -163,8 +164,8 @@ export const TestType = new ObjectType({
     qPageMapping: { type: GraphQLJSON, description: 'Question number page mapping to scroll pdf' },
     selectedHierarchy: { type: SelectedHierarhcyType, description: 'Highest level of hierarchy selected by the user' },
     totalStudents: { type: IntType, description: 'Number of students participating in the test' },
-    resultsUploaded: { type: IntType, description: 'Number of student whose results uploaded' },
-    resultsUploadedPercentage: { type: IntType, description: 'Percentage of result uploaded students' },
+    studentsUploaded: { type: IntType, description: 'Number of student whose results uploaded' },
+    percentage: { type: FloatType, description: 'Percentage of result uploaded students' },
     stepsCompleted: { type: IntType, description: 'Number of steps completed in test creation' },
     totalSteps: { type: IntType, description: 'Total steps in test creation' },
     status: { type: StringType, description: 'Current status of the test' },
@@ -233,6 +234,7 @@ export const TestHierarchyNodesType = new ObjectType({
     hierarchyTag: { type: StringType, description: 'Unique identifier of the test hierarchy nodes' },
     selected: { type: BooleanType, description: 'Node is selected in the hierarchy or not' },
     numberOfStudents: { type: IntType, description: 'Total number of students participating in this node' },
+    percentage: { type: FloatType, description: 'Upload percentage' },
     // Qmap:{ type: QmapSchema, description: 'Question wise description' },
   },
 });
