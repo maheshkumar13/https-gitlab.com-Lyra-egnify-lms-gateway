@@ -32,6 +32,8 @@ import { createGradeSystem, createGradePattern, removeGradePattern, removeGradeS
 import { uploadResult, updateUploadedResult, comfirmMissing, deleteResult } from './test-management/result-upload/result-upload.mutation';
 import { Results, ResultsSampleDownload } from './test-management/result-upload/result-upload.query';
 
+import { CommonAnalysis } from './test-management/ga/ga.query';
+
 const schema = new Schema({
   query: new ObjectType({
     name: 'Query',
@@ -60,6 +62,7 @@ const schema = new Schema({
       FileStatus,
       DefaultMarkingSchemas,
       TestHierarchyNodes,
+      CommonAnalysis,
     },
   }),
   mutation: new ObjectType({
