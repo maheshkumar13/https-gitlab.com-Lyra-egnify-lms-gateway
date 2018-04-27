@@ -12,7 +12,14 @@ import {
 import GradeSystem from './settings/grade/grade.query';
 import TestPattern from './settings/testPattern/testPattern.query';
 
-import { Tests, QuestionTypes, DefaultMarkingSchemas, TestHierarchyNodes, FileStatus } from './test-management/test/test.query';
+import {
+  Tests,
+  QuestionTypes,
+  DefaultMarkingSchemas,
+  TestHierarchyNodes,
+  FileStatus,
+  DownloadSampleQmap,
+} from './test-management/test/test.query';
 import { removeTest, createDummyTest, createDuplicateTest, createTest, updateTest } from './test-management/test/test.mutation';
 import { Curriculum } from './settings/curriculum/curriculum.query';
 import { SubjectList, SubjectTaxonomy } from './settings/subject/subjectTaxonomy.query';
@@ -60,6 +67,7 @@ const schema = new Schema({
       FileStatus,
       DefaultMarkingSchemas,
       TestHierarchyNodes,
+      DownloadSampleQmap,
     },
   }),
   mutation: new ObjectType({

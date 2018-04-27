@@ -142,6 +142,88 @@ export const MarkingSchemaType = new InputObjectType({
   },
 });
 
+export const InputQmapSubjectType = new InputObjectType({
+  name: 'InputQmapSubjectType',
+  description: 'Subject details in each Qmap object',
+  fields: {
+    name: { type: new NonNull(StringType), description: 'Name of the Subject' },
+    code: { type: new NonNull(StringType), description: 'System generated subject code' },
+  },
+});
+
+export const QmapSubjectType = new ObjectType({
+  name: 'QmapSubjectType',
+  description: 'Subject details in each Qmap object',
+  fields: {
+    name: { type: StringType, description: 'Name of the Subject' },
+    code: { type: StringType, description: 'System generated subject code' },
+  },
+});
+
+
+export const InputQmapTopicType = new InputObjectType({
+  name: 'InputQmapTopicType',
+  description: 'Topic details in each Qmap object',
+  fields: {
+    name: { type: new NonNull(StringType), description: 'Name of the Topic' },
+    code: { type: StringType, description: 'Topic code given by the user at time of adding Concept taxonomy in Settings' },
+  },
+});
+
+export const QmapTopicType = new ObjectType({
+  name: 'QmapTopicType',
+  description: 'Topic details in each Qmap object',
+  fields: {
+    name: { type: StringType, description: 'Name of the Topic' },
+    code: { type: StringType, description: 'Topic code given by the user at time of adding Concept taxonomy in Settings' },
+  },
+});
+
+export const InputQmapsubTopicType = new InputObjectType({
+  name: 'InputQmapsubTopicType',
+  description: 'subTopic details in each Qmap object',
+  fields: {
+    name: { type: new NonNull(StringType), description: 'Name of the subTopic' },
+    code: { type: new NonNull(StringType), description: 'Code given by the user at time of question mapping in test creation' },
+  },
+});
+
+export const QmapsubTopicType = new ObjectType({
+  name: 'QmapsubTopicType',
+  description: 'subTopic details in each Qmap object',
+  fields: {
+    name: { type: StringType, description: 'Name of the subTopic' },
+    code: { type: StringType, description: 'Code given by the user at time of question mapping in test creation' },
+  },
+});
+
+export const InputQmapType = new InputObjectType({
+  name: 'InputQmapType',
+  description: 'Mapping the question with subject, topic and subTopic',
+  fields: {
+    questionNumber: { type: new NonNull(StringType), description: 'Quetion number in specified format, ex: Q1,Q2, etc..' },
+    subject: { type: new NonNull(InputQmapSubjectType), description: 'Subject details in each Qmap object' },
+    topic: { type: new NonNull(InputQmapTopicType), description: 'Topic details in each Qmap object' },
+    subTopic: { type: new NonNull(InputQmapsubTopicType), description: 'subTopic details in each Qmap object' },
+    difficulty: { type: StringType, description: 'Difficulty of the question in enumerated form of Easy, Medium and Hard' },
+  },
+});
+
+export const QmapType = new ObjectType({
+  name: 'QmapType',
+  description: 'Mapping the question with subject, topic and subTopic',
+  fields: {
+    questionNumber: { type: StringType, description: 'Quetion number in specified format, ex: Q1,Q2, etc..' },
+    subject: { type: QmapSubjectType, description: 'Subject details in each Qmap object' },
+    topic: { type: QmapTopicType, description: 'Topic details in each Qmap object' },
+    subTopic: { type: QmapsubTopicType, description: 'subTopic details in each Qmap object' },
+    difficulty: { type: StringType, description: 'Difficulty of the question in enumerated form of Easy, Medium and Hard' },
+    C: { type: StringType, description: 'Marks for answering correctly to this question' },
+    W: { type: StringType, description: 'Marks for answering wrongly to this question' },
+    U: { type: StringType, description: 'Marks for Not attempting this question' },
+  },
+});
+
 
 export const TestType = new ObjectType({
   name: 'TestType',
@@ -158,7 +240,7 @@ export const TestType = new ObjectType({
     subjectsordered: { type: BooleanType, description: 'Subjects ordered or not' },
     hierarchyTag: { type: StringType, description: 'Unique identifier for hierarchy' },
     markingSchema: { type: GraphQLJSON, description: 'Marks distribution' },
-    Qmap: { type: GraphQLJSON, description: 'Individual question information' },
+    Qmap: { type: new List(QmapType), description: 'Question mapping with subject, topic and subTopic' },
     questionPaperUrl: { type: StringType, description: 'Question paper url' },
     questionPaperId: { type: StringType, description: 'Question paper ID' },
     qPageMapping: { type: GraphQLJSON, description: 'Question number page mapping to scroll pdf' },
@@ -186,7 +268,7 @@ export const InputTestType = new InputObjectType({
     subjects: { type: new NonNull(new List(InputSubjectType)), description: 'Selected subjects for the test' },
     subjectsordered: { type: BooleanType, description: 'Subjects ordered or not' },
     markingSchema: { type: MarkingSchemaType, description: 'Marks distribution' },
-    // Qmap:{type: QmapSchema, description: 'Question wise description'},
+    // Qmap: { type: InputQmapType, description: 'Question wise description' },
   },
 });
 
@@ -217,7 +299,7 @@ export const UpdateTestType = new InputObjectType({
     subjectsordered: { type: BooleanType, description: 'Subjects ordered or not' },
     subjects: { type: new List(InputSubjectType), description: 'Selected subjects for the test' },
     markingSchema: { type: MarkingSchemaType, description: 'Marks distribution' },
-    // Qmap:{ type: QmapSchema, description: 'Question wise description' },
+    Qmap: { type: new List(InputQmapType), description: 'Mapping the question with subject, topic and subTopic' },
   },
 });
 

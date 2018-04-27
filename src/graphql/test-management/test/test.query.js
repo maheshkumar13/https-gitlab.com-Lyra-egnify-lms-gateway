@@ -216,6 +216,25 @@ export const TestHierarchyNodes = {
   },
 };
 
+export const DownloadSampleQmap = {
+  args: {
+    testId: { type: new NonNull(StringType), description: 'Unique identifier for test' },
+  },
+  type: GraphQLJSON,
+  async resolve(obj, args) {
+    const url = `${config.services.test}/api/v1/test/downloadSampleQmap`;
+    // console.log('url is', url);
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then(response => response.json())
+      .catch(err => new Error(err.message));
+  },
+
+};
+
 export default{
   Tests,
   QuestionTypes,
@@ -223,5 +242,6 @@ export default{
 
   DefaultMarkingSchemas,
   TestHierarchyNodes,
+  DownloadSampleQmap,
 
 };
