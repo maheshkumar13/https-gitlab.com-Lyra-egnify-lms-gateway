@@ -45,7 +45,7 @@ app.use('/', express.static(`${__dirname}/public`));
 app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql', passHeader: "'Authorization': localStorage.getItem('jwt_token')" }));
 app.use(
   '/graphql',
-  auth.isAuthenticated(),
+  // auth.isAuthenticated(),
   bodyParser.json(),
   graphqlExpress((req) => {
     // Some sort of auth function

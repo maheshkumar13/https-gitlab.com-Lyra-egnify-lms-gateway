@@ -10,7 +10,7 @@ import {
 } from 'graphql';
 import fetch from 'universal-fetch';
 
-import { CommonAnalysisType } from './ga.type';
+import { CommonAnalysisType, QuestionErrorAnalysisType } from './ga.type';
 
 import { config } from '../../../config/environment';
 
@@ -38,11 +38,12 @@ import { config } from '../../../config/environment';
 
 export const CommonAnalysis = {
   args: {
-    testId: { type: StringType },
+    testIds: { type: new List(StringType) },
+    studentId: { type: StringType },
   },
   type: new List(CommonAnalysisType),
   async resolve(obj, args) {
-    const url = 'https://egnify-product.appspot.com/api/v1/masterResult/read';
+    const url = `${config.services.test}/api/v1/masterResult/read/withMultipleTestIds`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
@@ -53,4 +54,23 @@ export const CommonAnalysis = {
   },
 };
 
-export default CommonAnalysis;
+export const QuestionErrorAnalysis = {
+  args: {
+    testId: { type: StringType },
+  },
+  type: QuestionErrorAnalysisType,
+  async resolve(obj, args) {
+    const url = `${config.services.test}/api/v1/reports/questionErrorCount`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then(response => response.json())
+      .catch(err => new Error(err.message));
+  },
+};
+export default {
+  CommonAnalysis,
+  QuestionErrorAnalysis,
+};

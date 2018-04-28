@@ -9,7 +9,7 @@ import {
   GraphQLString as StringType,
   // GraphQLNonNull as NonNull,
   // GraphQLBoolean as BooleanType,
-  // GraphQLInt as IntType,
+  GraphQLInt as IntType,
   GraphQLList as List,
   GraphQLFloat as FloatType,
   // GraphQLInputObjectType as InputObjectType,
@@ -35,6 +35,22 @@ const MarkAnalysisType = new ObjectType({
   },
 });
 
+const RankAnalysisDataType = new ObjectType({
+  name: 'RankAnalysisDataType',
+  description: 'Rank Analysis Values',
+  fields: {
+    rank: { type: FloatType, description: 'Rank Obtained' },
+  },
+});
+
+const RankAnalysisType = new ObjectType({
+  name: 'RankAnalysisType',
+  description: 'Rank Analysis',
+  fields: {
+    subject: { type: StringType, description: 'subject code or name' },
+    data: { type: RankAnalysisDataType, description: 'Rank analysis data type' },
+  },
+});
 const CWUAnalysisDataType = new ObjectType({
   name: 'CWUAnalysisDataType',
   description: 'CWU Analysis Values',
@@ -55,9 +71,22 @@ const CWUAnalysisType = new ObjectType({
   },
 });
 
+const ErrorDataType = new ObjectType({
+  name: 'ErrorDataType',
+  description: 'Error Data',
+  fields: {
+    questionNumber: { type: StringType, description: 'subject code or name' },
+    subject: { type: StringType, description: 'subject code or name' },
+    C: { type: FloatType, description: 'Number of Correct' },
+    W: { type: FloatType, description: 'Numbers of Wrong' },
+    U: { type: FloatType, description: 'Number of Unattempted' },
+    UW: { type: FloatType, description: 'Number of Unattempted + Wrong' },
+    percentage: { type: FloatType, description: 'Percentage of Unattempted + Wrong' },
+  },
+});
 
-export const CommonAnalysisType = new ObjectType({
-  name: 'CommonAnalysisType',
+export const CommonAnalysisDataType = new ObjectType({
+  name: 'CommonAnalysisDataType',
   description: 'Coomon Reports per Student',
   fields: {
     // student data
@@ -74,9 +103,38 @@ export const CommonAnalysisType = new ObjectType({
     responseData: { type: GraphQLJSON, description: 'Key-Value pairs of questionResponse and questionMarks' },
     cwuAnalysis: { type: new List(CWUAnalysisType), description: 'CWU Analysis of an Invidual Student' },
     markAnalysis: { type: new List(MarkAnalysisType), description: 'Mark Analysis of an Invidual Student' },
+    rankAnalysis: { type: new List(RankAnalysisType), description: 'Rank Analysis of an Invidual Student' },
+  },
+});
+
+export const CommonAnalysisType = new ObjectType({
+  name: 'CommonAnalysisType',
+  description: 'Coomon Reports per Student',
+  fields: {
+    // test data
+    testId: { type: StringType, description: 'ID of the Test' },
+
+    // // Analysis
+    data: { type: new List(CommonAnalysisDataType), description: 'Rank Analysis of an Invidual Student' },
+  },
+});
+
+export const QuestionErrorAnalysisType = new ObjectType({
+  name: 'QuestionErrorAnalysisType',
+  description: 'Question Error Analysis Per Test',
+  fields: {
+    // student data
+
+    // test data
+    testId: { type: StringType, description: 'ID of the Test' },
+    QMap: { type: GraphQLJSON, description: 'Individual question information like subtopic, topic, subject, CWU' },
+    TotalStudent: { type: IntType, description: 'Total number of student attempted the test' },
+    // // Analysis
+    errorData: { type: new List(ErrorDataType), description: 'Question wise error analysis' },
   },
 });
 
 export default {
   CommonAnalysisType,
+  QuestionErrorAnalysisType,
 };
