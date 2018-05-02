@@ -96,6 +96,7 @@ export const CommonAnalysisDataType = new ObjectType({
 
     // test data
     testId: { type: StringType, description: 'ID of the Test' },
+    testMetaData: { type: GraphQLJSON, description: 'Test Meta Data' },
     QMap: { type: GraphQLJSON, description: 'Individual question information like subtopic, topic, subject, CWU' },
     QMapArray: { type: GraphQLJSON, description: 'Individual question information like subtopic, topic, subject, CWU' },
 
