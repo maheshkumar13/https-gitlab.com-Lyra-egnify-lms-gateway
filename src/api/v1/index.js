@@ -18,8 +18,9 @@ export default function (app) {
   app.use('/auth', auth);
 
   // Proxy Request below
-  app.post('/api/v1/question/populateQuestion', authService.isAuthenticated(), (req, res) => request({
-    url: `${config.services.test}/api/v1/question/populateQuestion`,
-    method: 'POST',
-  }).pipe(res));
+  app.post('/api/v1/question/populateQuestion', authService.isAuthenticated(), (req, res) => {
+    const submissionUrl = `${config.services.test}/api/v1/question/populateQuestion`;
+    const submissionRequest = request(submissionUrl);
+    req.pipe(submissionRequest).pipe(res);
+  });
 }
