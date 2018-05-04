@@ -99,6 +99,7 @@ const InputHierarchyType = new InputObjectType({
     level: { type: IntType, description: 'Level of the node' },
     selected: { type: BooleanType, description: 'Selected status of the node' },
     next: { type: GraphQLJSON, description: 'List of child nodes with above described JSON' },
+    isLeafNode: { type: BooleanType, description: 'Specifies if a node is leaf node or not' },
   },
 });
 
