@@ -16,6 +16,8 @@ import {
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 
+import { TestType } from '../test/test.type';
+
 const MarkAnalysisDataType = new ObjectType({
   name: 'MarkAnalysisDataType',
   description: 'Mark Analysis Values',
@@ -96,7 +98,7 @@ export const CommonAnalysisDataType = new ObjectType({
 
     // test data
     testId: { type: StringType, description: 'ID of the Test' },
-    testMetaData: { type: GraphQLJSON, description: 'Test Meta Data' },
+    testMetaData: { type: TestType, description: 'Test Meta Data' },
     QMap: { type: GraphQLJSON, description: 'Individual question information like subtopic, topic, subject, CWU' },
     QMapArray: { type: GraphQLJSON, description: 'Individual question information like subtopic, topic, subject, CWU' },
 
@@ -135,7 +137,18 @@ export const QuestionErrorAnalysisType = new ObjectType({
   },
 });
 
+export const GenerateAnalysisReturnType = new ObjectType({
+  name: 'GenerateAnalysisReturnType',
+  description: 'Generate Analysis',
+  fields: {
+    // test data
+    testId: { type: StringType, description: 'ID of the Test' },
+    gaStatus: { type: StringType, description: 'GA Status' },
+  },
+});
+
 export default {
   CommonAnalysisType,
   QuestionErrorAnalysisType,
+  GenerateAnalysisReturnType,
 };

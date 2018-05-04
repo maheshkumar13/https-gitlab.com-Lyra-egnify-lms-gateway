@@ -12,7 +12,7 @@ import {
 import GradeSystem from './settings/grade/grade.query';
 import TestPattern from './settings/testPattern/testPattern.query';
 
-import { Tests, QuestionTypes, DefaultMarkingSchemas, TestHierarchyNodes, FileStatus } from './test-management/test/test.query';
+import { Tests, moveTest, QuestionTypes, DefaultMarkingSchemas, TestHierarchyNodes, FileStatus } from './test-management/test/test.query';
 import { removeTest, createDummyTest, createDuplicateTest, createTest, updateTest } from './test-management/test/test.mutation';
 import { Curriculum } from './settings/curriculum/curriculum.query';
 import { SubjectList, SubjectTaxonomy } from './settings/subject/subjectTaxonomy.query';
@@ -32,7 +32,7 @@ import { createGradeSystem, createGradePattern, removeGradePattern, removeGradeS
 import { uploadResult, updateUploadedResult, comfirmMissing, deleteResult } from './test-management/result-upload/result-upload.mutation';
 import { Results, ResultsSampleDownload } from './test-management/result-upload/result-upload.query';
 
-import { CommonAnalysis, QuestionErrorAnalysis } from './test-management/ga/ga.query';
+import { GenerateAnalysis, CommonAnalysis, QuestionErrorAnalysis } from './test-management/ga/ga.query';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -62,8 +62,10 @@ const schema = new Schema({
       FileStatus,
       DefaultMarkingSchemas,
       TestHierarchyNodes,
+      GenerateAnalysis,
       CommonAnalysis,
       QuestionErrorAnalysis,
+      moveTest,
     },
   }),
   mutation: new ObjectType({

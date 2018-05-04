@@ -141,6 +141,15 @@ export const MarkingSchemaType = new InputObjectType({
     subjects: { type: new List(SubjectMarkingSchemaType), description: 'Marks distribution' },
   },
 });
+// export const GAStatusMeta = new InputObjectType({
+//   name: 'MarkingSchemaType',
+//   description: 'Marks distribution subjects and questions wise',
+//   fields: {
+//     totalQuestions: { type: IntType, description: 'Total number of questions in the test' },
+//     totalMarks: { type: IntType, description: 'Total marks in the test' },
+//     subjects: { type: new List(SubjectMarkingSchemaType), description: 'Marks distribution' },
+//   },
+// });
 
 
 export const TestType = new ObjectType({
@@ -169,6 +178,7 @@ export const TestType = new ObjectType({
     stepsCompleted: { type: IntType, description: 'Number of steps completed in test creation' },
     totalSteps: { type: IntType, description: 'Total steps in test creation' },
     status: { type: StringType, description: 'Current status of the test' },
+    gaStatus: { type: StringType, description: 'Current GA Status of the test. Possible State: [not_started,pending,error,finished]' },
   },
 });
 export const InputTestType = new InputObjectType({
@@ -239,6 +249,14 @@ export const TestHierarchyNodesType = new ObjectType({
   },
 });
 
+export const MoveTestType = new ObjectType({
+  name: 'MoveTestType',
+  description: 'MoveTestType',
+  fields: {
+    testId: { type: StringType, description: 'Test ID' },
+    status: { type: StringType, description: 'Status' },
+  },
+});
 
 export default{
   TestType,
@@ -247,4 +265,5 @@ export default{
   MarkingSchemaType,
   TestHierarchyNodesType,
   FileStatusType,
+  MoveTestType,
 };

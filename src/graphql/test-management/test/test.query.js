@@ -18,7 +18,7 @@ import fetch from 'universal-fetch';
 import GraphQLJSON from 'graphql-type-json';
 import { config } from '../../../config/environment';
 
-import { TestType, TestHierarchyNodesType, FileStatusType } from './test.type';
+import { TestType, MoveTestType, TestHierarchyNodesType, FileStatusType } from './test.type';
 
 
 const pageInfoType = new ObjectType({
@@ -216,6 +216,29 @@ export const TestHierarchyNodes = {
   },
 };
 
+export const moveTest = {
+  args: {
+    testId: { type: new NonNull(StringType) },
+    status: { type: new NonNull(StringType) },
+  },
+  type: MoveTestType,
+  async resolve(obj, args) {
+    const url = `${config.services.test}/api/v1/test/moveTest`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .catch(err => new Error(err.message));
+  },
+};
+
 export default{
   Tests,
   QuestionTypes,
@@ -223,5 +246,6 @@ export default{
 
   DefaultMarkingSchemas,
   TestHierarchyNodes,
+  moveTest,
 
 };
