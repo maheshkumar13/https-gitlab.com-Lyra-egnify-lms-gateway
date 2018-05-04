@@ -22,7 +22,7 @@ import {
   FileStatus,
   DownloadSampleQmap,
 } from './test-management/test/test.query';
-import { removeTest, createDummyTest, createDuplicateTest, createTest, updateTest } from './test-management/test/test.mutation';
+import { removeTest, createDummyTest, createDuplicateTest, createTest, updateTest, QmapFileUpload } from './test-management/test/test.mutation';
 import { Curriculum } from './settings/curriculum/curriculum.query';
 import { SubjectList, SubjectTaxonomy } from './settings/subject/subjectTaxonomy.query';
 import { removeSubjectTaxonomy, updateSubjectTaxonomy, createSubjects } from './settings/subject/subjectTaxonomy.mutation';
@@ -112,6 +112,7 @@ const schema = new Schema({
       updateUploadedResult,
       comfirmMissing,
       deleteResult,
+      QmapFileUpload,
     },
   }),
 });
