@@ -141,9 +141,35 @@ export const updateTest = {
         return response.json();
       })
       .then(json => json)
-      .catch(err => new Error(response.statusText)); // eslint-disable-line
+      .catch(err => new Error(err.message)); // eslint-disable-line
   },
   description: 'Defined fields get updated',
+};
+
+export const QmapFileUpload = {
+  args: {
+    testId: { type: new NonNull(StringType), description: 'testId, Unique identifier for test' },
+    url: { type: new NonNull(StringType), description: 'URL of file uploaded to GCS' },
+  },
+  type: TestType,
+  async resolve(obj, args) {
+    const url = `${config.services.test}/api/v1/test/QmapFileUpload`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then((response) => {
+        // console.log(response.status);
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then(json => json)
+      .catch(err => new Error(err.message)); // eslint-disable-line
+  },
+  description: 'Old Qmap will get totally replaced',
 };
 
 export default{
@@ -152,4 +178,5 @@ export default{
   createDuplicateTest,
   createTest,
   updateTest,
+  QmapFileUpload,
 };
