@@ -137,7 +137,8 @@ export const MarkingSchemaType = new InputObjectType({
   name: 'MarkingSchemaType',
   description: 'Marks distribution subjects and questions wise',
   fields: {
-    type: { type: StringType, description: 'Type of marking schema based on test pattern selected' },
+    testType: { type: StringType, description: 'Type of marking schema based on test pattern selected' },
+    testName: { type: StringType, description: 'Name of marking schema based on test pattern selected' },
     totalQuestions: { type: IntType, description: 'Total number of questions in the test' },
     totalMarks: { type: IntType, description: 'Total marks in the test' },
     subjects: { type: new List(SubjectMarkingSchemaType), description: 'Marks distribution' },
