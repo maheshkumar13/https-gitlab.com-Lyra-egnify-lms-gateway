@@ -16,7 +16,6 @@ import {
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 
-const GraphQLDate = require('graphql-date');
 // const GraphQLStringType = require('graphql-StringType');
 const InputSubjectType = new InputObjectType({
   name: 'InputSubjectType',
@@ -272,7 +271,7 @@ export const InputTestType = new InputObjectType({
   fields: {
     testName: { type: new NonNull(StringType), description: 'Name of the test, testName should not be empty! ' },
     totalMarks: { type: new NonNull(IntType), description: 'totalMarks in the test' },
-    date: { type: new NonNull(GraphQLDate), description: 'Date of conducting the test.' },
+    date: { type: new NonNull(StringType), description: 'Date of conducting the test.' },
     startTime: { type: new NonNull(StringType), description: 'Time of test starts, should be in range 00:00 to 23:59' },
     duration: { type: new NonNull(IntType), description: 'Number of minutes of the test duration' },
     selectedHierarchy: { type: new NonNull(InputSelectedHierarhcyType), description: '  Highest level of hierarchy selected by the user' },
