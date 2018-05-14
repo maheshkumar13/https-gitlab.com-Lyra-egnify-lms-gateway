@@ -8,6 +8,7 @@ import {
   GraphQLObjectType as ObjectType,
   GraphQLString as StringType,
   GraphQLBoolean as BooleanType,
+  GraphQLNonNull as NonNull,
   GraphQLInt as IntType,
   GraphQLInputObjectType as InputObjectType,
   GraphQLEnumType as EnumType,
@@ -63,8 +64,8 @@ export const QuestionDetailsInputType = new InputObjectType({
     subTopicCode: { type: StringType, description: 'User defined topic code' },
     difficulty: { type: DifficultyEnumType, description: 'User defined Difficulty of question' },
     questionResponse: { type: ResponseEnumType },
-    pageNumber: { type: IntType },
-    limit: { type: IntType },
+    pageNumber: { type: new NonNull(IntType) },
+    limit: { type: new NonNull(IntType) },
   },
 });
 
