@@ -194,8 +194,8 @@ export const InputQmapsubTopicType = new InputObjectType({
   name: 'InputQmapsubTopicType',
   description: 'subTopic details in each Qmap object',
   fields: {
-    name: { type: new NonNull(StringType), description: 'Name of the subTopic' },
-    code: { type: new NonNull(StringType), description: 'Code given by the user at time of question mapping in test creation' },
+    name: { type: StringType, description: 'Name of the subTopic' },
+    code: { type: StringType, description: 'Code given by the user at time of question mapping in test creation' },
   },
 });
 
