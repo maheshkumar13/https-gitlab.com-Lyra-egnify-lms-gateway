@@ -12,11 +12,32 @@ import {
   GraphQLInt as IntType,
   GraphQLList as List,
   GraphQLFloat as FloatType,
-  // GraphQLInputObjectType as InputObjectType,
+  GraphQLInputObjectType as InputObjectType,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 
 import { TestType } from '../test/test.type';
+
+
+const FilterInputType = new InputObjectType({
+  name: 'Filter',
+  description: 'Filter For Graph QL Calls ',
+  fields: {
+    filterName: { type: StringType },
+    values: { type: new List(GraphQLJSON) },
+  },
+});
+
+export const FilterListInputType = new InputObjectType({
+  name: 'FilterList',
+  description: 'List of Filters For Graph QL Calls',
+  fields: {
+    filters: {
+      type: new List(FilterInputType),
+    },
+  },
+});
+
 
 const MarkAnalysisDataType = new ObjectType({
   name: 'MarkAnalysisDataType',
@@ -27,6 +48,7 @@ const MarkAnalysisDataType = new ObjectType({
     percentage: { type: FloatType, description: 'Percentage' },
   },
 });
+
 
 const MarkAnalysisType = new ObjectType({
   name: 'MarkAnalysisType',
@@ -149,6 +171,7 @@ export const GenerateAnalysisReturnType = new ObjectType({
 
 export default {
   CommonAnalysisType,
+  FilterListInputType,
   QuestionErrorAnalysisType,
   GenerateAnalysisReturnType,
 };
