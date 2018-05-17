@@ -12,7 +12,7 @@ import {
 } from 'graphql';
 import fetch from 'universal-fetch';
 
-import { CommonAnalysisType, QuestionErrorAnalysisType, GenerateAnalysisReturnType } from './ga.type';
+import { CommonAnalysisType, QuestionErrorAnalysisType, GenerateAnalysisReturnType, FilterInputType } from './ga.type';
 
 import { config } from '../../../config/environment';
 
@@ -42,6 +42,7 @@ export const CommonAnalysis = {
   args: {
     testIds: { type: new List(StringType) },
     studentId: { type: StringType },
+    filter: { type: new List(FilterInputType) },
   },
   type: new List(CommonAnalysisType),
   async resolve(obj, args) {
@@ -59,6 +60,7 @@ export const CommonAnalysis = {
 export const QuestionErrorAnalysis = {
   args: {
     testId: { type: new NonNull(StringType) },
+    filter: { type: new List(FilterInputType) },
   },
   type: QuestionErrorAnalysisType,
   async resolve(obj, args) {
