@@ -19,22 +19,12 @@ import GraphQLJSON from 'graphql-type-json';
 import { TestType } from '../test/test.type';
 
 
-const FilterInputType = new InputObjectType({
+export const FilterInputType = new InputObjectType({
   name: 'Filter',
-  description: 'Filter For Graph QL Calls ',
+  description: 'Filters For Graph QL Calls',
   fields: {
-    filterName: { type: StringType },
+    filterName: { type: StringType, enum: ['hierarchyLevels'] },
     values: { type: new List(GraphQLJSON) },
-  },
-});
-
-export const FilterListInputType = new InputObjectType({
-  name: 'FilterList',
-  description: 'List of Filters For Graph QL Calls',
-  fields: {
-    filters: {
-      type: new List(FilterInputType),
-    },
   },
 });
 
@@ -171,7 +161,7 @@ export const GenerateAnalysisReturnType = new ObjectType({
 
 export default {
   CommonAnalysisType,
-  FilterListInputType,
+  FilterInputType,
   QuestionErrorAnalysisType,
   GenerateAnalysisReturnType,
 };
