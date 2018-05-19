@@ -108,10 +108,13 @@ const SubjectMarksInMarkingSchemaType = new InputObjectType({
   fields: {
     questionType: { type: StringType, description: 'Type of question' },
     numberOfQuestions: { type: IntType, description: 'Number o question in this question' },
+    numberOfSubQuestions: { type: IntType, description: 'Number of sub questions in this question' },
     section: { type: IntType, description: 'Section number' },
     C: { type: StringType, description: 'Marks for each correct answered question in this question' },
     W: { type: StringType, description: 'Marks for each wrong answered question in this question' },
     U: { type: StringType, description: 'Marks for each Unattempted question' },
+    P: { type: IntType, description: 'Partial Marks' },
+    ADD: { type: IntType, description: 'Additional marks if any' },
     start: { type: IntType, description: 'First question number in this section' },
     end: { type: IntType, description: 'Last question number in this section' },
     totalMarks: { type: IntType, description: 'Total marks in this section' },
