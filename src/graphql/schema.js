@@ -43,6 +43,9 @@ import { uploadResult, updateUploadedResult, comfirmMissing, deleteResult } from
 import { Results, ResultsSampleDownload } from './test-management/result-upload/result-upload.query';
 
 import { GenerateAnalysis, CommonAnalysis, QuestionErrorAnalysis } from './test-management/ga/ga.query';
+import { createTestPatternSchema, updateTestPatternSchema, removeTestPatternSchema } from './test-management/testPattern/testPattern.mutation';
+import { TestPatternSchema } from './test-management/testPattern/testPattern.query';
+
 
 const schema = new Schema({
   query: new ObjectType({
@@ -78,6 +81,7 @@ const schema = new Schema({
       moveTest,
       DownloadSampleQmap,
       QuestionDetails,
+      TestPatternSchema,
     },
   }),
   mutation: new ObjectType({
@@ -115,6 +119,9 @@ const schema = new Schema({
       comfirmMissing,
       deleteResult,
       QmapFileUpload,
+      createTestPatternSchema,
+      updateTestPatternSchema,
+      removeTestPatternSchema,
     },
   }),
 });
