@@ -11,6 +11,7 @@ import {
   GraphQLList as List,
 } from 'graphql';
 import fetch from 'universal-fetch';
+import GraphQLJSON from 'graphql-type-json';
 
 import { CommonAnalysisType, QuestionErrorAnalysisType, GenerateAnalysisReturnType, FilterInputType } from './ga.type';
 
@@ -55,6 +56,28 @@ export const CommonAnalysis = {
       .then(response => response.json())
       .catch(err => new Error(err.message));
   },
+};
+
+export const MarksDistributionAnalysis = {
+  args: {
+    testId: { type: new NonNull(StringType), description: 'Test Id of a particular test' },
+    division: { type: new NonNull(StringType), description: 'No of division of total marks. Should be less than total Marks' },
+    level: { type: new NonNull(StringType), description: 'Level No of the Hierarchy' },
+    campusFilter: { type: new List(StringType), description: 'Internal Code of a particular Hierarchy Node' },
+  },
+  type: GraphQLJSON,
+  async resolve(obj, args) {
+    const url = `${config.services.test}/api/v1/reports/generateMarkDistributionReport`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then(response => response.json())
+      .catch(err => new Error(err.message));
+  },
+
+
 };
 
 export const QuestionErrorAnalysis = {
