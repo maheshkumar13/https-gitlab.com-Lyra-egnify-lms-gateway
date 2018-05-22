@@ -145,6 +145,30 @@ export const GenerateAnalysis = {
   },
 };
 
+export const GenerateAnalysisv2 = {
+  args: {
+    testId: { type: new NonNull(StringType) },
+    start: { type: new NonNull(BooleanType) },
+  },
+  type: GenerateAnalysisReturnType,
+  async resolve(obj, args) {
+    const url = `${config.services.test}/api/v1/test/perform/gav2`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .catch(err => new Error(err.message));
+  },
+};
+
+
 export default {
   CommonAnalysis,
   QuestionErrorAnalysis,

@@ -42,7 +42,7 @@ import { createGradeSystem, createGradePattern, removeGradePattern, removeGradeS
 import { uploadResult, updateUploadedResult, comfirmMissing, deleteResult } from './test-management/result-upload/result-upload.mutation';
 import { Results, ResultsSampleDownload } from './test-management/result-upload/result-upload.query';
 
-import { GenerateAnalysis, CommonAnalysis, MarksDistributionAnalysis, QuestionErrorAnalysis, StudentPerformanceTrendAnalysis } from './test-management/ga/ga.query';
+import { GenerateAnalysis, GenerateAnalysisv2, CommonAnalysis, MarksDistributionAnalysis, QuestionErrorAnalysis, StudentPerformanceTrendAnalysis } from './test-management/ga/ga.query';
 import { createTestPatternSchema, updateTestPatternSchema, removeTestPatternSchema } from './test-management/testPattern/testPattern.mutation';
 import { TestPatternSchema } from './test-management/testPattern/testPattern.query';
 
@@ -76,6 +76,7 @@ const schema = new Schema({
       DefaultMarkingSchemas,
       TestHierarchyNodes,
       GenerateAnalysis,
+      GenerateAnalysisv2,
       CommonAnalysis,
       QuestionErrorAnalysis,
       StudentPerformanceTrendAnalysis,
