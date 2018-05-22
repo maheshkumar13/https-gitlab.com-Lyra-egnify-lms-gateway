@@ -45,7 +45,7 @@ import { Results, ResultsSampleDownload } from './test-management/result-upload/
 import { GenerateAnalysis, GenerateAnalysisv2, CommonAnalysis, MarksDistributionAnalysis, QuestionErrorAnalysis, StudentPerformanceTrendAnalysis } from './test-management/ga/ga.query';
 import { createTestPatternSchema, updateTestPatternSchema, removeTestPatternSchema } from './test-management/testPattern/testPattern.mutation';
 import { TestPatternSchema } from './test-management/testPattern/testPattern.query';
-
+import { ConceptAnalysis } from './test-management/conceptAnalysis/conceptAnalysis.query';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -85,6 +85,7 @@ const schema = new Schema({
       DownloadSampleQmap,
       QuestionDetails,
       TestPatternSchema,
+      ConceptAnalysis,
     },
   }),
   mutation: new ObjectType({
