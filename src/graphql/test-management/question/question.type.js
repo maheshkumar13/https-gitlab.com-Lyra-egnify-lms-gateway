@@ -12,6 +12,7 @@ import {
   GraphQLInt as IntType,
   GraphQLInputObjectType as InputObjectType,
   GraphQLEnumType as EnumType,
+  GraphQLList as List,
 
 } from 'graphql';
 
@@ -28,6 +29,9 @@ const DifficultyEnumType = new EnumType({
     },
     Hard: {
       value: 'Hard',
+    },
+    Null: {
+      value: null,
     },
   },
 });
@@ -54,18 +58,20 @@ export const QuestionDetailsInputType = new InputObjectType({
   name: 'QuestionDetailsInputType',
   description: 'Input for Question Details query',
   fields: {
-    testId: { type: StringType, description: 'Test Id of the test' },
-    questionNumber: { type: StringType, description: 'Question no of the test' },
-    subject: { type: StringType, description: 'Name of the subject' },
-    subjectCode: { type: StringType, description: 'User defined subject code' },
-    topic: { type: StringType, description: 'Name of the topic' },
-    topicCode: { type: StringType, description: 'User defined topic code' },
-    subTopic: { type: StringType, description: 'Name of the topic' },
-    subTopicCode: { type: StringType, description: 'User defined topic code' },
-    difficulty: { type: DifficultyEnumType, description: 'User defined Difficulty of question' },
-    questionResponse: { type: ResponseEnumType },
-    pageNumber: { type: new NonNull(IntType) },
-    limit: { type: new NonNull(IntType) },
+    qid: { type: new List(StringType), description: 'Qid of the Question' },
+    testId: { type: new List(StringType), description: 'Test Id of the test' },
+    questionNumber: { type: new List(StringType), description: 'Question no of the test' },
+    subject: { type: new List(StringType), description: 'Name of the subject' },
+    subjectCode: { type: new List(StringType), description: 'User defined subject code' },
+    topic: { type: new List(StringType), description: 'Name of the topic' },
+    topicCode: { type: new List(StringType), description: 'User defined topic code' },
+    subTopic: { type: new List(StringType), description: 'Name of the topic' },
+    subTopicCode: { type: new List(StringType), description: 'User defined topic code' },
+    difficulty: { type: new List(DifficultyEnumType), description: 'User defined Difficulty of question' },
+    questionType: { type: new List(StringType), description: 'Type of the Question' },
+    questionResponse: { type: new List(ResponseEnumType) },
+    pageNumber: { type: IntType },
+    limit: { type: IntType },
   },
 });
 

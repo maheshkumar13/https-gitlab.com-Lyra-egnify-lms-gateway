@@ -29,7 +29,6 @@ export const QuestionDetails = {
       .then((json) => {
         const data = {};
         data.page = json.questionDetails;
-        console.error(data.page);
         const pageInfo = {};
         pageInfo.prevPage = true;
         pageInfo.nextPage = true;
@@ -43,10 +42,10 @@ export const QuestionDetails = {
           return new Error('Page Number is invalid');
         }
 
-        if (args.pageNumber === pageInfo.totalPages) {
+        if (args.pageNumber === pageInfo.totalPages || !args.pageNumber) {
           pageInfo.nextPage = false;
         }
-        if (args.pageNumber === 1) {
+        if (args.pageNumber === 1 || !args.pageNumber) {
           pageInfo.prevPage = false;
         }
         if (pageInfo.totalEntries === 0) {

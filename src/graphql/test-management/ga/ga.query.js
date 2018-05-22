@@ -101,6 +101,8 @@ export const QuestionErrorAnalysis = {
 export const StudentPerformanceTrendAnalysis = {
   args: {
     testId: { type: new NonNull(StringType), description: 'Test Id ' },
+    filter: { type: new List(FilterInputType) },
+
   },
   type: GraphQLJSON,
   async resolve(obj, args) {
