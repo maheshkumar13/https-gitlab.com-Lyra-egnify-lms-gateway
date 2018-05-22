@@ -13,17 +13,27 @@ import {
   GraphQLList as List,
   GraphQLFloat as FloatType,
   GraphQLInputObjectType as InputObjectType,
+  GraphQLEnumType,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 
 import { TestType } from '../test/test.type';
 
 
+const FilterNameEnumType = new GraphQLEnumType({
+  name: 'FilterNameEnumType',
+  values: {
+    hierarchyFilter: {
+      value: 'hierarchyLevels',
+    },
+  },
+});
+
 export const FilterInputType = new InputObjectType({
   name: 'Filter',
   description: 'Filters For Graph QL Calls',
   fields: {
-    filterName: { type: StringType, enum: ['hierarchyLevels'] },
+    filterName: { type: FilterNameEnumType },
     values: { type: new List(GraphQLJSON) },
   },
 });

@@ -98,6 +98,30 @@ export const QuestionErrorAnalysis = {
   },
 };
 
+export const StudentPerformanceTrendAnalysis = {
+  args: {
+    testId: { type: new NonNull(StringType), description: 'Test Id ' },
+  },
+  type: GraphQLJSON,
+  async resolve(obj, args) {
+    const url = `${config.services.test}/api/v1/reports/generateTrendReport`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .catch(err => new Error(err.message));
+  },
+
+
+};
+
 export const GenerateAnalysis = {
   args: {
     testId: { type: new NonNull(StringType) },
