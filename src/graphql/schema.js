@@ -46,6 +46,7 @@ import { GenerateAnalysis, GenerateAnalysisv2, CommonAnalysis, MarksDistribution
 import { createTestPatternSchema, updateTestPatternSchema, removeTestPatternSchema } from './test-management/testPattern/testPattern.mutation';
 import { TestPatternSchema } from './test-management/testPattern/testPattern.query';
 import { ConceptAnalysis } from './test-management/conceptAnalysis/conceptAnalysis.query';
+import { StudentConceptAnalysis } from './test-management/Analysis/studentConceptAnalysis.query';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -86,6 +87,7 @@ const schema = new Schema({
       QuestionDetails,
       TestPatternSchema,
       ConceptAnalysis,
+      StudentConceptAnalysis,
     },
   }),
   mutation: new ObjectType({

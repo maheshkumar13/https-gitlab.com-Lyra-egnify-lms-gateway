@@ -1,6 +1,5 @@
 
 
-
 import {
   // GraphQLList as List,
   GraphQLNonNull as NonNull,
@@ -87,5 +86,5 @@ export const updateTestPatternSchema = {
 export default{
   createTestPatternSchema,
   updateTestPatternSchema,
-  removeTestPatternSchema
-}
+  removeTestPatternSchema,
+};
