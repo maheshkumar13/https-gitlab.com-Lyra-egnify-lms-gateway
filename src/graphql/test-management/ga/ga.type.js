@@ -169,9 +169,47 @@ export const GenerateAnalysisReturnType = new ObjectType({
   },
 });
 
+
+const ValueType = new ObjectType({
+  name: 'ValueType',
+  description: 'Single unit of Test Data for A Particular Student',
+  fields: {
+    testId: { type: StringType, description: 'Test ID' },
+    startDate: { type: StringType, description: 'start Date' },
+    startTime: { type: StringType, description: 'start Time' },
+    markAnalysis: { type: new List(MarkAnalysisType), description: 'Mark Analysis' },
+    rankAnalysis: { type: new List(RankAnalysisType), description: 'Rank Analysis' },
+    cwuAnalysis: { type: new List(CWUAnalysisType), description: 'CWU Analysis' },
+  },
+});
+const StudentPerformanceDataType = new ObjectType({
+  name: 'StudentPerformanceDataType',
+  description: 'Trend Data for A Particular Student',
+  fields: {
+    _id: { type: StringType, description: 'Student Id' },
+    studentId: { type: StringType, description: 'Student Id' },
+    studentMetaData: { type: GraphQLJSON, description: 'studentMetaData' },
+    values: { type: new List(ValueType), description: 'List of values for last 10 tests' },
+  },
+});
+
+export const StudentPerformanceTrendAnalysisType = new ObjectType({
+  name: 'StudentPerformanceTrendAnalysisType',
+  description: ' Student Performance Trend Analysis Values',
+  fields: {
+    testList: { type: new List(StringType), description: 'List of last 10 test Ids from the given test' },
+    docs: {
+      type: new List(StudentPerformanceDataType),
+      description: 'List of Student Data',
+    },
+  },
+
+});
+
 export default {
   CommonAnalysisType,
   FilterInputType,
   QuestionErrorAnalysisType,
   GenerateAnalysisReturnType,
+  StudentPerformanceTrendAnalysisType,
 };
