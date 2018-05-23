@@ -113,4 +113,4 @@ export const TestPatternSchemaType = new ObjectType({
 export default{
   InputTestPatternSchemaType,
   TestPatternSchemaType,
-}
+};

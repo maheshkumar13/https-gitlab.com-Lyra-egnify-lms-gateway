@@ -1,29 +1,28 @@
-
-
 import {
-  GraphQLList as List,
-  GraphQLNonNull as NonNull,
-  // GraphQLInt as IntType,
-  GraphQLString as StringType,
   // GraphQLObjectType as ObjectType,
+  GraphQLString as StringType,
+  GraphQLNonNull as NonNull,
   // GraphQLBoolean as BooleanType,
-  // GraphQLEnumType,
+  // GraphQLInt as IntType,
+  // GraphQLList as List,
+  // GraphQLFloat as FloatType,
+  // GraphQLInputObjectType as InputObjectType,
 } from 'graphql';
 
-// import GraphQLJSON from 'graphql-type-json';
+
+import GraphQLJSON from 'graphql-type-json';
 import fetch from 'universal-fetch';
 import { config } from '../../../config/environment';
 
-
-import { TestPatternSchemaType } from './testPattern.type';
-
-export const TestPatternSchema = {
+export const StudentConceptAnalysis = {
   args: {
-    testName: { type: StringType },
+    studentId: { type: new NonNull(StringType), description: 'studentId' },
+    testId: { type: StringType, description: 'Unique identifier for the test' },
   },
-  type: new List(TestPatternSchemaType),
+  type: GraphQLJSON,
   async resolve(obj, args) {
-    const url = `${config.services.test}/api/v1/testPattern/getTestPatterns`;
+    const url = `${config.services.test}/api/v1/Analysis/studentConceptAnalysis`;
+    // console.log('url is', url);
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
@@ -40,5 +39,5 @@ export const TestPatternSchema = {
 };
 
 export default{
-  TestPatternSchema,
+  StudentConceptAnalysis,
 };
