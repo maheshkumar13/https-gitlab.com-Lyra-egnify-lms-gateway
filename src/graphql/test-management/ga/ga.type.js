@@ -8,7 +8,7 @@ import {
   GraphQLObjectType as ObjectType,
   GraphQLString as StringType,
   // GraphQLNonNull as NonNull,
-  // GraphQLBoolean as BooleanType,
+  GraphQLBoolean as BooleanType,
   GraphQLInt as IntType,
   GraphQLList as List,
   GraphQLFloat as FloatType,
@@ -169,9 +169,47 @@ export const GenerateAnalysisReturnType = new ObjectType({
   },
 });
 
+const pageInfoType = new ObjectType({
+  name: 'CommonAnalysisPageInfo',
+  fields() {
+    return {
+      pageNumber: {
+        type: IntType,
+      },
+      nextPage: {
+        type: BooleanType,
+      },
+      prevPage: {
+        type: BooleanType,
+      },
+      totalPages: {
+        type: IntType,
+      },
+      totalEntries: {
+        type: IntType,
+      },
+    };
+  },
+});
+const CommonAnalysisDetailsType = new ObjectType({
+  name: 'CommonAnalysisDetailsType',
+  fields() {
+    return {
+      page: {
+        type: new List(CommonAnalysisType),
+      },
+      pageInfo: {
+        type: pageInfoType,
+      },
+    };
+  },
+});
+
 export default {
   CommonAnalysisType,
   FilterInputType,
   QuestionErrorAnalysisType,
   GenerateAnalysisReturnType,
+  pageInfoType,
+  CommonAnalysisDetailsType,
 };
