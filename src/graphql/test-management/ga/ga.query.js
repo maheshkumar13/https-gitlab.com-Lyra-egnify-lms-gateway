@@ -13,7 +13,7 @@ import {
 import fetch from 'universal-fetch';
 import GraphQLJSON from 'graphql-type-json';
 
-import { CommonAnalysisType, QuestionErrorAnalysisType, GenerateAnalysisReturnType, FilterInputType } from './ga.type';
+import { CommonAnalysisType, QuestionErrorAnalysisType, GenerateAnalysisReturnType, FilterInputType, StudentPerformanceTrendAnalysisType } from './ga.type';
 
 import { config } from '../../../config/environment';
 
@@ -104,7 +104,7 @@ export const StudentPerformanceTrendAnalysis = {
     filter: { type: new List(FilterInputType) },
 
   },
-  type: GraphQLJSON,
+  type: StudentPerformanceTrendAnalysisType,
   async resolve(obj, args) {
     const url = `${config.services.test}/api/v1/reports/generateTrendReport`;
     return fetch(url, {
