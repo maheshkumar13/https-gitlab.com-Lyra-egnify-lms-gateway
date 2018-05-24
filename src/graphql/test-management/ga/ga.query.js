@@ -9,6 +9,8 @@ import {
   GraphQLNonNull as NonNull,
   GraphQLBoolean as BooleanType,
   GraphQLList as List,
+  GraphQLInt as IntType,
+  GraphQLObjectType as ObjectType,
 } from 'graphql';
 import fetch from 'universal-fetch';
 import GraphQLJSON from 'graphql-type-json';
@@ -39,6 +41,44 @@ import { config } from '../../../config/environment';
 //   },
 // };
 
+
+const pageInfoType = new ObjectType({
+  name: 'CommonAnalysisPageInfo',
+  fields() {
+    return {
+      pageNumber: {
+        type: IntType,
+      },
+      nextPage: {
+        type: BooleanType,
+      },
+      prevPage: {
+        type: BooleanType,
+      },
+      totalPages: {
+        type: IntType,
+      },
+      totalEntries: {
+        type: IntType,
+      },
+    };
+  },
+});
+const CommonAnalysisDetailsType = new ObjectType({
+  name: 'CommonAnalysisDetailsType',
+  fields() {
+    return {
+      page: {
+        type: GraphQLJSON,//new List(CommonAnalysisType),
+      },
+      pageInfo: {
+        type: pageInfoType,
+      },
+    };
+  },
+});
+
+
 export const CommonAnalysis = {
   args: {
     testIds: { type: new List(StringType) },
@@ -54,6 +94,62 @@ export const CommonAnalysis = {
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     })
       .then(response => response.json())
+      .catch(err => new Error(err.message));
+  },
+};
+
+export const CommonAnalysisPaginated = {
+  args: {
+    testIds: { type: new List(StringType) },
+    studentId: { type: StringType },
+    filter: { type: new List(FilterInputType) },
+    pageNumber: { type: IntType },
+    limit: { type: IntType },
+  },
+  type: CommonAnalysisDetailsType,
+  async resolve(obj, args) {
+    if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
+    if (args.pageNumber < 1) {
+      return new Error('Page Number must be positive');
+    }
+    const url = `${config.services.test}/api/v1/masterResult/read/withMultipleTestIdsPaginated`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then(response => response.json())
+      .then((json) => {
+        const data = {};
+        data.page = json.data;
+        // console.error(data.page);
+        // console.log('getting data is',data)
+        // console.log('cc', json.count);
+        const pageInfo = {};
+        pageInfo.prevPage = true;
+        pageInfo.nextPage = true;
+        pageInfo.pageNumber = args.pageNumber;
+        pageInfo.totalPages = Math.ceil(json.count / args.limit)
+          ? Math.ceil(json.count / args.limit)
+          : 1;
+        pageInfo.totalEntries = json.count;
+
+        if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+          return new Error('Page Number is invalid');
+        }
+
+        if (args.pageNumber === pageInfo.totalPages) {
+          pageInfo.nextPage = false;
+        }
+        if (args.pageNumber === 1) {
+          pageInfo.prevPage = false;
+        }
+        if (pageInfo.totalEntries === 0) {
+          pageInfo.totalPages = 0;
+        }
+        data.pageInfo = pageInfo;
+        return data;
+      })
       .catch(err => new Error(err.message));
   },
 };
@@ -173,6 +269,7 @@ export const GenerateAnalysisv2 = {
 
 export default {
   CommonAnalysis,
+  CommonAnalysisPaginated,
   QuestionErrorAnalysis,
   GenerateAnalysis,
 };
