@@ -238,6 +238,15 @@ export const QmapType = new ObjectType({
   },
 });
 
+export const ColorSchemaOjbectType = new ObjectType({
+  name: 'ColorSchemaOjbectType',
+  description: 'Color schema',
+  fields: {
+    color: { type: StringType, description: 'Defined color' },
+    gt: { type: IntType, description: 'Greater than value' },
+    lt: { type: IntType, description: 'Less than value' },
+  },
+});
 
 export const TestType = new ObjectType({
   name: 'TestType',
@@ -265,6 +274,7 @@ export const TestType = new ObjectType({
     stepsCompleted: { type: IntType, description: 'Number of steps completed in test creation' },
     totalSteps: { type: IntType, description: 'Total steps in test creation' },
     status: { type: StringType, description: 'Current status of the test' },
+    colorSchema: { type: new List(ColorSchemaOjbectType), description: 'color schema' },
     gaStatus: { type: StringType, description: 'Current GA Status of the test. Possible State: [not_started,pending,error,finished]' },
   },
 });
@@ -298,6 +308,18 @@ export const FileStatusType = new ObjectType({
   },
 });
 
+export const InputColorSchemaOjbectType = new InputObjectType({
+  name: 'InputColorSchemaOjbectType',
+  description: 'Color schema',
+  fields: {
+    color: { type: new NonNull(StringType), description: 'Defined color' },
+    gt: { type: new NonNull(IntType), description: 'Greater than value' },
+    lt: { type: new NonNull(IntType), description: 'Less than value' },
+  },
+});
+
+
+
 export const UpdateTestType = new InputObjectType({
   name: 'UpdateTestType',
   description: 'Any number of defined fields get updated',
@@ -315,6 +337,7 @@ export const UpdateTestType = new InputObjectType({
     subjects: { type: new List(InputSubjectType), description: 'Selected subjects for the test' },
     markingSchema: { type: MarkingSchemaType, description: 'Marks distribution' },
     Qmap: { type: new List(InputQmapType), description: 'Mapping the question with subject, topic and subTopic' },
+    colorSchema: { type: new List(InputColorSchemaOjbectType), description: 'color schema' },
   },
 });
 
