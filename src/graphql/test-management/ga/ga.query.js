@@ -69,7 +69,7 @@ const CommonAnalysisDetailsType = new ObjectType({
   fields() {
     return {
       page: {
-        type: GraphQLJSON,//new List(CommonAnalysisType),
+        type: new List(CommonAnalysisType),
       },
       pageInfo: {
         type: pageInfoType,
@@ -213,6 +213,79 @@ export const StudentPerformanceTrendAnalysis = {
           return new Error(response.statusText);
         }
         return response.json();
+      })
+      .catch(err => new Error(err.message));
+  },
+};
+
+const StudentPerformanceTrendAnalysisDetailsType = new ObjectType({
+  name: 'StudentPerformanceTrendAnalysisDetailsType',
+  fields() {
+    return {
+      page: {
+        type: StudentPerformanceTrendAnalysisType,
+      },
+      pageInfo: {
+        type: pageInfoType,
+      },
+    };
+  },
+});
+export const StudentPerformanceTrendAnalysisPaginated = {
+  args: {
+    testId: { type: new NonNull(StringType), description: 'Test Id ' },
+    filter: { type: new List(FilterInputType) },
+    pageNumber: { type: IntType },
+    limit: { type: IntType },
+  },
+  type: StudentPerformanceTrendAnalysisDetailsType,
+  async resolve(obj, args) {
+    if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
+    if (args.pageNumber < 1) {
+      return new Error('Page Number must be positive');
+    }
+    const url = `${config.services.test}/api/v1/reports/generateTrendReportPaginated`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then((json) => {
+        const data = {};
+        data.page = json.data;
+        // console.error(data.page);
+        // console.log('getting data is',data)
+        // console.log('cc', json.count);
+        const pageInfo = {};
+        pageInfo.prevPage = true;
+        pageInfo.nextPage = true;
+        pageInfo.pageNumber = args.pageNumber;
+        pageInfo.totalPages = Math.ceil(json.count / args.limit)
+          ? Math.ceil(json.count / args.limit)
+          : 1;
+        pageInfo.totalEntries = json.count;
+
+        if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+          return new Error('Page Number is invalid');
+        }
+
+        if (args.pageNumber === pageInfo.totalPages) {
+          pageInfo.nextPage = false;
+        }
+        if (args.pageNumber === 1) {
+          pageInfo.prevPage = false;
+        }
+        if (pageInfo.totalEntries === 0) {
+          pageInfo.totalPages = 0;
+        }
+        data.pageInfo = pageInfo;
+        return data;
       })
       .catch(err => new Error(err.message));
   },
