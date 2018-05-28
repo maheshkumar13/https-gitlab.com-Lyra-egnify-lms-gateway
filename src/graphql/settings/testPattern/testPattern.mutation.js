@@ -12,7 +12,7 @@ import {
 
 } from 'graphql';
 // import GraphQLJSON from 'graphql-type-json';
-import fetch from 'universal-fetch';
+import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
 import TestPatternType from './testPattern.type';
 
@@ -23,13 +23,13 @@ export const createTestPattern = {
     description: { type: StringType },
   },
   type: TestPatternType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.settings}/api/testPattern/create`;
     return fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(args),
-    })
+    }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -57,13 +57,13 @@ export const updateTestPattern = {
     description: { type: StringType },
   },
   type: TestPatternType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.settings}/api/testPattern/update/`.concat(args.code);
     return fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(args),
-    })
+    }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -88,13 +88,13 @@ export const removeTestPattern = {
     code: { type: new NonNull(StringType) },
   },
   type: TestPatternType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.settings}/api/testPattern/remove/`.concat(args.code);
     return fetch(url, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(args),
-    })
+    }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);

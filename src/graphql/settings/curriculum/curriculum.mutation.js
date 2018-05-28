@@ -20,11 +20,11 @@ export const createCurriculum = {
     curriculumList: { type: new List(StringType) },
   },
   type: new List(SubjectTaxonomyType),
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     args.curriculumList = JSON.stringify(args.curriculumList);//eslint-disable-line
     // console.log(args);
     const url = `${config.services.settings}/api/subjectTaxonomy/create/curriculum`;
-    return fetch(url, { method: 'POST', body: JSON.stringify(args), headers: { 'Content-Type': 'application/json' } })
+    return fetch(url, { method: 'POST', body: JSON.stringify(args), headers: { 'Content-Type': 'application/json' } }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);

@@ -37,7 +37,7 @@ export function create(req, res) {
   newUser.role = 'user';
   newUser.save()
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, config.secrets.session, {
+      const token = jwt.sign({ _id: user._id, instituteId: user.instituteId }, config.secrets.session, {
         expiresIn: 60 * 60 * 5,
       });
       res.json({ token });

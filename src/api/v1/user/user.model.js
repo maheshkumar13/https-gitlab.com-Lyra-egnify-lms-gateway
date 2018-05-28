@@ -26,6 +26,7 @@ const UserSchema = new Schema({
   },
   provider: String,
   salt: String,
+  instituteId: { type: String, description: 'Institute Id of the given Institute', required: true },
 });
 
 /**
@@ -61,6 +62,12 @@ UserSchema
 UserSchema
   .path('password')
   .validate(password => password.length, 'Password cannot be blank');
+
+// Validate empty instituteId
+UserSchema
+  .path('instituteId')
+  .validate(instituteId => instituteId.length, 'instituteId cannot be blank');
+
 
 // Validate email is not taken
 UserSchema

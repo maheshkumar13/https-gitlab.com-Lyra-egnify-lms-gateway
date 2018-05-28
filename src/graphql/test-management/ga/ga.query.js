@@ -12,11 +12,10 @@ import {
   GraphQLInt as IntType,
   GraphQLObjectType as ObjectType,
 } from 'graphql';
-import fetch from 'universal-fetch';
 import GraphQLJSON from 'graphql-type-json';
 
 import { CommonAnalysisType, QuestionErrorAnalysisType, GenerateAnalysisReturnType, FilterInputType, StudentPerformanceTrendAnalysisType } from './ga.type';
-
+import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
 
 // const CommonAnalysis = {
@@ -86,13 +85,13 @@ export const CommonAnalysis = {
     filter: { type: new List(FilterInputType) },
   },
   type: new List(CommonAnalysisType),
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/masterResult/read/withMultipleTestIds`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then(response => response.json())
       .catch(err => new Error(err.message));
   },
@@ -107,7 +106,7 @@ export const CommonAnalysisPaginated = {
     limit: { type: IntType },
   },
   type: CommonAnalysisDetailsType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
     if (args.pageNumber < 1) {
       return new Error('Page Number must be positive');
@@ -117,7 +116,7 @@ export const CommonAnalysisPaginated = {
       method: 'POST',
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then(response => response.json())
       .then((json) => {
         const data = {};
@@ -162,13 +161,13 @@ export const MarksDistributionAnalysis = {
     campusFilter: { type: new List(StringType), description: 'Internal Code of a particular Hierarchy Node' },
   },
   type: GraphQLJSON,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/reports/generateMarkDistributionReport`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then(response => response.json())
       .catch(err => new Error(err.message));
   },
@@ -182,13 +181,13 @@ export const QuestionErrorAnalysis = {
     filter: { type: new List(FilterInputType) },
   },
   type: QuestionErrorAnalysisType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/reports/questionErrorCount`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then(response => response.json())
       .catch(err => new Error(err.message));
   },
@@ -201,13 +200,13 @@ export const StudentPerformanceTrendAnalysis = {
 
   },
   type: StudentPerformanceTrendAnalysisType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/reports/generateTrendReport`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
       headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -239,7 +238,7 @@ export const StudentPerformanceTrendAnalysisPaginated = {
     limit: { type: IntType },
   },
   type: StudentPerformanceTrendAnalysisDetailsType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
     if (args.pageNumber < 1) {
       return new Error('Page Number must be positive');
@@ -249,7 +248,7 @@ export const StudentPerformanceTrendAnalysisPaginated = {
       method: 'POST',
       body: JSON.stringify(args),
       headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -299,13 +298,13 @@ export const GenerateAnalysis = {
     start: { type: new NonNull(BooleanType) },
   },
   type: GenerateAnalysisReturnType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/test/perform/ga`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -322,13 +321,13 @@ export const GenerateAnalysisv2 = {
     start: { type: new NonNull(BooleanType) },
   },
   type: GenerateAnalysisReturnType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/test/perform/gav2`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);

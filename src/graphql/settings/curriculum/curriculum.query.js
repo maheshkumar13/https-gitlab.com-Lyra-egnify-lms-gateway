@@ -5,18 +5,19 @@
 */
 
 import { GraphQLList as List } from 'graphql';
-import fetch from 'universal-fetch';
 import { config } from '../../../config/environment';
 import { SubjectTaxonomyType } from '../subject/subjectTaxonomy.type';
+
+import fetch from '../../../utils/fetch';
 
 export const Curriculum = {
   // args: {
   //   testId: { type: StringType },
   // },
   type: new List(SubjectTaxonomyType),
-  async resolve() {
+  async resolve(obj, args, context) {
     const url = `${config.services.settings}/api/subjectTaxonomy`;
-    return fetch(url, { method: 'POST' })
+    return fetch(url, { method: 'POST' }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);

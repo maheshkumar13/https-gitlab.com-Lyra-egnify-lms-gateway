@@ -14,8 +14,8 @@ import {
   GraphQLNonNull as NonNull,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
-import fetch from 'universal-fetch';
 import { config } from '../../../config/environment';
+import fetch from '../../../utils/fetch';
 
 // import InstituteHierarchyGridType from './instituteHierarchyGrid.type';
 
@@ -91,7 +91,7 @@ export const LevelFilters = {
     input: { type: LevelFiltersInputType },
   },
   type: new List(StringType),
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.settings}/api/instituteHierarchy/get/filtersOnALevel`;
     const body = args.input;
 
@@ -102,6 +102,7 @@ export const LevelFilters = {
         body: JSON.stringify({ level: body.level }),
         headers: { 'Content-Type': 'application/json' },
       },
+      context,
     )
       .then(response => response.json())
       .then(json => json.data);
@@ -118,7 +119,7 @@ export const InstituteHierarchyGrid = {
     input: { type: InstituteHierarchyGridInputType },
   },
   type: InstituteHierarchyGridType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.settings}/api/instituteHierarchy/get/dataGrid`;
 
     let limit = 1000;
@@ -150,6 +151,7 @@ export const InstituteHierarchyGrid = {
         }),
         headers: { 'Content-Type': 'application/json' },
       },
+      context,
     )
       .then(async (response) => {
         if (response.status >= 400) {

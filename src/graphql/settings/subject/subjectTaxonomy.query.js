@@ -10,7 +10,7 @@ import {
   GraphQLString as StringType,
 
 } from 'graphql';
-import fetch from 'universal-fetch';
+import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
 import { SubjectTaxonomyType, SubjectType } from './subjectTaxonomy.type';
 
@@ -19,9 +19,9 @@ export const SubjectList = {
     code: { type: new NonNull(StringType) },
   },
   type: new List(SubjectType),
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.settings}/api/subjectTaxonomy/curriculum/`.concat(args.code);
-    return fetch(url, { method: 'GET' })
+    return fetch(url, { method: 'POST' }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -42,9 +42,9 @@ export const SubjectTaxonomy = {
     code: { type: new NonNull(StringType) },
   },
   type: SubjectTaxonomyType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.settings}/api/subjectTaxonomy/read/`.concat(args.code);
-    return fetch(url, { method: 'GET' })
+    return fetch(url, { method: 'POST' }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);

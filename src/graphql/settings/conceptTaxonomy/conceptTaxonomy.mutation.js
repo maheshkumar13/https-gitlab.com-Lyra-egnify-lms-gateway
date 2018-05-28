@@ -5,10 +5,12 @@ import {
   GraphQLInt as IntType,
   GraphQLNonNull as NonNull,
 } from 'graphql';
-import fetch from 'universal-fetch';
+
 import GraphQLJSON from 'graphql-type-json';
 import { config } from '../../../config/environment';
 import { SubjectTaxonomyInputType } from './conceptTaxonomy.query';
+
+import fetch from '../../../utils/fetch';
 
 const SaveTaxonomyInputType = new InputType({
   name: 'SaveTaxonomyInputType',
@@ -25,7 +27,7 @@ export const saveTaxonomy = {
     input: { type: SaveTaxonomyInputType },
   },
   type: GraphQLJSON,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const body = args.input;
     console.error(body);
 
@@ -45,6 +47,7 @@ export const saveTaxonomy = {
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
       },
+      context,
     )
       .then(async (response) => {
         if (response.status >= 400) {

@@ -6,9 +6,10 @@ import {
   GraphQLObjectType as ObjectType,
   GraphQLNonNull as NonNull,
 } from 'graphql';
-import fetch from 'universal-fetch';
 import GraphQLJSON from 'graphql-type-json';
 import { config } from '../../../config/environment';
+import fetch from '../../../utils/fetch';
+
 
 export const SubjectTaxonomyInputType = new InputType({
   name: 'SubjectTaxonomyInputType',
@@ -43,7 +44,7 @@ export const GenerateConceptTaxonomy = {
     input: { type: GenerateTaxonomyInputType },
   },
   type: GraphQLJSON,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const body = args.input;
     console.error(body);
 
@@ -59,6 +60,7 @@ export const GenerateConceptTaxonomy = {
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
       },
+      context,
     )
       .then(async (response) => {
         if (response.status >= 400) {
@@ -90,15 +92,18 @@ export const ConceptTaxonomyType = new ObjectType({
     taxonomyTag: { type: StringType },
     next: {
       type: new List(ConceptTaxonomyType),
-      async resolve(obj) {
+      async resolve(obj, args, context) {
         const url = `${config.services.settings}/api/conceptTaxonomy/get/taxonomy`;
-        return fetch(url, {
-          method: 'POST',
-          body: JSON.stringify({
-            taxonomyTag: obj.taxonomyTag,
-          }),
-          headers: { 'Content-Type': 'application/json' },
-        })
+        return fetch(
+          url, {
+            method: 'POST',
+            body: JSON.stringify({
+              taxonomyTag: obj.taxonomyTag,
+            }),
+            headers: { 'Content-Type': 'application/json' },
+          },
+          context,
+        )
           .then(response => response.json())
           .then((json) => {
             console.error(json);
@@ -114,7 +119,7 @@ export const conceptTaxonomy = {
     input: { type: ConceptTaxonomyInputType },
   },
   type: new List(ConceptTaxonomyType),
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const body = args.input;
 
     if (body.subjectDetails) {
@@ -129,6 +134,7 @@ export const conceptTaxonomy = {
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
       },
+      context,
     )
       .then(async (response) => {
         if (response.status >= 400) {
@@ -145,7 +151,7 @@ export const ConceptTaxonomyTree = {
     input: { type: ConceptTaxonomyInputType },
   },
   type: GraphQLJSON,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const body = args.input;
 
     if (body.subjectDetails) {
@@ -160,6 +166,7 @@ export const ConceptTaxonomyTree = {
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
       },
+      context,
     )
       .then(async (response) => {
         if (response.status >= 400) {
