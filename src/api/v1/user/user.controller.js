@@ -74,6 +74,30 @@ export function destroy(req, res) {
 }
 
 /**
+ * Change a users Name
+ */
+export function changeUsername(req, res) {
+  const userId = req.user._id;
+  const { userName } = req.body;
+
+  if (userName) {
+    return User.findById(userId).exec()
+      .then((user) => {
+        if (user) {
+          user.name = userName;
+          return user.save()
+            .then(() => {
+              res.status(204).end();
+            })
+            .catch(validationError(res));
+        }
+        return res.status(403).end();
+      });
+  }
+  res.statusMessage = 'No UserName in Request Parameter';
+  return res.status(404).end();
+}
+/**
  * Change a users password
  */
 export function changePassword(req, res) {
