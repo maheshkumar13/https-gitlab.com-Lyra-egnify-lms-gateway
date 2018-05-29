@@ -319,7 +319,6 @@ export const InputColorSchemaOjbectType = new InputObjectType({
 });
 
 
-
 export const UpdateTestType = new InputObjectType({
   name: 'UpdateTestType',
   description: 'Any number of defined fields get updated',
