@@ -28,7 +28,7 @@ const InstituteHierarchyType = new ObjectType({
     parent: { type: StringType },
     parentCode: { type: StringType },
     level: { type: IntType },
-    levelName: { type: IntType },
+    levelName: { type: StringType },
     isLeafNode: { type: BooleanType },
     anscetors: { type: new List(anscetors) },
     description: { type: StringType },
