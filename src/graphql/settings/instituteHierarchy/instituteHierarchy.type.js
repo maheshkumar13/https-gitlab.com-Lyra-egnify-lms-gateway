@@ -34,7 +34,7 @@ const InstituteHierarchyType = new ObjectType({
     description: { type: StringType },
     next: {
       type: new List(InstituteHierarchyType),
-      async resolve(obj) {
+      async resolve(obj, args, context) {
         const filters = {};
         const url = `${config.services.settings}/api/instituteHierarchy/filter/nodes`;
         filters.parentCode = obj.childCode;
@@ -42,7 +42,7 @@ const InstituteHierarchyType = new ObjectType({
           method: 'POST',
           body: JSON.stringify({ filters: JSON.stringify(filters) }),
           headers: { 'Content-Type': 'application/json' },
-        })
+        }, context)
           .then(response => response.json())
           .then(json => json)
           .catch((err) => {
