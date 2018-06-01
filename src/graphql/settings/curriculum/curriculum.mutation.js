@@ -11,7 +11,7 @@ import {
   // GraphQLNonNull as NonNull,
 } from 'graphql';
 // import GraphQLJSON from 'graphql-type-json';
-import fetch from 'universal-fetch';
+import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
 import { SubjectTaxonomyType } from '../subject/subjectTaxonomy.type';
 
