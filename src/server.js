@@ -65,7 +65,7 @@ require('./api/v1').default(app);
 
 // app.get('/', (req, res) => res.send('Oh!! Yeah.'));
 
-seedDatabaseIfNeeded();
+// seedDatabaseIfNeeded();
 
 app.listen(config.port, () => {
   console.info(`The server is running at http://localhost:${config.port}/`);

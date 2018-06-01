@@ -7,6 +7,8 @@ import {
   GraphQLInt as IntType,
 } from 'graphql';
 import { config } from '../../../config/environment';
+import fetch from '../../../utils/fetch';
+
 
 const anscetors = new ObjectType({
   name: 'AnscetorsType',
