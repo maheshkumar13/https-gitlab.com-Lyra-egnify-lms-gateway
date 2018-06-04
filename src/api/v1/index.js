@@ -23,4 +23,10 @@ export default function (app) {
     const submissionRequest = request(submissionUrl);
     req.pipe(submissionRequest).pipe(res);
   });
+
+  app.post('/api/student/createBulkStudents', authService.isAuthenticated(), (req, res) => {
+    const submissionUrl = `${config.services.settings}/api/student/createBulkStudents`;
+    const submissionRequest = request(submissionUrl);
+    req.pipe(submissionRequest).pipe(res);
+  });
 }

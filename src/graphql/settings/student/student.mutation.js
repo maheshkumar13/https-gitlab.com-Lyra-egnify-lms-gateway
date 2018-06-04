@@ -39,6 +39,7 @@ export const createStudent = {
     phone: { type: StringType },
     email: { type: StringType },
     gender: { type: StringType },
+    category: { type: StringType },
     dob: { type: GraphQLDate },
   },
   type: StudentType,

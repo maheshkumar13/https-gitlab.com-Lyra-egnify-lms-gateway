@@ -25,6 +25,7 @@ const StudentType = new ObjectType({
     email: { type: StringType },
     gender: { type: StringType },
     dob: { type: StringType },
+    category: { type: StringType },
     hierarchy: { type: GraphQLJSON },
   },
 });
