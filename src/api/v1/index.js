@@ -20,15 +20,13 @@ export default function (app) {
   // Proxy Request below
   app.post('/api/v1/question/populateQuestion', authService.isAuthenticated(), (req, res) => {
     const submissionUrl = `${config.services.test}/api/v1/question/populateQuestion`;
-    const submissionRequest = request(submissionUrl);
-    req.body.user = req.user;
-    req.pipe(submissionRequest).pipe(res);
+    const userContext = req.user._doc;
+    request.post(submissionUrl, { form: { user: userContext } }).pipe(res);
   });
 
   app.post('/api/student/createBulkStudents', authService.isAuthenticated(), (req, res) => {
     const submissionUrl = `${config.services.settings}/api/student/createBulkStudents`;
-    const submissionRequest = request(submissionUrl);
-    req.body.user = req.user;
-    req.pipe(submissionRequest).pipe(res);
+    const userContext = req.user._doc;
+    request.post(submissionUrl, { form: { user: userContext } }).pipe(res);
   });
 }
