@@ -28,7 +28,8 @@ export default function (app) {
     req.pipe(submissionRequest).pipe(res);
   });
 
-  app.post('/api/student/createBulkStudents', authService.isAuthenticated(), (req, res) => {
+  app.post('/api/v1/student/createBulkStudents', authService.isAuthenticated(), (req, res) => {
+    console.error('Hitting API...');
     const submissionUrl = `${config.services.settings}/api/student/createBulkStudents`;
     const submissionRequest = request(submissionUrl);
     req.pipe(submissionRequest).pipe(res);
