@@ -24,7 +24,8 @@ function localAuthenticate(req, User, email, password, done) {
         console.info('not matching', user.hostname);
 
         return done(null, false, {
-          message: 'This hostname doesnot match.',
+          message: 'This email is not registered.',
+          code: 'AU01',
         });
       }
       return user.authenticate(password, (authError, authenticated) => {
