@@ -33,9 +33,9 @@ export function isAuthenticated() {
           if (!user) {
             return res.status(401).end();
           }
-          console.info('hostname', req.hostname);
-          if (req.hostname !== user.hostname) {
-            res.statusMessage('hostname doesnot Match');
+          console.info('hostname', req.user.hostname);
+          if (req.user.hostname !== user.hostname) {
+            res.statusMessage = 'hostname doesnot Match';
             return res.status(401).end();
           }
           req.user = user;
