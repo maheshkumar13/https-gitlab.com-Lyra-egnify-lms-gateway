@@ -22,14 +22,18 @@ const upload = multer({
   },
 });
 
+
 function bufferToStream(buffer) {
   const duplexStream = new Duplex();
   duplexStream.push(buffer);
   duplexStream.push(null);
   return duplexStream;
 }
+
 export default function (app) {
   //  Insert API below
+
+
   app.use('/api/v1/uploadFile', uploadFile);
   app.use('/api/v1/users', user);
   app.use('/auth', auth);

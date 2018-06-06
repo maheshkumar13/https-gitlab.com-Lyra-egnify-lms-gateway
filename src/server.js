@@ -18,6 +18,7 @@ import { config } from './config/environment';
 import * as auth from './auth/auth.service';
 import seedDatabaseIfNeeded from './config/seed';
 
+const { ApolloEngine } = require('apollo-engine');
 const morgan = require('morgan');
 const cors = require('cors');
 
@@ -67,8 +68,21 @@ require('./api/v1').default(app);
 
 // seedDatabaseIfNeeded();
 
-app.listen(config.port, () => {
-  console.info(`The server is running at http://localhost:${config.port}/`);
+// app.listen(config.port, () => {
+//   console.info(`The server is running at http://localhost:${config.port}/`);
+// });
+
+// Initialize engine with your API key. Alternatively,
+// set the ENGINE_API_KEY environment variable when you
+// run your program.
+const engine = new ApolloEngine({
+  apiKey: config.apolloEngineKey,
+});
+
+// Call engine.listen instead of app.listen(port)
+engine.listen({
+  port: config.port,
+  expressApp: app,
 });
 
 console.info('RESTful API server started on: ');

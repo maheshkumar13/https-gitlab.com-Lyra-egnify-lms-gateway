@@ -18,4 +18,5 @@ module.exports = {
     settings: process.env.SVC_SETTINGS || 'http://settings-dev-hydra.dev.svc.cluster.local',
     test: process.env.SVC_TEST || 'http://test-management-dev-hydra.dev.svc.cluster.local',
   },
+  apolloEngineKey: 'service:rahul-islam:thcISJ8yd1l9ARCrcceCow',
 };
