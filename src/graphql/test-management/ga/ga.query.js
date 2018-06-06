@@ -159,6 +159,32 @@ export const CommonAnalysisPaginated = {
   },
 };
 
+export const MarkAnalysisGraphData = {
+  args: {
+    testIds: { type: new List(StringType), description: 'List of strings with testIds' },
+    studentIds: { type: new List(StringType), description: 'List of strings with studentIds' },
+    divisons: { type: IntType, description: 'Number of divisions' },
+    start: { type: IntType, description: 'Starting point on x-axis ' },
+    end: { type: IntType, description: 'End point on description' },
+    precision: { type: IntType, description: 'Max number of decimal places ' },
+  },
+  type: GraphQLJSON,
+  async resolve(obj, args) {
+    const url = `${config.services.test}/api/v1/masterResult/read/markAnalysisGraphData`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    })
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .catch(err => new Error(err.message));
+  },
+};
 export const MarksDistributionAnalysis = {
   args: {
     testId: { type: new NonNull(StringType), description: 'Test Id of a particular test' },
@@ -350,4 +376,5 @@ export default {
   CommonAnalysisPaginated,
   QuestionErrorAnalysis,
   GenerateAnalysis,
+  MarkAnalysisGraphData,
 };
