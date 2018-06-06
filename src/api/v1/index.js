@@ -22,16 +22,14 @@ const upload = multer({
   },
 });
 
-<<<<<<< HEAD
 
-=======
 function bufferToStream(buffer) {
   const duplexStream = new Duplex();
   duplexStream.push(buffer);
   duplexStream.push(null);
   return duplexStream;
 }
->>>>>>> f-multi-tenancy
+
 export default function (app) {
   //  Insert API below
 
@@ -41,20 +39,6 @@ export default function (app) {
   app.use('/auth', auth);
 
   // Proxy Request below
-<<<<<<< HEAD
-
-  app.post('/api/v1/question/populateQuestion', authService.isAuthenticated(), (req, res) => {
-    const submissionUrl = `${config.services.test}/api/v1/question/populateQuestion`;
-    const submissionRequest = request(submissionUrl);
-    req.pipe(submissionRequest).pipe(res);
-  });
-
-  app.post('/api/v1/student/createBulkStudents', authService.isAuthenticated(), (req, res) => {
-    const submissionUrl = `${config.services.settings}/api/student/createBulkStudents`;
-    const submissionRequest = request(submissionUrl);
-    req.pipe(submissionRequest).pipe(res);
-  });
-=======
   app.post(
     '/api/v1/question/populateQuestion',
     authService.isAuthenticated(),
@@ -108,5 +92,4 @@ export default function (app) {
       request.post(submissionUrl, { formData }).pipe(res);
     },
   );
->>>>>>> f-multi-tenancy
 }

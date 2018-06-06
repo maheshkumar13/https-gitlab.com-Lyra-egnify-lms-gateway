@@ -168,13 +168,13 @@ export const MarkAnalysisGraphData = {
     precision: { type: IntType, description: 'Max number of decimal places ' },
   },
   type: GraphQLJSON,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/masterResult/read/markAnalysisGraphData`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
