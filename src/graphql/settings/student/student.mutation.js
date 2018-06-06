@@ -12,7 +12,7 @@ import {
   GraphQLEnumType,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
-import fetch from 'universal-fetch';
+import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
 import StudentType from './student.type';
 
@@ -43,14 +43,17 @@ export const createStudent = {
     dob: { type: GraphQLDate },
   },
   type: StudentType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     args.hierarchy = JSON.stringify(args.hierarchy);//eslint-disable-line
     const url = `${config.services.settings}/api/student/create/student`;
-    return fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(args),
+    return fetch(
+      url, {
+        method: 'POST',
+        body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+      },
+      context,
+    )
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -75,14 +78,14 @@ export const createManyStudents = {
     url: { type: new NonNull(StringType) },
   },
   type: new List(StudentType),
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     args.hierarchy = JSON.stringify(args.hierarchy);//eslint-disable-line
     const url = `${config.services.settings}/api/student/create/studentList`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);

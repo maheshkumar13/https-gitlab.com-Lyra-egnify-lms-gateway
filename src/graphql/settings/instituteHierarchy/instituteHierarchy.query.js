@@ -13,7 +13,7 @@ import {
   GraphQLInt as IntType,
   GraphQLInputObjectType as InputType,
 } from 'graphql';
-import fetch from 'universal-fetch';
+import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
 
 import InstituteHierarchyType from './instituteHierarchy.type';
@@ -47,7 +47,7 @@ export const InstituteHierarchySample = {
     input: { type: downloadSampleInputType },
   },
   type: sampleInstituteHierarchyType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.settings}/api/instituteHierarchy/get/sampleCSV`;
     const body = args.input;
     return fetch(
@@ -57,6 +57,7 @@ export const InstituteHierarchySample = {
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
       },
+      context,
     )
       .then(response => response.json())
       .then((json) => {
@@ -71,7 +72,7 @@ export const InstituteHierarchy = {
     input: { type: InstituteHierarchyFilterType },
   },
   type: new List(InstituteHierarchyType),
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const filters = {};
     const url = `${config.services.settings}/api/instituteHierarchy/filter/nodes`;
     args = args.input; // eslint-disable-line
@@ -108,6 +109,7 @@ export const InstituteHierarchy = {
         body: JSON.stringify({ filters: JSON.stringify(filters) }),
         headers: { 'Content-Type': 'application/json' },
       },
+      context,
     )
       .then(async (response) => {
         if (response.status >= 400) {

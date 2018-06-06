@@ -11,11 +11,11 @@ import {
   GraphQLInt as IntType,
   GraphQLNonNull as NonNull,
 } from 'graphql';
-import fetch from 'universal-fetch';
 import GraphQLJSON from 'graphql-type-json';
 import { InstituteType, HierarchyType } from './institute.type';
 import { config } from '../../../config/environment';
 
+import fetch from '../../../utils/fetch';
 
 const InstitutePatchType = new InputType({
   name: 'patchInstitute',
@@ -54,7 +54,7 @@ export const createInstitute = {
     input: { type: CreateInstituteInputType },
   },
   type: new List(InstituteType),
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.settings}/api/institute/enrollInstitute`;
     const body = args.input;
 
@@ -74,6 +74,7 @@ export const createInstitute = {
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
       },
+      context,
     )
       .then(async (response) => {
         if (response.status >= 400) {
@@ -96,7 +97,7 @@ export const updateInstitute = {
     patch: { type: InstitutePatchType },
   },
   type: new List(InstituteType),
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.settings}/api/institute/update/InstituteBasicDetails`;
     const body = args.patch;
 
@@ -111,6 +112,7 @@ export const updateInstitute = {
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
       },
+      context,
     )
       .then(async (response) => {
         if (response.status >= 400) {
@@ -142,7 +144,7 @@ export const updateHierarchy = {
     },
   },
   type: new List(HierarchyType),
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.settings}/api/institute/update/Hierarchy`;
     const body = args.patch;
 
@@ -157,6 +159,7 @@ export const updateHierarchy = {
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
       },
+      context,
     )
       .then(async (response) => {
         if (response.status >= 400) {
