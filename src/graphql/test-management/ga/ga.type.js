@@ -233,6 +233,7 @@ export const StudentPerformanceTrendAnalysisType = new ObjectType({
   description: ' Student Performance Trend Analysis Values',
   fields: {
     testList: { type: new List(StringType), description: 'List of last 10 test Ids from the given test' },
+    testNamesList: { type: new List(StringType), description: 'List of last 10 test Names from the given test' },
     docs: {
       type: new List(StudentPerformanceDataType),
       description: 'List of Student Data',
