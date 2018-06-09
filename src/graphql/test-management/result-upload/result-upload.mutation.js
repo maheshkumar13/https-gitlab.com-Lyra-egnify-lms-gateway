@@ -49,7 +49,8 @@ export const uploadResult = {
   args: {
     input: { type: new NonNull(UploadResultInputType) },
   },
-  type: ResultType,
+  // type: ResultType,
+  type: GraphQLJSON,
   async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/resultUpload/create`;
     const body = JSON.parse(JSON.stringify(args.input));
@@ -72,7 +73,8 @@ export const updateUploadedResult = {
   args: {
     input: { type: new NonNull(UploadResultInputType) },
   },
-  type: ResultType,
+  // type: ResultType,
+  type: GraphQLJSON,
   async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/resultUpload/update`;
     const body = JSON.parse(JSON.stringify(args.input));
