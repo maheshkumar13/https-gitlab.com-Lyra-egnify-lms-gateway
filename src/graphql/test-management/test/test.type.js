@@ -217,11 +217,11 @@ export const InputQmapType = new InputObjectType({
   fields: {
     questionNumber: { type: new NonNull(StringType), description: 'Question number in specified format, ex: Q1,Q2, etc..' },
     subject: { type: new NonNull(InputQmapSubjectType), description: 'Subject details in each Qmap object' },
-    //topic is not mandatory anymore
+    // topic is not mandatory anymore
     topic: { type: (InputQmapTopicType), description: 'Topic details in each Qmap object' },
     subTopic: { type: InputQmapsubTopicType, description: 'subTopic details in each Qmap object' },
     difficulty: { type: StringType, description: 'Difficulty of the question in enumerated form of Easy, Medium and Hard' },
-    key: { type: new List(StringType) ,description: "Array of Key for the question" }
+    key: { type: new List(StringType), description: 'Array of Key for the question' },
   },
 });
 
@@ -237,7 +237,7 @@ export const QmapType = new ObjectType({
     C: { type: StringType, description: 'Marks for answering correctly to this question' },
     W: { type: StringType, description: 'Marks for answering wrongly to this question' },
     U: { type: StringType, description: 'Marks for Not attempting this question' },
-    key: { type: new List(StringType) ,description: "Array of Key for the question" },
+    key: { type: new List(StringType), description: 'Array of Key for the question' },
   },
 });
 
@@ -279,7 +279,6 @@ export const TestType = new ObjectType({
     status: { type: StringType, description: 'Current status of the test' },
     colorSchema: { type: new List(ColorSchemaOjbectType), description: 'color schema' },
     gaStatus: { type: StringType, description: 'Current GA Status of the test. Possible State: [not_started,pending,error,finished]' },
- 
   },
 });
 export const InputTestType = new InputObjectType({
