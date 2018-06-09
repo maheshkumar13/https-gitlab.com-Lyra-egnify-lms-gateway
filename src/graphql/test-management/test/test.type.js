@@ -217,7 +217,8 @@ export const InputQmapType = new InputObjectType({
   fields: {
     questionNumber: { type: new NonNull(StringType), description: 'Question number in specified format, ex: Q1,Q2, etc..' },
     subject: { type: new NonNull(InputQmapSubjectType), description: 'Subject details in each Qmap object' },
-    topic: { type: new NonNull(InputQmapTopicType), description: 'Topic details in each Qmap object' },
+    //topic is not mandatory anymore
+    topic: { type: (InputQmapTopicType), description: 'Topic details in each Qmap object' },
     subTopic: { type: InputQmapsubTopicType, description: 'subTopic details in each Qmap object' },
     difficulty: { type: StringType, description: 'Difficulty of the question in enumerated form of Easy, Medium and Hard' },
     key: { type: new List(StringType) ,description: "Array of Key for the question" }
