@@ -26,6 +26,7 @@ const InstitutePatchType = new InputType({
     registrationId: { type: StringType },
     logoUrl: { type: StringType },
     proofOfRegistrationUrl: { type: StringType },
+    proofOfRegistrationUrlFileName: { type: StringType },
   },
 });
 
@@ -45,6 +46,7 @@ const CreateInstituteInputType = new InputType({
     registrationId: { type: new NonNull(StringType) },
     logoUrl: { type: StringType },
     proofOfRegistrationUrl: { type: StringType },
+    proofOfRegistrationUrlFileName: { type: StringType },
     hierarchy: { type: new NonNull(GraphQLJSON) },
   },
 });
