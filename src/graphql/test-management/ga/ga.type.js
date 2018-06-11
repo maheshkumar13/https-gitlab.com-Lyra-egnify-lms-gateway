@@ -129,6 +129,7 @@ export const CommonAnalysisDataType = new ObjectType({
     cwuAnalysis: { type: new List(CWUAnalysisType), description: 'CWU Analysis of an Invidual Student' },
     markAnalysis: { type: new List(MarkAnalysisType), description: 'Mark Analysis of an Invidual Student' },
     rankAnalysis: { type: new List(RankAnalysisType), description: 'Rank Analysis of an Invidual Student' },
+    topicAnalysis: { type: GraphQLJSON, description: 'Topic Analysis of an Invidual Student' },
   },
 });
 
