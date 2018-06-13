@@ -11,10 +11,11 @@ import {
   GraphQLBoolean as BooleanType,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
-import fetch from 'universal-fetch';
 
 import { config } from '../../../config/environment';
 import { GradeType, PatternType, GradePatchType, PatternPatchType } from './grade.type';
+import fetch from '../../../utils/fetch';
+
 
 /*
 mutation ($patches:JSON!) {
@@ -34,11 +35,11 @@ export const createGradePattern = {
     input: { type: new NonNull(GraphQLJSON) },
   },
   type: PatternType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const pattern = JSON.stringify(args.input);//eslint-disable-line
     // console.log(args);
     const url = `${config.services.settings}/api/grade/create/pattern/`;
-    return fetch(url, { method: 'POST', body: pattern, headers: { 'Content-Type': 'application/json' } })
+    return fetch(url, { method: 'POST', body: pattern, headers: { 'Content-Type': 'application/json' } }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -58,11 +59,11 @@ export const createGradeSystem = {
     input: { type: new NonNull(GraphQLJSON) },
   },
   type: GradeType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     // args.data = JSON.stringify(args.gradeSystem);//eslint-disable-line
     // console.log(args);
     const url = `${config.services.settings}/api/grade/create/system`;
-    return fetch(url, { method: 'POST', body: JSON.stringify(args.input), headers: { 'Content-Type': 'application/json' } })
+    return fetch(url, { method: 'POST', body: JSON.stringify(args.input), headers: { 'Content-Type': 'application/json' } }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -81,11 +82,11 @@ export const updateGradeSystem = {
     input: { type: new NonNull(GradePatchType) },
   },
   type: GradeType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     // args.data = JSON.stringify(args.gradeSystem);//eslint-disable-line
     // console.log(args);
     const url = `${config.services.settings}/api/grade/update/system`;
-    return fetch(url, { method: 'POST', body: JSON.stringify(args.input), headers: { 'Content-Type': 'application/json' } })
+    return fetch(url, { method: 'POST', body: JSON.stringify(args.input), headers: { 'Content-Type': 'application/json' } }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -104,11 +105,11 @@ export const updateGradePattern = {
     input: { type: new NonNull(PatternPatchType) },
   },
   type: PatternType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     // args.data = JSON.stringify(args.gradeSystem);//eslint-disable-line
     // console.log(args);
     const url = `${config.services.settings}/api/grade/update/pattern`;
-    return fetch(url, { method: 'POST', body: JSON.stringify(args.input), headers: { 'Content-Type': 'application/json' } })
+    return fetch(url, { method: 'POST', body: JSON.stringify(args.input), headers: { 'Content-Type': 'application/json' } }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -127,13 +128,16 @@ export const removeGradeSystem = {
     id: { type: new NonNull(StringType) },
   },
   type: BooleanType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.settings}/api/grade/delete/system/`;
-    return fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(args),
-    })
+    return fetch(
+      url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(args),
+      },
+      context,
+    )
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -155,13 +159,13 @@ export const removeGradePattern = {
     id: { type: new NonNull(StringType) },
   },
   type: StringType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.settings}/api/grade/delete/pattern/`;
     return fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(args),
-    })
+    }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);

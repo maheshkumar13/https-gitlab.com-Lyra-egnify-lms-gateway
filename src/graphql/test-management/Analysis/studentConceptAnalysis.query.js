@@ -11,7 +11,7 @@ import {
 
 
 import GraphQLJSON from 'graphql-type-json';
-import fetch from 'universal-fetch';
+import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
 
 export const StudentConceptAnalysis = {
@@ -20,14 +20,14 @@ export const StudentConceptAnalysis = {
     testId: { type: StringType, description: 'Unique identifier for the test' },
   },
   type: GraphQLJSON,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/Analysis/studentConceptAnalysis`;
     // console.log('url is', url);
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);

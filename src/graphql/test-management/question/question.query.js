@@ -5,7 +5,7 @@
 */
 
 import { GraphQLNonNull as NonNull } from 'graphql';
-import fetch from 'universal-fetch';
+import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
 
 import { QuestionDetailsInputType, QuestionDetailsType } from './question.type';
@@ -18,13 +18,13 @@ export const QuestionDetails = {
     },
   },
   type: QuestionDetailsType,
-  async resolve(obj, { args }) {
+  async resolve(obj, { args }, context) {
     const url = `${config.services.test}/api/v1/questionDetails`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then(response => response.json())
       .then((json) => {
         const data = {};

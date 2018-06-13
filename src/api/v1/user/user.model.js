@@ -26,6 +26,13 @@ const UserSchema = new Schema({
   },
   provider: String,
   salt: String,
+  instituteId: { type: String, description: 'Institute Id of the given Institute', required: true },
+  hostname: {
+    type: String,
+    description: 'Registered hostname',
+    lowercase: true,
+    required: true,
+  },
 });
 
 /**
@@ -61,6 +68,17 @@ UserSchema
 UserSchema
   .path('password')
   .validate(password => password.length, 'Password cannot be blank');
+
+// Validate empty instituteId
+UserSchema
+  .path('instituteId')
+  .validate(instituteId => instituteId.length, 'instituteId cannot be blank');
+
+// Validate empty hostname
+UserSchema
+  .path('hostname')
+  .validate(hostname => hostname.length, 'hostname cannot be blank');
+
 
 // Validate email is not taken
 UserSchema

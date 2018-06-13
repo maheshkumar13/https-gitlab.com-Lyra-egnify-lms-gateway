@@ -10,7 +10,7 @@ import {
   GraphQLNonNull as NonNull,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
-import fetch from 'universal-fetch';
+import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
 import { SubjectTaxonomyType } from './subjectTaxonomy.type';
 
@@ -19,11 +19,11 @@ export const createSubjects = {
     data: { type: GraphQLJSON },
   },
   type: new List(SubjectTaxonomyType),
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     args.data = JSON.stringify(args.data);//eslint-disable-line
     // console.log(args);
     const url = `${config.services.settings}/api/subjectTaxonomy/create/subjects`;
-    return fetch(url, { method: 'POST', body: JSON.stringify(args), headers: { 'Content-Type': 'application/json' } })
+    return fetch(url, { method: 'POST', body: JSON.stringify(args), headers: { 'Content-Type': 'application/json' } }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -42,13 +42,13 @@ export const removeSubjectTaxonomy = {
     code: { type: new NonNull(StringType) },
   },
   type: SubjectTaxonomyType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.settings}/api/subjectTaxonomy/remove/`.concat(args.code);
     return fetch(url, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(args),
-    })
+    }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -75,13 +75,13 @@ export const updateSubjectTaxonomy = {
     subCode: { type: StringType },
   },
   type: SubjectTaxonomyType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.settings}/api/subjectTaxonomy/update/`.concat(args.code);
     return fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(args),
-    })
+    }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);

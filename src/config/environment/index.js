@@ -29,7 +29,7 @@ const all = {
   port: process.env.PORT || 3000,
 
   // Should we populate the DB with sample data?
-  seedDB: false,
+  seedDB: true,
 
   secrets: {
     session: 'vega-secret',
