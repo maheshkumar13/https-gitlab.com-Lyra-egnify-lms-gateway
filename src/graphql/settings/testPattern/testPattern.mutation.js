@@ -37,7 +37,7 @@ export const createTestPattern = {
         return response.json();
       })
       .then(json =>
-        // console.log(json);
+
         json)
       .catch((err) => {
         console.error(err);
@@ -71,7 +71,7 @@ export const updateTestPattern = {
         return response.json();
       })
       .then(json =>
-        // console.log(json);
+
         json)
       .catch((err) => {
         console.error(err);
@@ -102,7 +102,7 @@ export const removeTestPattern = {
         return response.json();
       })
       .then(json =>
-        // console.log(json);
+
         json)
       .catch((err) => {
         console.error(err);
