@@ -47,6 +47,7 @@ import { createTestPatternSchema, updateTestPatternSchema, removeTestPatternSche
 import { TestPatternSchema } from './test-management/testPattern/testPattern.query';
 import { ConceptAnalysis } from './test-management/conceptAnalysis/conceptAnalysis.query';
 import { StudentConceptAnalysis } from './test-management/Analysis/studentConceptAnalysis.query';
+import { QuestionPaperMetrics } from './test-management/questionPaper/questionPaper.query';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -91,6 +92,7 @@ const schema = new Schema({
       StudentConceptAnalysis,
       CommonAnalysisPaginated,
       MarkAnalysisGraphData,
+      QuestionPaperMetrics
     },
   }),
   mutation: new ObjectType({
