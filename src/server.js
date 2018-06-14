@@ -64,7 +64,7 @@ app.use(
 
 require('./api/v1').default(app);
 
-// app.get('/', (req, res) => res.send('Oh!! Yeah.'));
+app.get('/', (req, res) => res.send('Oh!! Yeah.'));
 
 // seedDatabaseIfNeeded();
 

@@ -15,10 +15,10 @@ import _ from 'lodash';
 const all = {
 
   // Cloud Storage bucket
-  GCLOUD_PROJECT: 'egnify-product',
+  GCLOUD_PROJECT: process.env.GCLOUD_PROJECT||'egnify-product',
 
   // Cloud Storage bucket
-  CLOUD_BUCKET: 'vega-demo-cdn',
+  CLOUD_BUCKET: process.env.CLOUD_BUCKET||'vega-demo-cdn',
 
   env: process.env.NODE_ENV || 'development',
 
