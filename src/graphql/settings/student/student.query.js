@@ -12,8 +12,8 @@ import {
   GraphQLObjectType as ObjectType,
   GraphQLBoolean as BooleanType,
 } from 'graphql';
-import fetch from 'universal-fetch';
 import GraphQLJSON from 'graphql-type-json';
+import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
 import StudentType from './student.type';
 
@@ -76,7 +76,7 @@ export const Students = {
     filters: { type: GraphQLJSON },
   },
   type: studentDetailsType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     // console.log(args);
     if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
     // if (!args.limit) args.limit = 100; // eslint-disable-line
@@ -98,7 +98,7 @@ export const Students = {
       method: 'POST',
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -141,13 +141,13 @@ export const Students = {
 export const downloadStudentSample = {
 
   type: sampleStudentType,
-  async resolve(obj, args) { // eslint-disable-line
+  async resolve(obj, args, context) { // eslint-disable-line
     // console.log(args);
     const url = `${config.services.settings}/api/student/downloadStudentSample`;
     return fetch(url, {
       method: 'POST',
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then(response => response.json())
       .then(json => json)
       .catch((err) => {
@@ -162,14 +162,14 @@ export const StudentUniqueValues = {
     level: { type: IntType },
   },
   type: GraphQLJSON,
-  async resolve(obj, args) { // eslint-disable-line
+  async resolve(obj, args, context) { // eslint-disable-line
     // console.log(args);
     const url = `${config.services.settings}/api/student/getUniqueValues`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then(response => response.json())
       .then(json => json)
       .catch((err) => {
@@ -183,7 +183,7 @@ export const StudentsByLastNode = {
     list: { type: new NonNull(new List(StringType)) },
   },
   type: GraphQLJSON,
-  async resolve(obj, args) { // eslint-disable-line
+  async resolve(obj, args, context) { // eslint-disable-line
     // console.log(args);
     args.list = JSON.stringify(args.list) // eslint-disable-line
     const url = `${config.services.settings}/api/student/numberOfStudentsByLastNode`;
@@ -191,7 +191,7 @@ export const StudentsByLastNode = {
       method: 'POST',
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);

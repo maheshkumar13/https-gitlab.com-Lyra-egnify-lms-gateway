@@ -13,10 +13,10 @@ import {
   GraphQLInputObjectType as InputType,
   GraphQLNonNull as NonNull,
 } from 'graphql';
-import fetch from 'universal-fetch';
 
 import InstituteHierarchyType from './instituteHierarchy.type';
 import { config } from '../../../config/environment';
+import fetch from '../../../utils/fetch';
 
 const CreateInstituteHierarchyNodeInputType = new InputType({
   name: 'CreateInstituteHierarchyNodeInputType',
@@ -41,7 +41,7 @@ export const CreateInstituteHierarchyNode = {
     input: { type: CreateInstituteHierarchyNodeInputType },
   },
   type: new List(InstituteHierarchyType),
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.settings}/api/instituteHierarchy/create/node`;
 
     // const body = {
@@ -59,6 +59,7 @@ export const CreateInstituteHierarchyNode = {
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
       },
+      context,
     )
       .then(async (response) => {
         if (response.status >= 400) {
@@ -81,7 +82,7 @@ export const createInstituteHierarchyNodesFromCSV = {
     input: { type: IHBulkUploadInputType },
   },
   type: new List(InstituteHierarchyType),
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.settings}/api/instituteHierarchy/create/nodesFromCSV`;
 
     const body = args.input;
@@ -93,6 +94,7 @@ export const createInstituteHierarchyNodesFromCSV = {
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
       },
+      context,
     )
       .then(async (response) => {
         if (response.status >= 400) {
@@ -119,7 +121,7 @@ export const UpdateInstituteHierarchyNode = {
     patch: { type: InstituteHierarchyPatchType },
   },
   type: new List(InstituteHierarchyType),
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.settings}/api/instituteHierarchy/update/node/onCode`;
 
     const body = {
@@ -135,6 +137,7 @@ export const UpdateInstituteHierarchyNode = {
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
       },
+      context,
     )
       .then(async (response) => {
         if (response.status >= 400) {

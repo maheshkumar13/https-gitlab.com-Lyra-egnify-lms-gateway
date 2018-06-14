@@ -15,7 +15,7 @@ import {
 } from 'graphql';
 
 import GraphQLJSON from 'graphql-type-json';
-import fetch from 'universal-fetch';
+import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
 import { TestType, InputTestType, UpdateTestType } from './test.type';
 
@@ -26,13 +26,13 @@ export const removeTest = {
     testId: { type: new NonNull(StringType) },
   },
   type: TestType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/test/remove`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -49,13 +49,13 @@ export const createDummyTest = {
     input: { type: GraphQLJSON },
   },
   type: TestType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/test/create/dummy`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args.input),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -71,13 +71,13 @@ export const createDuplicateTest = {
     testId: { type: new NonNull(StringType) },
   },
   type: TestType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/test/create/duplicate`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
       headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -103,13 +103,13 @@ export const createTest = {
     input: { type: new NonNull(InputTestType) },
   },
   type: TestType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/test/create`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args.input),
       headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -126,13 +126,13 @@ export const updateTest = {
     input: { type: new NonNull(UpdateTestType) },
   },
   type: TestType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/test/update`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args.input),
       headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then((response) => {
         // console.log(response.status);
         if (response.status >= 400) {
@@ -152,13 +152,13 @@ export const QmapFileUpload = {
     url: { type: new NonNull(StringType), description: 'URL of file uploaded to GCS' },
   },
   type: TestType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/test/QmapFileUpload`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
       headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then((response) => {
         // console.log(response.status);
         if (response.status >= 400) {

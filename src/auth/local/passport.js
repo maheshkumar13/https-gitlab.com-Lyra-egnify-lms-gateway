@@ -6,12 +6,23 @@ Error Code list:
 AU01 - EMail mismatch
 AU02 - Password mismatch
 */
-function localAuthenticate(User, email, password, done) {
+function localAuthenticate(req, User, email, password, done) {
+  console.info('Authenticate', req.hostname, req.body.hostname);
+
   User.findOne({
     email: email.toLowerCase(),
   }).exec()
     .then((user) => {
       if (!user) {
+        return done(null, false, {
+          message: 'This email is not registered.',
+          code: 'AU01',
+        });
+      }
+      console.info('user', user.hostname, req.body.hostname);
+      if (user.hostname !== req.body.hostname) {
+        console.info('not matching', user.hostname);
+
         return done(null, false, {
           message: 'This email is not registered.',
           code: 'AU01',
@@ -34,7 +45,8 @@ export default function setup(User/* config */) {
   passport.use(new LocalStrategy({
     usernameField: 'email',
     passwordField: 'password', // this is the virtual field on the model
-  }, (email, password, done) => localAuthenticate(User, email, password, done)));
+    passReqToCallback: true,
+  }, (req, email, password, done) => localAuthenticate(req, User, email, password, done)));
 }
 
 export { setup };

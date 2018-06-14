@@ -14,9 +14,9 @@ import {
   GraphQLEnumType,
 } from 'graphql';
 
-import fetch from 'universal-fetch';
 import GraphQLJSON from 'graphql-type-json';
 import { config } from '../../../config/environment';
+import fetch from '../../../utils/fetch';
 
 import { TestType, MoveTestType, TestHierarchyNodesType, FileStatusType } from './test.type';
 
@@ -84,7 +84,7 @@ export const Tests = {
     limit: { type: IntType },
   },
   type: TestsDetailsType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     // console.log(args);
     if (args.regex !== undefined)
       {args.regex = args.regex.replace(/\s\s+/g, ' ').trim();} //eslint-disable-line
@@ -100,7 +100,7 @@ export const Tests = {
       method: 'POST',
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then(response => response.json())
       .then((json) => {
         const data = {};
@@ -139,13 +139,13 @@ export const Tests = {
 
 export const QuestionTypes = {
   type: new List(StringType),
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/test/questionTypes`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then(response => response.json())
       .catch(err => new Error(err.message));
   },
@@ -156,13 +156,13 @@ export const FileStatus = {
     fileStatusId: { type: new NonNull(StringType), description: 'Unique identifier for a specific file passed to the parser' },
   },
   type: FileStatusType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/question/fileStatus`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
       headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -177,14 +177,14 @@ export const DefaultMarkingSchemas = {
     testName: { type: StringType },
   },
   type: GraphQLJSON, // new List(MarkingSchemaType),
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/test/defaultMarkingSchemas`;
     // console.log('sending', JSON.stringify(args));
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then(response => response.json())
       .catch(err => new Error(err.message));
   },
@@ -203,14 +203,14 @@ export const TestHierarchyNodes = {
     numberOfStudents: { type: IntType },
   },
   type: new List(TestHierarchyNodesType), // new List(MarkingSchemaType),
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/hierarchy`;
     // console.log('sending', JSON.stringify(args));
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then(response => response.json())
       .catch(err => new Error(err.message));
   },
@@ -222,13 +222,13 @@ export const moveTest = {
     status: { type: new NonNull(StringType) },
   },
   type: MoveTestType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/test/moveTest`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -244,14 +244,14 @@ export const DownloadSampleQmap = {
     testId: { type: new NonNull(StringType), description: 'Unique identifier for test' },
   },
   type: GraphQLJSON,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/test/downloadSampleQmap`;
     // console.log('url is', url);
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
       headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then(response => response.json())
       .catch(err => new Error(err.message));
   },

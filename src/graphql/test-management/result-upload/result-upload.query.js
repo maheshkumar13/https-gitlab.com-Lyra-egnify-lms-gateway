@@ -5,7 +5,7 @@ import {
   // GraphQLList as List,
   GraphQLInputObjectType as InputObjectType,
 } from 'graphql';
-import fetch from 'universal-fetch';
+import fetch from '../../../utils/fetch';
 // import GraphQLJSON from 'graphql-type-json';
 import { config } from '../../../config/environment';
 import { ResultType, SampleDownloadType } from './result-upload.type';
@@ -32,14 +32,14 @@ export const Results = {
     input: { type: new NonNull(ResultInputType) },
   },
   type: ResultType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/resultUpload/read/results`;
     const body = JSON.parse(JSON.stringify(args.input));
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(body),
       headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then((response) => {
         if (response.status === 403) {
           return new Error(response.statusText);
@@ -55,14 +55,14 @@ export const ResultsSampleDownload = {
     input: { type: new NonNull(SampleResultUploadType) },
   },
   type: SampleDownloadType,
-  async resolve(obj, args) {
+  async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/resultUpload`;
     const body = JSON.parse(JSON.stringify(args.input));
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(body),
       headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    })
+    }, context)
       .then((response) => {
         if (response.status === 403) {
           return new Error(response.statusText);

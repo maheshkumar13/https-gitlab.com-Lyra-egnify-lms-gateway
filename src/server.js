@@ -46,7 +46,7 @@ app.use('/', express.static(`${__dirname}/public`));
 app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql', passHeader: "'Authorization': localStorage.getItem('jwt_token')" }));
 app.use(
   '/graphql',
-  // auth.isAuthenticated(),
+  auth.isAuthenticated(),
   bodyParser.json(),
   graphqlExpress((req) => {
     // Some sort of auth function
@@ -54,7 +54,7 @@ app.use(
     console.info('Yay!! GraphQL Initilized');
     return {
       schema,
-      context: {},
+      context: { user: req.user },
       tracing: true,
       cacheControl: true,
     };
@@ -66,7 +66,7 @@ require('./api/v1').default(app);
 
 // app.get('/', (req, res) => res.send('Oh!! Yeah.'));
 
-seedDatabaseIfNeeded();
+// seedDatabaseIfNeeded();
 
 // app.listen(config.port, () => {
 //   console.info(`The server is running at http://localhost:${config.port}/`);

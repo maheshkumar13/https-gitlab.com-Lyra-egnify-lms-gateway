@@ -7,6 +7,8 @@ import {
   GraphQLInt as IntType,
 } from 'graphql';
 import { config } from '../../../config/environment';
+import fetch from '../../../utils/fetch';
+
 
 const anscetors = new ObjectType({
   name: 'AnscetorsType',
@@ -28,13 +30,13 @@ const InstituteHierarchyType = new ObjectType({
     parent: { type: StringType },
     parentCode: { type: StringType },
     level: { type: IntType },
-    levelName: { type: IntType },
+    levelName: { type: StringType },
     isLeafNode: { type: BooleanType },
     anscetors: { type: new List(anscetors) },
     description: { type: StringType },
     next: {
       type: new List(InstituteHierarchyType),
-      async resolve(obj) {
+      async resolve(obj, args, context) {
         const filters = {};
         const url = `${config.services.settings}/api/instituteHierarchy/filter/nodes`;
         filters.parentCode = obj.childCode;
@@ -42,7 +44,7 @@ const InstituteHierarchyType = new ObjectType({
           method: 'POST',
           body: JSON.stringify({ filters: JSON.stringify(filters) }),
           headers: { 'Content-Type': 'application/json' },
-        })
+        }, context)
           .then(response => response.json())
           .then(json => json)
           .catch((err) => {
