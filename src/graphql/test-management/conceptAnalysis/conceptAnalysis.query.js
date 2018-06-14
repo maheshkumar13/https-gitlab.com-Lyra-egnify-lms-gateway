@@ -28,7 +28,6 @@ export const ConceptAnalysis = {
   type: ConceptAnalysisType,
   async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/conceptAnalysis/read`;
-    // console.log('url is', url);
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),

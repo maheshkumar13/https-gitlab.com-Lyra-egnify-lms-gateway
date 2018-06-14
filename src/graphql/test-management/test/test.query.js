@@ -85,7 +85,6 @@ export const Tests = {
   },
   type: TestsDetailsType,
   async resolve(obj, args, context) {
-    // console.log(args);
     if (args.regex !== undefined)
       {args.regex = args.regex.replace(/\s\s+/g, ' ').trim();} //eslint-disable-line
     if (args.regex === '' || args.regex === ' ') {
@@ -105,9 +104,6 @@ export const Tests = {
       .then((json) => {
         const data = {};
         data.page = json.tests;
-        console.error(data.page);
-        // console.log('getting data is',data)
-        // console.log('cc', json.count);
         const pageInfo = {};
         pageInfo.prevPage = true;
         pageInfo.nextPage = true;
@@ -179,7 +175,6 @@ export const DefaultMarkingSchemas = {
   type: GraphQLJSON, // new List(MarkingSchemaType),
   async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/test/defaultMarkingSchemas`;
-    // console.log('sending', JSON.stringify(args));
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
@@ -205,7 +200,6 @@ export const TestHierarchyNodes = {
   type: new List(TestHierarchyNodesType), // new List(MarkingSchemaType),
   async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/hierarchy`;
-    // console.log('sending', JSON.stringify(args));
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
@@ -246,7 +240,6 @@ export const DownloadSampleQmap = {
   type: GraphQLJSON,
   async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/test/downloadSampleQmap`;
-    // console.log('url is', url);
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),

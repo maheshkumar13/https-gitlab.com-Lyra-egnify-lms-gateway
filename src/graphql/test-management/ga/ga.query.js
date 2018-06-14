@@ -126,9 +126,6 @@ export const CommonAnalysisPaginated = {
       .then((json) => {
         const data = {};
         data.page = json.data;
-        // console.error(data.page);
-        // console.log('getting data is',data)
-        // console.log('cc', json.count);
         const pageInfo = {};
         pageInfo.prevPage = true;
         pageInfo.nextPage = true;
@@ -316,9 +313,6 @@ export const StudentPerformanceTrendAnalysisPaginated = {
       .then((json) => {
         const data = {};
         data.page = json.data;
-        // console.error(data.page);
-        // console.log('getting data is',data)
-        // console.log('cc', json.count);
         const pageInfo = {};
         pageInfo.prevPage = true;
         pageInfo.nextPage = true;

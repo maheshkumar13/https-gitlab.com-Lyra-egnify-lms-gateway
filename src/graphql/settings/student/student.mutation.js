@@ -61,7 +61,7 @@ export const createStudent = {
         return response.json();
       })
       .then(json =>
-        // console.log(json);
+
         json)
       .catch((err) => {
         console.error(err);
@@ -93,7 +93,6 @@ export const createManyStudents = {
         return response.json();
       })
       .then(json =>
-        // console.log(json);
         json)
       .catch((err) => {
         console.error(err);
