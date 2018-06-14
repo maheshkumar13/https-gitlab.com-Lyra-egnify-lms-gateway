@@ -21,7 +21,7 @@ export const createSubjects = {
   type: new List(SubjectTaxonomyType),
   async resolve(obj, args, context) {
     args.data = JSON.stringify(args.data);//eslint-disable-line
-
+    // console.log(args);
     const url = `${config.services.settings}/api/subjectTaxonomy/create/subjects`;
     return fetch(url, { method: 'POST', body: JSON.stringify(args), headers: { 'Content-Type': 'application/json' } }, context)
       .then((response) => {
@@ -56,14 +56,14 @@ export const removeSubjectTaxonomy = {
         return response.json();
       })
       .then(json =>
-
+        // console.log(json);
         json)
       .catch((err) => {
         console.error(err);
         return err.json();
       })
       .catch((errjson) => {//eslint-disable-line
-
+        // console.log(errjson);
       });
   },
 };
@@ -89,7 +89,7 @@ export const updateSubjectTaxonomy = {
         return response.json();
       })
       .then(json =>
-
+        // console.log('getting is',json);
         json)
       .catch((err) => {
         console.error(err);
