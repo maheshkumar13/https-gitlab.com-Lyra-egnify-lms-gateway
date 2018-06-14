@@ -61,7 +61,7 @@ export const InstituteHierarchySample = {
     )
       .then(response => response.json())
       .then((json) => {
-        console.error(json);
+      
         return { csvString: json.headers };
       });
   },

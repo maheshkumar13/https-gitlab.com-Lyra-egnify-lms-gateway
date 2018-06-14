@@ -22,7 +22,7 @@ export const StudentConceptAnalysis = {
   type: GraphQLJSON,
   async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/Analysis/studentConceptAnalysis`;
-    // console.log('url is', url);
+
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
