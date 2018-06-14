@@ -68,7 +68,7 @@ export const CreateInstituteHierarchyNode = {
         return response.json();
       })
       .then((json) => {
-        console.error(json);
+      
         return json;
       })
       .catch((err) => {
