@@ -5,7 +5,7 @@
 module.exports = {
   // MongoDB connection options
   mongo: {
-    uri: 'mongodb://localhost/hydra-settings-qa',
+    uri: 'mongodb://localhost/tenantregistry',
   },
   // Seed database on startup
   seedDB: true,

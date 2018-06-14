@@ -277,7 +277,7 @@ export const TestType = new ObjectType({
     colorSchema: { type: new List(ColorSchemaOjbectType), description: 'color schema' },
     gaStatus: { type: StringType, description: 'Current GA Status of the test. Possible State: [not_started,pending,error,finished]' },
 
-    modeOfConduct :{type: new NonNull(StringType),description:'Mode of conduct of the test which can be Online,Offline or Both' },
+    modeOfConduct :{ type: new NonNull(StringType),description:'Mode of conduct of the test which can be Online,Offline or Both' },
 
   },
 });
@@ -297,8 +297,7 @@ export const InputTestType = new InputObjectType({
     subjectsordered: { type: BooleanType, description: 'Subjects ordered or not' },
     markingSchema: { type: MarkingSchemaType, description: 'Marks distribution' },
     // Qmap: { type: InputQmapType, description: 'Question wise description' },
-    modeOfConduct :{type: new NonNull(StringType),description:'Mode of conduct of the test which can be Online,Offline or Both' },
-    
+    modeOfConduct: { type: new NonNull(StringType), description: 'Mode of conduct of the test which can be Online,Offline or Both' },   
   },
 });
 
@@ -343,7 +342,7 @@ export const UpdateTestType = new InputObjectType({
     Qmap: { type: new List(InputQmapType), description: 'Mapping the question with subject, topic and subTopic' },
     colorSchema: { type: new List(InputColorSchemaOjbectType), description: 'color schema' },
 
-    modeOfConduct :{type: StringType,description:'Mode of conduct of the test which can be Online,Offline or Both' },
+    modeOfConduct :{ type: StringType,description:'Mode of conduct of the test which can be Online,Offline or Both' },
 
   },
 });
