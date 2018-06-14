@@ -77,7 +77,7 @@ export const Students = {
   },
   type: studentDetailsType,
   async resolve(obj, args, context) {
-
+    // console.log(args);
     if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
     // if (!args.limit) args.limit = 100; // eslint-disable-line
     if (args.pageNumber < 1) {
@@ -92,7 +92,7 @@ export const Students = {
     if (args.filters !== undefined) {
       args.filters = JSON.stringify(args.filters); // eslint-disable-line
     }
-
+    // console.log('sending args is', args);
     const url = `${config.services.settings}/api/student/students`;
     return fetch(url, {
       method: 'POST',
@@ -108,9 +108,9 @@ export const Students = {
       .then((json) => {
         const data = {};
         data.page = json.students;
-
+        // console.log('student is', data.page);
         data.hierarchy = json.hierarchy;
-
+        // console.log('cc', json.count);
         const pageInfo = {};
         pageInfo.prevPage = true;
         pageInfo.nextPage = true;
@@ -142,7 +142,7 @@ export const downloadStudentSample = {
 
   type: sampleStudentType,
   async resolve(obj, args, context) { // eslint-disable-line
-
+    // console.log(args);
     const url = `${config.services.settings}/api/student/downloadStudentSample`;
     return fetch(url, {
       method: 'POST',
@@ -163,7 +163,7 @@ export const StudentUniqueValues = {
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) { // eslint-disable-line
-
+    // console.log(args);
     const url = `${config.services.settings}/api/student/getUniqueValues`;
     return fetch(url, {
       method: 'POST',
@@ -184,7 +184,7 @@ export const StudentsByLastNode = {
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) { // eslint-disable-line
-
+    // console.log(args);
     args.list = JSON.stringify(args.list) // eslint-disable-line
     const url = `${config.services.settings}/api/student/numberOfStudentsByLastNode`;
     return fetch(url, {
