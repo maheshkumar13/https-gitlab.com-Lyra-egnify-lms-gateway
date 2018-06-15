@@ -342,7 +342,7 @@ export const UpdateTestType = new InputObjectType({
     Qmap: { type: new List(InputQmapType), description: 'Mapping the question with subject, topic and subTopic' },
     colorSchema: { type: new List(InputColorSchemaOjbectType), description: 'color schema' },
 
-    modeOfConduct :{ type: StringType,description:'Mode of conduct of the test which can be Online,Offline or Both' },
+    modeOfConduct :{ type: StringType,description:'Mode of conduct of the test which can be online,offline or both' },
 
   },
 });
