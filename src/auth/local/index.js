@@ -22,7 +22,7 @@ router.post('/', (req, res, next) => {
 });
 router.post(
   '/refreshtoken',
-  isAuthenticated,
+  isAuthenticated(),
   (req, res) => {
     const { user } = req;
     const token = signToken(user._id, user.role, user.instituteId, user.hostname);
