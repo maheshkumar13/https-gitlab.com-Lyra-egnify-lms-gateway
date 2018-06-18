@@ -215,11 +215,13 @@ export const InputQmapType = new InputObjectType({
   name: 'InputQmapType',
   description: 'Mapping the question with subject, topic and subTopic',
   fields: {
-    questionNumber: { type: new NonNull(StringType), description: 'Quetion number in specified format, ex: Q1,Q2, etc..' },
+    questionNumber: { type: new NonNull(StringType), description: 'Question number in specified format, ex: Q1,Q2, etc..' },
     subject: { type: new NonNull(InputQmapSubjectType), description: 'Subject details in each Qmap object' },
-    topic: { type: new NonNull(InputQmapTopicType), description: 'Topic details in each Qmap object' },
+    // topic is not mandatory anymore
+    topic: { type: (InputQmapTopicType), description: 'Topic details in each Qmap object' },
     subTopic: { type: InputQmapsubTopicType, description: 'subTopic details in each Qmap object' },
     difficulty: { type: StringType, description: 'Difficulty of the question in enumerated form of Easy, Medium and Hard' },
+    key: { type: new List(StringType), description: 'Array of Key for the question' },
   },
 });
 
@@ -227,7 +229,7 @@ export const QmapType = new ObjectType({
   name: 'QmapType',
   description: 'Mapping the question with subject, topic and subTopic',
   fields: {
-    questionNumber: { type: StringType, description: 'Quetion number in specified format, ex: Q1,Q2, etc..' },
+    questionNumber: { type: StringType, description: 'Question number in specified format, ex: Q1,Q2, etc..' },
     subject: { type: QmapSubjectType, description: 'Subject details in each Qmap object' },
     topic: { type: QmapTopicType, description: 'Topic details in each Qmap object' },
     subTopic: { type: QmapsubTopicType, description: 'subTopic details in each Qmap object' },
@@ -235,6 +237,7 @@ export const QmapType = new ObjectType({
     C: { type: StringType, description: 'Marks for answering correctly to this question' },
     W: { type: StringType, description: 'Marks for answering wrongly to this question' },
     U: { type: StringType, description: 'Marks for Not attempting this question' },
+    key: { type: new List(StringType), description: 'Array of Key for the question' },
   },
 });
 
