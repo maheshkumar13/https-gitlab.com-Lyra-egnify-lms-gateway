@@ -257,6 +257,8 @@ export const TestType = new ObjectType({
   fields: {
     testId: { type: StringType, description: 'Unique identifier for the test' },
     testName: { type: StringType, description: 'Name of the test' },
+    questionNumberFormat: { type: StringType, description: 'format of a question number' },
+    optionNumberFormat: { type: StringType, description: 'format of an option number' },
     testType: { type: TesttypeType, description: 'User defined test pattern' },
     totalMarks: { type: IntType, description: 'Total marks in the test' },
     startTime: { type: StringType, description: 'Time of exam starts' },
@@ -289,6 +291,8 @@ export const InputTestType = new InputObjectType({
   description: 'Input for the test',
   fields: {
     testName: { type: new NonNull(StringType), description: 'Name of the test, testName should not be empty! ' },
+    questionNumberFormat: { type: StringType, description: 'format of a question number' },
+    optionNumberFormat: { type: StringType, description: 'format of an option number' },
     totalMarks: { type: new NonNull(IntType), description: 'totalMarks in the test' },
     date: { type: new NonNull(StringType), description: 'Date of conducting the test.' },
     startTime: { type: new NonNull(StringType), description: 'Time of test starts, should be in range 00:00 to 23:59' },
@@ -332,6 +336,8 @@ export const UpdateTestType = new InputObjectType({
   fields: {
     testId: { type: new NonNull(StringType), description: 'Unique identifier for test' },
     testName: { type: StringType, description: 'Name of the test, testName should not be empty! ' },
+    questionNumberFormat: { type: StringType, description: 'format of a question number' },
+    optionNumberFormat: { type: StringType, description: 'format of an option number' },
     totalMarks: { type: IntType, description: 'totalMarks in the test' },
     date: { type: StringType, description: 'Date of conducting the test.' },
     startTime: { type: StringType, description: 'Time of test starts, should be in range 00:00 to 23:59' },
