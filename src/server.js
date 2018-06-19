@@ -25,6 +25,9 @@ const cors = require('cors');
 mongoose.Promise = require('bluebird');
 // Connect to MongoDB
 mongoose.connect(config.mongo.uri, config.mongo.options);
+mongoose.connection.on('connected', () => {
+  console.info('Mongoose connected to', config.mongo.uri);
+});
 mongoose.connection.on('error', (err) => {
   console.info(`MongoDB connection error: ${err}`);
   process.exit(-1); // eslint-disable-line no-process-exit
