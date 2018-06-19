@@ -57,6 +57,36 @@ const ResponseEnumType = new EnumType({
     },
   },
 });
+const FieldnameEnumType = new EnumType({
+  name: 'FieldnameEnumType',
+  values: {
+    STUDENT_NAME: {
+      value: 'name',
+    },
+    RANK: {
+      value: 'rankAnalysis',
+    }
+  },
+});
+const SortingOrderEnumType = new EnumType({
+  name: 'FieldnameEnumType',
+  values: {
+    STUDENT_NAME: {
+      value: 'name',
+    },
+    RANK: {
+      value: 'rankAnalysis',
+    }
+  },
+});
+const SortType = new InputObjectType ({
+name : "SortType",
+description: "Sorting Input for Question Details",
+fields: {
+  fieldName : {type : FieldnameEnumType},
+  sortOrder : {type : SortingOrderEnumType},
+},
+});
 // const GraphQLStringType = require('graphql-StringType');
 export const QuestionDetailsInputType = new InputObjectType({
   name: 'QuestionDetailsInputType',
@@ -76,6 +106,7 @@ export const QuestionDetailsInputType = new InputObjectType({
     questionResponse: { type: new List(ResponseEnumType) },
     pageNumber: { type: IntType },
     limit: { type: IntType },
+    sort : {type : new List (SortType)},
   },
 });
 
