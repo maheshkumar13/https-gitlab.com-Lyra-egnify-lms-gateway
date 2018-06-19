@@ -63,29 +63,32 @@ const FieldnameEnumType = new EnumType({
     STUDENT_NAME: {
       value: 'name',
     },
-    RANK: {
-      value: 'rankAnalysis',
-    }
+    RANK_OVERALL: {
+      value: 'filter.rankAnalysis.overall.rank',
+    },
+    MARK_OVERALL: {
+      value: 'filter.markAnalysis.overall.obtainedMarks',
+    },
   },
 });
 const SortingOrderEnumType = new EnumType({
-  name: 'FieldnameEnumType',
+  name: 'SortingOrderEnumType',
   values: {
-    STUDENT_NAME: {
-      value: 'name',
+    ASC: {
+      value: 1,
     },
-    RANK: {
-      value: 'rankAnalysis',
-    }
+    DESC: {
+      value: -1,
+    },
   },
 });
-const SortType = new InputObjectType ({
-name : "SortType",
-description: "Sorting Input for Question Details",
-fields: {
-  fieldName : {type : FieldnameEnumType},
-  sortOrder : {type : SortingOrderEnumType},
-},
+const SortType = new InputObjectType({
+  name: 'SortType',
+  description: 'Sorting Input for Question Details',
+  fields: {
+    fieldName: { type: FieldnameEnumType },
+    sortOrder: { type: SortingOrderEnumType },
+  },
 });
 // const GraphQLStringType = require('graphql-StringType');
 export const QuestionDetailsInputType = new InputObjectType({
@@ -106,7 +109,7 @@ export const QuestionDetailsInputType = new InputObjectType({
     questionResponse: { type: new List(ResponseEnumType) },
     pageNumber: { type: IntType },
     limit: { type: IntType },
-    sort : {type : new List (SortType)},
+    sort: { type: new List(SortType) },
   },
 });
 
