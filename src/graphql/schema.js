@@ -35,6 +35,8 @@ import { InstituteHierarchy, InstituteHierarchySample } from './settings/institu
 import { InstituteHierarchyGrid, LevelFilters } from './settings/instituteHierarchy/instituteHierarchyGrid.query';
 import { CreateInstituteHierarchyNode, UpdateInstituteHierarchyNode, createInstituteHierarchyNodesFromCSV } from './settings/instituteHierarchy/instituteHierarchy.muatation';
 import Institute from './settings/institute/institute.query';
+import { GetAcademicYear } from './settings/academicYear/academicYear.query';
+
 import { createInstitute, updateInstitute, updateHierarchy } from './settings/institute/institute.mutation';
 import { saveTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.mutation';
 import { GenerateConceptTaxonomy, conceptTaxonomy, ConceptTaxonomyTree } from './settings/conceptTaxonomy/conceptTaxonomy.query';
@@ -92,6 +94,7 @@ const schema = new Schema({
       CommonAnalysisPaginated,
       MarkAnalysisGraphData,
       MarkAnalysisGraphDataV2,
+      GetAcademicYear,
 
     },
   }),
