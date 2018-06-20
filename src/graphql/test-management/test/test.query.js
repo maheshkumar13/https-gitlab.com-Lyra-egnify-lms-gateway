@@ -78,6 +78,8 @@ const StatusEnumType = new GraphQLEnumType({
 export const Tests = {
   args: {
     testId: { type: StringType },
+    academicYear: { type: new List(StringType) },
+    testType: { type: new List(StringType) },
     regex: { type: StringType },
     status: { type: StatusEnumType },
     pageNumber: { type: IntType },

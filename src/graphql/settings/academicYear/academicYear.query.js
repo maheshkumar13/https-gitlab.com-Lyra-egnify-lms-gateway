@@ -1,4 +1,9 @@
-import { GraphQLList as List } from 'graphql';
+import {
+  GraphQLList as List,
+  GraphQLString as StringType,
+  GraphQLBoolean as BooleanType,
+  GraphQLInputObjectType as InputType,
+} from 'graphql';
 import { AcademicYearType, AcademicYearInputType } from './academicYear.type';
 import { config } from '../../../config/environment';
 import fetch from '../../../utils/fetch';
