@@ -9,7 +9,7 @@ import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
 
 import { QuestionDetailsInputType, QuestionDetailsType } from './question.type';
-
+import { GetQuestionsInputType, GetQuestionsType } from './question.type';
 
 export const QuestionDetails = {
   args: {
@@ -58,6 +58,33 @@ export const QuestionDetails = {
   },
 };
 
+export const GetQuestions = {
+    args: {
+      input:{ type: new NonNull(GetQuestionsInputType) },
+  },
+  type: GetQuestionsType,
+  async resolve(obj, args, context) {
+    const url = `${config.services.test}/api/v1/question/getQuestions`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args.input),
+        headers: { 'Content-Type': 'application/json' },
+    }, context)
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        // console.log("REsponse:",response.json());
+        return response.json();
+      })
+      .then(json => {
+        // console.log("Json:", json);
+        return json;
+      });
+},
+};
+
 export default{
   QuestionDetails,
+  GetQuestions,
 };
