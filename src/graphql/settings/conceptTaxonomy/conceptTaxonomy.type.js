@@ -1,6 +1,6 @@
 import {
   GraphQLObjectType as ObjectType,
-  GraphQLStringType as StringType,
+  GraphQLString as StringType,
   // GraphQLNonNull as NonNull,
   GraphQLInputObjectType as InputType,
   // GraphQLInt as IntType,

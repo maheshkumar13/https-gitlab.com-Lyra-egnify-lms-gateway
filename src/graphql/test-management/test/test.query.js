@@ -18,7 +18,7 @@ import GraphQLJSON from 'graphql-type-json';
 import { config } from '../../../config/environment';
 import fetch from '../../../utils/fetch';
 
-import { TestType, MoveTestType, TestHierarchyNodesType, FileStatusType } from './test.type';
+import { UniqueTestDetailsType, TestType, MoveTestType, TestHierarchyNodesType, FileStatusType } from './test.type';
 
 
 const pageInfoType = new ObjectType({
@@ -75,9 +75,30 @@ const StatusEnumType = new GraphQLEnumType({
   },
 });
 
+export const GetUniqueTestDetails = {
+  args: {
+    academicYear: { type: new NonNull(List(StringType)) },
+  },
+  type: UniqueTestDetailsType,
+  async resolve(obj, args, context) {
+    console.info(args, context);
+    const url = `${config.services.test}/api/v1/test/getUniqueTestDetails`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then(response => response.json())
+      .then(json => json)
+      .catch(err => new Error(err.message));
+  },
+};
 export const Tests = {
   args: {
     testId: { type: StringType },
+    academicYear: { type: new List(StringType) },
+    testType: { type: new List(StringType) },
+    date: { type: new List(StringType) },
     regex: { type: StringType },
     status: { type: StatusEnumType },
     pageNumber: { type: IntType },

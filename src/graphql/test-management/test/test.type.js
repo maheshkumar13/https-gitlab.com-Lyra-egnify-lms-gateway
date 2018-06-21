@@ -28,6 +28,14 @@ const InputSubjectType = new InputObjectType({
   },
 });
 
+export const UniqueTestDetailsType = new ObjectType({
+  name: 'UniqueTestDetailsType',
+  description: 'UniqueTestDetailsType',
+  fields: {
+    testType: { type: new List(StringType) },
+    testDate: { type: new List(StringType) },
+  },
+});
 const SubjectType = new ObjectType({
   name: 'SubjectType_',
   description: 'Subjects selected for the test',
@@ -253,6 +261,7 @@ export const TestType = new ObjectType({
   description: 'Test data',
   fields: {
     testId: { type: StringType, description: 'Unique identifier for the test' },
+    academicYear: { type: StringType, description: 'Academic Year in which test was helds' },
     testName: { type: StringType, description: 'Name of the test' },
     testType: { type: TesttypeType, description: 'User defined test pattern' },
     totalMarks: { type: IntType, description: 'Total marks in the test' },
