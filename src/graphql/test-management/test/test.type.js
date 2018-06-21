@@ -237,7 +237,7 @@ export const QmapType = new ObjectType({
     C: { type: StringType, description: 'Marks for answering correctly to this question' },
     W: { type: StringType, description: 'Marks for answering wrongly to this question' },
     U: { type: StringType, description: 'Marks for Not attempting this question' },
-    key: { type: new List(StringType), description: 'Array of Key for the question' },
+    // key: { type: new List(StringType), description: 'Array of Key for the question' },
   },
 });
 
