@@ -23,7 +23,7 @@ import {
   DownloadSampleQmap,
 } from './test-management/test/test.query';
 import { removeTest, createDummyTest, createDuplicateTest, createTest, updateTest, QmapFileUpload } from './test-management/test/test.mutation';
-import { QuestionDetails } from './test-management/question/question.query';
+import { QuestionDetails, QuestionMappingDetails, GetQuestions } from './test-management/question/question.query';
 import { Curriculum } from './settings/curriculum/curriculum.query';
 import { SubjectList, SubjectTaxonomy } from './settings/subject/subjectTaxonomy.query';
 import { removeSubjectTaxonomy, updateSubjectTaxonomy, createSubjects } from './settings/subject/subjectTaxonomy.mutation';
@@ -48,7 +48,6 @@ import { TestPatternSchema } from './test-management/testPattern/testPattern.que
 import { ConceptAnalysis } from './test-management/conceptAnalysis/conceptAnalysis.query';
 import { StudentConceptAnalysis } from './test-management/Analysis/studentConceptAnalysis.query';
 import { QuestionPaperMetrics } from './test-management/questionPaper/questionPaper.query';
-import { GetQuestions } from './test-management/question/question.query';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -94,7 +93,8 @@ const schema = new Schema({
       CommonAnalysisPaginated,
       MarkAnalysisGraphData,
       QuestionPaperMetrics,
-      GetQuestions
+      GetQuestions,
+      QuestionMappingDetails,
     },
   }),
   mutation: new ObjectType({
