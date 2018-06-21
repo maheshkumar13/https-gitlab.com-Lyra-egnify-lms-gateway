@@ -5,10 +5,7 @@
 */
 
 export function authValidation(req, res) {
-  res.send({
-    email: req.user.email,
-    namespace: req.user.instituteId,
-  });
+  res.send(req.user);
 }
 
 export default{
