@@ -28,6 +28,14 @@ const InputSubjectType = new InputObjectType({
   },
 });
 
+export const UniqueTestDetailsType = new ObjectType({
+  name: 'UniqueTestDetailsType',
+  description: 'UniqueTestDetailsType',
+  fields: {
+    testType: { type: new List(StringType) },
+    testDate: { type: new List(StringType) },
+  },
+});
 const SubjectType = new ObjectType({
   name: 'SubjectType_',
   description: 'Subjects selected for the test',

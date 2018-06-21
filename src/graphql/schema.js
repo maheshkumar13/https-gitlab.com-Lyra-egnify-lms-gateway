@@ -14,6 +14,7 @@ import TestPattern from './settings/testPattern/testPattern.query';
 
 
 import {
+  GetUniqueTestDetails,
   Tests,
   moveTest,
   QuestionTypes,
@@ -95,6 +96,7 @@ const schema = new Schema({
       MarkAnalysisGraphData,
       MarkAnalysisGraphDataV2,
       GetAcademicYear,
+      GetUniqueTestDetails,
 
     },
   }),
