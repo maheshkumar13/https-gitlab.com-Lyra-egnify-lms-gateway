@@ -11,7 +11,7 @@ const request = require('request');
 const uploadFile = require('./uploadFile');
 const user = require('./user');
 const auth = require('./../../auth').default;
-
+const authValidation = require('./authValidation');
 const { Duplex } = stream;
 
 // const conceptTaxonomy = require('./conceptTaxonomy');
@@ -37,6 +37,7 @@ export default function (app) {
   app.use('/api/v1/uploadFile', uploadFile);
   app.use('/api/v1/users', user);
   app.use('/auth', auth);
+  app.use('/api/v1/authValidation', authValidation);
 
   // Proxy Request below
   app.post(
