@@ -2,6 +2,10 @@ import jwt from 'jsonwebtoken';
 import User from './user.model';
 import { config } from '../../../config/environment';
 
+const bcrypt = require('bcrypt');
+
+const emailCtrl = require('../emailTransporter/emailTransporter.controller');
+
 function validationError(res, statusCode) {
   statusCode = statusCode || 422;
   return function (err) {
@@ -15,6 +19,97 @@ function handleError(res, statusCode) {
     return res.status(statusCode).send(err);
   };
 }
+function sendEmail(usrDetails, hashValue, baseUrl) {
+  const url = `${baseUrl}/resetPassword?token=${hashValue}`;
+  const from = 'support@egnify.com'; // From address
+  const to = usrDetails.email; // To address
+  const subject = 'Egnify Password Reset'; // Subject
+  const html = `Hi ${usrDetails.username},<br /> <br />
+  You have recently asked for a password reset for your account with Egnify.<br />
+  To update your password, please click on the button below:
+  <br />
+  <button style="margin-top:20px;height:50px; width:160px;border-radius:25px;border: 0;background-color:#cf6387"><a href=${url} style="color:black;text-decoration: none;color:white;font-size: 14px;"
+  >RESET PASSWORD</a></button>
+  <br /> <br />Best,<br />
+  Team Egnify`;
+  emailCtrl.sendEmail(from, to, subject, html);
+}
+
+export async function resetpassword(req, res) {
+  console.info(req.body);
+  const hashToken = req.body.hashToken;
+  const newPassword = req.body.password;
+  if (hashToken && newPassword) {
+    return User.findOne({
+      forgotPassSecureHash: hashToken,
+    })
+      .then((user) => {
+        if (Date.now() <= user.forgotPassSecureHashExp) {
+          user.password = newPassword;
+          user.forgotPassSecureHash = '';
+          return user.save()
+            .then(() => {
+              res.status(200).end();
+            })
+            .catch(validationError(res));
+        }
+
+        return res.status(403).send('Link Expired');
+      })
+      .catch(() => {
+        res.status(403).end();
+      });
+  }
+
+  res.status(403).send('Invalid Parameter');
+}
+
+export async function sendResetLink(req, res) {
+  const Email = req.body.email;
+  const reqUrl = req.hostname;
+  console.info(req.body, req.hostname);
+  const baseUrl = reqUrl;
+  const saltRounds = 10;
+
+  // Find if the given User email exists in the database.
+  const usrDetails = await User.find({ email: Email });
+  // If No users have been found with give email.
+  if (usrDetails.length === 0) {
+    res.json({
+      usersFound: false,
+      hash: null,
+    });
+  } else {
+    // If a valid user exists with the given email.
+    const payload = {
+      usrDetails,
+      iat: Date.now(),
+      exp: Date.now() + (1000 * 60 * 60 * 2), // time in ms
+    };
+    // Generate a secure hash to give user access to reset his password.
+    bcrypt.hash(JSON.stringify(payload), saltRounds, (err, hash) => {
+      User.update(
+        {
+          email: usrDetails[0].email,
+        },
+        {
+          $set: {
+            forgotPassSecureHash: hash,
+            forgotPassSecureHashExp: payload.exp,
+          },
+        },
+        (err1, docs) => {
+          if (docs) {
+            sendEmail(usrDetails[0], hash, baseUrl);
+            res.json({ usersFound: true, hash });
+          }
+          if (err1) console.error(err1);
+        },
+      );
+    });
+  }
+}
+
 
 /**
  * Get list of users
@@ -109,13 +204,18 @@ export function changePassword(req, res) {
     .then((user) => {
       if (user.authenticate(oldPass)) {
         user.password = newPass;
+        if (!user.passwordChange) {
+          user.passwordChange = true;
+        }
         return user.save()
           .then(() => {
-            res.status(204).end();
+            res.status(200).end();
           })
           .catch(validationError(res));
       }
-      return res.status(403).end();
+      console.info('here');
+      res.statusMessage = 'Current password does not match';
+      return res.status(403).send('Current password does not match');
     });
 }
 
