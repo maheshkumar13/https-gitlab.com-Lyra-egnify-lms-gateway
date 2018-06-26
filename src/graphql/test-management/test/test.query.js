@@ -81,7 +81,7 @@ export const GetUniqueTestDetails = {
   },
   type: UniqueTestDetailsType,
   async resolve(obj, args, context) {
-    console.info(args, context);
+    // console.info(args, context);
     const url = `${config.services.test}/api/v1/test/getUniqueTestDetails`;
     return fetch(url, {
       method: 'POST',

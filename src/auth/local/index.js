@@ -8,7 +8,6 @@ router.post('/', (req, res, next) => {
   passport.authenticate('local', (err, user, info) => {
     const error = err || info;
     if (error) {
-      console.info('here');
 
       return res.status(401).json(error);
     }
