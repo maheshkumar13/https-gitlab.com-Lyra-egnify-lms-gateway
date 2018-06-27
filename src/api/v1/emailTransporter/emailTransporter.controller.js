@@ -8,7 +8,7 @@ const transport = mailer.createTransport(smtp({
   port: 2525,
   auth: config.emailAuth,
 }));
-
+// function to send email
 export function sendEmail(fromAddr, toAddr, emailSubject, bodyHtml) {
   transport.sendMail(
     {

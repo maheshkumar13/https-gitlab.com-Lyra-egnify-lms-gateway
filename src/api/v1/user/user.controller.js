@@ -19,6 +19,8 @@ function handleError(res, statusCode) {
     return res.status(statusCode).send(err);
   };
 }
+
+// function to send emails for reset links
 function sendEmail(usrDetails, hashValue, baseUrl) {
   const url = `${baseUrl}/resetPassword?token=${hashValue}`;
   const from = 'support@egnify.com'; // From address
@@ -35,6 +37,7 @@ function sendEmail(usrDetails, hashValue, baseUrl) {
   emailCtrl.sendEmail(from, to, subject, html);
 }
 
+// function to reset password using forgethashtoken and new password
 export async function resetpassword(req, res) {
   console.info(req.body);
   const hashToken = req.body.hashToken;
@@ -64,6 +67,7 @@ export async function resetpassword(req, res) {
   res.status(403).send('Invalid Parameter');
 }
 
+// function to send reset link for the password
 export async function sendResetLink(req, res) {
   const Email = req.body.email;
   const reqUrl = req.hostname;
@@ -84,7 +88,7 @@ export async function sendResetLink(req, res) {
     const payload = {
       usrDetails,
       iat: Date.now(),
-      exp: Date.now() + (1000 * 60 * 60 * 2), // time in ms
+      exp: Date.now() + (1000 * 60 * 60 * 24), // time in ms
     };
     // Generate a secure hash to give user access to reset his password.
     bcrypt.hash(JSON.stringify(payload), saltRounds, (err, hash) => {
