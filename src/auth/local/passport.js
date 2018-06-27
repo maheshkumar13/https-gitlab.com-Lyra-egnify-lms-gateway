@@ -7,7 +7,7 @@ AU01 - EMail mismatch
 AU02 - Password mismatch
 */
 function localAuthenticate(req, User, email, password, done) {
-  console.info('Authenticate', req.hostname, req.body.hostname);
+  // console.info('Authenticate', req.hostname, req.body.hostname);
 
   User.findOne({
     email: email.toLowerCase(),
@@ -19,9 +19,9 @@ function localAuthenticate(req, User, email, password, done) {
           code: 'AU01',
         });
       }
-      console.info('user', user.hostname, req.body.hostname);
+      // console.info('user', user.hostname, req.body.hostname);
       if (user.hostname !== req.body.hostname) {
-        console.info('not matching', user.hostname);
+        // console.info('not matching', user.hostname);
 
         return done(null, false, {
           message: 'This email is not registered.',
