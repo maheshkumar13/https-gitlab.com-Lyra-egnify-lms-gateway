@@ -9,6 +9,7 @@ import * as authService from '../../auth/auth.service';
 const multer = require('multer');
 const request = require('request');
 const uploadFile = require('./uploadFile');
+const downloadReports = require('./downloadReports');
 const user = require('./user');
 const auth = require('./../../auth').default;
 
@@ -36,6 +37,7 @@ export default function (app) {
 
   app.use('/api/v1/uploadFile', uploadFile);
   app.use('/api/v1/users', user);
+  app.user('/api/v1/downloadReports', downloadReports);
   app.use('/auth', auth);
 
   // Proxy Request below
