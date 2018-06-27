@@ -190,6 +190,7 @@ export const MarkAnalysisGraphDataV2 = {
     start: { type: IntType, description: 'Starting point on x-axis ' },
     end: { type: IntType, description: 'End point on description' },
     precision: { type: IntType, description: 'Max number of decimal places ' },
+    filter: { type: new List(FilterInputType) },
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) {
