@@ -16,7 +16,7 @@ router.post('/', (req, res, next) => {
     }
 
     const token = signToken(user._id, user.role, user.instituteId, user.hostname);
-    res.json({ token });
+    res.json({ token, firstTimePasswordChanged: user.passwordChange });
   })(req, res, next);
 });
 router.post(
@@ -25,7 +25,7 @@ router.post(
   (req, res) => {
     const { user } = req;
     const token = signToken(user._id, user.role, user.instituteId, user.hostname);
-    res.json({ token });
+    res.json({ token, firstTimePasswordChanged: user.passwordChange });
   },
 );
 

@@ -34,6 +34,12 @@ const all = {
   secrets: {
     session: 'vega-secret',
   },
+  emailAuth: {
+    user: process.env.MAILJET_API_KEY || 'a1fb4988b5a359099061d2cb8aebc80d',
+    pass: process.env.MAILJET_API_SECRETKEY || '2fc962b7e3aae82acee17b355fb9de2d',
+  },
+
+
 
   // MongoDB connection options
   mongo: {
