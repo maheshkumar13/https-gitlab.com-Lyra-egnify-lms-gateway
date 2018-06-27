@@ -39,7 +39,6 @@ function sendEmail(usrDetails, hashValue, baseUrl) {
 
 // function to reset password using forgethashtoken and new password
 export async function resetpassword(req, res) {
-  console.info(req.body);
   const hashToken = req.body.hashToken;
   const newPassword = req.body.password;
   if (hashToken && newPassword) {
@@ -70,9 +69,7 @@ export async function resetpassword(req, res) {
 // function to send reset link for the password
 export async function sendResetLink(req, res) {
   const Email = req.body.email;
-  const reqUrl = req.hostname;
-  console.info(req.body, req.hostname);
-  const baseUrl = reqUrl;
+  const baseUrl = req.hostname;
   const saltRounds = 10;
 
   // Find if the given User email exists in the database.
@@ -217,7 +214,6 @@ export function changePassword(req, res) {
           })
           .catch(validationError(res));
       }
-      console.info('here');
       res.statusMessage = 'Current password does not match';
       return res.status(403).send('Current password does not match');
     });
