@@ -46,6 +46,7 @@ export const AcademicYearInputType = new InputType({
     isCurrent: { type: BooleanType, description: 'Boolean Describing if the it is current Academic Year or not' },
     institute: { type: new List(StringType), description: 'Institute Name' },
     status: { type: new List(AcademicYearStatusEnumType), description: 'status of the academicYear' },
+    date: { type: StringType, description: 'test date to get academicYear' },
   },
 });
 export default { AcademicYearType, AcademicYearInputType };

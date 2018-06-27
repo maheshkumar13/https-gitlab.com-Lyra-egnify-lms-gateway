@@ -77,7 +77,7 @@ const StatusEnumType = new GraphQLEnumType({
 
 export const GetUniqueTestDetails = {
   args: {
-    academicYear: { type: new NonNull(List(StringType)) },
+    academicYear: { type: List(StringType) },
   },
   type: UniqueTestDetailsType,
   async resolve(obj, args, context) {

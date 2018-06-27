@@ -32,8 +32,9 @@ export const UniqueTestDetailsType = new ObjectType({
   name: 'UniqueTestDetailsType',
   description: 'UniqueTestDetailsType',
   fields: {
-    testType: { type: new List(StringType) },
-    testDate: { type: new List(StringType) },
+    testType: { type: new List(StringType), description: 'List of Unique Test Type' },
+    testDate: { type: new List(StringType), description: 'List of Unique Test Date' },
+    academicYear: { type: new List(StringType), description: 'List of Unique Academic Year for all test that has been created' },
   },
 });
 const SubjectType = new ObjectType({
