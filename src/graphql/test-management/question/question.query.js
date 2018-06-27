@@ -4,13 +4,29 @@
    @version 1.0.0
 */
 
-import { GraphQLNonNull as NonNull } from 'graphql';
+import { GraphQLNonNull as NonNull, GraphQLString as StringType, GraphQLList as List } from 'graphql';
 import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
 
-import { QuestionDetailsInputType, QuestionDetailsType } from './question.type';
-import { GetQuestionsInputType, GetQuestionsType } from './question.type';
+import { QuestionMappingDetailsType, QuestionMappingDetailsInputType, GetQuestionsInputType, GetQuestionsType, QuestionDetailsInputType, QuestionDetailsType } from './question.type';
 
+export const QuestionMappingDetails = {
+  args: {
+    args: { type: QuestionMappingDetailsInputType },
+  },
+  type: new List(QuestionMappingDetailsType),
+  async resolve(obj, { args }, context) {
+    const url = `${config.services.test}/api/v1/questionMapping/readQuestionMapping`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then(response => response.json())
+      .then(json => json)
+      .catch(err => new Error(err.message));
+  },
+};
 export const QuestionDetails = {
   args: {
     args: {
@@ -59,8 +75,8 @@ export const QuestionDetails = {
 };
 
 export const GetQuestions = {
-    args: {
-      input:{ type: new NonNull(GetQuestionsInputType) },
+  args: {
+    input: { type: new NonNull(GetQuestionsInputType) },
   },
   type: GetQuestionsType,
   async resolve(obj, args, context) {
@@ -68,7 +84,7 @@ export const GetQuestions = {
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args.input),
-        headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
     }, context)
       .then((response) => {
         if (response.status >= 400) {
@@ -77,11 +93,10 @@ export const GetQuestions = {
         // console.log("REsponse:",response.json());
         return response.json();
       })
-      .then(json => {
+      .then(json =>
         // console.log("Json:", json);
-        return json;
-      });
-},
+        json);
+  },
 };
 
 export default{
