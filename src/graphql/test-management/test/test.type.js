@@ -383,6 +383,25 @@ export const MoveTestType = new ObjectType({
   },
 });
 
+export const ErrorListType = new ObjectType({
+  name: 'ErrorListType',
+  description: 'Errors List Item type',
+  fields: {
+    errorCode: { type: StringType, description: 'Internal Error code' },
+    errorMessage: { type: StringType, description: 'Message to be displayed for the given Error code.' },
+    data: { type: GraphQLJSON, description: 'List of Errors occured on the given error code.' },
+  },
+});
+
+export const QmapFileUploadType = new ObjectType({
+  name: 'QmapFileUploadType',
+  description: 'List of all the the Errors occured',
+  fields: {
+    data: { type: TestType, description: 'TestType data' },
+    errors: { type: new List(ErrorListType), description: 'errors' },
+  },
+});
+
 export default{
   TestType,
   InputTestType,
@@ -391,4 +410,5 @@ export default{
   TestHierarchyNodesType,
   FileStatusType,
   MoveTestType,
+  QmapFileUploadType,
 };
