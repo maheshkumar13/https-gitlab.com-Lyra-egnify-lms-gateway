@@ -11,9 +11,9 @@ const controller = require('./downloadReports.controller');
 
 const router = express.Router();
 
-// router.post('/testResultsReport', controller.testResultsReport);
+router.post('/testResultsReport', authService.isAuthenticated(), controller.testResultsReport);
 router.post('/studentResponseReport', authService.isAuthenticated(), controller.studentResponseReport);
-// router.post('/cwuAnalysisReport', controller.cwuAnalysisReport);
+router.post('/cwuAnalysisReport', authService.isAuthenticated(), controller.cwuAnalysisReport);
 // router.post('/markDistributionReport', controller.markDistributionReport);
 // router.post('/errorCountReport', controller.errorCountReport);
 // router.post('/studentPerformanceTrendReport', controller.studentPerformanceTrendReport);
