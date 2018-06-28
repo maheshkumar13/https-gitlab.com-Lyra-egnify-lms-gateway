@@ -58,6 +58,24 @@ export function cwuAnalysisReport(req, res) {
 }
 
 
+export function studentMarksAnalysisReport(req, res) {
+  const submissionUrl = `${config.services.test}/api/v1/masterResult/download/studentMarksAnalysisReport`;
+  const { body } = req;
+  const form = {};
+  _.forEach(body, (value, key) => {
+    form[key] = value;
+  });
+  form.user = req.user;
+  console.info(form);
+
+  const options = {
+    uri: submissionUrl,
+    method: 'POST',
+    json: form,
+  };
+  request(options).pipe(res);
+}
+
 export default {
   studentResponseReport,
   cwuAnalysisReport,
