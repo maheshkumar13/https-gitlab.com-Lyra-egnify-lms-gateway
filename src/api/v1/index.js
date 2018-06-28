@@ -37,7 +37,7 @@ export default function (app) {
 
   app.use('/api/v1/uploadFile', uploadFile);
   app.use('/api/v1/users', user);
-  app.user('/api/v1/downloadReports', downloadReports);
+  app.use('/api/v1/downloadReports', downloadReports);
   app.use('/auth', auth);
 
   // Proxy Request below

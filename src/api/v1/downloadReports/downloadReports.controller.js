@@ -1,140 +1,32 @@
-import request from 'request';
+import _ from 'lodash';
+
 import { config } from '../../../config/environment';
 
-export function testResultsReport(req, res) {
-  const submissionUrl = `${config.services.test}/api/v1/question/populateQuestion`;
-  const { body } = req;
-  const formData = {};
-  _.forEach(body, (value, key) => {
-    formData[key] = JSON.stringify(value);
-  });
-  formData.user = JSON.stringify(req.user);
-  if (req.file) {
-    formData.file = {
-      value: bufferToStream(req.file.buffer),
-      options: {
-        filename: req.file.originalname,
-        contentType: req.file.mimetype,
-        knownLength: req.file.size,
-      },
-    };
-  }
+const request = require('request');
 
-  request.post(submissionUrl, { formData }).pipe(res);
-}
 export function studentResponseReport(req, res) {
-  const submissionUrl = `${config.services.test}/api/v1/question/populateQuestion`;
+  const submissionUrl = `${config.services.test}/api/v1/masterResult/download/studentResponseReport`;
   const { body } = req;
-  const formData = {};
+  const form = {};
   _.forEach(body, (value, key) => {
-    formData[key] = JSON.stringify(value);
+    form[key] = value;
   });
-  formData.user = JSON.stringify(req.user);
-  if (req.file) {
-    formData.file = {
-      value: bufferToStream(req.file.buffer),
-      options: {
-        filename: req.file.originalname,
-        contentType: req.file.mimetype,
-        knownLength: req.file.size,
-      },
-    };
-  }
+  form.user = req.user;
+  console.info(form);
 
-  request.post(submissionUrl, { formData }).pipe(res);
-}
-export function cwuAnalysisReport(req, res) {
-  const submissionUrl = `${config.services.test}/api/v1/question/populateQuestion`;
-  const { body } = req;
-  const formData = {};
-  _.forEach(body, (value, key) => {
-    formData[key] = JSON.stringify(value);
-  });
-  formData.user = JSON.stringify(req.user);
-  if (req.file) {
-    formData.file = {
-      value: bufferToStream(req.file.buffer),
-      options: {
-        filename: req.file.originalname,
-        contentType: req.file.mimetype,
-        knownLength: req.file.size,
-      },
-    };
-  }
+  const options = {
+    uri: submissionUrl,
+    method: 'POST',
+    json: form,
+  };
+  request(options).pipe(res);
 
-  request.post(submissionUrl, { formData }).pipe(res);
-}
-export function markDistributionReport(req, res) {
-  const submissionUrl = `${config.services.test}/api/v1/question/populateQuestion`;
-  const { body } = req;
-  const formData = {};
-  _.forEach(body, (value, key) => {
-    formData[key] = JSON.stringify(value);
-  });
-  formData.user = JSON.stringify(req.user);
-  if (req.file) {
-    formData.file = {
-      value: bufferToStream(req.file.buffer),
-      options: {
-        filename: req.file.originalname,
-        contentType: req.file.mimetype,
-        knownLength: req.file.size,
-      },
-    };
-  }
-
-  request.post(submissionUrl, { formData }).pipe(res);
-}
-export function errorCountReport(req, res) {
-  const submissionUrl = `${config.services.test}/api/v1/question/populateQuestion`;
-  const { body } = req;
-  const formData = {};
-  _.forEach(body, (value, key) => {
-    formData[key] = JSON.stringify(value);
-  });
-  formData.user = JSON.stringify(req.user);
-  if (req.file) {
-    formData.file = {
-      value: bufferToStream(req.file.buffer),
-      options: {
-        filename: req.file.originalname,
-        contentType: req.file.mimetype,
-        knownLength: req.file.size,
-      },
-    };
-  }
-
-  request.post(submissionUrl, { formData }).pipe(res);
-}
-export function studentPerformanceTrendReport(req, res) {
-  const submissionUrl = `${config.services.test}/api/v1/question/populateQuestion`;
-  const { body } = req;
-  const formData = {};
-  _.forEach(body, (value, key) => {
-    formData[key] = JSON.stringify(value);
-  });
-  formData.user = JSON.stringify(req.user);
-  if (req.file) {
-    formData.file = {
-      value: bufferToStream(req.file.buffer),
-      options: {
-        filename: req.file.originalname,
-        contentType: req.file.mimetype,
-        knownLength: req.file.size,
-      },
-    };
-  }
-
-  request.post(submissionUrl, { formData }).pipe(res);
+  // request.post(submissionUrl, { form }).pipe(res);
 }
 
 export default {
 
-  testResultsReport,
+
   studentResponseReport,
-  cwuAnalysisReport,
-  markDistributionReport,
-  errorCountReport,
-  studentPerformanceTrendReport,
 
 };
