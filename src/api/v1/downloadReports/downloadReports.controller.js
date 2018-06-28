@@ -12,7 +12,6 @@ export function testResultsReport(req, res) {
     form[key] = value;
   });
   form.user = req.user;
-  console.info(form);
 
   const options = {
     uri: submissionUrl,
@@ -30,7 +29,6 @@ export function studentResponseReport(req, res) {
     form[key] = value;
   });
   form.user = req.user;
-  console.info(form);
 
   const options = {
     uri: submissionUrl,
@@ -47,7 +45,6 @@ export function cwuAnalysisReport(req, res) {
     form[key] = value;
   });
   form.user = req.user;
-  console.info(form);
 
   const options = {
     uri: submissionUrl,
@@ -57,6 +54,22 @@ export function cwuAnalysisReport(req, res) {
   request(options).pipe(res);
 }
 
+export function studentPerformanceTrendReport(req, res) {
+  const submissionUrl = `${config.services.test}/api/v1/reports/download/studentPerformanceTrendReport`;
+  const { body } = req;
+  const form = {};
+  _.forEach(body, (value, key) => {
+    form[key] = value;
+  });
+  form.user = req.user;
+
+  const options = {
+    uri: submissionUrl,
+    method: 'POST',
+    json: form,
+  };
+  request(options).pipe(res);
+}
 
 export function studentMarksAnalysisReport(req, res) {
   const submissionUrl = `${config.services.test}/api/v1/masterResult/download/studentMarksAnalysisReport`;
@@ -66,7 +79,6 @@ export function studentMarksAnalysisReport(req, res) {
     form[key] = value;
   });
   form.user = req.user;
-  console.info(form);
 
   const options = {
     uri: submissionUrl,

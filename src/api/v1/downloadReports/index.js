@@ -14,10 +14,10 @@ const router = express.Router();
 router.post('/testResultsReport', authService.isAuthenticated(), controller.testResultsReport);
 router.post('/studentResponseReport', authService.isAuthenticated(), controller.studentResponseReport);
 router.post('/cwuAnalysisReport', authService.isAuthenticated(), controller.cwuAnalysisReport);
+router.post('/studentPerformanceTrendReport', authService.isAuthenticated(), controller.studentPerformanceTrendReport);
 router.post('/studentMarksAnalysisReport', authService.isAuthenticated(), controller.studentMarksAnalysisReport);
 
 // router.post('/markDistributionReport', controller.markDistributionReport);
 // router.post('/errorCountReport', controller.errorCountReport);
-// router.post('/studentPerformanceTrendReport', controller.studentPerformanceTrendReport);
 
 module.exports = router;
