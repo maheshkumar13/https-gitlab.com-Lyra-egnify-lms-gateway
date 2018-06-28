@@ -13,5 +13,6 @@ router.get('/:id', auth.isAuthenticated(), controller.show);
 router.post('/', controller.create);
 router.post('/resetpassword', controller.resetpassword);
 router.post('/sendResetLink', controller.sendResetLink);
+router.post('/validateForgotPassSecureHash', controller.validateForgotPassSecureHash);
 
 module.exports = router;
