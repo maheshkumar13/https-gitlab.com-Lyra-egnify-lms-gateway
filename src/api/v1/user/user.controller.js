@@ -66,10 +66,38 @@ export async function resetpassword(req, res) {
   res.status(403).send('Invalid Parameter');
 }
 
+// function to validate forgethashtoken
+export async function validateForgotPassSecureHash(req, res) {
+  const { hashToken } = req.body;
+  if (hashToken) {
+    return User.findOne({
+      forgotPassSecureHash: hashToken,
+    })
+      .then((user) => {
+        if (user) {
+          if (Date.now() <= user.forgotPassSecureHashExp) {
+            return res.status(200).json({ msg: 'Link Valid', isValid: true });
+          }
+          return res.status(403).json({ msg: 'Link Expired', isValid: false });
+        }
+        return res.status(403).json({ msg: 'Not a Valid Hash', isValid: false });
+      })
+      .catch((err) => {
+        res.status(403).json({ msg: err, isValid: false });
+      });
+  }
+
+  return res.status(403).json({ msg: 'Invalid Arguments', isValid: false });
+}
+
+
 // function to send reset link for the password
 export async function sendResetLink(req, res) {
   const Email = req.body.email;
-  const baseUrl = req.hostname;
+  const baseUrl = req.body.hostname;
+  if (!Email || !baseUrl) {
+    return res.status(403).send('Invalid Arguments');
+  }
   const saltRounds = 10;
 
   // Find if the given User email exists in the database.
