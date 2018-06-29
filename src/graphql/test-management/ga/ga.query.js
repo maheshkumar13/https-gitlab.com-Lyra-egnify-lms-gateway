@@ -17,6 +17,7 @@ import GraphQLJSON from 'graphql-type-json';
 import { CommonAnalysisType, QuestionErrorAnalysisType, GenerateAnalysisReturnType, FilterInputType, StudentPerformanceTrendAnalysisType } from './ga.type';
 import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
+import { SortType } from '../question/question.type';
 
 // const CommonAnalysis = {
 //   args: {
@@ -83,6 +84,7 @@ export const CommonAnalysis = {
     testIds: { type: new List(StringType) },
     studentId: { type: StringType },
     filter: { type: new List(FilterInputType) },
+
   },
   type: new List(CommonAnalysisType),
   async resolve(obj, args, context) {
@@ -104,6 +106,7 @@ export const CommonAnalysisPaginated = {
     filter: { type: new List(FilterInputType) },
     pageNumber: { type: IntType },
     limit: { type: IntType },
+    sort: { type: new List(SortType) },
   },
   type: CommonAnalysisDetailsType,
   async resolve(obj, args, context) {

@@ -82,7 +82,7 @@ const SortingOrderEnumType = new EnumType({
     },
   },
 });
-const SortType = new InputObjectType({
+export const SortType = new InputObjectType({
   name: 'SortType',
   description: 'Sorting Input for Question Details',
   fields: {
