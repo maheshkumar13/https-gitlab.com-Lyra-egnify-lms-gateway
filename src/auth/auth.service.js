@@ -70,7 +70,7 @@ export function signToken(id, role, instituteId, hostname) {
   return jwt.sign({
     _id: id, role, instituteId, hostname,
   }, config.secrets.session, {
-    expiresIn: 60 * 60 * 5,
+    expiresIn: 60 * 60,
   });
 }
 
