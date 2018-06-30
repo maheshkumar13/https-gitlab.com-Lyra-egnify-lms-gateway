@@ -38,6 +38,7 @@ const InputSubjectsType = new InputObjectType({
   name: 'InputSubjectsType',
   description: 'Subject wise marks distribution',
   fields: {
+    tieBreaker: { type: IntType, description: 'Priority in case of tie' },
     subject: { type: new NonNull(StringType), description: 'Name of the subject' },
     code: { type: new NonNull(StringType), description: 'Internal code fo the subject' },
     parentCode: { type: new NonNull(StringType), description: 'Parent Internal code of the subject' },
@@ -85,6 +86,7 @@ const SubjectsType = new ObjectType({
   name: 'SubjectsType',
   description: 'Subject wise marks distribution',
   fields: {
+    tieBreaker: { type: IntType, description: 'Priority in case of tie' },
     subject: { type: StringType, description: 'Name of the subject' },
     code: { type: StringType, description: 'Internal code fo the subject' },
     parentCode: { type: StringType, description: 'Parent Internal code of the subject' },
