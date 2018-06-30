@@ -135,6 +135,7 @@ const SubjectMarkingSchemaType = new InputObjectType({
   name: 'SubjectMarkingSchemaType',
   description: 'Subject wise marks distribution',
   fields: {
+    tieBreaker: { type: IntType, description: 'Priority in case of tie' },
     start: { type: IntType, description: 'First question number in this subject' },
     end: { type: IntType, description: 'Last question number in this subject' },
     subject: { type: StringType, description: 'Name of the subject' },
