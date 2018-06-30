@@ -4,6 +4,7 @@ import { config } from '../../../config/environment';
 
 const request = require('request');
 
+// function to download testResultsReport
 export function testResultsReport(req, res) {
   const submissionUrl = `${config.services.test}/api/v1/masterResult/download/testResultsReport`;
   const { body } = req;
@@ -21,6 +22,7 @@ export function testResultsReport(req, res) {
   request(options).pipe(res);
 }
 
+// function to download studentResponseReport
 export function studentResponseReport(req, res) {
   const submissionUrl = `${config.services.test}/api/v1/masterResult/download/studentResponseReport`;
   const { body } = req;
@@ -37,6 +39,8 @@ export function studentResponseReport(req, res) {
   };
   request(options).pipe(res);
 }
+// function to download cwuAnalysisReport
+
 export function cwuAnalysisReport(req, res) {
   const submissionUrl = `${config.services.test}/api/v1/masterResult/download/cwuAnalysisReport`;
   const { body } = req;
@@ -54,6 +58,8 @@ export function cwuAnalysisReport(req, res) {
   request(options).pipe(res);
 }
 
+// function to download studentPerformanceTrendReport
+
 export function studentPerformanceTrendReport(req, res) {
   const submissionUrl = `${config.services.test}/api/v1/reports/download/studentPerformanceTrendReport`;
   const { body } = req;
@@ -70,6 +76,8 @@ export function studentPerformanceTrendReport(req, res) {
   };
   request(options).pipe(res);
 }
+// function to download studentMarksAnalysisReport
+
 
 export function studentMarksAnalysisReport(req, res) {
   const submissionUrl = `${config.services.test}/api/v1/masterResult/download/studentMarksAnalysisReport`;
