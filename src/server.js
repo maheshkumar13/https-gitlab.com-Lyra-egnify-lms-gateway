@@ -59,7 +59,9 @@ app.use(
       schema,
       context: { user: req.user },
       tracing: true,
-      cacheControl: true,
+      cacheControl: {
+        defaultMaxAge: 300,
+      },
     };
   }),
 );
