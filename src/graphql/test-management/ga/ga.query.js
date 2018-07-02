@@ -217,7 +217,7 @@ export const MarksDistributionAnalysis = {
     testId: { type: new NonNull(StringType), description: 'Test Id of a particular test' },
     division: { type: new NonNull(StringType), description: 'No of division of total marks. Should be less than total Marks' },
     level: { type: new NonNull(StringType), description: 'Level No of the Hierarchy' },
-    campusFilter: { type: new List(StringType), description: 'Internal Code of a particular Hierarchy Node' },
+    filter: { type: new List(FilterInputType) },
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) {
