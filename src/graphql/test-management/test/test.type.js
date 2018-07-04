@@ -28,13 +28,31 @@ const InputSubjectType = new InputObjectType({
   },
 });
 
+const testDataType = new ObjectType({
+  name: 'testDataType',
+  description: 'testDataType',
+  fields: {
+    testId: { type: StringType, description: 'testId' },
+    testName: { type: StringType, description: 'testName' },
+    date: { type: StringType, description: 'date ' },
+  },
+});
+export const academicYearDataType = new ObjectType({
+  name: 'academicYearDataType',
+  description: 'academicYearDataType',
+  fields: {
+    academicYear: { type: StringType, description: 'Academic Year ' },
+    testType: { type: new List(StringType), description: 'List of Test Type' },
+    testData: { type: new List(testDataType), description: 'List of Test data' },
+  },
+});
+
 export const UniqueTestDetailsType = new ObjectType({
   name: 'UniqueTestDetailsType',
   description: 'UniqueTestDetailsType',
   fields: {
-    testType: { type: new List(StringType), description: 'List of Unique Test Type' },
-    testDate: { type: new List(StringType), description: 'List of Unique Test Date' },
-    academicYear: { type: new List(StringType), description: 'List of Unique Academic Year for all test that has been created' },
+    academicYearList: { type: new List(StringType), description: 'List of Unique Academic Year for all test that has been created' },
+    academicYearData: { type: new List(academicYearDataType), description: ' Academic Year Test data' },
   },
 });
 const SubjectType = new ObjectType({
