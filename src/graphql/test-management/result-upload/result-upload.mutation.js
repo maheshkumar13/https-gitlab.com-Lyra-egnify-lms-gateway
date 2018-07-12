@@ -102,6 +102,29 @@ export const uploadResultV2 = {
   },
 };
 
+export const updateUploadedResultV2 = {
+  args: {
+    input: { type: new NonNull(UploadResultV2InputType) },
+  },
+  // type: ResultType,
+  type: GraphQLJSON,
+  async resolve(obj, args, context) {
+    const url = `${config.services.test}/api/v1/resultUpload/update`;
+    const body = JSON.parse(JSON.stringify(args.input));
+    body.path = JSON.stringify(body.path);
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then((response) => {
+        if (response.status === 403) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      }).then(json => json);
+  },
+};
 
 export const updateUploadedResult = {
   args: {
