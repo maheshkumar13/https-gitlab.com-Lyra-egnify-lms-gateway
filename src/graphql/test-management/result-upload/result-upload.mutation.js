@@ -52,6 +52,14 @@ const ConfirmMissingInputType = new InputObjectType({
   },
 });
 
+const ConfirmMissingInputTypeV2 = new InputObjectType({
+  name: 'ConfirmMissingInputTypeV2',
+  description: 'confirm mssing input type',
+  fields: {
+    testId: { type: new NonNull(StringType), description: 'unique id of the test' },
+  },
+});
+
 
 export const uploadResult = {
   args: {
@@ -150,6 +158,31 @@ export const updateUploadedResult = {
   },
 };
 
+
+export const comfirmMissingV2 = {
+  args: {
+    input: { type: new NonNull(ConfirmMissingInputTypeV2) },
+  },
+  type: GraphQLJSON,
+  async resolve(obj, args, context) {
+    const url = `${config.services.test}/api/v1/resultUpload/v2/update/confirmMissing`;
+    const body = JSON.parse(JSON.stringify(args.input));
+    body.path = JSON.stringify(body.path);
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then((response) => {
+        if (response.status === 403) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then(json => json);
+  },
+};
+
 export const comfirmMissing = {
   args: {
     input: { type: new NonNull(ConfirmMissingInputType) },
@@ -173,6 +206,31 @@ export const comfirmMissing = {
       .then(json => json);
   },
 };
+
+export const deleteResultV2 = {
+  args: {
+    input: { type: new NonNull(ConfirmMissingInputTypeV2) },
+  },
+  type: GraphQLJSON,
+  async resolve(obj, args, context) {
+    const url = `${config.services.test}/api/v1/resultUpload/v2/delete`;
+    const body = JSON.parse(JSON.stringify(args.input));
+    body.path = JSON.stringify(body.path);
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then((response) => {
+        if (response.status === 403) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then(json => json);
+  },
+};
+
 
 export const deleteResult = {
   args: {

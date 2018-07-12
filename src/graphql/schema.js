@@ -42,7 +42,7 @@ import { createInstitute, updateInstitute, updateHierarchy } from './settings/in
 import { saveTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.mutation';
 import { GenerateConceptTaxonomy, conceptTaxonomy, ConceptTaxonomyTree } from './settings/conceptTaxonomy/conceptTaxonomy.query';
 import { createGradeSystem, createGradePattern, removeGradePattern, removeGradeSystem, updateGradeSystem, updateGradePattern } from './settings/grade/grade.mutation';
-import { uploadResult, uploadResultV2, updateUploadedResultV2, updateUploadedResult, comfirmMissing, deleteResult } from './test-management/result-upload/result-upload.mutation';
+import { uploadResult, uploadResultV2, updateUploadedResultV2, updateUploadedResult, comfirmMissingV2, comfirmMissing, deleteResultV2, deleteResult } from './test-management/result-upload/result-upload.mutation';
 import { Results, ResultsSampleDownload } from './test-management/result-upload/result-upload.query';
 
 import { GenerateAnalysis, GenerateAnalysisv2, CommonAnalysis, MarksDistributionAnalysis, MarksDistributionAnalysisV2, QuestionErrorAnalysis, StudentPerformanceTrendAnalysis, CommonAnalysisPaginated, StudentPerformanceTrendAnalysisPaginated, MarkAnalysisGraphData, MarkAnalysisGraphDataV2 } from './test-management/ga/ga.query';
@@ -135,7 +135,9 @@ const schema = new Schema({
       uploadResultV2,
       updateUploadedResultV2,
       updateUploadedResult,
+      comfirmMissingV2,
       comfirmMissing,
+      deleteResultV2,
       deleteResult,
       QmapFileUpload,
       createTestPatternSchema,
