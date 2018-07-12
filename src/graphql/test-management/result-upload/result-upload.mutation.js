@@ -109,7 +109,7 @@ export const updateUploadedResultV2 = {
   // type: ResultType,
   type: GraphQLJSON,
   async resolve(obj, args, context) {
-    const url = `${config.services.test}/api/v1/resultUpload/update`;
+    const url = `${config.services.test}/api/v1/resultUpload/v2/update`;
     const body = JSON.parse(JSON.stringify(args.input));
     body.path = JSON.stringify(body.path);
     return fetch(url, {
