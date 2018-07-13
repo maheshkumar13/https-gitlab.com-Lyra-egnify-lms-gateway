@@ -43,7 +43,7 @@ import { saveTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.mutatio
 import { GenerateConceptTaxonomy, conceptTaxonomy, ConceptTaxonomyTree } from './settings/conceptTaxonomy/conceptTaxonomy.query';
 import { createGradeSystem, createGradePattern, removeGradePattern, removeGradeSystem, updateGradeSystem, updateGradePattern } from './settings/grade/grade.mutation';
 import { uploadResult, uploadResultV2, updateUploadedResultV2, updateUploadedResult, comfirmMissingV2, comfirmMissing, deleteResultV2, deleteResult } from './test-management/result-upload/result-upload.mutation';
-import { Results, ResultsSampleDownload } from './test-management/result-upload/result-upload.query';
+import { ResultsV2, Results, ResultsSampleDownload } from './test-management/result-upload/result-upload.query';
 
 import { GenerateAnalysis, GenerateAnalysisv2, CommonAnalysis, MarksDistributionAnalysis, MarksDistributionAnalysisV2, QuestionErrorAnalysis, StudentPerformanceTrendAnalysis, CommonAnalysisPaginated, StudentPerformanceTrendAnalysisPaginated, MarkAnalysisGraphData, MarkAnalysisGraphDataV2 } from './test-management/ga/ga.query';
 import { createTestPatternSchema, updateTestPatternSchema, removeTestPatternSchema } from './test-management/testPattern/testPattern.mutation';
@@ -55,6 +55,7 @@ const schema = new Schema({
   query: new ObjectType({
     name: 'Query',
     fields: {
+      ResultsV2,
       Results,
       ResultsSampleDownload,
       GradeSystem,
