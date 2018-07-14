@@ -29,7 +29,6 @@ export const SubjectList = {
         return response.json();
       })
       .then(json =>
-        // console.log('json is',json)
         json.subjectList)
       .catch((err) => {
         console.error(err);

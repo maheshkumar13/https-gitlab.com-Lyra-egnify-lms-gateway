@@ -46,7 +46,7 @@ export const GenerateConceptTaxonomy = {
   type: GraphQLJSON,
   async resolve(obj, args, context) {
     const body = args.input;
-    console.error(body);
+
 
     if (body.subjectDetails) {
       body.subjectDetails = JSON.stringify(body.subjectDetails);
@@ -106,7 +106,7 @@ export const ConceptTaxonomyType = new ObjectType({
         )
           .then(response => response.json())
           .then((json) => {
-            console.error(json);
+          
             return json;
           });
       },

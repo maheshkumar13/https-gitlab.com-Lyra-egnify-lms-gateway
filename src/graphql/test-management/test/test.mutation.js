@@ -134,7 +134,6 @@ export const updateTest = {
       headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     }, context)
       .then((response) => {
-        // console.log(response.status);
         if (response.status >= 400) {
           return new Error(response.statusText);
         }
@@ -160,8 +159,7 @@ export const QmapFileUpload = {
       headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     }, context)
       .then((response) => {
-        // console.log(response.body);
-        if (response.status >= 404) {
+        if (response.status >= 400) {
           return new Error(response.statusText);
         }
         return response.json();

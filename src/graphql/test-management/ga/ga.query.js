@@ -17,6 +17,7 @@ import GraphQLJSON from 'graphql-type-json';
 import { CommonAnalysisType, QuestionErrorAnalysisType, GenerateAnalysisReturnType, FilterInputType, StudentPerformanceTrendAnalysisType } from './ga.type';
 import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
+import { SortType } from '../question/question.type';
 
 // const CommonAnalysis = {
 //   args: {
@@ -83,6 +84,7 @@ export const CommonAnalysis = {
     testIds: { type: new List(StringType) },
     studentId: { type: StringType },
     filter: { type: new List(FilterInputType) },
+
   },
   type: new List(CommonAnalysisType),
   async resolve(obj, args, context) {
@@ -104,6 +106,7 @@ export const CommonAnalysisPaginated = {
     filter: { type: new List(FilterInputType) },
     pageNumber: { type: IntType },
     limit: { type: IntType },
+    sort: { type: new List(SortType) },
   },
   type: CommonAnalysisDetailsType,
   async resolve(obj, args, context) {
@@ -126,9 +129,6 @@ export const CommonAnalysisPaginated = {
       .then((json) => {
         const data = {};
         data.page = json.data;
-        // console.error(data.page);
-        // console.log('getting data is',data)
-        // console.log('cc', json.count);
         const pageInfo = {};
         pageInfo.prevPage = true;
         pageInfo.nextPage = true;
@@ -184,16 +184,66 @@ export const MarkAnalysisGraphData = {
       .catch(err => new Error(err.message));
   },
 };
+
+export const MarkAnalysisGraphDataV2 = {
+  args: {
+    testIds: { type: new List(StringType), description: 'List of strings with testIds' },
+    studentIds: { type: new List(StringType), description: 'List of strings with studentIds' },
+    divisons: { type: IntType, description: 'Number of divisions' },
+    start: { type: IntType, description: 'Starting point on x-axis ' },
+    end: { type: IntType, description: 'End point on description' },
+    precision: { type: IntType, description: 'Max number of decimal places ' },
+    filter: { type: new List(FilterInputType) },
+  },
+  type: GraphQLJSON,
+  async resolve(obj, args, context) {
+    const url = `${config.services.test}/api/v1/masterResult/read/markAnalysisGraphDataV2`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .catch(err => new Error(err.message));
+  },
+};
 export const MarksDistributionAnalysis = {
   args: {
     testId: { type: new NonNull(StringType), description: 'Test Id of a particular test' },
     division: { type: new NonNull(StringType), description: 'No of division of total marks. Should be less than total Marks' },
     level: { type: new NonNull(StringType), description: 'Level No of the Hierarchy' },
-    campusFilter: { type: new List(StringType), description: 'Internal Code of a particular Hierarchy Node' },
+    filter: { type: new List(FilterInputType) },
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/reports/generateMarkDistributionReport`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then(response => response.json())
+      .catch(err => new Error(err.message));
+  },
+
+
+};
+
+export const MarksDistributionAnalysisV2 = {
+  args: {
+    testId: { type: new NonNull(StringType), description: 'Test Id of a particular test' },
+    division: { type: new NonNull(StringType), description: 'No of division of total marks. Should be less than total Marks' },
+    level: { type: new NonNull(StringType), description: 'Level No of the Hierarchy' },
+    filter: { type: new List(FilterInputType) },
+  },
+  type: GraphQLJSON,
+  async resolve(obj, args, context) {
+    const url = `${config.services.test}/api/v1/reports/generateMarkDistributionReportV2`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
@@ -289,9 +339,6 @@ export const StudentPerformanceTrendAnalysisPaginated = {
       .then((json) => {
         const data = {};
         data.page = json.data;
-        // console.error(data.page);
-        // console.log('getting data is',data)
-        // console.log('cc', json.count);
         const pageInfo = {};
         pageInfo.prevPage = true;
         pageInfo.nextPage = true;
@@ -376,4 +423,5 @@ export default {
   QuestionErrorAnalysis,
   GenerateAnalysis,
   MarkAnalysisGraphData,
+  MarkAnalysisGraphDataV2,
 };

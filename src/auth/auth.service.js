@@ -33,7 +33,7 @@ export function isAuthenticated() {
           if (!user) {
             return res.status(401).end();
           }
-          console.info('hostname', req.user.hostname);
+          // console.info('hostname', req.user.hostname);
           if (req.user.hostname !== user.hostname) {
             res.statusMessage = 'hostname doesnot Match';
             return res.status(401).end();
@@ -70,7 +70,7 @@ export function signToken(id, role, instituteId, hostname) {
   return jwt.sign({
     _id: id, role, instituteId, hostname,
   }, config.secrets.session, {
-    expiresIn: 60 * 60 * 5,
+    expiresIn: 60 * 60 * 24,
   });
 }
 

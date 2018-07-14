@@ -14,6 +14,7 @@ import TestPattern from './settings/testPattern/testPattern.query';
 
 
 import {
+  GetUniqueTestDetails,
   Tests,
   moveTest,
   QuestionTypes,
@@ -35,14 +36,16 @@ import { InstituteHierarchy, InstituteHierarchySample } from './settings/institu
 import { InstituteHierarchyGrid, LevelFilters } from './settings/instituteHierarchy/instituteHierarchyGrid.query';
 import { CreateInstituteHierarchyNode, UpdateInstituteHierarchyNode, createInstituteHierarchyNodesFromCSV } from './settings/instituteHierarchy/instituteHierarchy.muatation';
 import Institute from './settings/institute/institute.query';
+import { GetAcademicYear } from './settings/academicYear/academicYear.query';
+
 import { createInstitute, updateInstitute, updateHierarchy } from './settings/institute/institute.mutation';
 import { saveTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.mutation';
 import { GenerateConceptTaxonomy, conceptTaxonomy, ConceptTaxonomyTree } from './settings/conceptTaxonomy/conceptTaxonomy.query';
 import { createGradeSystem, createGradePattern, removeGradePattern, removeGradeSystem, updateGradeSystem, updateGradePattern } from './settings/grade/grade.mutation';
-import { uploadResult, updateUploadedResult, comfirmMissing, deleteResult } from './test-management/result-upload/result-upload.mutation';
-import { Results, ResultsSampleDownload } from './test-management/result-upload/result-upload.query';
+import { uploadResult, uploadResultV2, updateUploadedResultV2, updateUploadedResult, comfirmMissingV2, comfirmMissing, deleteResultV2, deleteResult } from './test-management/result-upload/result-upload.mutation';
+import { ResultsV2, Results, ResultsSampleDownload } from './test-management/result-upload/result-upload.query';
 
-import { GenerateAnalysis, GenerateAnalysisv2, CommonAnalysis, MarksDistributionAnalysis, QuestionErrorAnalysis, StudentPerformanceTrendAnalysis, CommonAnalysisPaginated, StudentPerformanceTrendAnalysisPaginated, MarkAnalysisGraphData } from './test-management/ga/ga.query';
+import { GenerateAnalysis, GenerateAnalysisv2, CommonAnalysis, MarksDistributionAnalysis, MarksDistributionAnalysisV2, QuestionErrorAnalysis, StudentPerformanceTrendAnalysis, CommonAnalysisPaginated, StudentPerformanceTrendAnalysisPaginated, MarkAnalysisGraphData, MarkAnalysisGraphDataV2 } from './test-management/ga/ga.query';
 import { createTestPatternSchema, updateTestPatternSchema, removeTestPatternSchema } from './test-management/testPattern/testPattern.mutation';
 import { TestPatternSchema } from './test-management/testPattern/testPattern.query';
 import { ConceptAnalysis } from './test-management/conceptAnalysis/conceptAnalysis.query';
@@ -53,6 +56,7 @@ const schema = new Schema({
   query: new ObjectType({
     name: 'Query',
     fields: {
+      ResultsV2,
       Results,
       ResultsSampleDownload,
       GradeSystem,
@@ -84,6 +88,7 @@ const schema = new Schema({
       StudentPerformanceTrendAnalysis,
       StudentPerformanceTrendAnalysisPaginated,
       MarksDistributionAnalysis,
+      MarksDistributionAnalysisV2,
       moveTest,
       DownloadSampleQmap,
       QuestionDetails,
@@ -95,6 +100,10 @@ const schema = new Schema({
       QuestionPaperMetrics,
       GetQuestions,
       QuestionMappingDetails,
+      MarkAnalysisGraphDataV2,
+      GetAcademicYear,
+      GetUniqueTestDetails,
+
     },
   }),
   mutation: new ObjectType({
@@ -128,8 +137,12 @@ const schema = new Schema({
       createTest,
       updateTest,
       uploadResult,
+      uploadResultV2,
+      updateUploadedResultV2,
       updateUploadedResult,
+      comfirmMissingV2,
       comfirmMissing,
+      deleteResultV2,
       deleteResult,
       QmapFileUpload,
       createTestPatternSchema,

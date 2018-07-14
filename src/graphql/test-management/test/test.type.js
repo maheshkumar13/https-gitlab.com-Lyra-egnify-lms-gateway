@@ -28,6 +28,33 @@ const InputSubjectType = new InputObjectType({
   },
 });
 
+const testDataType = new ObjectType({
+  name: 'testDataType',
+  description: 'testDataType',
+  fields: {
+    testId: { type: StringType, description: 'testId' },
+    testName: { type: StringType, description: 'testName' },
+    date: { type: StringType, description: 'date ' },
+  },
+});
+export const academicYearDataType = new ObjectType({
+  name: 'academicYearDataType',
+  description: 'academicYearDataType',
+  fields: {
+    academicYear: { type: StringType, description: 'Academic Year ' },
+    testType: { type: new List(StringType), description: 'List of Test Type' },
+    testData: { type: new List(testDataType), description: 'List of Test data' },
+  },
+});
+
+export const UniqueTestDetailsType = new ObjectType({
+  name: 'UniqueTestDetailsType',
+  description: 'UniqueTestDetailsType',
+  fields: {
+    academicYearList: { type: new List(StringType), description: 'List of Unique Academic Year for all test that has been created' },
+    academicYearData: { type: new List(academicYearDataType), description: ' Academic Year Test data' },
+  },
+});
 const SubjectType = new ObjectType({
   name: 'SubjectType_',
   description: 'Subjects selected for the test',
@@ -126,6 +153,7 @@ const SubjectMarkingSchemaType = new InputObjectType({
   name: 'SubjectMarkingSchemaType',
   description: 'Subject wise marks distribution',
   fields: {
+    tieBreaker: { type: IntType, description: 'Priority in case of tie' },
     start: { type: IntType, description: 'First question number in this subject' },
     end: { type: IntType, description: 'Last question number in this subject' },
     subject: { type: StringType, description: 'Name of the subject' },
@@ -256,6 +284,7 @@ export const TestType = new ObjectType({
   description: 'Test data',
   fields: {
     testId: { type: StringType, description: 'Unique identifier for the test' },
+    academicYear: { type: StringType, description: 'Academic Year in which test was helds' },
     testName: { type: StringType, description: 'Name of the test' },
     questionNumberFormat: { type: StringType, description: 'format of a question number' },
     optionNumberFormat: { type: StringType, description: 'format of an option number' },

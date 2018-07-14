@@ -1,6 +1,6 @@
 import express from 'express';
 import passport from 'passport';
-import { signToken } from '../auth.service';
+import { signToken, isAuthenticated } from '../auth.service';
 
 const router = express.Router();
 
@@ -8,7 +8,6 @@ router.post('/', (req, res, next) => {
   passport.authenticate('local', (err, user, info) => {
     const error = err || info;
     if (error) {
-      console.info('here');
 
       return res.status(401).json(error);
     }
@@ -17,8 +16,17 @@ router.post('/', (req, res, next) => {
     }
 
     const token = signToken(user._id, user.role, user.instituteId, user.hostname);
-    res.json({ token });
+    res.json({ token, firstTimePasswordChanged: user.passwordChange });
   })(req, res, next);
 });
+router.post(
+  '/refreshtoken',
+  isAuthenticated(),
+  (req, res) => {
+    const { user } = req;
+    const token = signToken(user._id, user.role, user.instituteId, user.hostname);
+    res.json({ token, firstTimePasswordChanged: user.passwordChange });
+  },
+);
 
 export default router;
