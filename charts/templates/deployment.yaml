@@ -1,0 +1,55 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "settings.fullname" . }}
+  labels:
+    app: {{ template "settings.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "settings.name" . }}
+        tier: {{ .Values.service.tier }}
+        release: {{ .Release.Name }}
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecrets }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          env:
+            - name: NODE_ENV
+              value: {{ .Values.projectEnv.nodeEnv }}
+            - name: MONGODB_URI
+              value: {{ .Values.projectEnv.mongodbUri }}
+            - name: JWT_SECRET
+              value: {{ .Values.projectEnv.jwtSecret }}
+            - name: MAILJET_API_KEY
+              value: {{ .Values.projectEnv.mailjetApiKey }}
+            - name: APOLLO_ENGINE_KEY
+              value: {{ .Values.projectEnv.apolloEngineKey }}
+            - name: SVC_SETTINGS
+              value: {{ .Values.projectEnv.svcSettings }}
+            - name: SVC_TEST
+              value: {{ .Values.projectEnv.svcTest }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.internalPort }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.service.internalPort }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.service.internalPort }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+    {{- end }}
