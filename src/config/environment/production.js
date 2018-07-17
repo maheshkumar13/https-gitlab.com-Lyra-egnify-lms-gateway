@@ -11,6 +11,12 @@ module.exports = {
     uri:
       process.env.MONGODB_URI ||
       process.env.MONGODB_URL ||
-      'mongodb://localhost/vega-dev',
+      'mongodb://localhost/hydra-settings-prod',
   },
+
+  services: {
+    settings: process.env.SVC_SETTINGS || 'http://settings-dev-hydra.dev.svc.cluster.local',
+    test: process.env.SVC_TEST || 'http://test-management-dev-hydra.dev.svc.cluster.local',
+  },
+  apolloEngineKey: process.env.APOLLO_ENGINE_KEY || 'XXXX',
 };

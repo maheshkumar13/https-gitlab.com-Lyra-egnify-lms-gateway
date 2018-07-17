@@ -5,7 +5,7 @@
 module.exports = {
   // MongoDB connection options
   mongo: {
-    uri: 'mongodb://localhost/vega-test',
+    uri: 'mongodb://localhost/hydra-settings-test',
   },
   sequelize: {
     uri: 'sqlite://',

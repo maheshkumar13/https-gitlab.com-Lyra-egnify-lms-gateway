@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>API</title>
+<!-- Compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
+
+  <!-- Compiled and minified JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script type="text/javascript">
+// Check if the localStorage object exists
+if(localStorage){
+	$(document).ready(function(){
+		$(".save").click(function(){
+			// Get input name
+			var jwtToken = $("#jwtToken").val();
+
+			// Store data
+    		localStorage.setItem("jwt_token", jwtToken);
+			alert("JWT is saved.");
+		});
+		$(".access").click(function(){
+			// Retrieve data
+    		alert("JWT: " + localStorage.getItem("jwt_token"));
+		});
+	});
+} else{
+    alert("Sorry, your browser do not support local storage.");
+}
+</script>
+</head>
+<body>
+    <form>
+    	<label>JWT: <input type="text" id="jwtToken" placeholder=" Bearer yourLongJwtToken"></label>
+        <button type="button" class="save">Set JWT</button>
+        <button type="button" class="access">Show JWT</button>
+    </form>
+</body>
+</html>
