@@ -1,0 +1,63 @@
+# [START swagger]
+swagger: "2.0"
+info:
+  description: "A simple Google Cloud Endpoints API example."
+  title: "Endpoints Example"
+  version: "1.0.0"
+host: "localhost:3000"
+# [END swagger]
+# consumes:
+# - "application/json"
+produces:
+- "application/json"
+schemes:
+# Uncomment the next line if you configure SSL for this API.
+# - "https"
+- "http"
+paths:
+  "/graphql":
+    post:
+      description: "Echo back a given message."
+      operationId: "echo"
+      parameters:
+      - in: body
+        name: query
+        schema:
+          type: object
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Echo"
+      security:
+        - ApiKeyAuth: []
+  "/auth/local":
+    post:
+      description: "Echo back a given message."
+      operationId: "auth"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Echo"
+          schema:
+            $ref: "#/definitions/echoMessage"
+definitions:
+  echoMessage:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+
+securityDefinitions:
+  BasicAuth:
+    type: basic
+  ApiKeyAuth:
+    type: apiKey
+    in: header
+    name: X-API-Key
+  firebase:
+    type: apiKey
+    in: header
+    name: X-API-Key
