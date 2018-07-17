@@ -6,7 +6,7 @@
 
 replicaCount: 1
 image:
-  repository: aregistry.gitlab.com/lyra-egnify/hydra-graphql-api-gateway/spark/qa
+  repository: registry.gitlab.com/lyra-egnify/hydra-graphql-api-gateway/spark/qa
   tag: latest
   pullPolicy: Always
   pullSecrets: gitlab-registry-pull-secret
