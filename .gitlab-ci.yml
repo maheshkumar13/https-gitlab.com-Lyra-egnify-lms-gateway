@@ -67,6 +67,8 @@ release:
     - development
     - qa
     - uat
+    - spark/development
+    - spark/qa
     # - /^f-.*$/
 
 deploy-dev:
