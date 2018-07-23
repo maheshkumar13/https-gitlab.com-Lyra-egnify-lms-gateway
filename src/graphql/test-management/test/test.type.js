@@ -207,7 +207,7 @@ export const InputQmapTopicType = new InputObjectType({
   name: 'InputQmapTopicType',
   description: 'Topic details in each Qmap object',
   fields: {
-    name: { type: new NonNull(StringType), description: 'Name of the Topic' },
+    name: { type: StringType, description: 'Name of the Topic' },
     code: { type: StringType, description: 'Topic code given by the user at time of adding Concept taxonomy in Settings' },
   },
 });
@@ -245,7 +245,7 @@ export const InputQmapType = new InputObjectType({
   fields: {
     questionNumber: { type: new NonNull(StringType), description: 'Quetion number in specified format, ex: Q1,Q2, etc..' },
     subject: { type: new NonNull(InputQmapSubjectType), description: 'Subject details in each Qmap object' },
-    topic: { type: InputQmapTopicType, description: 'Topic details in each Qmap object' },
+    topic: { type: new NonNull(InputQmapTopicType), description: 'Topic details in each Qmap object' },
     subTopic: { type: InputQmapsubTopicType, description: 'subTopic details in each Qmap object' },
     difficulty: { type: StringType, description: 'Difficulty of the question in enumerated form of Easy, Medium and Hard' },
   },
