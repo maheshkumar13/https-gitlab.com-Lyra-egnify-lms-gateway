@@ -105,8 +105,44 @@ export const createManyStudents = {
   description: 'This will take csv file url as input and populate the students',
 };
 
+export const deleteStudent = {
+  args: {
+    studentIds: { type: new NonNull(List(StringType)) },
+  },
+  type: (GraphQLJSON),
+  async resolve(obj, args, context) {
+    args.hierarchy = JSON.stringify(args.hierarchy);//eslint-disable-line
+    const url = `${config.services.settings}/api/student/delete/student`;
+    return fetch(
+      url, {
+        method: 'POST',
+        body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+      },
+      context,
+    )
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then(json =>
+
+        json)
+      .catch((err) => {
+        console.error(err);
+        return err.json();
+      })
+      .catch((errjson) => { //eslint-disable-line
+        // console.log(errjson);
+      });
+  },
+};
+
 
 export default{
   createStudent,
   createManyStudents,
+  deleteStudent,
 };
