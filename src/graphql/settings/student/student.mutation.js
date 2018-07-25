@@ -9,6 +9,7 @@ import {
   GraphQLNonNull as NonNull,
   // GraphQLInt as IntType,
   GraphQLString as StringType,
+  GraphQLObjectType as ObjectType,
   GraphQLEnumType,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
@@ -105,11 +106,18 @@ export const createManyStudents = {
   description: 'This will take csv file url as input and populate the students',
 };
 
+const StudentDeleteType = new ObjectType({
+  name: 'StudentDeleteType',
+  fields: {
+    status: { type: StringType },
+    message: { type: StringType },
+  },
+});
 export const deleteStudent = {
   args: {
     studentIds: { type: new NonNull(List(StringType)) },
   },
-  type: (GraphQLJSON),
+  type: (StudentDeleteType),
   async resolve(obj, args, context) {
     args.hierarchy = JSON.stringify(args.hierarchy);//eslint-disable-line
     const url = `${config.services.settings}/api/student/delete/student`;
