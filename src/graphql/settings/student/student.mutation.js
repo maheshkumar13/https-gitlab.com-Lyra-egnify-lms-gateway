@@ -10,12 +10,13 @@ import {
   // GraphQLInt as IntType,
   GraphQLString as StringType,
   GraphQLEnumType,
+  GraphQLInputObjectType as InputObjectType,
 
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
-import {  StudentType } from './student.type';
+import StudentType from './student.type';
 
 const GraphQLDate = require('graphql-date');
 
@@ -140,16 +141,30 @@ export const deleteStudent = {
       });
   },
 };
-
+const StudentInputType = new InputObjectType({
+  name: 'StudentInputType',
+  fields: {
+    egnifyId: { type: StringType },
+    studentId: { type: StringType },
+    studentName: { type: StringType },
+    fatherName: { type: StringType },
+    phone: { type: StringType },
+    email: { type: StringType },
+    gender: { type: StringType },
+    dob: { type: StringType },
+    category: { type: StringType },
+    hierarchy: { type: GraphQLJSON },
+  },
+});
 export const editStudent = {
   args: {
     studentId: { type: new NonNull(StringType) },
-    studentData: { type: StudentInputType },
+    studentDataUpdate: { type: StudentInputType },
   },
-  type: new List(StudentType),
+  type: StudentType,
   async resolve(obj, args, context) {
     args.hierarchy = JSON.stringify(args.hierarchy);//eslint-disable-line
-    const url = `${config.services.settings}/api/student/edit/studentList`;
+    const url = `${config.services.settings}/api/student/edit/student`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
