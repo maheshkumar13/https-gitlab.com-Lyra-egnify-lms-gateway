@@ -33,6 +33,13 @@ const UserSchema = new Schema({
     lowercase: true,
     required: true,
   },
+  forgotPassSecureHash: { type: String, default: '' },
+  forgotPassSecureHashExp: { type: Date },
+  passwordChange: { type: Boolean, default: false },
+  userId: { type: String },
+  username: { type: String, required: true },
+  imageUrl: { type: String },
+
 });
 
 /**

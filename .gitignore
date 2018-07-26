@@ -14,3 +14,4 @@ build
 # misc
 src/test/
 zips/*
+.DS_Store

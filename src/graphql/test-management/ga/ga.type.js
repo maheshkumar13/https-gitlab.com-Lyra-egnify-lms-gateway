@@ -26,6 +26,9 @@ const FilterNameEnumType = new GraphQLEnumType({
     hierarchyFilter: {
       value: 'hierarchyLevels',
     },
+    percentageRangeFilter: {
+      value: 'percentageRangeFilter',
+    },
   },
 });
 

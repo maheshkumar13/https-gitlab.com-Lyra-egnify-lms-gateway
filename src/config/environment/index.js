@@ -15,10 +15,10 @@ import _ from 'lodash';
 const all = {
 
   // Cloud Storage bucket
-  GCLOUD_PROJECT: 'egnify-product',
+  GCLOUD_PROJECT: process.env.GCLOUD_PROJECT||'egnify-product',
 
   // Cloud Storage bucket
-  CLOUD_BUCKET: 'vega-demo-cdn',
+  CLOUD_BUCKET: process.env.CLOUD_BUCKET||'vega-demo-cdn',
 
   env: process.env.NODE_ENV || 'development',
 
@@ -34,6 +34,12 @@ const all = {
   secrets: {
     session: 'vega-secret',
   },
+  emailAuth: {
+    user: process.env.MAILJET_API_KEY || 'a1fb4988b5a359099061d2cb8aebc80d',
+    pass: process.env.MAILJET_API_SECRETKEY || '2fc962b7e3aae82acee17b355fb9de2d',
+  },
+
+
 
   // MongoDB connection options
   mongo: {

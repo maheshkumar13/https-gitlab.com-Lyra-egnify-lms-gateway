@@ -67,7 +67,7 @@ export const createInstitute = {
     if (body.academicSchedule) {
       body.academicSchedule = JSON.stringify(body.academicSchedule);
     }
-    console.error(body);
+
 
     return fetch(
       url,
@@ -85,7 +85,6 @@ export const createInstitute = {
         return response.json();
       })
       .then((json) => {
-        console.error(json);
         return json;
       })
       .catch((err) => {
@@ -123,7 +122,6 @@ export const updateInstitute = {
         return response.json();
       })
       .then((json) => {
-        console.error(json);
         return json;
       })
       .catch((err) => {
@@ -170,7 +168,6 @@ export const updateHierarchy = {
         return response.json();
       })
       .then((json) => {
-        console.error(json);
         return json;
       })
       .catch((err) => {

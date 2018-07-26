@@ -37,7 +37,7 @@ export const createGradePattern = {
   type: PatternType,
   async resolve(obj, args, context) {
     const pattern = JSON.stringify(args.input);//eslint-disable-line
-    // console.log(args);
+
     const url = `${config.services.settings}/api/grade/create/pattern/`;
     return fetch(url, { method: 'POST', body: pattern, headers: { 'Content-Type': 'application/json' } }, context)
       .then((response) => {
@@ -61,7 +61,7 @@ export const createGradeSystem = {
   type: GradeType,
   async resolve(obj, args, context) {
     // args.data = JSON.stringify(args.gradeSystem);//eslint-disable-line
-    // console.log(args);
+
     const url = `${config.services.settings}/api/grade/create/system`;
     return fetch(url, { method: 'POST', body: JSON.stringify(args.input), headers: { 'Content-Type': 'application/json' } }, context)
       .then((response) => {
@@ -84,7 +84,7 @@ export const updateGradeSystem = {
   type: GradeType,
   async resolve(obj, args, context) {
     // args.data = JSON.stringify(args.gradeSystem);//eslint-disable-line
-    // console.log(args);
+
     const url = `${config.services.settings}/api/grade/update/system`;
     return fetch(url, { method: 'POST', body: JSON.stringify(args.input), headers: { 'Content-Type': 'application/json' } }, context)
       .then((response) => {
@@ -107,7 +107,7 @@ export const updateGradePattern = {
   type: PatternType,
   async resolve(obj, args, context) {
     // args.data = JSON.stringify(args.gradeSystem);//eslint-disable-line
-    // console.log(args);
+
     const url = `${config.services.settings}/api/grade/update/pattern`;
     return fetch(url, { method: 'POST', body: JSON.stringify(args.input), headers: { 'Content-Type': 'application/json' } }, context)
       .then((response) => {

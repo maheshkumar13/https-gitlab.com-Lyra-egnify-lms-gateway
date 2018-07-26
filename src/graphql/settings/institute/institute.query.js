@@ -21,7 +21,7 @@ const Institute = {
     return fetch(url, { method: 'POST' }, context)
       .then(response => response.json())
       .then((json) => {
-        console.error(json);
+      
         return json;
       })
       .catch((err) => {
