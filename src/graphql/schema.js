@@ -30,7 +30,7 @@ import { SubjectList, SubjectTaxonomy } from './settings/subject/subjectTaxonomy
 import { removeSubjectTaxonomy, updateSubjectTaxonomy, createSubjects } from './settings/subject/subjectTaxonomy.mutation';
 import { createCurriculum } from './settings/curriculum/curriculum.mutation';
 import { Students, downloadStudentSample, StudentUniqueValues, StudentsByLastNode } from './settings/student/student.query';
-import { createStudent, createManyStudents } from './settings/student/student.mutation';
+import { createStudent, createManyStudents, deleteStudent, editStudent } from './settings/student/student.mutation';
 import { createTestPattern, updateTestPattern, removeTestPattern } from './settings/testPattern/testPattern.mutation';
 import { InstituteHierarchy, InstituteHierarchySample } from './settings/instituteHierarchy/instituteHierarchy.query';
 import { InstituteHierarchyGrid, LevelFilters } from './settings/instituteHierarchy/instituteHierarchyGrid.query';
@@ -106,6 +106,8 @@ const schema = new Schema({
     name: 'Mutation',
     fields: {
       createStudent,
+      deleteStudent,
+      editStudent,
       createManyStudents,
       createTestPattern,
       updateTestPattern,

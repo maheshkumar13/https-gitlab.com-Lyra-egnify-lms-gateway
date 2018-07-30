@@ -9,7 +9,10 @@ import {
   GraphQLNonNull as NonNull,
   // GraphQLInt as IntType,
   GraphQLString as StringType,
+  GraphQLObjectType as ObjectType,
   GraphQLEnumType,
+  GraphQLInputObjectType as InputObjectType,
+
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import fetch from '../../../utils/fetch';
@@ -105,8 +108,99 @@ export const createManyStudents = {
   description: 'This will take csv file url as input and populate the students',
 };
 
+const StudentDeleteType = new ObjectType({
+  name: 'StudentDeleteType',
+  fields: {
+    status: { type: StringType },
+    message: { type: StringType },
+  },
+});
+export const deleteStudent = {
+  args: {
+    studentIds: { type: new NonNull(List(StringType)) },
+  },
+  type: (StudentDeleteType),
+  async resolve(obj, args, context) {
+    args.hierarchy = JSON.stringify(args.hierarchy);//eslint-disable-line
+    const url = `${config.services.settings}/api/student/delete/student`;
+    return fetch(
+      url, {
+        method: 'POST',
+        body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+      },
+      context,
+    )
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then(json =>
+
+        json)
+      .catch((err) => {
+        console.error(err);
+        return err.json();
+      })
+      .catch((errjson) => { //eslint-disable-line
+        // console.log(errjson);
+      });
+  },
+};
+const StudentInputType = new InputObjectType({
+  name: 'StudentInputType',
+  fields: {
+    egnifyId: { type: StringType },
+    studentId: { type: StringType },
+    studentName: { type: StringType },
+    fatherName: { type: StringType },
+    phone: { type: StringType },
+    email: { type: StringType },
+    gender: { type: StringType },
+    dob: { type: StringType },
+    category: { type: StringType },
+    hierarchy: { type: GraphQLJSON },
+  },
+});
+export const editStudent = {
+  args: {
+    studentId: { type: new NonNull(StringType) },
+    studentDataUpdate: { type: StudentInputType },
+  },
+  type: StudentType,
+  async resolve(obj, args, context) {
+    args.hierarchy = JSON.stringify(args.hierarchy);//eslint-disable-line
+    const url = `${config.services.settings}/api/student/edit/student`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then(json =>
+        json)
+      .catch((err) => {
+        console.error(err);
+        return err.json();
+      })
+      .catch((errjson) => { //eslint-disable-line
+        // console.log(errjson);
+      });
+  },
+  description: 'This will take csv file url as input and populate the students',
+};
+
 
 export default{
   createStudent,
   createManyStudents,
+  deleteStudent,
+  editStudent,
 };

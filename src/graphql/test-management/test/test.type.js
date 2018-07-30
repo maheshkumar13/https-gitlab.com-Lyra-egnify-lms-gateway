@@ -207,7 +207,7 @@ export const InputQmapTopicType = new InputObjectType({
   name: 'InputQmapTopicType',
   description: 'Topic details in each Qmap object',
   fields: {
-    name: { type: new NonNull(StringType), description: 'Name of the Topic' },
+    name: { type: StringType, description: 'Name of the Topic' },
     code: { type: StringType, description: 'Topic code given by the user at time of adding Concept taxonomy in Settings' },
   },
 });
