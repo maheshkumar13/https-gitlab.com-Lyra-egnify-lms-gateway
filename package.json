@@ -1,6 +1,6 @@
 {
   "name": "hydra-settings",
-  "version": "1.0.0",
+  "version": "0.7.1",
   "description": "settings microservice",
   "main": "src/server.js",
   "repository": "git@gitlab.com:Lyra-egnify/hydra-settings.git",
