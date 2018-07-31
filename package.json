@@ -1,7 +1,7 @@
 {
-  "name": "hydra-settings",
-  "version": "0.6.0",
-  "description": "settings microservice",
+  "name": "hydra-graphql-gateway",
+  "version": "0.7.1",
+  "description": "gateway microservice",
   "main": "src/server.js",
   "repository": "git@gitlab.com:Lyra-egnify/hydra-settings.git",
   "author": "Rahul Islam <rahul@egnify.com>",
