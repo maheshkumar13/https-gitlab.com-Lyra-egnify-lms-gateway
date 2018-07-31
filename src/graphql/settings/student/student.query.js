@@ -160,6 +160,7 @@ export const StudentUniqueValues = {
   args: {
     key: { type: StringType },
     level: { type: IntType },
+    childCode:{type: new List(StringType)}
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) { // eslint-disable-line
