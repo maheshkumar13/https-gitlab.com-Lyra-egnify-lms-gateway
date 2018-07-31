@@ -74,6 +74,7 @@ export const Students = {
     regex: { type: StringType },
     childCode: { type: StringType },
     filters: { type: GraphQLJSON },
+    studentIdAndNameOnly: { type: BooleanType },
   },
   type: studentDetailsType,
   async resolve(obj, args, context) {
