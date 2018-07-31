@@ -195,6 +195,7 @@ const pageInfoType = new ObjectType({
     };
   },
 });
+
 const CommonAnalysisDetailsType = new ObjectType({
   name: 'CommonAnalysisDetailsType',
   fields() {

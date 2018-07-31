@@ -64,6 +64,20 @@ const pageInfoType = new ObjectType({
     };
   },
 });
+
+const LeaderBoardDetailsType = new ObjectType({
+  name: 'LeaderBoardDetailsType',
+  fields() {
+    return {
+      page: {
+        type: new List(GraphQLJSON),
+      },
+      pageInfo: {
+        type: pageInfoType,
+      },
+    };
+  },
+});
 const CommonAnalysisDetailsType = new ObjectType({
   name: 'CommonAnalysisDetailsType',
   fields() {
@@ -157,6 +171,66 @@ export const CommonAnalysisPaginated = {
       .catch(err => new Error(err.message));
   },
 };
+
+
+export const LeaderBoardPaginated = {
+  args: {
+    testType: { type: new List(StringType) },
+    studentId: { type: new List(StringType) },
+    filter: { type: new List(FilterInputType) },
+    pageNumber: { type: IntType },
+    limit: { type: IntType },
+  },
+  type: LeaderBoardDetailsType,
+  async resolve(obj, args, context) {
+    if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
+    if (args.pageNumber < 1) {
+      return new Error('Page Number must be positive');
+    }
+    const url = `${config.services.test}/api/v1/leaderBoard/read`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then((json) => {
+        const data = {};
+        data.page = json.data;
+        const pageInfo = {};
+        pageInfo.prevPage = true;
+        pageInfo.nextPage = true;
+        pageInfo.pageNumber = args.pageNumber;
+        pageInfo.totalPages = Math.ceil(json.count / args.limit)
+          ? Math.ceil(json.count / args.limit)
+          : 1;
+        pageInfo.totalEntries = json.count;
+
+        if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+          return new Error('Page Number is invalid');
+        }
+
+        if (args.pageNumber === pageInfo.totalPages) {
+          pageInfo.nextPage = false;
+        }
+        if (args.pageNumber === 1) {
+          pageInfo.prevPage = false;
+        }
+        if (pageInfo.totalEntries === 0) {
+          pageInfo.totalPages = 0;
+        }
+        data.pageInfo = pageInfo;
+        return data;
+      })
+      .catch(err => new Error(err.message));
+  },
+};
+
 
 export const MarkAnalysisGraphData = {
   args: {
