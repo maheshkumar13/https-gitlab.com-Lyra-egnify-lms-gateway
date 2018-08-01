@@ -12,11 +12,19 @@ export function convertData(req, res) {
   const fields = ['Student Id'];
   if (!req.body.testpattern) {
     res.status(404).send('No Test Pattern Given');
+    return;
   }
   if (!req.files.file || !req.files.key) {
     res.status(404).send('No Test Pattern Given');
+    return;
   }
+  const fileExtention = _.split(req.files.file[0].originalname, '.');
+  const keyExtention = _.split(req.files.key[0].originalname, '.');
 
+  if (fileExtention[1] !== 'iit' || keyExtention[1] !== 'ias') {
+    res.status(404).send('Invalid Extention : Allowed Extention :{ file : .iit ,key : .ias }');
+    return;
+  }
   const testPattern = JSON.parse(req.body.testpattern);
   const { subjects } = testPattern;
   _.forEach(subjects, (subject) => {
