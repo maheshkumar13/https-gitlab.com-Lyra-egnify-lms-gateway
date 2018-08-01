@@ -12,6 +12,7 @@ const uploadFile = require('./uploadFile');
 const downloadReports = require('./downloadReports');
 const user = require('./user');
 const auth = require('./../../auth').default;
+const converter = require('./converter');
 
 const { Duplex } = stream;
 
@@ -34,7 +35,7 @@ function bufferToStream(buffer) {
 export default function (app) {
   //  Insert API below
 
-
+  app.use('/api/v1/converter', converter);
   app.use('/api/v1/uploadFile', uploadFile);
   app.use('/api/v1/users', user);
   app.use('/api/v1/downloadReports', downloadReports);
