@@ -13,9 +13,10 @@ export function convertData(req, res) {
   if (!req.body.testpattern) {
     res.status(404).send('No Test Pattern Given');
   }
-  if (!req.files.file[0].buffer || !req.files.key[0].buffer) {
+  if (!req.files.file || !req.files.key) {
     res.status(404).send('No Test Pattern Given');
   }
+
   const testPattern = JSON.parse(req.body.testpattern);
   const { subjects } = testPattern;
   _.forEach(subjects, (subject) => {
