@@ -17,7 +17,7 @@ import {
 import GraphQLJSON from 'graphql-type-json';
 import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
-import { TestType, InputTestType, UpdateTestType } from './test.type';
+import { TestType, InputTestType, UpdateTestType, QmapFileUploadType } from './test.type';
 
 // const GraphQLDate = require('graphql-date');
 
@@ -150,7 +150,7 @@ export const QmapFileUpload = {
     testId: { type: new NonNull(StringType), description: 'testId, Unique identifier for test' },
     url: { type: new NonNull(StringType), description: 'URL of file uploaded to GCS' },
   },
-  type: TestType,
+  type: QmapFileUploadType,
   async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/test/QmapFileUpload`;
     return fetch(url, {
@@ -158,12 +158,14 @@ export const QmapFileUpload = {
       body: JSON.stringify(args),
       headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     }, context)
-      .then((response) => {
-        if (response.status >= 400) {
-          return new Error(response.statusText);
-        }
-        return response.json();
-      })
+      .then(response =>
+        // if (response.status >= 400) {
+        //   console.info(response.json());
+        //
+        //   return new Error(response.statusText);
+        // }
+        // console.info(response.json());
+        response.json())
       .then(json => json)
       .catch(err => new Error(err.message)); // eslint-disable-line
   },

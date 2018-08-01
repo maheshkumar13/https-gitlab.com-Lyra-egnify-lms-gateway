@@ -212,7 +212,7 @@ export const TestHierarchyNodes = {
     isLeafNode: { type: BooleanType },
     childCode: { type: StringType },
     child: { type: StringType },
-    parentCode: { type: StringType },
+    parentCode: { type: new List(StringType) },
     parent: { type: StringType },
     level: { type: IntType },
     hierarchyTag: { type: StringType },

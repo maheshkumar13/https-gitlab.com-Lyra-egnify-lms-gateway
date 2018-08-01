@@ -117,6 +117,7 @@ export const InstituteHierarchyGrid = {
     sortBy: { type: StringType },
     order: { type: IntType },
     input: { type: InstituteHierarchyGridInputType },
+    regex: { type: StringType },
   },
   type: InstituteHierarchyGridType,
   async resolve(obj, args, context) {
@@ -138,6 +139,13 @@ export const InstituteHierarchyGrid = {
       limit,
     };
 
+    if (args.regex !== undefined) {
+      args.regex = args.regex.replace(/\s\s+/g, ' ').trim(); //eslint-disable-line
+      if (args.regex === '') {
+        args.regex = undefined; //eslint-disable-line
+      }
+    }
+
     return fetch(
       url,
       {
@@ -148,6 +156,7 @@ export const InstituteHierarchyGrid = {
           filters: JSON.stringify(filters),
           sortBy: args.sortBy,
           order: args.order,
+          regex: args.regex,
         }),
         headers: { 'Content-Type': 'application/json' },
       },
