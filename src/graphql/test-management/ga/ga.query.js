@@ -176,6 +176,7 @@ export const CommonAnalysisPaginated = {
 export const LeaderBoardPaginated = {
   args: {
     testType: { type: new List(StringType) },
+    testId: { type: new List(StringType) },
     studentId: { type: new List(StringType) },
     filter: { type: new List(FilterInputType) },
     pageNumber: { type: IntType },
