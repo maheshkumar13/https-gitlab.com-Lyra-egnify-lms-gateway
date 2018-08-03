@@ -52,6 +52,17 @@ const MarkAnalysisDataType = new ObjectType({
   },
 });
 
+const AverageMarkAnalysisDataType = new ObjectType({
+  name: 'AverageMarkAnalysisDataType',
+  description: 'Average Mark Analysis Values',
+  fields: {
+    averageMarks: { type: FloatType, description: 'Avergae Obtained Marks' },
+    obtainedMarks: { type: FloatType, description: 'Total Obtained Marks' },
+    totalMarks: { type: FloatType, description: 'Totals Marks That Can Be Obtained' },
+    percentage: { type: FloatType, description: 'Percentage' },
+  },
+});
+
 
 const MarkAnalysisType = new ObjectType({
   name: 'MarkAnalysisType',
@@ -59,6 +70,15 @@ const MarkAnalysisType = new ObjectType({
   fields: {
     subject: { type: StringType, description: 'subject code or name' },
     data: { type: MarkAnalysisDataType, description: 'Mark analysis data type' },
+  },
+});
+
+const AverageMarkAnalysisType = new ObjectType({
+  name: 'AverageMarkAnalysisType',
+  description: 'Average Mark Analysis',
+  fields: {
+    subject: { type: StringType, description: 'subject code or name' },
+    data: { type: AverageMarkAnalysisDataType, description: 'Mark analysis data type' },
   },
 });
 
@@ -131,6 +151,7 @@ export const CommonAnalysisDataType = new ObjectType({
     responseData: { type: GraphQLJSON, description: 'Key-Value pairs of questionResponse and questionMarks' },
     cwuAnalysis: { type: new List(CWUAnalysisType), description: 'CWU Analysis of an Invidual Student' },
     markAnalysis: { type: new List(MarkAnalysisType), description: 'Mark Analysis of an Invidual Student' },
+    averageMarkAnalysis: { type: new List(AverageMarkAnalysisType), description: 'Average Mark Analysis of an Invidual Student for a particular test Type' },
     rankAnalysis: { type: new List(RankAnalysisType), description: 'Rank Analysis of an Invidual Student' },
     topicAnalysis: { type: GraphQLJSON, description: 'Topic Analysis of an Invidual Student' },
   },

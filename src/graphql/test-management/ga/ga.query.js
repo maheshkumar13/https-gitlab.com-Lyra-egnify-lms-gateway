@@ -120,6 +120,7 @@ export const CommonAnalysisPaginated = {
     filter: { type: new List(FilterInputType) },
     pageNumber: { type: IntType },
     limit: { type: IntType },
+    getAverageMarks: { type: BooleanType },
     sort: { type: new List(SortType) },
   },
   type: CommonAnalysisDetailsType,
@@ -319,6 +320,51 @@ export const MarksDistributionAnalysisV2 = {
   type: GraphQLJSON,
   async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/reports/generateMarkDistributionReportV2`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then(response => response.json())
+      .catch(err => new Error(err.message));
+  },
+
+
+};
+
+
+const MarksDistributionAnalysisType = new ObjectType({
+  name: 'MarksDistributionAnalysisType',
+  fields() {
+    return {
+      Absents: {
+        type: IntType,
+      },
+      hierarchyNodeName: {
+        type: StringType,
+      },
+      averageMarksData: {
+        type: GraphQLJSON,
+      },
+      distributionData: {
+        type: GraphQLJSON,
+      },
+    };
+  },
+});
+
+
+export const MarksDistributionAnalysisV3 = {
+  args: {
+    testId: { type: new NonNull(StringType), description: 'Test Id of a particular test' },
+    division: { type: StringType, description: 'No of division of total marks. Should be less than total Marks' },
+    level: { type: new NonNull(StringType), description: 'Level No of the Hierarchy' },
+    filter: { type: new List(FilterInputType) },
+
+  },
+  type: new List(MarksDistributionAnalysisType),
+  async resolve(obj, args, context) {
+    const url = `${config.services.test}/api/v1/reports/generateMarkDistributionReportV3`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
