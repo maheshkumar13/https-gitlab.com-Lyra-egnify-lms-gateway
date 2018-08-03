@@ -330,6 +330,29 @@ export const MarksDistributionAnalysisV2 = {
 
 
 };
+export const MarksDistributionAnalysisV3 = {
+  args: {
+    testId: { type: new NonNull(StringType), description: 'Test Id of a particular test' },
+    division: { type: new NonNull(StringType), description: 'No of division of total marks. Should be less than total Marks' },
+    level: { type: new NonNull(StringType), description: 'Level No of the Hierarchy' },
+    subjects: { type: new List(StringType), description: 'List of Subject for which distribution is required' },
+    filter: { type: new List(FilterInputType) },
+
+  },
+  type: GraphQLJSON,
+  async resolve(obj, args, context) {
+    const url = `${config.services.test}/api/v1/reports/generateMarkDistributionReportV3`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then(response => response.json())
+      .catch(err => new Error(err.message));
+  },
+
+
+};
 
 export const QuestionErrorAnalysis = {
   args: {
