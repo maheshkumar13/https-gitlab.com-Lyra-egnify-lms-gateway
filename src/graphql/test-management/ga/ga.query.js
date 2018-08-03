@@ -120,6 +120,7 @@ export const CommonAnalysisPaginated = {
     filter: { type: new List(FilterInputType) },
     pageNumber: { type: IntType },
     limit: { type: IntType },
+    getAverageMarks: { type: BooleanType },
     sort: { type: new List(SortType) },
   },
   type: CommonAnalysisDetailsType,
