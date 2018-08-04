@@ -29,6 +29,9 @@ const FilterNameEnumType = new GraphQLEnumType({
     percentageRangeFilter: {
       value: 'percentageRangeFilter',
     },
+    weakSubjectFilter: {
+      value: 'weakSubjectFilter',
+    },
   },
 });
 
@@ -151,6 +154,7 @@ export const CommonAnalysisDataType = new ObjectType({
     responseData: { type: GraphQLJSON, description: 'Key-Value pairs of questionResponse and questionMarks' },
     cwuAnalysis: { type: new List(CWUAnalysisType), description: 'CWU Analysis of an Invidual Student' },
     markAnalysis: { type: new List(MarkAnalysisType), description: 'Mark Analysis of an Invidual Student' },
+    weakSubjectList: { type: new List(StringType), description: 'List of Weak Subjects' },
     averageMarkAnalysis: { type: new List(AverageMarkAnalysisType), description: 'Average Mark Analysis of an Invidual Student for a particular test Type' },
     rankAnalysis: { type: new List(RankAnalysisType), description: 'Rank Analysis of an Invidual Student' },
     topicAnalysis: { type: GraphQLJSON, description: 'Topic Analysis of an Invidual Student' },
