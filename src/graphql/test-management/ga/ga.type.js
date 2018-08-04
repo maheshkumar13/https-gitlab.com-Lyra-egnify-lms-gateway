@@ -135,6 +135,16 @@ const ErrorDataType = new ObjectType({
   },
 });
 
+const testHistoryType = new ObjectType({
+  name: 'testHistoryType',
+  description: 'testHistoryType',
+  fields: {
+    testCount: { type: IntType, description: 'Count of Test Given Till Now' },
+    testList: { type: new List(StringType), description: 'List of all testIds' },
+  },
+});
+
+
 export const CommonAnalysisDataType = new ObjectType({
   name: 'CommonAnalysisDataType',
   description: 'Coomon Reports per Student',
@@ -155,6 +165,7 @@ export const CommonAnalysisDataType = new ObjectType({
     cwuAnalysis: { type: new List(CWUAnalysisType), description: 'CWU Analysis of an Invidual Student' },
     markAnalysis: { type: new List(MarkAnalysisType), description: 'Mark Analysis of an Invidual Student' },
     weakSubjectList: { type: new List(StringType), description: 'List of Weak Subjects' },
+    testHistory: { type: testHistoryType, description: 'test history of the student for the particular test type' },
     averageMarkAnalysis: { type: new List(AverageMarkAnalysisType), description: 'Average Mark Analysis of an Invidual Student for a particular test Type' },
     rankAnalysis: { type: new List(RankAnalysisType), description: 'Rank Analysis of an Invidual Student' },
     topicAnalysis: { type: GraphQLJSON, description: 'Topic Analysis of an Invidual Student' },
