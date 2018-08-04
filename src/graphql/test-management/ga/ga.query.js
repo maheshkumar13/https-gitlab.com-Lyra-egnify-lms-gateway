@@ -358,6 +358,7 @@ export const MarksDistributionAnalysisV3 = {
   args: {
     testId: { type: new NonNull(StringType), description: 'Test Id of a particular test' },
     division: { type: StringType, description: 'No of division of total marks. Should be less than total Marks' },
+    subjectDivision: { type: StringType, description: 'No of division of subject marks. Should be less than subject total Marks' },
     level: { type: new NonNull(StringType), description: 'Level No of the Hierarchy' },
     filter: { type: new List(FilterInputType) },
 
