@@ -340,6 +340,12 @@ const MarksDistributionAnalysisType = new ObjectType({
       Absents: {
         type: IntType,
       },
+      presentStudents: {
+        type: IntType,
+      },
+      totalStudents: {
+        type: IntType,
+      },
       hierarchyNodeName: {
         type: StringType,
       },
