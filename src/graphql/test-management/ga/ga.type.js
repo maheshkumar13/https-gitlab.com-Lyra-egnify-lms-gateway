@@ -312,8 +312,8 @@ export const StudentAverageTrendAnalysisType = new ObjectType({
   description: ' Student Performance Trend Analysis Values',
   fields: {
     groupIdList: { type: new List(StringType), description: 'List of group Ids' },
-    testList: { type: new List(StringType), description: 'List of last 10 groups of test Ids' },
-    testNamesList: { type: new List(StringType), description: 'List of last 10 groups of test Names' },
+    testList: { type: new List(new List(StringType)), description: 'List of last 10 groups of test Ids' },
+    testNamesList: { type: new List(new List(StringType)), description: 'List of last 10 groups of test Names' },
     totalTestCount: { type: IntType, description: 'Total Count of Test' },
     docs: {
       type: new List(StudentAverageDataType),
