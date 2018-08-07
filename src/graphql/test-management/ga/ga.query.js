@@ -390,6 +390,7 @@ export const StudentPerformanceTrendAnalysisPaginated = {
   args: {
     testId: { type: new NonNull(StringType), description: 'Test Id ' },
     filter: { type: new List(FilterInputType) },
+    noOfTest: { type: IntType },
     pageNumber: { type: IntType },
     limit: { type: IntType },
   },
