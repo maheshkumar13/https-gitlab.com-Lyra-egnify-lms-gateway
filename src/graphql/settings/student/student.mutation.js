@@ -32,6 +32,30 @@ const GenderEnumType = new GraphQLEnumType({ // eslint-disable-line
     },
   },
 });
+const StatusType = new ObjectType({
+  name: 'StatusType',
+  fields: {
+    status: { type: StringType ,description: "SUCCESS OR FAILED"},
+    message: { type: StringType },
+    failed: {type:GraphQLJSON },
+  },
+});
+const StudentInputType = new InputObjectType({
+  name: 'StudentInputType',
+  fields: {
+    egnifyId: { type: StringType },
+    studentId: { type: StringType },
+    studentName: { type: StringType },
+    fatherName: { type: StringType },
+    phone: { type: StringType },
+    email: { type: StringType },
+    gender: { type: StringType },
+    dob: { type: StringType },
+    category: { type: StringType },
+    hierarchy: { type: GraphQLJSON },
+  },
+});
+
 
 export const createStudent = {
   args: {
@@ -108,18 +132,11 @@ export const createManyStudents = {
   description: 'This will take csv file url as input and populate the students',
 };
 
-const StudentDeleteType = new ObjectType({
-  name: 'StudentDeleteType',
-  fields: {
-    status: { type: StringType },
-    message: { type: StringType },
-  },
-});
 export const deleteStudent = {
   args: {
     studentIds: { type: new NonNull(List(StringType)) },
   },
-  type: (StudentDeleteType),
+  type: (StatusType),
   async resolve(obj, args, context) {
     args.hierarchy = JSON.stringify(args.hierarchy);//eslint-disable-line
     const url = `${config.services.settings}/api/student/delete/student`;
@@ -149,21 +166,7 @@ export const deleteStudent = {
       });
   },
 };
-const StudentInputType = new InputObjectType({
-  name: 'StudentInputType',
-  fields: {
-    egnifyId: { type: StringType },
-    studentId: { type: StringType },
-    studentName: { type: StringType },
-    fatherName: { type: StringType },
-    phone: { type: StringType },
-    email: { type: StringType },
-    gender: { type: StringType },
-    dob: { type: StringType },
-    category: { type: StringType },
-    hierarchy: { type: GraphQLJSON },
-  },
-});
+
 export const editStudent = {
   args: {
     studentId: { type: new NonNull(StringType) },
@@ -194,13 +197,46 @@ export const editStudent = {
         // console.log(errjson);
       });
   },
-  description: 'This will take csv file url as input and populate the students',
+  description: 'This will edit student details',
 };
 
+export const studentBulkMovement = {
+  args: {
+    studentIds: { type: new NonNull(List(StringType)) },
+    moveToHierarchy: { type: GraphQLJSON },
+  },
+  type: (StatusType),
+  async resolve(obj, args, context) {
+    args.hierarchy = JSON.stringify(args.hierarchy);//eslint-disable-line
+    const url = `${config.services.settings}/api/student/edit/bulkMovement`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then(json =>
+        json)
+      .catch((err) => {
+        console.error(err);
+        return err.json();
+      })
+      .catch((errjson) => { //eslint-disable-line
+        // console.log(errjson);
+      });
+  },
+  description: 'This will bulk move students from one hierarcy to other',
+};
 
 export default{
   createStudent,
   createManyStudents,
   deleteStudent,
   editStudent,
+  studentBulkMovement,
 };
