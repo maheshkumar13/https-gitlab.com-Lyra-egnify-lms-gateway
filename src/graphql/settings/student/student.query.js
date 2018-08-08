@@ -74,6 +74,7 @@ export const Students = {
     regex: { type: StringType },
     childCode: { type: StringType },
     filters: { type: GraphQLJSON },
+    studentIdAndNameOnly: { type: BooleanType },
   },
   type: studentDetailsType,
   async resolve(obj, args, context) {
@@ -160,6 +161,7 @@ export const StudentUniqueValues = {
   args: {
     key: { type: StringType },
     level: { type: IntType },
+    childCode:{type: new List(StringType)}
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) { // eslint-disable-line
