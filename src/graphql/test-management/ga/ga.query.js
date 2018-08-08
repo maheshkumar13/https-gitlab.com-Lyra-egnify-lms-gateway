@@ -352,6 +352,9 @@ const MarksDistributionAnalysisType = new ObjectType({
       averageMarksData: {
         type: GraphQLJSON,
       },
+      highestMarksData: {
+        type: GraphQLJSON,
+      },
       distributionData: {
         type: GraphQLJSON,
       },
@@ -363,9 +366,11 @@ const MarksDistributionAnalysisType = new ObjectType({
 export const MarksDistributionAnalysisV3 = {
   args: {
     testId: { type: new NonNull(StringType), description: 'Test Id of a particular test' },
+    buckets: { type: new List(new List(IntType)), description: 'Custom Buckets for Mark Distribution' },
     division: { type: StringType, description: 'No of division of total marks. Should be less than total Marks' },
     subjectDivision: { type: StringType, description: 'No of division of subject marks. Should be less than subject total Marks' },
     level: { type: new NonNull(StringType), description: 'Level No of the Hierarchy' },
+    highestMarksFlag: { type: BooleanType, description: 'Boolean Indicating whether to provide highestMarks or not' },
     filter: { type: new List(FilterInputType) },
 
   },
