@@ -29,6 +29,9 @@ const FilterNameEnumType = new GraphQLEnumType({
     percentageRangeFilter: {
       value: 'percentageRangeFilter',
     },
+    weakSubjectFilter: {
+      value: 'weakSubjectFilter',
+    },
   },
 });
 
@@ -52,6 +55,17 @@ const MarkAnalysisDataType = new ObjectType({
   },
 });
 
+const AverageMarkAnalysisDataType = new ObjectType({
+  name: 'AverageMarkAnalysisDataType',
+  description: 'Average Mark Analysis Values',
+  fields: {
+    averageMarks: { type: FloatType, description: 'Avergae Obtained Marks' },
+    obtainedMarks: { type: FloatType, description: 'Total Obtained Marks' },
+    totalMarks: { type: FloatType, description: 'Totals Marks That Can Be Obtained' },
+    percentage: { type: FloatType, description: 'Percentage' },
+  },
+});
+
 
 const MarkAnalysisType = new ObjectType({
   name: 'MarkAnalysisType',
@@ -59,6 +73,15 @@ const MarkAnalysisType = new ObjectType({
   fields: {
     subject: { type: StringType, description: 'subject code or name' },
     data: { type: MarkAnalysisDataType, description: 'Mark analysis data type' },
+  },
+});
+
+const AverageMarkAnalysisType = new ObjectType({
+  name: 'AverageMarkAnalysisType',
+  description: 'Average Mark Analysis',
+  fields: {
+    subject: { type: StringType, description: 'subject code or name' },
+    data: { type: AverageMarkAnalysisDataType, description: 'Mark analysis data type' },
   },
 });
 
@@ -112,6 +135,16 @@ const ErrorDataType = new ObjectType({
   },
 });
 
+const testHistoryType = new ObjectType({
+  name: 'testHistoryType',
+  description: 'testHistoryType',
+  fields: {
+    testCount: { type: IntType, description: 'Count of Test Given Till Now' },
+    testList: { type: new List(StringType), description: 'List of all testIds' },
+  },
+});
+
+
 export const CommonAnalysisDataType = new ObjectType({
   name: 'CommonAnalysisDataType',
   description: 'Coomon Reports per Student',
@@ -131,6 +164,9 @@ export const CommonAnalysisDataType = new ObjectType({
     responseData: { type: GraphQLJSON, description: 'Key-Value pairs of questionResponse and questionMarks' },
     cwuAnalysis: { type: new List(CWUAnalysisType), description: 'CWU Analysis of an Invidual Student' },
     markAnalysis: { type: new List(MarkAnalysisType), description: 'Mark Analysis of an Invidual Student' },
+    weakSubjectList: { type: new List(StringType), description: 'List of Weak Subjects' },
+    testHistory: { type: testHistoryType, description: 'test history of the student for the particular test type' },
+    averageMarkAnalysis: { type: new List(AverageMarkAnalysisType), description: 'Average Mark Analysis of an Invidual Student for a particular test Type' },
     rankAnalysis: { type: new List(RankAnalysisType), description: 'Rank Analysis of an Invidual Student' },
     topicAnalysis: { type: GraphQLJSON, description: 'Topic Analysis of an Invidual Student' },
   },
@@ -222,6 +258,16 @@ const ValueType = new ObjectType({
     cwuAnalysis: { type: new List(CWUAnalysisType), description: 'CWU Analysis' },
   },
 });
+const DataValuesType = new ObjectType({
+  name: 'DataValuesType',
+  description: 'Single unit of Test Data for A Particular Student',
+  fields: {
+    testIds: { type: new List(StringType), description: 'Test ID' },
+    groupID: { type: StringType, description: 'start Date' },
+    markAnalysis: { type: new List(MarkAnalysisType), description: 'Mark Analysis' },
+
+  },
+});
 const StudentPerformanceDataType = new ObjectType({
   name: 'StudentPerformanceDataType',
   description: 'Trend Data for A Particular Student',
@@ -230,6 +276,19 @@ const StudentPerformanceDataType = new ObjectType({
     studentId: { type: StringType, description: 'Student Id' },
     studentMetaData: { type: GraphQLJSON, description: 'studentMetaData' },
     values: { type: new List(ValueType), description: 'List of values for last 10 tests' },
+  },
+});
+const StudentAverageDataType = new ObjectType({
+  name: 'StudentAverageDataType',
+  description: 'Trend Data for A Particular Student',
+  fields: {
+    _id: { type: StringType, description: 'Student Id' },
+    testCount: { type: IntType, description: 'Total Count of Test' },
+    testIdList: { type: new List(StringType), description: 'List of last 10 test Ids from the given test' },
+    averageMarkAnalysis: { type: new List(AverageMarkAnalysisType), description: 'Average Mark Analysis of an Invidual Student for a particular test Type' },
+    studentId: { type: StringType, description: 'Student Id' },
+    studentMetaData: { type: GraphQLJSON, description: 'studentMetaData' },
+    dataValues: { type: new List(DataValuesType), description: 'List of values for last 10 tests' },
   },
 });
 
@@ -248,6 +307,22 @@ export const StudentPerformanceTrendAnalysisType = new ObjectType({
 
 });
 
+export const StudentAverageTrendAnalysisType = new ObjectType({
+  name: 'StudentAverageTrendAnalysisType',
+  description: ' Student Performance Trend Analysis Values',
+  fields: {
+    groupIdList: { type: new List(StringType), description: 'List of group Ids' },
+    testList: { type: new List(new List(StringType)), description: 'List of last 10 groups of test Ids' },
+    testNamesList: { type: new List(new List(StringType)), description: 'List of last 10 groups of test Names' },
+    totalTestCount: { type: IntType, description: 'Total Count of Test' },
+    docs: {
+      type: new List(StudentAverageDataType),
+      description: 'List of Student Data',
+    },
+  },
+
+});
+
 
 export default {
   CommonAnalysisType,
@@ -257,5 +332,6 @@ export default {
   pageInfoType,
   CommonAnalysisDetailsType,
   StudentPerformanceTrendAnalysisType,
+  StudentAverageTrendAnalysisType,
 
 };

@@ -14,7 +14,7 @@ import {
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 
-import { CommonAnalysisType, QuestionErrorAnalysisType, GenerateAnalysisReturnType, FilterInputType, StudentPerformanceTrendAnalysisType } from './ga.type';
+import { CommonAnalysisType, QuestionErrorAnalysisType, GenerateAnalysisReturnType, FilterInputType, StudentPerformanceTrendAnalysisType, StudentAverageTrendAnalysisType } from './ga.type';
 import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
 import { SortType } from '../question/question.type';
@@ -120,6 +120,7 @@ export const CommonAnalysisPaginated = {
     filter: { type: new List(FilterInputType) },
     pageNumber: { type: IntType },
     limit: { type: IntType },
+    getAverageMarks: { type: BooleanType },
     sort: { type: new List(SortType) },
   },
   type: CommonAnalysisDetailsType,
@@ -331,6 +332,63 @@ export const MarksDistributionAnalysisV2 = {
 
 };
 
+
+const MarksDistributionAnalysisType = new ObjectType({
+  name: 'MarksDistributionAnalysisType',
+  fields() {
+    return {
+      Absents: {
+        type: IntType,
+      },
+      presentStudents: {
+        type: IntType,
+      },
+      totalStudents: {
+        type: IntType,
+      },
+      hierarchyNodeName: {
+        type: StringType,
+      },
+      averageMarksData: {
+        type: GraphQLJSON,
+      },
+      highestMarksData: {
+        type: GraphQLJSON,
+      },
+      distributionData: {
+        type: GraphQLJSON,
+      },
+    };
+  },
+});
+
+
+export const MarksDistributionAnalysisV3 = {
+  args: {
+    testId: { type: new NonNull(StringType), description: 'Test Id of a particular test' },
+    buckets: { type: new List(new List(IntType)), description: 'Custom Buckets for Mark Distribution' },
+    division: { type: StringType, description: 'No of division of total marks. Should be less than total Marks' },
+    subjectDivision: { type: StringType, description: 'No of division of subject marks. Should be less than subject total Marks' },
+    level: { type: new NonNull(StringType), description: 'Level No of the Hierarchy' },
+    highestMarksFlag: { type: BooleanType, description: 'Boolean Indicating whether to provide highestMarks or not' },
+    filter: { type: new List(FilterInputType) },
+
+  },
+  type: new List(MarksDistributionAnalysisType),
+  async resolve(obj, args, context) {
+    const url = `${config.services.test}/api/v1/reports/generateMarkDistributionReportV3`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then(response => response.json())
+      .catch(err => new Error(err.message));
+  },
+
+
+};
+
 export const QuestionErrorAnalysis = {
   args: {
     testId: { type: new NonNull(StringType) },
@@ -401,6 +459,80 @@ export const StudentPerformanceTrendAnalysisPaginated = {
       return new Error('Page Number must be positive');
     }
     const url = `${config.services.test}/api/v1/reports/generateTrendReportPaginated`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then((json) => {
+        const data = {};
+        data.page = json.data;
+        const pageInfo = {};
+        pageInfo.prevPage = true;
+        pageInfo.nextPage = true;
+        pageInfo.pageNumber = args.pageNumber;
+        pageInfo.totalPages = Math.ceil(json.count / args.limit)
+          ? Math.ceil(json.count / args.limit)
+          : 1;
+        pageInfo.totalEntries = json.count;
+
+        if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+          return new Error('Page Number is invalid');
+        }
+
+        if (args.pageNumber === pageInfo.totalPages) {
+          pageInfo.nextPage = false;
+        }
+        if (args.pageNumber === 1) {
+          pageInfo.prevPage = false;
+        }
+        if (pageInfo.totalEntries === 0) {
+          pageInfo.totalPages = 0;
+        }
+        data.pageInfo = pageInfo;
+        return data;
+      })
+      .catch(err => new Error(err.message));
+  },
+
+
+};
+
+
+const StudentAverageTrendAnalysisDetailsType = new ObjectType({
+  name: 'StudentAverageTrendAnalysisDetailsType',
+  fields() {
+    return {
+      page: {
+        type: StudentAverageTrendAnalysisType,
+      },
+      pageInfo: {
+        type: pageInfoType,
+      },
+    };
+  },
+});
+export const StudentAverageTrendAnalysisPaginated = {
+  args: {
+    testId: { type: new NonNull(StringType), description: 'Test Id ' },
+    group: { type: IntType, description: 'No of groups of test data to be shown' },
+    filter: { type: new List(FilterInputType) },
+    pageNumber: { type: IntType },
+    limit: { type: IntType },
+  },
+  type: StudentAverageTrendAnalysisDetailsType,
+  async resolve(obj, args, context) {
+    if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
+    if (args.pageNumber < 1) {
+      return new Error('Page Number must be positive');
+    }
+    const url = `${config.services.test}/api/v1/reports/generateTrendReportPaginatedV2`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
