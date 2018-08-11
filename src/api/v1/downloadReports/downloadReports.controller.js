@@ -22,24 +22,6 @@ export function testResultsReport(req, res) {
   request(options).pipe(res);
 }
 
-// function to download question details report
-export function questionDetailsReport(req, res) {
-  const submissionUrl = `${config.services.test}/api/v1/questionDetails/download/questionDetailsReport`;
-  const { body } = req;
-  const form = {};
-  _.forEach(body, (value, key) => {
-    form[key] = value;
-  });
-  form.user = req.user;
-
-  const options = {
-    uri: submissionUrl,
-    method: 'POST',
-    json: form,
-  };
-  request(options).pipe(res);
-}
-
 // function to download studentResponseReport
 export function studentResponseReport(req, res) {
   const submissionUrl = `${config.services.test}/api/v1/masterResult/download/studentResponseReport`;

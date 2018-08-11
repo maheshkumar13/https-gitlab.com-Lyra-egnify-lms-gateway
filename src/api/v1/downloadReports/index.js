@@ -16,7 +16,6 @@ router.post('/studentResponseReport', authService.isAuthenticated(), controller.
 router.post('/cwuAnalysisReport', authService.isAuthenticated(), controller.cwuAnalysisReport);
 router.post('/studentPerformanceTrendReport', authService.isAuthenticated(), controller.studentPerformanceTrendReport);
 router.post('/studentMarksAnalysisReport', authService.isAuthenticated(), controller.studentMarksAnalysisReport);
-router.post('/questionDetailsReport', authService.isAuthenticated(), controller.questionDetailsReport);
 // router.post('/markDistributionReport', controller.markDistributionReport);
 // router.post('/errorCountReport', controller.errorCountReport);
 
