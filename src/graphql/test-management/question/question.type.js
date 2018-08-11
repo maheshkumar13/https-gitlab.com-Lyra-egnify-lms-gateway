@@ -22,7 +22,7 @@ import GraphQLJSON from 'graphql-type-json';
 import { TestType } from '../test/test.type';
 
 
-const DifficultyEnumType = new EnumType({
+export const DifficultyEnumType = new EnumType({
   name: 'DifficultyEnumType',
   values: {
     Easy: {
@@ -117,7 +117,7 @@ export const QuestionDetailsInputType = new InputObjectType({
 });
 
 
-const pageInfoType = new ObjectType({
+export const pageInfoType = new ObjectType({
   name: 'TestPageInfomation',
   fields() {
     return {
@@ -236,4 +236,6 @@ export const QuestionDetailsType = new ObjectType({
 export default{
   QuestionDetailsInputType,
   QuestionDetailsType,
+  DifficultyEnumType,
+  pageInfoType,
 };
