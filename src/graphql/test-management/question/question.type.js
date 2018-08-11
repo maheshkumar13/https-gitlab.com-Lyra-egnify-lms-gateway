@@ -43,6 +43,9 @@ const DifficultyEnumType = new EnumType({
 const ResponseEnumType = new EnumType({
   name: 'ResponseEnumType',
   values: {
+    P: {
+      value: 'P',
+    },
     C: {
       value: 'C',
     },
