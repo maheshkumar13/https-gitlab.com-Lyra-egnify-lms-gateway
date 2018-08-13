@@ -23,6 +23,9 @@ import { TestType } from '../test/test.type';
 const FilterNameEnumType = new GraphQLEnumType({
   name: 'FilterNameEnumType',
   values: {
+    topFilter: {
+      value: 'topFilter',
+    },
     hierarchyFilter: {
       value: 'hierarchyLevels',
     },
