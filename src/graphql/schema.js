@@ -25,6 +25,7 @@ import {
 } from './test-management/test/test.query';
 import { removeTest, createDummyTest, createDuplicateTest, createTest, updateTest, QmapFileUpload } from './test-management/test/test.mutation';
 import { QuestionDetails } from './test-management/question/question.query';
+import { QuestionMappings } from './test-management/questionMapping/questionMapping.query';
 import { Curriculum } from './settings/curriculum/curriculum.query';
 import { SubjectList, SubjectTaxonomy } from './settings/subject/subjectTaxonomy.query';
 import { removeSubjectTaxonomy, updateSubjectTaxonomy, createSubjects } from './settings/subject/subjectTaxonomy.mutation';
@@ -101,8 +102,8 @@ const schema = new Schema({
       GetAcademicYear,
       GetUniqueTestDetails,
       LeaderBoardPaginated,
+      QuestionMappings,
       StudentAverageTrendAnalysisPaginated,
-
     },
   }),
   mutation: new ObjectType({

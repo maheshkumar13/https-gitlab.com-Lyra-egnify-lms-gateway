@@ -109,6 +109,9 @@ const CWUAnalysisDataType = new ObjectType({
     W: { type: FloatType, description: 'Numbers of Wrong' },
     U: { type: FloatType, description: 'Number of Unattempted' },
     UW: { type: FloatType, description: 'Number of Unattempted + Wrong' },
+    P: { type: FloatType, description: 'Number of Partial' },
+
+
   },
 });
 
@@ -131,6 +134,7 @@ const ErrorDataType = new ObjectType({
     W: { type: FloatType, description: 'Numbers of Wrong' },
     U: { type: FloatType, description: 'Number of Unattempted' },
     UW: { type: FloatType, description: 'Number of Unattempted + Wrong' },
+    P: { type: FloatType, description: 'Number of Partial' },
     percentage: { type: FloatType, description: 'Percentage of Unattempted + Wrong' },
   },
 });
