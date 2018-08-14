@@ -43,10 +43,16 @@ spec:
             httpGet:
               path: /
               port: {{ .Values.service.internalPort }}
+            initialDelaySeconds: 15
+            timeoutSeconds: 1
+            periodSeconds: 15
           readinessProbe:
             httpGet:
               path: /
               port: {{ .Values.service.internalPort }}
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+            periodSeconds: 15
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- if .Values.nodeSelector }}
