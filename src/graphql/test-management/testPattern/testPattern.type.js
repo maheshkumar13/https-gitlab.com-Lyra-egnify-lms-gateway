@@ -24,7 +24,7 @@ const QuestionEnumType = new EnumType({
       value: 'Single Answer Type',
     },
     multiple_answer_type: {
-      value: 'Multiple Answer Type',
+      value: 'Multiple Answer',
     },
     integer_type: {
       value: 'Integer Type',
