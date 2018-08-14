@@ -271,7 +271,7 @@ const DataValuesType = new ObjectType({
   fields: {
     testIds: { type: new List(StringType), description: 'Test ID' },
     groupID: { type: StringType, description: 'start Date' },
-    markAnalysis: { type: new List(MarkAnalysisType), description: 'Mark Analysis' },
+    markAnalysis: { type: new List(AverageMarkAnalysisType), description: 'Mark Analysis' },
 
   },
 });
