@@ -218,6 +218,7 @@ export const TestHierarchyNodes = {
     hierarchyTag: { type: StringType },
     selected: { type: BooleanType },
     numberOfStudents: { type: IntType },
+    filterNodesWithAllMissingStudents: { type: BooleanType },
   },
   type: new List(TestHierarchyNodesType), // new List(MarkingSchemaType),
   async resolve(obj, args, context) {
