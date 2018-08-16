@@ -48,6 +48,8 @@ build:
     - spark/qa
     - china/development
     - china/qa
+    - sso/development
+    - sso/qa
 
 release:
   stage: release
@@ -73,6 +75,8 @@ release:
     - spark/qa
     - china/development
     - china/qa
+    - sso/development
+    - sso/qa
 
     # - /^f-.*$/
 
@@ -260,3 +264,56 @@ deploy-china-qa:
     # url: https://qa.hydra.egnify.io
   only:
     - china/qa
+
+deploy-sso-dev:
+  stage: deploy
+  image: arbaz7/gcloud-kubectl-helm:latest
+  services:
+    - docker:dind
+  before_script:
+    - mkdir -p /etc/deploy
+    - echo ${kube_config} > kube_config
+    - base64 -d kube_config > ${KUBECONFIG}
+    - echo ${gcloud_auth} > gcloud_auth.base64
+    - base64 -d gcloud_auth.base64 > gcloud_auth.json
+    # - kubectl config use-context gke_egnify-product_us-central1-a_hydra-federation
+    - helm init --client-only
+    - helm repo update
+    - gcloud auth activate-service-account --key-file=gcloud_auth.json
+    - gcloud container clusters get-credentials hydra-federation-dev --zone asia-south1-a --project egnify-product
+  script:
+    - export NAMESPACE=dev;
+    - export RELEASE_NAME=gateway-${NAMESPACE}-sso
+    - export DEPLOYS=$(helm ls | grep $RELEASE_NAME | wc -l)
+    - if [ ${DEPLOYS}  -eq 0 ]; then helm install --name=${RELEASE_NAME} charts --set image.tag=${CI_BUILD_REF} -f charts/values/sso/${NAMESPACE}.yaml --namespace=${NAMESPACE}; else helm upgrade ${RELEASE_NAME} charts --set image.tag=${CI_BUILD_REF} -f charts/values/sso/${NAMESPACE}.yaml --namespace=${NAMESPACE}; fi
+  environment:
+    name: sso-dev
+  only:
+    - sso/development
+
+deploy-sso-qa:
+  stage: deploy
+  image: arbaz7/gcloud-kubectl-helm:latest
+  services:
+    - docker:dind
+  before_script:
+    - mkdir -p /etc/deploy
+    - echo ${kube_config} > kube_config
+    - base64 -d kube_config > ${KUBECONFIG}
+    - echo ${gcloud_auth} > gcloud_auth.base64
+    - base64 -d gcloud_auth.base64 > gcloud_auth.json
+    # - kubectl config use-context gke_egnify-product_us-central1-a_hydra-federation
+    - helm init --client-only
+    - gcloud auth activate-service-account --key-file=gcloud_auth.json
+    - helm repo update
+    - gcloud container clusters get-credentials hydra-federation-dev --zone asia-south1-a --project egnify-product
+  script:
+    - export NAMESPACE=qa;
+    - export RELEASE_NAME=gateway-${NAMESPACE}-sso
+    - export DEPLOYS=$(helm ls | grep $RELEASE_NAME | wc -l)
+    - if [ ${DEPLOYS}  -eq 0 ]; then helm install --name=${RELEASE_NAME} charts --set image.tag=${CI_BUILD_REF} -f charts/values/sso/${NAMESPACE}.yaml --namespace=${NAMESPACE}; else helm upgrade ${RELEASE_NAME} charts --set image.tag=${CI_BUILD_REF} -f charts/values/sso/${NAMESPACE}.yaml --namespace=${NAMESPACE}; fi
+  environment:
+    name: sso-qa
+    # url: https://qa.hydra.egnify.io
+  only:
+    - sso/qa
