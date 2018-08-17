@@ -46,7 +46,10 @@ app.use('/', express.static(`${__dirname}/public`));
 // The GraphQL endpoint
 // app.use('/graphql', bodyParser.json(), graphqlExpress({ schema }));
 // GraphiQL, a visual editor for queries
-app.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql', passHeader: "'Authorization': localStorage.getItem('jwt_token')" }));
+app.use('/graphiql', graphiqlExpress({
+  endpointURL: '/graphql',
+  passHeader: "'Authorization': localStorage.getItem('jwt_token'),'AccessControlToken': localStorage.getItem('token')",
+}));
 app.use(
   '/graphql',
   auth.isAuthenticated(),
