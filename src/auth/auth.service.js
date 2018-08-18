@@ -1,49 +1,82 @@
 import jwt from 'jsonwebtoken';
 import expressJwt from 'express-jwt';
 import compose from 'composable-middleware';
+import request from 'request';
+
 import { config } from '../config/environment';
 import User from '../api/v1/user/user.model';
 
-const validateJwt = expressJwt({
-  secret: config.secrets.session,
-});
+export function isAuthenticated() {
+  return compose()
+    .use((req, res, next) => {
+      const authService = `${config.services.sso}/auth/isAuthenticated`;
+      const options = {
+        url: authService,
+        headers: {
+          authorization: req.headers.authorization,
+          accesscontroltoken: req.headers.accesscontroltoken,
+        },
+      };
+      request.post(options, (err, response, body) => {
+        console.info(response.statusCode);
+        console.info(response.statusMessage);
+        if (err) {
+          res.statusMessage = 'Something went wrong';
+          res.status(404).end();
+        }
+        try {
+          body = JSON.parse(body);
+          if (body) {
+            req.user = body;
+            next();
+          }
+        } catch (e) {
+          res.status(401).end();
+        }
+      });
+    });
+}
+
+// const validateJwt = expressJwt({
+//   secret: config.secrets.session,
+// });
 
 /**
  * Attaches the user object to the request if authenticated
  * Otherwise returns 403
  */
-export function isAuthenticated() {
-  return compose()
-    // Validate jwt
-    .use((req, res, next) => {
-      // allow access_token to be passed through query parameter as well
-      if (req.query && req.query.hasOwnProperty('access_token')) {
-        req.headers.authorization = `Bearer ${req.query.access_token}`;
-      }
-      // IE11 forgets to set Authorization header sometimes. Pull from cookie instead.
-      if (req.query && typeof req.headers.authorization === 'undefined') {
-        req.headers.authorization = `Bearer ${req.cookies.token}`;
-      }
-      validateJwt(req, res, next);
-    })
-    // Attach user to request
-    .use((req, res, next) => {
-      User.findById(req.user._id).exec()
-        .then((user) => {
-          if (!user) {
-            return res.status(401).end();
-          }
-          // console.info('hostname', req.user.hostname);
-          if (req.user.hostname !== user.hostname) {
-            res.statusMessage = 'hostname doesnot Match';
-            return res.status(401).end();
-          }
-          req.user = user;
-          next();
-        })
-        .catch(err => next(err));
-    });
-}
+// export function isAuthenticated() {
+//   return compose()
+//     // Validate jwt
+//     .use((req, res, next) => {
+//       // allow access_token to be passed through query parameter as well
+//       if (req.query && req.query.hasOwnProperty('access_token')) {
+//         req.headers.authorization = `Bearer ${req.query.access_token}`;
+//       }
+//       // IE11 forgets to set Authorization header sometimes. Pull from cookie instead.
+//       if (req.query && typeof req.headers.authorization === 'undefined') {
+//         req.headers.authorization = `Bearer ${req.cookies.token}`;
+//       }
+//       validateJwt(req, res, next);
+//     })
+//     // Attach user to request
+//     .use((req, res, next) => {
+//       User.findById(req.user._id).exec()
+//         .then((user) => {
+//           if (!user) {
+//             return res.status(401).end();
+//           }
+//           // console.info('hostname', req.user.hostname);
+//           if (req.user.hostname !== user.hostname) {
+//             res.statusMessage = 'hostname doesnot Match';
+//             return res.status(401).end();
+//           }
+//           req.user = user;
+//           next();
+//         })
+//         .catch(err => next(err));
+//     });
+// }
 
 /**
  * Checks if the user role meets the minimum requirements of the route
