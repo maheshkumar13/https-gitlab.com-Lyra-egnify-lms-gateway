@@ -86,8 +86,6 @@ export function studentPreviousAndPresentTestReport(req, res) {
   _.forEach(body, (value, key) => {
     form[key] = value;
   });
-  // form['testId'] = ['000035'];
-  // form['pageNumber'] = 1;
   form.user = req.user;
 
   const options = {
@@ -115,8 +113,6 @@ export async function studentComparisionTrendReport(req, res) {
   request(options).pipe(res);
 }
 // function to download studentMarksAnalysisReport
-
-
 export function studentMarksAnalysisReport(req, res) {
   const submissionUrl = `${config.services.test}/api/v1/masterResult/download/studentMarksAnalysisReport`;
   const { body } = req;
