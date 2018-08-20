@@ -86,8 +86,8 @@ export function studentPreviousAndPresentTestReport(req, res) {
   _.forEach(body, (value, key) => {
     form[key] = value;
   });
-  form['testId'] = ['000035'];
-  form['pageNumber'] = 1;
+  // form['testId'] = ['000035'];
+  // form['pageNumber'] = 1;
   form.user = req.user;
 
   const options = {
