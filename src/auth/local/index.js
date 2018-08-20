@@ -38,4 +38,9 @@ router.post('/', (req, res) => {
   request.post(authService, { form: req.body }).pipe(res);
 });
 
+router.post('/refreshtoken', (req, res) => {
+  const authService = `${config.services.sso}/auth/local/refreshtoken`;
+  request.post(authService, { form: req.body }).pipe(res);
+});
+
 export default router;
