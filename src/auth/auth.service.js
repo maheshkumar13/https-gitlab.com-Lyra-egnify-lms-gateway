@@ -20,9 +20,14 @@ export function isAuthenticated() {
       request.post(options, (err, response, body) => {
         console.info(response.statusCode);
         console.info(response.statusMessage);
+        const { statusCode, statusMessage } = response;
+        if (statusCode !== 200) {
+          res.statusMessage = statusMessage;
+          res.status(statusCode).end();
+        }
         if (err) {
           res.statusMessage = 'Something went wrong';
-          res.status(404).end();
+          res.status(401).end();
         }
         try {
           body = JSON.parse(body);
