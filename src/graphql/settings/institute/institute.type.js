@@ -46,7 +46,7 @@ export const InstituteType = new ObjectType({
   fields: {
     hierarchy: { type: new List(HierarchyType) },
     email: { type: StringType },
-    phone: { type: IntType },
+    phone: { type: StringType },
     instituteName: { type: StringType },
     instituteType: { type: StringType },
     ownerName: { type: StringType },
