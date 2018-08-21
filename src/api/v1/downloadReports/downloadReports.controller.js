@@ -48,6 +48,7 @@ export function cwuAnalysisReport(req, res) {
   _.forEach(body, (value, key) => {
     form[key] = value;
   });
+  // form['testIds'] = ["000035"];
   form.user = req.user;
 
   const options = {
@@ -62,6 +63,24 @@ export function cwuAnalysisReport(req, res) {
 
 export function studentPerformanceTrendReport(req, res) {
   const submissionUrl = `${config.services.test}/api/v1/reports/download/studentPerformanceTrendReport`;
+  const { body } = req;
+  const form = {};
+  _.forEach(body, (value, key) => {
+    form[key] = value;
+  });
+  form.user = req.user;
+
+  const options = {
+    uri: submissionUrl,
+    method: 'POST',
+    json: form,
+  };
+  request(options).pipe(res);
+}
+// function to download studentPreviousAndPresentTestReport
+
+export function studentPreviousAndPresentTestReport(req, res) {
+  const submissionUrl = `${config.services.test}/api/v1/reports/download/studentPreviousAndPresentTestReport`;
   const { body } = req;
   const form = {};
   _.forEach(body, (value, key) => {
@@ -94,8 +113,6 @@ export async function studentComparisionTrendReport(req, res) {
   request(options).pipe(res);
 }
 // function to download studentMarksAnalysisReport
-
-
 export function studentMarksAnalysisReport(req, res) {
   const submissionUrl = `${config.services.test}/api/v1/masterResult/download/studentMarksAnalysisReport`;
   const { body } = req;
@@ -117,4 +134,5 @@ export default {
   studentResponseReport,
   cwuAnalysisReport,
   studentComparisionTrendReport,
+  studentPreviousAndPresentTestReport,
 };
