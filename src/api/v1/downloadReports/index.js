@@ -13,6 +13,7 @@ const router = express.Router();
 
 router.post('/testResultsReport', authService.isAuthenticated(), controller.testResultsReport);
 router.post('/studentResponseReport', authService.isAuthenticated(), controller.studentResponseReport);
+router.post('/studentErrorReport', authService.isAuthenticated(), controller.studentErrorReport);
 router.post('/cwuAnalysisReport', authService.isAuthenticated(), controller.cwuAnalysisReport);
 router.post('/studentPerformanceTrendReport', authService.isAuthenticated(), controller.studentPerformanceTrendReport);
 router.post('/studentPreviousAndPresentTestReport', authService.isAuthenticated(), controller.studentPreviousAndPresentTestReport);
