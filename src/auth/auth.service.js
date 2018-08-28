@@ -31,6 +31,10 @@ export function isAuthenticated() {
           body = JSON.parse(body);
           if (body) {
             req.user = body;
+            req.user.token = {
+              authorization: req.headers.authorization,
+              accesscontroltoken: req.headers.accesscontroltoken,
+            };
             next();
           }
         } catch (e) {
