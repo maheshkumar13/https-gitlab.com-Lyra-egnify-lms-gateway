@@ -521,7 +521,7 @@ const StudentAverageTrendAnalysisDetailsType = new ObjectType({
 export const StudentAverageTrendAnalysisPaginated = {
   args: {
     testId: { type: new NonNull(StringType), description: 'Test Id ' },
-    group: { type: new List(new List(StringType)), description: 'Test Id by group, if null system will send default data grouped by 1' },
+    group: { type: new List(new List(StringType)), description: 'Group of Test Id to compare, if null system will send default data grouped by 1' },
     filter: { type: new List(FilterInputType) },
     pageNumber: { type: IntType },
     limit: { type: IntType },
