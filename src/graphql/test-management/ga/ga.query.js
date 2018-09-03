@@ -540,7 +540,7 @@ export const StudentAverageTrendAnalysisPaginated = {
     }, context)
       .then((response) => {
         if (response.status >= 400) {
-          return new Error(response.statusText);
+          throw new Error(response.statusText);
         }
         return response.json();
       })
@@ -557,7 +557,7 @@ export const StudentAverageTrendAnalysisPaginated = {
         pageInfo.totalEntries = json.count;
 
         if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
-          return new Error('Page Number is invalid');
+          throw new Error('Page Number is invalid');
         }
 
         if (args.pageNumber === pageInfo.totalPages) {
