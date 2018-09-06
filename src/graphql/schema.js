@@ -50,7 +50,7 @@ import { LeaderBoardPaginated, GenerateAnalysis, GenerateAnalysisv2, CommonAnaly
 import { createTestPatternSchema, updateTestPatternSchema, removeTestPatternSchema } from './test-management/testPattern/testPattern.mutation';
 import { TestPatternSchema } from './test-management/testPattern/testPattern.query';
 import { ConceptAnalysis } from './test-management/conceptAnalysis/conceptAnalysis.query';
-import { StudentConceptAnalysis, allStudentConceptAnalysis } from './test-management/Analysis/studentConceptAnalysis.query';
+import { StudentConceptAnalysis, allStudentConceptAnalysis, LevelWiseTestWiseConceptAnalysis } from './test-management/Analysis/studentConceptAnalysis.query';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -105,6 +105,7 @@ const schema = new Schema({
       LeaderBoardPaginated,
       QuestionMappings,
       StudentAverageTrendAnalysisPaginated,
+      LevelWiseTestWiseConceptAnalysis,
     },
   }),
   mutation: new ObjectType({
