@@ -51,6 +51,7 @@ import { createTestPatternSchema, updateTestPatternSchema, removeTestPatternSche
 import { TestPatternSchema } from './test-management/testPattern/testPattern.query';
 import { ConceptAnalysis } from './test-management/conceptAnalysis/conceptAnalysis.query';
 import { StudentConceptAnalysis, allStudentConceptAnalysis } from './test-management/Analysis/studentConceptAnalysis.query';
+import { StudentOverallAverageMarks, StudentOverallCWU } from './test-management/Analysis/studentOverallAnalysis.query';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -105,6 +106,8 @@ const schema = new Schema({
       LeaderBoardPaginated,
       QuestionMappings,
       StudentAverageTrendAnalysisPaginated,
+      StudentOverallAverageMarks,
+      StudentOverallCWU,
     },
   }),
   mutation: new ObjectType({
