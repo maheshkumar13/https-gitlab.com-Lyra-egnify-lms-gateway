@@ -72,6 +72,9 @@ const FieldnameEnumType = new EnumType({
     MARK_OVERALL: {
       value: 'filter.markAnalysis.overall.obtainedMarks',
     },
+    ERROR_OVERALL: {
+      value: 'filter.cwuAnalysis.overall.W',
+    },
   },
 });
 const SortingOrderEnumType = new EnumType({
