@@ -3,7 +3,7 @@ import {
   GraphQLString as StringType,
   GraphQLNonNull as NonNull,
   // GraphQLBoolean as BooleanType,
-  // GraphQLInt as IntType,
+  GraphQLInt as IntType,
   GraphQLList as List,
   // GraphQLFloat as FloatType,
   GraphQLEnumType as EnumType,
@@ -19,6 +19,12 @@ const FilterNameEnumType = new EnumType({ // eslint-disable-line
     },
     marksDistribution: {
       value: 'marksDistribution',
+    },
+    highest: {
+      value: 'highest',
+    },
+    cutoff: {
+      value: 'cutoff',
     },
   },
 });
@@ -39,8 +45,9 @@ export const ComparisonAnalysisInputType = new InputObjectType({
   fields: {
     testIds: { type: new List(new NonNull(StringType)), description: 'testIds' },
     hierarchies: { type: new List(ComparisonAnalysisHierarchyInputType), description: 'Input type for hierarchies in comaprison analysis' },
-    filterName: { type: FilterNameEnumType, description: 'Different type of filters, which can be applied on comparison anlaysis' },
+    filterName: { type: new NonNull(FilterNameEnumType), description: 'Different type of filters, which can be applied on comparison anlaysis' },
     viewLevel: { type: new NonNull(StringType), description: 'Level number of the hierarchy nodes to display daata' },
+    cutoffPercentage: { type: IntType, description: 'Cut-off percentage' },
   },
 });
 
