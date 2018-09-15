@@ -14,8 +14,8 @@ import {
 const FilterNameEnumType = new EnumType({ // eslint-disable-line
   name: 'ComparisonFilterNameEnumType',
   values: {
-    avgPercentage: {
-      value: 'avgPercentage',
+    avgMarks: {
+      value: 'avgMarks',
     },
     marksDistribution: {
       value: 'marksDistribution',
@@ -48,6 +48,7 @@ export const ComparisonAnalysisInputType = new InputObjectType({
     filterName: { type: new NonNull(FilterNameEnumType), description: 'Different type of filters, which can be applied on comparison anlaysis' },
     viewLevel: { type: new NonNull(StringType), description: 'Level number of the hierarchy nodes to display daata' },
     cutoffPercentage: { type: IntType, description: 'Cut-off percentage' },
+    divisons: { type: IntType, description: 'Number of divisons on mark' },
   },
 });
 
