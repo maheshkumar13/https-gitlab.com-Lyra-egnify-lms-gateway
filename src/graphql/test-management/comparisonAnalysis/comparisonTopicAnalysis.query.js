@@ -13,18 +13,18 @@ import GraphQLJSON from 'graphql-type-json';
 import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
 
-import { ComparisonAnalysisInputType } from './comparisonAnalysis.type';
+import { ComparisonTopicAnalysisInputType } from './comparisonTopicAnalysis.type';
 
-export const ComparisonAnalysis = {
+export const ComparisonTopicAnalysis = {
   args: {
     input: {
-      type: new NonNull(ComparisonAnalysisInputType),
+      type: new NonNull(ComparisonTopicAnalysisInputType),
       description: 'Inputs for comparison analysis',
     },
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) {
-    const url = `${config.services.test}/api/v1/Analysis/comparisonAnalysis`;
+    const url = `${config.services.test}/api/v1/comparisonAnalysis/topic`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args.input),
@@ -41,5 +41,5 @@ export const ComparisonAnalysis = {
 };
 
 export default {
-  ComparisonAnalysis,
+  ComparisonTopicAnalysis,
 };

@@ -52,7 +52,9 @@ import { TestPatternSchema } from './test-management/testPattern/testPattern.que
 import { ConceptAnalysis } from './test-management/conceptAnalysis/conceptAnalysis.query';
 import { StudentOverallAverageMarks, StudentOverallCWU } from './test-management/Analysis/studentOverallAnalysis.query';
 import { StudentConceptAnalysis, allStudentConceptAnalysis, LevelWiseTestWiseConceptAnalysis } from './test-management/Analysis/studentConceptAnalysis.query';
-import { ComparisonAnalysis } from './test-management/Analysis/comparisonAnalysis.query';
+import { ComparisonAnalysis } from './test-management/comparisonAnalysis/comparisonAnalysis.query';
+import { ComparisonTopicAnalysis } from './test-management/comparisonAnalysis/comparisonTopicAnalysis.query';
+
 
 const schema = new Schema({
   query: new ObjectType({
@@ -112,6 +114,7 @@ const schema = new Schema({
       LevelWiseTestWiseConceptAnalysis,
       ComparisonAnalysis,
       StudentAverageMarks,
+      ComparisonTopicAnalysis,
     },
   }),
   mutation: new ObjectType({
