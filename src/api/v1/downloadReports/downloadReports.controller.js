@@ -130,6 +130,24 @@ export async function studentComparisionTrendReport(req, res) {
   };
   request(options).pipe(res);
 }
+
+// function to download weakSubjectReport
+export async function weakSubjectReport(req, res) {
+  const submissionUrl = `${config.services.test}/api/v1/masterResult/download/weakSubjectReport`;
+  const { body } = req;
+  const form = {};
+  _.forEach(body, (value, key) => {
+    form[key] = value;
+  });
+  form.user = req.user;
+  const options = {
+    uri: submissionUrl,
+    method: 'POST',
+    json: form,
+  };
+  request(options).pipe(res);
+}
+
 // function to download studentMarksAnalysisReport
 export function studentMarksAnalysisReport(req, res) {
   const submissionUrl = `${config.services.test}/api/v1/masterResult/download/studentMarksAnalysisReport`;
@@ -171,6 +189,7 @@ export default {
   studentErrorReport,
   cwuAnalysisReport,
   studentComparisionTrendReport,
+  weakSubjectReport,
   studentPreviousAndPresentTestReport,
   allstudentConceptAnalysisReport,
 };
