@@ -127,6 +127,7 @@ export const TestPatternSchemaType = new ObjectType({
   name: 'TestPatternSchemaType',
   description: 'Marks distribution subjects and questions wise',
   fields: {
+    default: { type: BooleanType, description: 'Default or not' },
     testType: { type: StringType, description: 'Type of marking schema based on test pattern selected' },
     testName: { type: StringType, description: 'Name of marking schema based on test pattern selected' },
     totalQuestions: { type: IntType, description: 'Total number of questions in the test' },

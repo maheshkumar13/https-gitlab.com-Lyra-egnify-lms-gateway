@@ -39,8 +39,26 @@ export function studentResponseReport(req, res) {
   };
   request(options).pipe(res);
 }
-// function to download cwuAnalysisReport
 
+// function to download studentErrorReport
+export function studentErrorReport(req, res) {
+  const submissionUrl = `${config.services.test}/api/v1/masterResult/download/studentErrorReport`;
+  const { body } = req;
+  const form = {};
+  _.forEach(body, (value, key) => {
+    form[key] = value;
+  });
+  form.user = req.user;
+
+  const options = {
+    uri: submissionUrl,
+    method: 'POST',
+    json: form,
+  };
+  request(options).pipe(res);
+}
+
+// function to download cwuAnalysisReport
 export function cwuAnalysisReport(req, res) {
   const submissionUrl = `${config.services.test}/api/v1/masterResult/download/cwuAnalysisReport`;
   const { body } = req;
@@ -48,6 +66,7 @@ export function cwuAnalysisReport(req, res) {
   _.forEach(body, (value, key) => {
     form[key] = value;
   });
+  // form['testIds'] = ["000035"];
   form.user = req.user;
 
   const options = {
@@ -94,6 +113,24 @@ export function studentPerformanceTrendReport(req, res) {
   };
   request(options).pipe(res);
 }
+// function to download studentPreviousAndPresentTestReport
+
+export function studentPreviousAndPresentTestReport(req, res) {
+  const submissionUrl = `${config.services.test}/api/v1/reports/download/studentPreviousAndPresentTestReport`;
+  const { body } = req;
+  const form = {};
+  _.forEach(body, (value, key) => {
+    form[key] = value;
+  });
+  form.user = req.user;
+
+  const options = {
+    uri: submissionUrl,
+    method: 'POST',
+    json: form,
+  };
+  request(options).pipe(res);
+}
 
 export async function studentComparisionTrendReport(req, res) {
   const submissionUrl = `${config.services.test}/api/v1/masterResult/download/studentComparisionTrendReport`;
@@ -111,9 +148,25 @@ export async function studentComparisionTrendReport(req, res) {
   };
   request(options).pipe(res);
 }
+
+// function to download weakSubjectReport
+export async function weakSubjectReport(req, res) {
+  const submissionUrl = `${config.services.test}/api/v1/masterResult/download/weakSubjectReport`;
+  const { body } = req;
+  const form = {};
+  _.forEach(body, (value, key) => {
+    form[key] = value;
+  });
+  form.user = req.user;
+  const options = {
+    uri: submissionUrl,
+    method: 'POST',
+    json: form,
+  };
+  request(options).pipe(res);
+}
+
 // function to download studentMarksAnalysisReport
-
-
 export function studentMarksAnalysisReport(req, res) {
   const submissionUrl = `${config.services.test}/api/v1/masterResult/download/studentMarksAnalysisReport`;
   const { body } = req;
@@ -131,9 +184,31 @@ export function studentMarksAnalysisReport(req, res) {
   request(options).pipe(res);
 }
 
+// function to download allstudentConceptAnalysis
+export function allstudentConceptAnalysisReport(req, res) {
+  const submissionUrl = `${config.services.test}/api/v1/Analysis/download/allstudentConceptAnalysis`;
+  const { body } = req;
+  const form = {};
+  _.forEach(body, (value, key) => {
+    form[key] = value;
+  });
+  form.user = req.user;
+
+  const options = {
+    uri: submissionUrl,
+    method: 'POST',
+    json: form,
+  };
+  request(options).pipe(res);
+}
+
 export default {
   studentResponseReport,
+  studentErrorReport,
   cwuAnalysisReport,
   studentComparisionTrendReport,
   testVsEstimatedAveragesReport,
+  weakSubjectReport,
+  studentPreviousAndPresentTestReport,
+  allstudentConceptAnalysisReport,
 };
