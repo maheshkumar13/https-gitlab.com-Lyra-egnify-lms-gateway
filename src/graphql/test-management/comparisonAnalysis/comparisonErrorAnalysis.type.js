@@ -3,7 +3,7 @@ import {
   GraphQLString as StringType,
   GraphQLNonNull as NonNull,
   // GraphQLBoolean as BooleanType,
-  // GraphQLInt as IntType,
+  GraphQLInt as IntType,
   GraphQLList as List,
   // GraphQLFloat as FloatType,
   // GraphQLEnumType as EnumType,
@@ -17,7 +17,7 @@ export const ComparisonErrorAnalysisHierarchyInputType = new InputObjectType({
   fields: {
     child: { type: new NonNull(StringType), description: 'Name of the hierarchy node' },
     childCode: { type: new NonNull(StringType), description: 'Internal code of the hierarchy node' },
-    level: { type: new NonNull(StringType), description: 'Level number of the hierarchy node' },
+    level: { type: new NonNull(IntType), description: 'Level number of the hierarchy node' },
   },
 });
 
@@ -27,7 +27,7 @@ export const ComparisonErrorAnalysisInputType = new InputObjectType({
   fields: {
     testIds: { type: new List(new NonNull(StringType)), description: 'testIds' },
     hierarchies: { type: new List(ComparisonErrorAnalysisHierarchyInputType), description: 'Input type for hierarchies in comaprison analysis' },
-    viewLevel: { type: new NonNull(StringType), description: 'Level number of the hierarchy nodes to display data' },
+    viewLevel: { type: new NonNull(IntType), description: 'Level number of the hierarchy nodes to display data' },
   },
 });
 
