@@ -55,6 +55,7 @@ import { StudentConceptAnalysis, allStudentConceptAnalysis, LevelWiseTestWiseCon
 import { ComparisonAnalysis } from './test-management/comparisonAnalysis/comparisonAnalysis.query';
 import { ComparisonTopicAnalysis } from './test-management/comparisonAnalysis/comparisonTopicAnalysis.query';
 import { ComparisonErrorAnalysis } from './test-management/comparisonAnalysis/comparisonErrorAnalysis.query';
+import { ComparisonRankAnalysis } from './test-management/comparisonAnalysis/comparisonRankAnalysis.query';
 
 
 const schema = new Schema({
@@ -117,6 +118,7 @@ const schema = new Schema({
       StudentAverageMarks,
       ComparisonTopicAnalysis,
       ComparisonErrorAnalysis,
+      ComparisonRankAnalysis,
     },
   }),
   mutation: new ObjectType({
