@@ -7,6 +7,8 @@
 import {
   GraphQLObjectType as ObjectType,
   GraphQLString as StringType,
+  GraphQLBoolean as BooleanType,
+
   // GraphQLNonNull as NonNull,
   // GraphQLInt as IntType,
 } from 'graphql';
@@ -27,6 +29,7 @@ const StudentType = new ObjectType({
     dob: { type: StringType },
     category: { type: StringType },
     hierarchy: { type: GraphQLJSON },
+    userCreated: { type: BooleanType },
   },
 });
 
