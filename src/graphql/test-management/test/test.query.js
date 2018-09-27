@@ -87,10 +87,14 @@ export const GetUniqueTestDetails = {
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
-	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     }, context)
-      .then(response => response.json())
-      .then(json => json)
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
       .catch(err => new Error(err.message));
   },
 };
@@ -107,8 +111,7 @@ export const Tests = {
   },
   type: TestsDetailsType,
   async resolve(obj, args, context) {
-    if (args.regex !== undefined)
-      {args.regex = args.regex.replace(/\s\s+/g, ' ').trim();} //eslint-disable-line
+    if (args.regex !== undefined) { args.regex = args.regex.replace(/\s\s+/g, ' ').trim(); } //eslint-disable-line
     if (args.regex === '' || args.regex === ' ') {
       args.regex = undefined; // eslint-disable-line
     }
@@ -120,36 +123,42 @@ export const Tests = {
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
-	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     }, context)
-      .then(response => response.json())
-      .then((json) => {
-        const data = {};
-        data.page = json.tests;
-        const pageInfo = {};
-        pageInfo.prevPage = true;
-        pageInfo.nextPage = true;
-        pageInfo.pageNumber = args.pageNumber;
-        pageInfo.totalPages = Math.ceil(json.count / args.limit)
-          ? Math.ceil(json.count / args.limit)
-          : 1;
-        pageInfo.totalEntries = json.count;
+      .then((response) => {
+        console.info(response.status, response.statusText);
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json()
+          .then((json) => {
+            const data = {};
+            data.page = json.tests;
+            const pageInfo = {};
+            pageInfo.prevPage = true;
+            pageInfo.nextPage = true;
+            pageInfo.pageNumber = args.pageNumber;
+            pageInfo.totalPages = Math.ceil(json.count / args.limit)
+              ? Math.ceil(json.count / args.limit)
+              : 1;
+            pageInfo.totalEntries = json.count;
 
-        if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
-          return new Error('Page Number is invalid');
-        }
+            if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+              return new Error('Page Number is invalid');
+            }
 
-        if (args.pageNumber === pageInfo.totalPages) {
-          pageInfo.nextPage = false;
-        }
-        if (args.pageNumber === 1) {
-          pageInfo.prevPage = false;
-        }
-        if (pageInfo.totalEntries === 0) {
-          pageInfo.totalPages = 0;
-        }
-        data.pageInfo = pageInfo;
-        return data;
+            if (args.pageNumber === pageInfo.totalPages) {
+              pageInfo.nextPage = false;
+            }
+            if (args.pageNumber === 1) {
+              pageInfo.prevPage = false;
+            }
+            if (pageInfo.totalEntries === 0) {
+              pageInfo.totalPages = 0;
+            }
+            data.pageInfo = pageInfo;
+            return data;
+          });
       })
       .catch(err => new Error(err.message));
   },
@@ -162,9 +171,13 @@ export const QuestionTypes = {
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
-	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     }, context)
-      .then(response => response.json())
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        } return response.json();
+      })
       .catch(err => new Error(err.message));
   },
 };
@@ -187,7 +200,7 @@ export const FileStatus = {
         }
         return response.json();
       })
-      .then(json => json);
+      .catch(err => new Error(err.message));
   },
 };
 export const DefaultMarkingSchemas = {
@@ -200,9 +213,14 @@ export const DefaultMarkingSchemas = {
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
-	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     }, context)
-      .then(response => response.json())
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
       .catch(err => new Error(err.message));
   },
 };
@@ -226,9 +244,13 @@ export const TestHierarchyNodes = {
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
-	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     }, context)
-      .then(response => response.json())
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        } return response.json();
+      })
       .catch(err => new Error(err.message));
   },
 };
@@ -244,7 +266,7 @@ export const moveTest = {
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args),
-	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     }, context)
       .then((response) => {
         if (response.status >= 400) {
@@ -268,12 +290,17 @@ export const DownloadSampleQmap = {
       body: JSON.stringify(args),
       headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     }, context)
-      .then(response => response.json())
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
       .catch(err => new Error(err.message));
   },
 };
 
-export default{
+export default {
   Tests,
   QuestionTypes,
   FileStatus,

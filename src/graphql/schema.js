@@ -46,7 +46,7 @@ import { createGradeSystem, createGradePattern, removeGradePattern, removeGradeS
 import { uploadResult, uploadResultV2, updateUploadedResultV2, updateUploadedResult, comfirmMissingV2, comfirmMissing, deleteResultV2, deleteResult } from './test-management/result-upload/result-upload.mutation';
 import { ResultsV2, Results, ResultsSampleDownload } from './test-management/result-upload/result-upload.query';
 
-import { LeaderBoardPaginated, GenerateAnalysis, GenerateAnalysisv2, CommonAnalysis, MarksDistributionAnalysis, MarksDistributionAnalysisV2, MarksDistributionAnalysisV3, QuestionErrorAnalysis, StudentPerformanceTrendAnalysis, CommonAnalysisPaginated, StudentPerformanceTrendAnalysisPaginated, StudentAverageTrendAnalysisPaginated, MarkAnalysisGraphData, MarkAnalysisGraphDataV2 } from './test-management/ga/ga.query';
+import { LeaderBoardPaginated, GenerateAnalysis, GenerateAnalysisv2, CommonAnalysis, StudentCommonAnalysis, MarksDistributionAnalysis, MarksDistributionAnalysisV2, MarksDistributionAnalysisV3, QuestionErrorAnalysis, StudentPerformanceTrendAnalysis, CommonAnalysisPaginated, StudentPerformanceTrendAnalysisPaginated, StudentAverageTrendAnalysisPaginated, MarkAnalysisGraphData, MarkAnalysisGraphDataV2 } from './test-management/ga/ga.query';
 import { createTestPatternSchema, updateTestPatternSchema, removeTestPatternSchema } from './test-management/testPattern/testPattern.mutation';
 import { TestPatternSchema } from './test-management/testPattern/testPattern.query';
 import { ConceptAnalysis } from './test-management/conceptAnalysis/conceptAnalysis.query';
@@ -84,6 +84,7 @@ const schema = new Schema({
       GenerateAnalysis,
       GenerateAnalysisv2,
       CommonAnalysis,
+      StudentCommonAnalysis,
       QuestionErrorAnalysis,
       StudentPerformanceTrendAnalysis,
       StudentPerformanceTrendAnalysisPaginated,
