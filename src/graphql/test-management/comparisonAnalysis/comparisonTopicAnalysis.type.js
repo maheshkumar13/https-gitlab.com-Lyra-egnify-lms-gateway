@@ -17,6 +17,9 @@ const FilterNameEnumType = new EnumType({ // eslint-disable-line
     avgMarks: {
       value: 'avgMarks',
     },
+    errorPercentage: {
+      value: 'errorPercentage',
+    },
   },
 });
 
@@ -37,6 +40,7 @@ export const ComparisonTopicAnalysisInputType = new InputObjectType({
     testIds: { type: new List(new NonNull(StringType)), description: 'testIds' },
     hierarchies: { type: new List(ComparisonTopicAnalysisHierarchyInputType), description: 'Input type for hierarchies in comaprison analysis' },
     viewLevel: { type: new NonNull(IntType), description: 'Level number of the hierarchy nodes to display daata' },
+    filterName: { type: FilterNameEnumType, description: 'filterName' },
   },
 });
 
