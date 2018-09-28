@@ -41,6 +41,20 @@ import { SortType } from '../question/question.type';
 //   },
 // };
 
+function handleCAFetch(url, args, context) {
+  return fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(args),
+    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+  }, context)
+    .then((response) => {
+      if (response.status >= 400) {
+        throw new Error(response.statusText);
+      }
+      return response.json();
+    })
+    .catch(err => new Error(err.message));
+}
 
 const pageInfoType = new ObjectType({
   name: 'CommonAnalysisPageInfo',
@@ -102,43 +116,20 @@ export const CommonAnalysis = {
   type: new List(CommonAnalysisType),
   async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/masterResult/read/withMultipleTestIds`;
-    return fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(args),
-	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    }, context)
-      .then((response) => {
-        if (response.status >= 400) {
-          throw new Error(response.statusText);
-        }
-        return response.json();
-      })
-      .catch(err => new Error(err.message));
+    return handleCAFetch(url, args, context);
   },
 };
 
-export const StudentCommonAnalysis = {
+export const CommonAnalysisForStudentProfile = {
   args: {
     testIds: { type: new List(StringType) },
-    studentId: { type: StringType },
     filter: { type: new List(FilterInputType) },
-
   },
   type: new List(CommonAnalysisType),
   async resolve(obj, args, context) {
+    args.studentId = context.user.username;
     const url = `${config.services.test}/api/v1/masterResult/student/read/withMultipleTestIds`;
-    return fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(args),
-	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    }, context)
-      .then((response) => {
-        if (response.status >= 400) {
-          throw new Error(response.statusText);
-        }
-        return response.json();
-      })
-      .catch(err => new Error(err.message));
+    return handleCAFetch(url, args, context);
   },
 };
 
@@ -673,7 +664,7 @@ export const GenerateAnalysisv2 = {
 export default {
   CommonAnalysis,
   CommonAnalysisPaginated,
-  StudentCommonAnalysis,
+  CommonAnalysisForStudentProfile,
   QuestionErrorAnalysis,
   GenerateAnalysis,
   MarkAnalysisGraphData,
