@@ -16,6 +16,7 @@ import TestPattern from './settings/testPattern/testPattern.query';
 import {
   GetUniqueTestDetails,
   Tests,
+  TestsForStudentProfile,
   moveTest,
   QuestionTypes,
   DefaultMarkingSchemas,
@@ -74,6 +75,7 @@ const schema = new Schema({
       conceptTaxonomy,
       ConceptTaxonomyTree,
       Tests,
+      TestsForStudentProfile,
       QuestionTypes,
       LevelFilters,
       StudentUniqueValues,

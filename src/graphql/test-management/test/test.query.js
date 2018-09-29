@@ -12,51 +12,77 @@ import {
   GraphQLObjectType as ObjectType,
   GraphQLBoolean as BooleanType,
   GraphQLEnumType,
+  validate,
 } from 'graphql';
 
 import GraphQLJSON from 'graphql-type-json';
 import { config } from '../../../config/environment';
 import fetch from '../../../utils/fetch';
 
-import { UniqueTestDetailsType, TestType, MoveTestType, TestHierarchyNodesType, FileStatusType } from './test.type';
+import {
+  UniqueTestDetailsType,
+  MoveTestType,
+  TestHierarchyNodesType,
+  FileStatusType,
+  StudentTestsDetailsType,
+  TestsDetailsType,
+} from './test.type';
 
+function fetchTest(url, args, context) {
+  return fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(args),
+    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+  }, context)
+    .then((response) => {
+      if (response.status >= 400) {
+        return new Error(response.statusText);
+      }
+      return response.json()
+        .then((json) => {
+          const data = {};
+          data.page = json.tests;
+          const pageInfo = {};
+          pageInfo.prevPage = true;
+          pageInfo.nextPage = true;
+          pageInfo.pageNumber = args.pageNumber;
+          pageInfo.totalPages = Math.ceil(json.count / args.limit)
+            ? Math.ceil(json.count / args.limit)
+            : 1;
+          pageInfo.totalEntries = json.count;
 
-const pageInfoType = new ObjectType({
-  name: 'TestPageInfo',
-  fields() {
-    return {
-      pageNumber: {
-        type: IntType,
-      },
-      nextPage: {
-        type: BooleanType,
-      },
-      prevPage: {
-        type: BooleanType,
-      },
-      totalPages: {
-        type: IntType,
-      },
-      totalEntries: {
-        type: IntType,
-      },
-    };
-  },
-});
+          if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+            return new Error('Page Number is invalid');
+          }
 
-const TestsDetailsType = new ObjectType({
-  name: 'TestsDetailsType',
-  fields() {
-    return {
-      page: {
-        type: new List(TestType),
-      },
-      pageInfo: {
-        type: pageInfoType,
-      },
-    };
-  },
-});
+          if (args.pageNumber === pageInfo.totalPages) {
+            pageInfo.nextPage = false;
+          }
+          if (args.pageNumber === 1) {
+            pageInfo.prevPage = false;
+          }
+          if (pageInfo.totalEntries === 0) {
+            pageInfo.totalPages = 0;
+          }
+          data.pageInfo = pageInfo;
+          return data;
+        });
+    })
+    .catch(err => new Error(err.message));
+}
+
+function modifyTestArgs(args) {
+  if (args.regex !== undefined) { args.regex = args.regex.replace(/\s\s+/g, ' ').trim(); } //eslint-disable-line
+  if (args.regex === '' || args.regex === ' ') {
+    args.regex = undefined; // eslint-disable-line
+  }
+  if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line 
+  if (args.pageNumber < 1) {
+    return { err: 'Page Number must be positive' };
+  }
+  return args;
+}
+
 const StatusEnumType = new GraphQLEnumType({
   name: 'StatusEnumType',
   values: {
@@ -98,6 +124,27 @@ export const GetUniqueTestDetails = {
       .catch(err => new Error(err.message));
   },
 };
+
+export const TestsForStudentProfile = {
+  args: {
+    testId: { type: StringType },
+    academicYear: { type: new List(StringType) },
+    testType: { type: new List(StringType) },
+    date: { type: new List(StringType) },
+    regex: { type: StringType },
+    status: { type: StatusEnumType },
+    pageNumber: { type: IntType },
+    limit: { type: IntType },
+  },
+  type: StudentTestsDetailsType,
+  async resolve(obj, args, context) {
+    const modifiedArgs = await modifyTestArgs(args);
+    if (modifiedArgs.err) return new Error(modifiedArgs.err);
+    const url = `${config.services.test}/api/v1/test/student`;
+    return fetchTest(url, modifiedArgs, context);
+  },
+};
+
 export const Tests = {
   args: {
     testId: { type: StringType },
@@ -111,56 +158,10 @@ export const Tests = {
   },
   type: TestsDetailsType,
   async resolve(obj, args, context) {
-    if (args.regex !== undefined) { args.regex = args.regex.replace(/\s\s+/g, ' ').trim(); } //eslint-disable-line
-    if (args.regex === '' || args.regex === ' ') {
-      args.regex = undefined; // eslint-disable-line
-    }
-    if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
-    if (args.pageNumber < 1) {
-      return new Error('Page Number must be positive');
-    }
+    const modifiedArgs = await modifyTestArgs(args);
+    if (modifiedArgs.err) return new Error(modifiedArgs.err);
     const url = `${config.services.test}/api/v1/test`;
-    return fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(args),
-      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    }, context)
-      .then((response) => {
-        console.info(response.status, response.statusText);
-        if (response.status >= 400) {
-          return new Error(response.statusText);
-        }
-        return response.json()
-          .then((json) => {
-            const data = {};
-            data.page = json.tests;
-            const pageInfo = {};
-            pageInfo.prevPage = true;
-            pageInfo.nextPage = true;
-            pageInfo.pageNumber = args.pageNumber;
-            pageInfo.totalPages = Math.ceil(json.count / args.limit)
-              ? Math.ceil(json.count / args.limit)
-              : 1;
-            pageInfo.totalEntries = json.count;
-
-            if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
-              return new Error('Page Number is invalid');
-            }
-
-            if (args.pageNumber === pageInfo.totalPages) {
-              pageInfo.nextPage = false;
-            }
-            if (args.pageNumber === 1) {
-              pageInfo.prevPage = false;
-            }
-            if (pageInfo.totalEntries === 0) {
-              pageInfo.totalPages = 0;
-            }
-            data.pageInfo = pageInfo;
-            return data;
-          });
-      })
-      .catch(err => new Error(err.message));
+    return fetchTest(url, modifiedArgs, context);
   },
 };
 
@@ -302,9 +303,9 @@ export const DownloadSampleQmap = {
 
 export default {
   Tests,
+  TestsForStudentProfile,
   QuestionTypes,
   FileStatus,
-
   DefaultMarkingSchemas,
   TestHierarchyNodes,
   moveTest,
