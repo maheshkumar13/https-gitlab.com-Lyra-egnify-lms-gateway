@@ -104,32 +104,32 @@ export const Students = {
           return new Error(response.statusText);
         }
         return response.json().then((json) => {
-            const data = {};
-            data.page = json.students;
+          const data = {};
+          data.page = json.students;
 
-            data.hierarchy = json.hierarchy;
+          data.hierarchy = json.hierarchy;
 
-            const pageInfo = {};
-            pageInfo.prevPage = true;
-            pageInfo.nextPage = true;
-            pageInfo.pageNumber = args.pageNumber;
-            pageInfo.totalPages = Math.ceil(json.count / args.limit)
-              ? Math.ceil(json.count / args.limit)
-              : 1;
-            pageInfo.totalEntries = json.count;
+          const pageInfo = {};
+          pageInfo.prevPage = true;
+          pageInfo.nextPage = true;
+          pageInfo.pageNumber = args.pageNumber;
+          pageInfo.totalPages = Math.ceil(json.count / args.limit)
+            ? Math.ceil(json.count / args.limit)
+            : 1;
+          pageInfo.totalEntries = json.count;
 
-            if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
-              return new Error('Page Number is invalid');
-            }
+          if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+            return new Error('Page Number is invalid');
+          }
 
-            if (args.pageNumber === pageInfo.totalPages) {
-              pageInfo.nextPage = false;
-            }
-            if (args.pageNumber === 1) {
-              pageInfo.prevPage = false;
-            }
-            data.pageInfo = pageInfo;
-            return data;
+          if (args.pageNumber === pageInfo.totalPages) {
+            pageInfo.nextPage = false;
+          }
+          if (args.pageNumber === 1) {
+            pageInfo.prevPage = false;
+          }
+          data.pageInfo = pageInfo;
+          return data;
         });
       })
       .catch((err) => {
@@ -199,7 +199,6 @@ export const StudentsByLastNode = {
         }
         return response.json();
       })
-      .then(json => json)
       .catch(err =>
         new Error(err.message));
   },
