@@ -34,8 +34,7 @@ export const createTestPatternSchema = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 };
 
@@ -56,8 +55,7 @@ export const removeTestPatternSchema = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 };
 
@@ -78,8 +76,7 @@ export const updateTestPatternSchema = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 };
 

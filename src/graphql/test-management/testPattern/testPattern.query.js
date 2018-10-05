@@ -34,8 +34,7 @@ export const TestPatternSchema = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 };
 

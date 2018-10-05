@@ -75,8 +75,7 @@ export const allStudentConceptAnalysis = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 };
 
@@ -100,8 +99,7 @@ export const LevelWiseTestWiseConceptAnalysis = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 };
 
