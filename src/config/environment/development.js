@@ -5,7 +5,7 @@
 module.exports = {
   // MongoDB connection options
   mongo: {
-    uri: 'mongodb://localhost/tenantregistry-sso-qa',
+    uri: 'mongodb://localhost/tenantregistry-sso',
   },
   // Seed database on startup
   seedDB: true,
