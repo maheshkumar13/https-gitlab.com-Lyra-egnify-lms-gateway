@@ -31,7 +31,6 @@ export const GetAcademicYear = {
         }
         return response.json();
       })
-      .then(json => json)
       .catch((err) => {
         console.error(err);
         return err.json();

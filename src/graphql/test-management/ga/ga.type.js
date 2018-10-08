@@ -70,7 +70,7 @@ const AverageMarkAnalysisDataType = new ObjectType({
 });
 
 
-const MarkAnalysisType = new ObjectType({
+export const MarkAnalysisType = new ObjectType({
   name: 'MarkAnalysisType',
   description: 'Mark Analysis',
   fields: {

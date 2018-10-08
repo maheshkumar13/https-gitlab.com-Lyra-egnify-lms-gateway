@@ -19,10 +19,11 @@ const Institute = {
   async resolve(obj, args, context) {
     const url = `${config.services.settings}/api/institute/getInstituteDetails`;
     return fetch(url, { method: 'POST' }, context)
-      .then(response => response.json())
-      .then((json) => {
-      
-        return json;
+      .then(async (response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
       })
       .catch((err) => {
         console.error(err);
