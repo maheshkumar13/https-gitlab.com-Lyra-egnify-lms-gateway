@@ -13,23 +13,46 @@ import {
   GraphQLList as List,
   GraphQLFloat as FloatType,
   GraphQLInputObjectType as InputObjectType,
+  GraphQLEnumType as EnumType,
 } from 'graphql';
 // import GraphQLJSON from 'graphql-type-json';
+
+const QuestionEnumType = new EnumType({
+  name: 'QuestionEnumType',
+  values: {
+    single_answer_type: {
+      value: 'Single Answer Type',
+    },
+    multiple_answer_type: {
+      value: 'Multiple Answer',
+    },
+    integer_type: {
+      value: 'Integer Type',
+    },
+    matrix_match: {
+      value: 'Matrix match',
+    },
+    paragraph_type: {
+      value: 'Paragraph Type',
+    },
+  },
+});
 
 
 const InputSubjectMarksType = new InputObjectType({
   name: 'InputSubjectMarksType',
   description: 'Section wise marks in subject',
   fields: {
-    questionType: { type: new NonNull(StringType), description: 'Type of question' },
+    questionType: { type: new NonNull(QuestionEnumType), description: 'Type of question' },
     numberOfQuestions: { type: new NonNull(IntType), description: 'Number of question in this section' },
-    numberOfSubQuestions: { type: IntType, description: 'Number of sub questions in this question' },
-    C: { type: new NonNull(StringType), description: 'Marks for each correct answered question in this question' },
-    W: { type: new NonNull(StringType), description: 'Marks for each wrong answered question in this question' },
-    U: { type: new NonNull(StringType), description: 'Marks for each Unattempted question' },
-    P: { type: StringType, description: 'Partial Marks' },
-    ADD: { type: StringType, description: 'Additional marks if any' },
+    numberOfSubQuestions: { type: new NonNull(IntType), description: 'Number of sub questions in this question' },
+    C: { type: new NonNull(IntType), description: 'Marks for each correct answered question in this question' },
+    W: { type: new NonNull(IntType), description: 'Marks for each wrong answered question in this question' },
+    U: { type: new NonNull(IntType), description: 'Marks for each Unattempted question' },
+    P: { type: IntType, description: 'Partial Marks' },
+    ADD: { type: IntType, description: 'Additional marks if any' },
     totalMarks: { type: new NonNull(IntType), description: 'Total marks in this section' },
+    marksPerQuestion: { type: new NonNull(IntType), description: 'Marks per question' },
   },
 });
 
@@ -69,15 +92,16 @@ const SubjectMarksType = new ObjectType({
     questionType: { type: StringType, description: 'Type of question' },
     numberOfQuestions: { type: IntType, description: 'Number of question in this section' },
     numberOfSubQuestions: { type: IntType, description: 'Number of sub questions in this question' },
-    C: { type: StringType, description: 'Marks for each correct answered question in this question' },
-    W: { type: StringType, description: 'Marks for each wrong answered question in this question' },
-    U: { type: StringType, description: 'Marks for each Unattempted question' },
-    P: { type: StringType, description: 'Partial Marks' },
-    ADD: { type: StringType, description: 'Additional marks if any' },
+    C: { type: FloatType, description: 'Marks for each correct answered question in this question' },
+    W: { type: FloatType, description: 'Marks for each wrong answered question in this question' },
+    U: { type: FloatType, description: 'Marks for each Unattempted question' },
+    P: { type: FloatType, description: 'Partial Marks' },
+    ADD: { type: FloatType, description: 'Additional marks if any' },
     totalMarks: { type: IntType, description: 'Total marks in this section' },
     start: { type: IntType, description: 'Starting question number' },
     end: { type: IntType, description: 'Ending question number' },
     section: { type: IntType, description: 'Current section' },
+    marksPerQuestion: { type: IntType, description: 'Marks per question' },
   },
 });
 
@@ -103,6 +127,7 @@ export const TestPatternSchemaType = new ObjectType({
   name: 'TestPatternSchemaType',
   description: 'Marks distribution subjects and questions wise',
   fields: {
+    default: { type: BooleanType, description: 'Default or not' },
     testType: { type: StringType, description: 'Type of marking schema based on test pattern selected' },
     testName: { type: StringType, description: 'Name of marking schema based on test pattern selected' },
     totalQuestions: { type: IntType, description: 'Total number of questions in the test' },

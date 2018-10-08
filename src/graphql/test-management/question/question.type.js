@@ -22,7 +22,7 @@ import GraphQLJSON from 'graphql-type-json';
 import { TestType } from '../test/test.type';
 
 
-const DifficultyEnumType = new EnumType({
+export const DifficultyEnumType = new EnumType({
   name: 'DifficultyEnumType',
   values: {
     Easy: {
@@ -43,6 +43,9 @@ const DifficultyEnumType = new EnumType({
 const ResponseEnumType = new EnumType({
   name: 'ResponseEnumType',
   values: {
+    P: {
+      value: 'P',
+    },
     C: {
       value: 'C',
     },
@@ -108,6 +111,9 @@ const FieldnameEnumType = new EnumType({
     MARK_OVERALL: {
       value: 'filter.markAnalysis.overall.obtainedMarks',
     },
+    ERROR_OVERALL: {
+      value: 'filter.cwuAnalysis.overall.W',
+    },
   },
 });
 const SortingOrderEnumType = new EnumType({
@@ -153,7 +159,7 @@ export const QuestionDetailsInputType = new InputObjectType({
 });
 
 
-const pageInfoType = new ObjectType({
+export const pageInfoType = new ObjectType({
   name: 'TestPageInfomation',
   fields() {
     return {
@@ -336,4 +342,6 @@ export default{
   QuestionDetailsType,
   GetQuestionsInputType,
   GetQuestionsType,
+  DifficultyEnumType,
+  pageInfoType,
 };

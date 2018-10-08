@@ -19,7 +19,7 @@ function localAuthenticate(req, User, email, password, done) {
           code: 'AU01',
         });
       }
-      // console.info('user', user.hostname, req.body.hostname);
+      console.info('user', user.hostname, req.body.hostname);
       if (user.hostname !== req.body.hostname) {
         // console.info('not matching', user.hostname);
 

@@ -16,6 +16,7 @@ import TestPattern from './settings/testPattern/testPattern.query';
 import {
   GetUniqueTestDetails,
   Tests,
+  TestsForStudentProfile,
   moveTest,
   QuestionTypes,
   DefaultMarkingSchemas,
@@ -25,12 +26,13 @@ import {
 } from './test-management/test/test.query';
 import { removeTest, createDummyTest, createDuplicateTest, createTest, updateTest, QmapFileUpload } from './test-management/test/test.mutation';
 import { QuestionDetails, QuestionMappingDetails, GetQuestions } from './test-management/question/question.query';
+import { QuestionMappings, QuestionMappingsForStudentProfile } from './test-management/questionMapping/questionMapping.query';
 import { Curriculum } from './settings/curriculum/curriculum.query';
 import { SubjectList, SubjectTaxonomy } from './settings/subject/subjectTaxonomy.query';
 import { removeSubjectTaxonomy, updateSubjectTaxonomy, createSubjects } from './settings/subject/subjectTaxonomy.mutation';
 import { createCurriculum } from './settings/curriculum/curriculum.mutation';
 import { Students, downloadStudentSample, StudentUniqueValues, StudentsByLastNode } from './settings/student/student.query';
-import { createStudent, createManyStudents } from './settings/student/student.mutation';
+import { createStudent, createManyStudents, deleteStudent, editStudent, studentBulkMovement } from './settings/student/student.mutation';
 import { createTestPattern, updateTestPattern, removeTestPattern } from './settings/testPattern/testPattern.mutation';
 import { InstituteHierarchy, InstituteHierarchySample } from './settings/instituteHierarchy/instituteHierarchy.query';
 import { InstituteHierarchyGrid, LevelFilters } from './settings/instituteHierarchy/instituteHierarchyGrid.query';
@@ -45,12 +47,15 @@ import { createGradeSystem, createGradePattern, removeGradePattern, removeGradeS
 import { uploadResult, uploadResultV2, updateUploadedResultV2, updateUploadedResult, comfirmMissingV2, comfirmMissing, deleteResultV2, deleteResult } from './test-management/result-upload/result-upload.mutation';
 import { ResultsV2, Results, ResultsSampleDownload } from './test-management/result-upload/result-upload.query';
 
-import { GenerateAnalysis, GenerateAnalysisv2, CommonAnalysis, MarksDistributionAnalysis, MarksDistributionAnalysisV2, QuestionErrorAnalysis, StudentPerformanceTrendAnalysis, CommonAnalysisPaginated, StudentPerformanceTrendAnalysisPaginated, MarkAnalysisGraphData, MarkAnalysisGraphDataV2 } from './test-management/ga/ga.query';
+import { StudentAverageMarks, LeaderBoardPaginated, GenerateAnalysis, GenerateAnalysisv2, CommonAnalysis, MarksDistributionAnalysis, MarksDistributionAnalysisV2, MarksDistributionAnalysisV3, QuestionErrorAnalysis, StudentPerformanceTrendAnalysis, CommonAnalysisPaginated, StudentPerformanceTrendAnalysisPaginated, StudentAverageTrendAnalysisPaginated, MarkAnalysisGraphData, MarkAnalysisGraphDataV2, CommonAnalysisForStudentProfile } from './test-management/ga/ga.query';
 import { createTestPatternSchema, updateTestPatternSchema, removeTestPatternSchema } from './test-management/testPattern/testPattern.mutation';
 import { TestPatternSchema } from './test-management/testPattern/testPattern.query';
 import { ConceptAnalysis } from './test-management/conceptAnalysis/conceptAnalysis.query';
-import { StudentConceptAnalysis } from './test-management/Analysis/studentConceptAnalysis.query';
 import { QuestionPaperMetrics } from './test-management/questionPaper/questionPaper.query';
+import { StudentOverallAverageMarks, StudentOverallCWU } from './test-management/Analysis/studentOverallAnalysis.query';
+import { StudentConceptAnalysis, allStudentConceptAnalysis, LevelWiseTestWiseConceptAnalysis, StudentConceptAnalysisForStudentProfile } from './test-management/Analysis/studentConceptAnalysis.query';
+import { ComparisonAnalysis } from './test-management/comparisonAnalysis/comparisonAnalysis.query';
+import { ComparisonTopicAnalysis } from './test-management/comparisonAnalysis/comparisonTopicAnalysis.query';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -74,6 +79,7 @@ const schema = new Schema({
       conceptTaxonomy,
       ConceptTaxonomyTree,
       Tests,
+      TestsForStudentProfile,
       QuestionTypes,
       LevelFilters,
       StudentUniqueValues,
@@ -84,17 +90,21 @@ const schema = new Schema({
       GenerateAnalysis,
       GenerateAnalysisv2,
       CommonAnalysis,
+      CommonAnalysisForStudentProfile,
       QuestionErrorAnalysis,
       StudentPerformanceTrendAnalysis,
       StudentPerformanceTrendAnalysisPaginated,
       MarksDistributionAnalysis,
       MarksDistributionAnalysisV2,
+      MarksDistributionAnalysisV3,
       moveTest,
       DownloadSampleQmap,
       QuestionDetails,
       TestPatternSchema,
       ConceptAnalysis,
       StudentConceptAnalysis,
+      StudentConceptAnalysisForStudentProfile,
+      allStudentConceptAnalysis,
       CommonAnalysisPaginated,
       MarkAnalysisGraphData,
       QuestionPaperMetrics,
@@ -103,14 +113,26 @@ const schema = new Schema({
       MarkAnalysisGraphDataV2,
       GetAcademicYear,
       GetUniqueTestDetails,
-
+      LeaderBoardPaginated,
+      QuestionMappings,
+      QuestionMappingsForStudentProfile,
+      StudentAverageTrendAnalysisPaginated,
+      StudentOverallAverageMarks,
+      StudentOverallCWU,
+      LevelWiseTestWiseConceptAnalysis,
+      ComparisonAnalysis,
+      StudentAverageMarks,
+      ComparisonTopicAnalysis,
     },
   }),
   mutation: new ObjectType({
     name: 'Mutation',
     fields: {
       createStudent,
+      deleteStudent,
+      editStudent,
       createManyStudents,
+      studentBulkMovement,
       createTestPattern,
       updateTestPattern,
       removeTestPattern,

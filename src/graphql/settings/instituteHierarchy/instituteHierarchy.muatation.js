@@ -67,10 +67,6 @@ export const CreateInstituteHierarchyNode = {
         }
         return response.json();
       })
-      .then((json) => {
-      
-        return json;
-      })
       .catch((err) => {
         console.error(err);
       });
@@ -101,8 +97,7 @@ export const createInstituteHierarchyNodesFromCSV = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 };
 
@@ -144,8 +139,7 @@ export const UpdateInstituteHierarchyNode = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 };
 

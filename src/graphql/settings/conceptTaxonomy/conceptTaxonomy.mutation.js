@@ -29,7 +29,6 @@ export const saveTaxonomy = {
   type: GraphQLJSON,
   async resolve(obj, args, context) {
     const body = args.input;
-    
 
     if (body.subjectDetails) {
       body.subjectDetails = JSON.stringify(body.subjectDetails);
@@ -54,8 +53,7 @@ export const saveTaxonomy = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 };
 

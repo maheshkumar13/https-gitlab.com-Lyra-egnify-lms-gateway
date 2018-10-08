@@ -1,36 +1,33 @@
-/**
-@author Aslam Shaik
-@data    22/05/2018
-@version 1.0.0
-*/
-
 import {
   // GraphQLObjectType as ObjectType,
   GraphQLString as StringType,
   GraphQLNonNull as NonNull,
   // GraphQLBoolean as BooleanType,
-  // GraphQLInt as IntType,
-  GraphQLList as List,
+  GraphQLInt as IntType,
+  // GraphQLList as List,
   // GraphQLFloat as FloatType,
   // GraphQLInputObjectType as InputObjectType,
 } from 'graphql';
-// import GraphQLJSON from 'graphql-type-json';
+
+import GraphQLJSON from 'graphql-type-json';
 import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
 
-import { ConceptAnalysisType } from './conceptAnalysis.type';
+import { ComparisonAnalysisInputType } from './comparisonAnalysis.type';
 
-export const ConceptAnalysis = {
+export const ComparisonAnalysis = {
   args: {
-    testId: { type: new NonNull(StringType) },
-    nodes: { type: new List(StringType) },
+    input: {
+      type: new NonNull(ComparisonAnalysisInputType),
+      description: 'Inputs for comparison analysis',
+    },
   },
-  type: ConceptAnalysisType,
+  type: GraphQLJSON,
   async resolve(obj, args, context) {
-    const url = `${config.services.test}/api/v1/conceptAnalysis/read`;
+    const url = `${config.services.test}/api/v1/comparisonAnalysis/marks`;
     return fetch(url, {
       method: 'POST',
-      body: JSON.stringify(args),
+      body: JSON.stringify(args.input),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     }, context)
       .then((response) => {
@@ -42,7 +39,6 @@ export const ConceptAnalysis = {
   },
 };
 
-
-export default{
-  ConceptAnalysis,
+export default {
+  ComparisonAnalysis,
 };

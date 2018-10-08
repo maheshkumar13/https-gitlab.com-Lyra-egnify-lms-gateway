@@ -9,7 +9,10 @@ import {
   GraphQLNonNull as NonNull,
   // GraphQLInt as IntType,
   GraphQLString as StringType,
+  GraphQLObjectType as ObjectType,
   GraphQLEnumType,
+  GraphQLInputObjectType as InputObjectType,
+
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import fetch from '../../../utils/fetch';
@@ -29,6 +32,30 @@ const GenderEnumType = new GraphQLEnumType({ // eslint-disable-line
     },
   },
 });
+const StatusType = new ObjectType({
+  name: 'StatusType',
+  fields: {
+    status: { type: StringType, description: 'SUCCESS OR FAILED' },
+    message: { type: StringType },
+    failed: { type: GraphQLJSON },
+  },
+});
+const StudentInputType = new InputObjectType({
+  name: 'StudentInputType',
+  fields: {
+    egnifyId: { type: StringType },
+    studentId: { type: StringType },
+    studentName: { type: StringType },
+    fatherName: { type: StringType },
+    phone: { type: StringType },
+    email: { type: StringType },
+    gender: { type: StringType },
+    dob: { type: StringType },
+    category: { type: StringType },
+    hierarchy: { type: GraphQLJSON },
+  },
+});
+
 
 export const createStudent = {
   args: {
@@ -60,9 +87,6 @@ export const createStudent = {
         }
         return response.json();
       })
-      .then(json =>
-
-        json)
       .catch((err) => {
         console.error(err);
         return err.json();
@@ -92,8 +116,6 @@ export const createManyStudents = {
         }
         return response.json();
       })
-      .then(json =>
-        json)
       .catch((err) => {
         console.error(err);
         return err.json();
@@ -105,8 +127,104 @@ export const createManyStudents = {
   description: 'This will take csv file url as input and populate the students',
 };
 
+export const deleteStudent = {
+  args: {
+    studentIds: { type: new NonNull(List(StringType)) },
+  },
+  type: (StatusType),
+  async resolve(obj, args, context) {
+    args.hierarchy = JSON.stringify(args.hierarchy);//eslint-disable-line
+    const url = `${config.services.settings}/api/student/delete/student`;
+    return fetch(
+      url, {
+        method: 'POST',
+        body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+      },
+      context,
+    )
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .catch((err) => {
+        console.error(err);
+        return err.json();
+      })
+      .catch((errjson) => { //eslint-disable-line
+        // console.log(errjson);
+      });
+  },
+};
+
+export const editStudent = {
+  args: {
+    studentId: { type: new NonNull(StringType) },
+    studentDataUpdate: { type: StudentInputType },
+  },
+  type: StudentType,
+  async resolve(obj, args, context) {
+    args.hierarchy = JSON.stringify(args.hierarchy);//eslint-disable-line
+    const url = `${config.services.settings}/api/student/edit/student`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .catch((err) => {
+        console.error(err);
+        return err.json();
+      })
+      .catch((errjson) => { //eslint-disable-line
+        // console.log(errjson);
+      });
+  },
+  description: 'This will edit student details',
+};
+
+export const studentBulkMovement = {
+  args: {
+    studentIds: { type: new NonNull(List(StringType)) },
+    moveToHierarchy: { type: GraphQLJSON },
+  },
+  type: (StatusType),
+  async resolve(obj, args, context) {
+    args.hierarchy = JSON.stringify(args.hierarchy);//eslint-disable-line
+    const url = `${config.services.settings}/api/student/edit/bulkMovement`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .catch((err) => {
+        console.error(err);
+        return err.json();
+      })
+      .catch((errjson) => { //eslint-disable-line
+        // console.log(errjson);
+      });
+  },
+  description: 'This will bulk move students from one hierarcy to other',
+};
 
 export default{
   createStudent,
   createManyStudents,
+  deleteStudent,
+  editStudent,
+  studentBulkMovement,
 };

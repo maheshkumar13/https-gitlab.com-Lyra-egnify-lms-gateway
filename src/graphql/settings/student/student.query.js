@@ -74,10 +74,10 @@ export const Students = {
     regex: { type: StringType },
     childCode: { type: StringType },
     filters: { type: GraphQLJSON },
+    studentIdAndNameOnly: { type: BooleanType },
   },
   type: studentDetailsType,
   async resolve(obj, args, context) {
-
     if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
     // if (!args.limit) args.limit = 100; // eslint-disable-line
     if (args.pageNumber < 1) {
@@ -103,38 +103,38 @@ export const Students = {
         if (response.status >= 400) {
           return new Error(response.statusText);
         }
-        return response.json();
-      })
-      .then((json) => {
-        const data = {};
-        data.page = json.students;
+        return response.json().then((json) => {
+          const data = {};
+          data.page = json.students;
 
-        data.hierarchy = json.hierarchy;
+          data.hierarchy = json.hierarchy;
 
-        const pageInfo = {};
-        pageInfo.prevPage = true;
-        pageInfo.nextPage = true;
-        pageInfo.pageNumber = args.pageNumber;
-        pageInfo.totalPages = Math.ceil(json.count / args.limit)
-          ? Math.ceil(json.count / args.limit)
-          : 1;
-        pageInfo.totalEntries = json.count;
+          const pageInfo = {};
+          pageInfo.prevPage = true;
+          pageInfo.nextPage = true;
+          pageInfo.pageNumber = args.pageNumber;
+          pageInfo.totalPages = Math.ceil(json.count / args.limit)
+            ? Math.ceil(json.count / args.limit)
+            : 1;
+          pageInfo.totalEntries = json.count;
 
-        if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
-          return new Error('Page Number is invalid');
-        }
+          if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+            return new Error('Page Number is invalid');
+          }
 
-        if (args.pageNumber === pageInfo.totalPages) {
-          pageInfo.nextPage = false;
-        }
-        if (args.pageNumber === 1) {
-          pageInfo.prevPage = false;
-        }
-        data.pageInfo = pageInfo;
-        return data;
+          if (args.pageNumber === pageInfo.totalPages) {
+            pageInfo.nextPage = false;
+          }
+          if (args.pageNumber === 1) {
+            pageInfo.prevPage = false;
+          }
+          data.pageInfo = pageInfo;
+          return data;
+        });
       })
       .catch((err) => {
         console.error(err);
+        return new Error(err.message);
       });
   },
 };
@@ -160,6 +160,7 @@ export const StudentUniqueValues = {
   args: {
     key: { type: StringType },
     level: { type: IntType },
+    childCode: { type: new List(StringType) },
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) { // eslint-disable-line
@@ -198,7 +199,6 @@ export const StudentsByLastNode = {
         }
         return response.json();
       })
-      .then(json => json)
       .catch(err =>
         new Error(err.message));
   },

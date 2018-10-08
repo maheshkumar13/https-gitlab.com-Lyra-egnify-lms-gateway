@@ -36,6 +36,8 @@ spec:
               value: {{ .Values.projectEnv.svcSettings }}
             - name: SVC_TEST
               value: {{ .Values.projectEnv.svcTest }}
+            - name: SVC_SSO
+              value: {{ .Values.projectEnv.svcSSO }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.service.internalPort }}
