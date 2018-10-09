@@ -123,7 +123,7 @@ const CWUAnalysisType = new ObjectType({
     subject: { type: StringType, description: 'subject code or name' },
     data: { type: CWUAnalysisDataType, description: 'CWU analysis data type' },
   },
-});
+});   
 
 const ErrorDataType = new ObjectType({
   name: 'ErrorDataType',
