@@ -444,12 +444,23 @@ export const ErrorListType = new ObjectType({
   },
 });
 
+export const WarningListType = new ObjectType({
+  name: 'WarningListDataType',
+  description: 'Warning List Item type',
+  fields: {
+    warningCode: { type: StringType, description: 'Internal Warning code' },
+    warningMessage: { type: StringType, description: 'Message to be displayed for the given Warning code.' },
+    data: { type: GraphQLJSON, description: 'List of warnings occured on the given warning code.' },
+  },
+});
+
 export const QmapFileUploadType = new ObjectType({
   name: 'QmapFileUploadType',
   description: 'List of all the the Errors occured',
   fields: {
     data: { type: TestType, description: 'TestType data' },
     errors: { type: new List(ErrorListType), description: 'errors' },
+    warnings: { type: new List(WarningListType), description: 'warning' },
   },
 });
 export const pageInfoType = new ObjectType({
