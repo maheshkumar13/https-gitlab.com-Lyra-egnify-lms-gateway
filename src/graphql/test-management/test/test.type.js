@@ -322,6 +322,7 @@ export const StudentTestType = new ObjectType({
     duration: { type: IntType, description: 'Test duration in number of minutes' },
     subjects: { type: new List(SubjectType), description: 'Subjects in the test' },
     markingSchema: { type: GraphQLJSON, description: 'Marks distribution' },
+    Qmap: { type: new List(QmapType), description: 'Question mapping with subject, topic and subTopic' },
     status: { type: StringType, description: 'Current status of the test' },
     colorSchema: { type: new List(ColorSchemaOjbectType), description: 'color schema' },
     gaStatus: { type: StringType, description: 'Current GA Status of the test. Possible State: [not_started,pending,error,finished]' },
