@@ -22,6 +22,7 @@ router.post('/studentComparisionTrendReport', authService.isAuthenticated(), con
 router.post('/testVsEstimatedAveragesReport', authService.isAuthenticated(), controller.testVsEstimatedAveragesReport);
 router.post('/weakSubjectReport', authService.isAuthenticated(), controller.weakSubjectReport);
 router.post('/download/allStudentConceptAnalysis', authService.isAuthenticated(), controller.allstudentConceptAnalysisReport);
+router.post('/download/allTestAverageAnalysisReport', authService.isAuthenticated(), controller.allTestAverageAnalysisReport);
 // router.post('/markDistributionReport', controller.markDistributionReport);
 // router.post('/errorCountReport', controller.errorCountReport);
 
