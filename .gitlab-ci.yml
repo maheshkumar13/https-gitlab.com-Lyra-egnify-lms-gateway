@@ -1,4 +1,4 @@
-spica# @author: rahul
+# @author: rahul
 image: node:8.9.0
 
 stages:
