@@ -1,8 +1,6 @@
 import express from 'express';
 import request from 'request';
 
-import passport from 'passport';
-import { signToken, isAuthenticated } from '../auth.service';
 import { config } from '../../config/environment';
 
 const router = express.Router();

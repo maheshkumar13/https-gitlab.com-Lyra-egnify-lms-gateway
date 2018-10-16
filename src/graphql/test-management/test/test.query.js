@@ -26,6 +26,7 @@ import {
   FileStatusType,
   StudentTestsDetailsType,
   TestsDetailsType,
+  TestSubjectDetailsType,
 } from './test.type';
 
 function fetchTest(url, args, context) {
@@ -162,6 +163,56 @@ export const Tests = {
     if (modifiedArgs.err) return new Error(modifiedArgs.err);
     const url = `${config.services.test}/api/v1/test`;
     return fetchTest(url, modifiedArgs, context);
+  },
+};
+
+
+export const TestSubjectDetails = {
+  args: {
+    testIds: { type: new List(StringType) },
+  },
+  type: new List(TestSubjectDetailsType),
+  async resolve(obj, args, context) {
+    const url = `${config.services.test}/api/v1/test/getSubjectsByTestId`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        } return response.json()
+          .then((json) => {
+            console.info(json[0].subjects);
+            return json;
+          });
+      })
+      .catch(err => new Error(err.message));
+  },
+};
+export const TestColourSchemaDetails = {
+  args: {
+    testIds: { type: new List(StringType) },
+  },
+  type: GraphQLJSON,
+  async resolve(obj, args, context) {
+    const url = `${config.services.test}/api/v1/test/getColourSchemaByTestId`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        } return response.json()
+          .then((json) => {
+            console.info(json[0].subjects);
+            return json;
+          });
+      })
+      .catch(err => new Error(err.message));
   },
 };
 
@@ -310,4 +361,6 @@ export default {
   TestHierarchyNodes,
   moveTest,
   DownloadSampleQmap,
+  TestSubjectDetails,
+  TestColourSchemaDetails,
 };

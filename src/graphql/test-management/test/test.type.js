@@ -487,6 +487,23 @@ export const TestsDetailsType = new ObjectType({
   },
 });
 
+const SubjectNameType = new ObjectType({
+  name: 'SubjectNameType',
+  fields: {
+    subject: { type: StringType },
+  },
+});
+
+export const TestSubjectDetailsType = new ObjectType({
+  name: 'TestSubjectDetailsType',
+  description: 'TestSubjectDetailsType',
+  fields: {
+    testId: { type: StringType, description: 'test Id' },
+    hierarchyTag: { type: StringType, description: 'test hierarchy tag' },
+    subjects: { type: new List(SubjectNameType) },
+  },
+});
+
 
 export default{
   TestType,
@@ -500,4 +517,5 @@ export default{
   pageInfoType,
   StudentTestsDetailsType,
   TestsDetailsType,
+  TestSubjectDetailsType,
 };
