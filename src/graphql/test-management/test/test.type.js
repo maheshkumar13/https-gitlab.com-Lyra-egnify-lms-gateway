@@ -13,9 +13,24 @@ import {
   GraphQLList as List,
   GraphQLFloat as FloatType,
   GraphQLInputObjectType as InputObjectType,
+  GraphQLEnumType,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 
+export const ModeOfConductEnumType = new GraphQLEnumType({
+  name: 'ModeOfConductEnumType',
+  values: {
+    online: {
+      value: 'online',
+    },
+    offline: {
+      value: 'offline',
+    },
+    both: {
+      value: 'both',
+    },
+  },
+});
 // const GraphQLStringType = require('graphql-StringType');
 const InputSubjectType = new InputObjectType({
   name: 'InputSubjectType',
@@ -310,8 +325,7 @@ export const TestType = new ObjectType({
     status: { type: StringType, description: 'Current status of the test' },
     colorSchema: { type: new List(ColorSchemaOjbectType), description: 'color schema' },
     gaStatus: { type: StringType, description: 'Current GA Status of the test. Possible State: [not_started,pending,error,finished]' },
-
-    modeOfConduct: { type: new NonNull(StringType), description: 'Mode of conduct of the test which can be Online,Offline or Both' },
+    modeOfConduct: { type: new NonNull(ModeOfConductEnumType), description: 'Mode of conduct of the test which can be Online,Offline or Both' },
 
   },
 });
@@ -334,6 +348,8 @@ export const StudentTestType = new ObjectType({
     status: { type: StringType, description: 'Current status of the test' },
     colorSchema: { type: new List(ColorSchemaOjbectType), description: 'color schma' },
     gaStatus: { type: StringType, description: 'Current GA Status of the test. Possible State: [not_started,pending,error,finished]' },
+    modeOfConduct: { type: new NonNull(ModeOfConductEnumType), description: 'Mode of conduct of the test which can be Online,Offline or Both' },
+
   },
 });
 
@@ -355,7 +371,7 @@ export const InputTestType = new InputObjectType({
     subjectsordered: { type: BooleanType, description: 'Subjects ordered or not' },
     markingSchema: { type: MarkingSchemaType, description: 'Marks distribution' },
     // Qmap: { type: InputQmapType, description: 'Question wise description' },
-    modeOfConduct: { type: new NonNull(StringType), description: 'Mode of conduct of the test which can be Online,Offline or Both' },
+    modeOfConduct: { type: new NonNull(ModeOfConductEnumType), description: 'Mode of conduct of the test which can be Online,Offline or Both' },
   },
 });
 
@@ -401,8 +417,7 @@ export const UpdateTestType = new InputObjectType({
     markingSchema: { type: MarkingSchemaType, description: 'Marks distribution' },
     Qmap: { type: new List(InputQmapType), description: 'Mapping the question with subject, topic and subTopic' },
     colorSchema: { type: new List(InputColorSchemaOjbectType), description: 'color schema' },
-
-    modeOfConduct: { type: StringType, description: 'Mode of conduct of the test which can be online,offline or both' },
+    modeOfConduct: { type: ModeOfConductEnumType, description: 'Mode of conduct of the test which can be online,offline or both' },
 
   },
 });

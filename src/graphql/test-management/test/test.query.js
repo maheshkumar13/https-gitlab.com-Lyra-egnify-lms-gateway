@@ -26,6 +26,7 @@ import {
   FileStatusType,
   StudentTestsDetailsType,
   TestsDetailsType,
+  ModeOfConductEnumType,
 } from './test.type';
 
 function fetchTest(url, args, context) {
@@ -76,7 +77,7 @@ function modifyTestArgs(args) {
   if (args.regex === '' || args.regex === ' ') {
     args.regex = undefined; // eslint-disable-line
   }
-  if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line 
+  if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
   if (args.pageNumber < 1) {
     return { err: 'Page Number must be positive' };
   }
@@ -100,6 +101,7 @@ const StatusEnumType = new GraphQLEnumType({
     },
   },
 });
+
 
 export const GetUniqueTestDetails = {
   args: {
@@ -135,6 +137,8 @@ export const TestsForStudentProfile = {
     status: { type: StatusEnumType },
     pageNumber: { type: IntType },
     limit: { type: IntType },
+    modeOfConduct: { type: ModeOfConductEnumType },
+    otpSyncStatus: { type: BooleanType },
   },
   type: StudentTestsDetailsType,
   async resolve(obj, args, context) {
@@ -155,6 +159,9 @@ export const Tests = {
     status: { type: StatusEnumType },
     pageNumber: { type: IntType },
     limit: { type: IntType },
+    modeOfConduct: { type: ModeOfConductEnumType },
+    otpSyncStatus: { type: BooleanType },
+
   },
   type: TestsDetailsType,
   async resolve(obj, args, context) {
