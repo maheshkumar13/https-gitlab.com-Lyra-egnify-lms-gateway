@@ -23,6 +23,8 @@ import {
   TestHierarchyNodes,
   FileStatus,
   DownloadSampleQmap,
+  TestSubjectDetails,
+  TestColourSchemaDetails,
 } from './test-management/test/test.query';
 import { removeTest, createDummyTest, createDuplicateTest, createTest, updateTest, QmapFileUpload } from './test-management/test/test.mutation';
 import { QuestionDetails, QuestionMappingDetails, GetQuestions } from './test-management/question/question.query';
@@ -80,6 +82,8 @@ const schema = new Schema({
       ConceptTaxonomyTree,
       Tests,
       TestsForStudentProfile,
+      TestSubjectDetails,
+      TestColourSchemaDetails,
       QuestionTypes,
       LevelFilters,
       StudentUniqueValues,

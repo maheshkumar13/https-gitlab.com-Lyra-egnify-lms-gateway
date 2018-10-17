@@ -1,10 +1,7 @@
-import jwt from 'jsonwebtoken';
-import expressJwt from 'express-jwt';
 import compose from 'composable-middleware';
 import request from 'request';
 
 import { config } from '../config/environment';
-import User from '../api/v1/user/user.model';
 
 export function isAuthenticated() {
   return compose()
@@ -88,40 +85,42 @@ export function isAuthenticated() {
 /**
  * Checks if the user role meets the minimum requirements of the route
  */
-export function hasRole(roleRequired) {
-  if (!roleRequired) {
-    throw new Error('Required role needs to be set');
-  }
+// export function hasRole(roleRequired) {
+//   if (!roleRequired) {
+//     throw new Error('Required role needs to be set');
+//   }
 
-  return compose()
-    .use(isAuthenticated())
-    .use((req, res, next) => {
-      if (config.userRoles.indexOf(req.user.role) >= config.userRoles.indexOf(roleRequired)) {
-        return next();
-      }
-      return res.status(403).send('Forbidden');
-    });
-}
+//   return compose()
+//     .use(isAuthenticated())
+//     .use((req, res, next) => {
+//       if (config.userRoles.indexOf(req.user.role) >= config.userRoles.indexOf(roleRequired)) {
+//         return next();
+//       }
+//       return res.status(403).send('Forbidden');
+//     });
+// }
 
 /**
  * Returns a jwt token signed by the app secret
  */
-export function signToken(id, role, instituteId, hostname) {
-  return jwt.sign({
-    _id: id, role, instituteId, hostname,
-  }, config.secrets.session, {
-    expiresIn: 60 * 60 * 24,
-  });
-}
+// export function signToken(id, role, instituteId, hostname) {
+//   return jwt.sign({
+//     _id: id, role, instituteId, hostname,
+//   }, config.secrets.session, {
+//     expiresIn: 60 * 60 * 24,
+//   });
+// }
 
-/**
- * Set token cookie directly for oAuth strategies
- */
-export function setTokenCookie(req, res) {
-  if (!req.user) {
-    return res.status(404).send('It looks like you aren\'t logged in, please try again.');
-  }
-  const token = signToken(req.user._id, req.user.role, req.user.instituteId, req.hostname);
-  res.cookie('token', token);
-  res.redirect('/');
-}
+// /**
+//  * Set token cookie directly for oAuth strategies
+//  */
+// export function setTokenCookie(req, res) {
+//   if (!req.user) {
+//     return res.status(404).send('It looks like you aren\'t logged in, please try again.');
+//   }
+//   const token = signToken(req.user._id, req.user.role, req.user.instituteId, req.hostname);
+//   res.cookie('token', token);
+//   res.redirect('/');
+// }
+
+export default { isAuthenticated };
