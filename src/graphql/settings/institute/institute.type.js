@@ -60,6 +60,7 @@ export const InstituteType = new ObjectType({
     proofOfRegistrationUrl: { type: StringType },
     proofOfRegistrationUrlFileName: { type: StringType },
     academicSchedule: { type: AcademicScheduleType },
+    otpUrl: {type: StringType}
   },
 });
 
