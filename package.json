@@ -1,6 +1,6 @@
 {
   "name": "hydra-graphql-gateway",
-  "version": "0.13.1",
+  "version": "0.14.0",
   "description": "gateway microservice",
   "main": "src/server.js",
   "repository": "git@gitlab.com:Lyra-egnify/hydra-graphql-api-gateway.git",
