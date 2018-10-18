@@ -157,6 +157,31 @@ export const StudentAverageMarks = {
       .catch(err => new Error(err.message));
   },
 };
+
+export const StudentAverageMarksForStudentProfile = {
+  args: {
+    testIds: { type: new List(StringType) },
+    testType: { type: new NonNull(StringType) },
+    filter: { type: new List(FilterInputType) },
+  },
+  type: new List(MarkAnalysisType),
+  async resolve(obj, args, context) {
+    const url = `${config.services.test}/api/v1/masterResult/student/read/studentAverageWithMultipleTestIds`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .catch(err => new Error(err.message));
+  },
+};
+
 export const CommonAnalysisPaginated = {
   args: {
     testIds: { type: new List(StringType) },
@@ -692,4 +717,5 @@ export default {
   MarkAnalysisGraphData,
   MarkAnalysisGraphDataV2,
   StudentAverageMarks,
+  StudentAverageMarksForStudentProfile,
 };
