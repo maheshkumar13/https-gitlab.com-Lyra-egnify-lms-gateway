@@ -1,7 +1,7 @@
 import fetch from 'universal-fetch';
 
 export default function (url, params, context) {
-  // console.info(url, params, context);
+  //console.info(url, params, context);
   const { user } = context;
   if (params.body) {
     const body = JSON.parse(params.body);

@@ -20,7 +20,6 @@ import {
   QuestionTypes,
   DefaultMarkingSchemas,
   TestHierarchyNodes,
-  TestHierarchyNodesofMultipleTests,
   FileStatus,
   DownloadSampleQmap,
 } from './test-management/test/test.query';
@@ -47,7 +46,7 @@ import { createGradeSystem, createGradePattern, removeGradePattern, removeGradeS
 import { uploadResult, uploadResultV2, updateUploadedResultV2, updateUploadedResult, comfirmMissingV2, comfirmMissing, deleteResultV2, deleteResult } from './test-management/result-upload/result-upload.mutation';
 import { ResultsV2, Results, ResultsSampleDownload } from './test-management/result-upload/result-upload.query';
 
-import { StudentAverageMarks, LeaderBoardPaginated, GenerateAnalysis, GenerateAnalysisv2, CommonAnalysis, MarksDistributionAnalysis, MarksDistributionAnalysisV2, MarksDistributionAnalysisV3, QuestionErrorAnalysis, StudentPerformanceTrendAnalysis, CommonAnalysisPaginated, StudentPerformanceTrendAnalysisPaginated, StudentAverageTrendAnalysisPaginated, MarkAnalysisGraphData, MarkAnalysisGraphDataV2, MarkAnalysisGraphDataAllTests } from './test-management/ga/ga.query';
+import { StudentAverageMarks, LeaderBoardPaginated, GenerateAnalysis, GenerateAnalysisv2, CommonAnalysis, MarksDistributionAnalysis, MarksDistributionAnalysisV2, MarksDistributionAnalysisV3, QuestionErrorAnalysis, StudentPerformanceTrendAnalysis, CommonAnalysisPaginated, StudentPerformanceTrendAnalysisPaginated, StudentAverageTrendAnalysisPaginated, MarkAnalysisGraphData, MarkAnalysisGraphDataV2 } from './test-management/ga/ga.query';
 import { createTestPatternSchema, updateTestPatternSchema, removeTestPatternSchema } from './test-management/testPattern/testPattern.mutation';
 import { TestPatternSchema } from './test-management/testPattern/testPattern.query';
 import { ConceptAnalysis } from './test-management/conceptAnalysis/conceptAnalysis.query';
@@ -57,7 +56,6 @@ import { ComparisonAnalysis } from './test-management/comparisonAnalysis/compari
 import { ComparisonTopicAnalysis } from './test-management/comparisonAnalysis/comparisonTopicAnalysis.query';
 import { ComparisonErrorAnalysis } from './test-management/comparisonAnalysis/comparisonErrorAnalysis.query';
 import { ComparisonRankAnalysis } from './test-management/comparisonAnalysis/comparisonRankAnalysis.query';
-import { AllTestResultAnalysis } from './test-management/allTestAnalysis/allTestAnalysis.query';
 import { ComparisonQuestionAnalysis } from './test-management/comparisonAnalysis/comparisonQuestionAnalysis.query';
 
 
@@ -65,7 +63,6 @@ const schema = new Schema({
   query: new ObjectType({
     name: 'Query',
     fields: {
-      AllTestResultAnalysis,
       ResultsV2,
       Results,
       ResultsSampleDownload,
@@ -91,7 +88,6 @@ const schema = new Schema({
       FileStatus,
       DefaultMarkingSchemas,
       TestHierarchyNodes,
-      TestHierarchyNodesofMultipleTests,
       GenerateAnalysis,
       GenerateAnalysisv2,
       CommonAnalysis,
@@ -101,7 +97,6 @@ const schema = new Schema({
       MarksDistributionAnalysis,
       MarksDistributionAnalysisV2,
       MarksDistributionAnalysisV3,
-      MarkAnalysisGraphDataAllTests,
       moveTest,
       DownloadSampleQmap,
       QuestionDetails,
