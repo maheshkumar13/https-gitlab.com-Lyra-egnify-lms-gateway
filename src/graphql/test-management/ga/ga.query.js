@@ -717,4 +717,5 @@ export default {
   MarkAnalysisGraphData,
   MarkAnalysisGraphDataV2,
   StudentAverageMarks,
+  StudentAverageMarksForStudentProfile,
 };
