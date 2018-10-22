@@ -233,6 +233,31 @@ export const TestHierarchyNodes = {
   },
 };
 
+export const TestHierarchyNodesofMultipleTests = {
+  args: {
+    testIds: { type: new NonNull(new List(StringType)) },
+    isLeafNode: { type: BooleanType },
+    childCode: { type: StringType },
+    child: { type: StringType },
+    parentCode: { type: new List(StringType) },
+    parent: { type: StringType },
+    level: { type: IntType },
+    selected: { type: BooleanType },
+    filterNodesWithAllMissingStudents: { type: BooleanType },
+  },
+  type: new List(TestHierarchyNodesType), // new List(MarkingSchemaType),
+  async resolve(obj, args, context) {
+    const url = `${config.services.test}/api/v1/hierarchy/read/testHierarchyNodes/multipletests`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then(response => response.json())
+      .catch(err => new Error(err.message));
+  },
+};
+
 export const moveTest = {
   args: {
     testId: { type: new NonNull(StringType) },

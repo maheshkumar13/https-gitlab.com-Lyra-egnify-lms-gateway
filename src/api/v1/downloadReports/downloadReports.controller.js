@@ -202,6 +202,23 @@ export function allstudentConceptAnalysisReport(req, res) {
   request(options).pipe(res);
 }
 
+export function allTestAverageAnalysisReport(req, res) {
+  const submissionUrl = `${config.services.test}/api/v1/allTestsAnalysis/download/allTestAverageAnalysis`;
+  const { body } = req;
+  const form = {};
+  _.forEach(body, (value, key) => {
+    form[key] = value;
+  });
+  form.user = req.user;
+
+  const options = {
+    uri: submissionUrl,
+    method: 'POST',
+    json: form,
+  };
+  request(options).pipe(res);
+}
+
 export default {
   studentResponseReport,
   studentErrorReport,
