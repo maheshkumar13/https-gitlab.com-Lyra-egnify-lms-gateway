@@ -136,6 +136,7 @@ export const TestsForStudentProfile = {
     date: { type: new List(StringType) },
     regex: { type: StringType },
     status: { type: StatusEnumType },
+    statusArray: { type: new List(StatusEnumType) },
     pageNumber: { type: IntType },
     limit: { type: IntType },
     modeOfConduct: { type: ModeOfConductEnumType },
