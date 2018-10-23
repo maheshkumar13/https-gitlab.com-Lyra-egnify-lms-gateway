@@ -33,7 +33,7 @@ import { Curriculum } from './settings/curriculum/curriculum.query';
 import { SubjectList, SubjectTaxonomy } from './settings/subject/subjectTaxonomy.query';
 import { removeSubjectTaxonomy, updateSubjectTaxonomy, createSubjects } from './settings/subject/subjectTaxonomy.mutation';
 import { createCurriculum } from './settings/curriculum/curriculum.mutation';
-import { Students, downloadStudentSample, StudentUniqueValues, StudentsByLastNode } from './settings/student/student.query';
+import { Students, downloadStudentSample, StudentUniqueValues, StudentsByLastNode, StudentsForStudentProfile } from './settings/student/student.query';
 import { createStudent, createManyStudents, deleteStudent, editStudent, studentBulkMovement } from './settings/student/student.mutation';
 import { createTestPattern, updateTestPattern, removeTestPattern } from './settings/testPattern/testPattern.mutation';
 import { InstituteHierarchy, InstituteHierarchySample } from './settings/instituteHierarchy/instituteHierarchy.query';
@@ -55,7 +55,7 @@ import { TestPatternSchema } from './test-management/testPattern/testPattern.que
 import { ConceptAnalysis } from './test-management/conceptAnalysis/conceptAnalysis.query';
 import { QuestionPaperMetrics } from './test-management/questionPaper/questionPaper.query';
 import { StudentOverallAverageMarks, StudentOverallCWU } from './test-management/Analysis/studentOverallAnalysis.query';
-import { StudentConceptAnalysis, allStudentConceptAnalysis, LevelWiseTestWiseConceptAnalysis, StudentConceptAnalysisForStudentProfile } from './test-management/Analysis/studentConceptAnalysis.query';
+import { StudentConceptAnalysis, allStudentConceptAnalysis, LevelWiseTestWiseConceptAnalysis, LevelWiseTestWiseConceptAnalysisForStudentProfile, StudentConceptAnalysisForStudentProfile } from './test-management/Analysis/studentConceptAnalysis.query';
 import { ComparisonAnalysis } from './test-management/comparisonAnalysis/comparisonAnalysis.query';
 import { ComparisonTopicAnalysis } from './test-management/comparisonAnalysis/comparisonTopicAnalysis.query';
 
@@ -70,6 +70,7 @@ const schema = new Schema({
       TestPattern,
       Curriculum,
       Students,
+      StudentsForStudentProfile,
       Institute,
       InstituteHierarchy,
       InstituteHierarchyGrid,
@@ -124,6 +125,7 @@ const schema = new Schema({
       StudentOverallAverageMarks,
       StudentOverallCWU,
       LevelWiseTestWiseConceptAnalysis,
+      LevelWiseTestWiseConceptAnalysisForStudentProfile,
       ComparisonAnalysis,
       StudentAverageMarks,
       StudentAverageMarksForStudentProfile,
