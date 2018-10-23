@@ -3,9 +3,11 @@ import {
   GraphQLString as StringType,
   // GraphQLNonNull as NonNull,
   GraphQLBoolean as BooleanType,
-  // GraphQLInt as IntType,
+  GraphQLInt as IntType,
   GraphQLList as List,
-  // GraphQLInputObjectType as InputObjectType,
+  GraphQLInputObjectType as InputObjectType,
+  GraphQLEnumType,
+
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 
@@ -86,6 +88,80 @@ export const SampleDownloadType = new ObjectType({
   },
 });
 
+const FilterNameEnumType = new GraphQLEnumType({
+  name: 'FilterNameEnumTypeForOnlineStudents',
+  values: {
+    hierarchyFilter: {
+      value: 'hierarchyLevels',
+    },
+  },
+});
+
+export const FilterInputType = new InputObjectType({
+  name: 'FilterForOnlineStudents',
+  description: 'Filters For Graph QL Calls',
+  fields: {
+    filterName: { type: FilterNameEnumType },
+    values: { type: new List(GraphQLJSON) },
+  },
+});
+
+const OnlineStudentDataType = new ObjectType({
+  name: 'OnlineStudentDataType',
+  fields: {
+    egnifyId: { type: StringType },
+    studentId: { type: StringType },
+    studentName: { type: StringType },
+    fatherName: { type: StringType },
+    phone: { type: StringType },
+    email: { type: StringType },
+    gender: { type: StringType },
+    dob: { type: StringType },
+    category: { type: StringType },
+    hierarchy: { type: GraphQLJSON },
+    testId: { type: StringType },
+    testName: { type: StringType },
+
+  },
+});
+export const pageInfoType = new ObjectType({
+  name: 'OnlineStudentTypePageInfo',
+  fields() {
+    return {
+      pageNumber: {
+        type: IntType,
+      },
+      nextPage: {
+        type: BooleanType,
+      },
+      prevPage: {
+        type: BooleanType,
+      },
+      totalPages: {
+        type: IntType,
+      },
+      totalEntries: {
+        type: IntType,
+      },
+    };
+  },
+});
+
+export const OnlineStudentType = new ObjectType({
+  name: 'OnlineStudentType',
+  fields() {
+    return {
+      page: {
+        type: new List(OnlineStudentDataType),
+      },
+      pageInfo: {
+        type: pageInfoType,
+      },
+    };
+  },
+});
+
+
 export default {
-  ErrorsType, ErrorListItemType, ResultType, SampleDownloadType,
+  ErrorsType, ErrorListItemType, ResultType, SampleDownloadType, FilterInputType, OnlineStudentType,
 };
