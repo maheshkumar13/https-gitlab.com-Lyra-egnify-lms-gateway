@@ -191,6 +191,7 @@ export const CommonAnalysisPaginated = {
     limit: { type: IntType },
     getAverageMarks: { type: BooleanType },
     sort: { type: new List(SortType) },
+    studentIdList: { type: new List(StringType) },
   },
   type: CommonAnalysisDetailsType,
   async resolve(obj, args, context) {
