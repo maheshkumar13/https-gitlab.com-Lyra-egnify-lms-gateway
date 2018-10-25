@@ -60,7 +60,8 @@ export const InstituteType = new ObjectType({
     proofOfRegistrationUrl: { type: StringType },
     proofOfRegistrationUrlFileName: { type: StringType },
     academicSchedule: { type: AcademicScheduleType },
-    otpUrl: {type: StringType}
+    otpUrl: { type: StringType },
+    googleTrackingId: { type: StringType },
   },
 });
 
