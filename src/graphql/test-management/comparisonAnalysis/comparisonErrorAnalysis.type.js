@@ -10,22 +10,21 @@ import {
   GraphQLInputObjectType as InputObjectType,
 } from 'graphql';
 // import GraphQLJSON from 'graphql-type-json';
-
 const FilterNameEnumType = new EnumType({ // eslint-disable-line
-  name: 'ComparisonTopicFilterNameEnumType',
+  name: 'ComparisonErrorFilterNameEnumType',
   values: {
-    avgMarks: {
-      value: 'avgMarks',
-    },
     errorPercentage: {
       value: 'errorPercentage',
+    },
+    cwuPercentage: {
+      value: 'cwuPercentage',
     },
   },
 });
 
-export const ComparisonTopicAnalysisHierarchyInputType = new InputObjectType({
-  name: 'ComparisonTopicAnalysisHierarchyInputType',
-  description: 'Input type for hierarchies in comaprison topic analysis',
+export const ComparisonErrorAnalysisHierarchyInputType = new InputObjectType({
+  name: 'ComparisonErrorAnalysisHierarchyInputType',
+  description: 'Input type for hierarchies in comaprison error analysis',
   fields: {
     child: { type: new NonNull(StringType), description: 'Name of the hierarchy node' },
     childCode: { type: new NonNull(StringType), description: 'Internal code of the hierarchy node' },
@@ -33,17 +32,17 @@ export const ComparisonTopicAnalysisHierarchyInputType = new InputObjectType({
   },
 });
 
-export const ComparisonTopicAnalysisInputType = new InputObjectType({
-  name: 'ComparisonTopicAnalysisInputType',
-  description: 'Hierarchy wise students results comparison',
+export const ComparisonErrorAnalysisInputType = new InputObjectType({
+  name: 'ComparisonErrorAnalysisInputType',
+  description: 'Hierarchy wise students error analysis',
   fields: {
     testIds: { type: new List(new NonNull(StringType)), description: 'testIds' },
-    hierarchies: { type: new List(ComparisonTopicAnalysisHierarchyInputType), description: 'Input type for hierarchies in comaprison analysis' },
-    viewLevel: { type: new NonNull(IntType), description: 'Level number of the hierarchy nodes to display daata' },
-    filterName: { type: FilterNameEnumType, description: 'filterName' },
+    hierarchies: { type: new List(ComparisonErrorAnalysisHierarchyInputType), description: 'Input type for hierarchies in comaprison analysis' },
+    viewLevel: { type: new NonNull(IntType), description: 'Level number of the hierarchy nodes to display data' },
+    filterName: { type: FilterNameEnumType, description: 'Name of the filter' },
   },
 });
 
 export default {
-  ComparisonTopicAnalysisInputType,
+  ComparisonErrorAnalysisInputType,
 };

@@ -113,8 +113,6 @@ const CWUAnalysisDataType = new ObjectType({
     U: { type: FloatType, description: 'Number of Unattempted' },
     UW: { type: FloatType, description: 'Number of Unattempted + Wrong' },
     P: { type: FloatType, description: 'Number of Partial' },
-
-
   },
 });
 
@@ -185,6 +183,9 @@ export const CommonAnalysisType = new ObjectType({
   fields: {
     // test data
     testId: { type: StringType, description: 'ID of the Test' },
+
+    // test wise average analysis
+    testAverageAnalysis: { type: new List(GraphQLJSON), description: 'Avaerage Mark Analysis of an Invidual test' },
 
     // // Analysis
     data: { type: new List(CommonAnalysisDataType), description: 'Rank Analysis of an Invidual Student' },
