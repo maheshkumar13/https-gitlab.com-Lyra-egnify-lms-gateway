@@ -23,6 +23,7 @@ import {
   TestHierarchyNodes,
   FileStatus,
   DownloadSampleQmap,
+  DownloadSampleQmapV2,
   TestSubjectDetails,
   TestColourSchemaDetails,
 } from './test-management/test/test.query';
@@ -107,6 +108,7 @@ const schema = new Schema({
       MarksDistributionAnalysisV3,
       moveTest,
       DownloadSampleQmap,
+      DownloadSampleQmapV2,
       QuestionDetails,
       TestPatternSchema,
       ConceptAnalysis,
