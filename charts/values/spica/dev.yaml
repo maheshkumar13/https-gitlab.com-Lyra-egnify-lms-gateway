@@ -4,7 +4,7 @@
 
 replicaCount: 1
 image:
-  repository: registry.gitlab.com/lyra-egnify/hydra-graphql-api-gateway/spark/development
+  repository: registry.gitlab.com/lyra-egnify/hydra-graphql-api-gateway/spica/development
   tag: latest
   pullPolicy: Always
   pullSecrets: gitlab-registry-pull-secret
@@ -12,15 +12,16 @@ image:
 #project env
 projectEnv:
   nodeEnv: "production"
-  mongodbUri: "mongodb://hydra:AkdjsAIYHjk87y23l1m2klRrtyhjnmrti92w33@35.200.218.1:27017/tenantregistry"
+  mongodbUri: "mongodb://hydra:AkdjsAIYHjk87y23l1m2klRrtyhjnmrti92w33@35.200.234.132:27017/tenantregistry-spica"
   jwtSecret: "KAJDK656kllksklfmFGDFGS765ujh765T6GHAJDSjjjkjiursrda"
   mailjetApiKey: "a1fb4988b5a359099061d2cb8aebc80d"
   apolloEngineKey: "service:hydra-jeet-dev:b9DCNb7tCkPO6TO5xHIdmw"
-  svcSettings: "http://settings-dev-spark.dev.svc.cluster.local"
-  svcTest: "http://test-management-dev-spark.dev.svc.cluster.local"
+  svcSettings: "http://settings-dev-spica.dev.svc.cluster.local"
+  svcTest: "http://test-management-dev-spica.dev.svc.cluster.local"
+  svcSSO: "http://sso-dev-spica.dev.svc.cluster.local"
 
 service:
-  name: spark-gateway
+  name: spica-gateway
   tier: backend
   type: ClusterIP
   externalPort: 80
@@ -29,22 +30,22 @@ ingress:
   enabled: true
   # Used to create an Ingress record.
   hosts:
-    - api.dev.spark.egnify.io
+    - api.dev.spica.egnify.io
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "40M"
     kubernetes.io/ingress.class: nginx
     kubernetes.io/tls-acme: "true"
   tls:
     # Secrets must be manually created in the namespace.
-    - secretName: spark-graphql-gateway-tls-dev
+    - secretName: spica-graphql-gateway-tls-dev
       hosts:
-        - api.dev.spark.egnify.io
+        - api.dev.spica.egnify.io
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
+  # lisso
   #  cpu: 100m
   #  memory: 128Mi
   # requests:
