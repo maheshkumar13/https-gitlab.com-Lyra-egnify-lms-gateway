@@ -20,6 +20,7 @@ projectEnv:
   apolloEngineKey: "service:hydra-jeet-qa:fj7DVXTWfixFSvqedCfYcg"
   svcSettings: "http://settings-qa-hydra.qa.svc.cluster.local"
   svcTest: "http://test-management-qa-hydra.qa.svc.cluster.local"
+  svcSSO: "http://sso-qa-hydra.qa.svc.cluster.local"
 
 service:
   name: hydra-gateway
