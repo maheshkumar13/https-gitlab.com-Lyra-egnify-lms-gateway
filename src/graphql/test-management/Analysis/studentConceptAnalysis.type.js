@@ -19,7 +19,16 @@ export const LevelWiseTestWiseConceptAnalysisInputType = new InputObjectType({
     filter: { type: new List(StringType), description: 'list of nodes to filter in the level next to the level mentioned' },
   },
 });
+export const LevelWiseTestWiseConceptAnalysisForStudentProfileInputType = new InputObjectType({
+  name: 'LevelWiseTestWiseConceptAnalysisForStudentProfileInputType',
+  description: 'level (topic / sub-topic) wise test wise concept analysis ',
+  fields: {
+    level: { type: new NonNull(StringType), description: 'level for which break down is required (subject / topic)' },
+    filter: { type: new List(StringType), description: 'list of nodes to filter in the level next to the level mentioned' },
+  },
+});
 
 export default {
   LevelWiseTestWiseConceptAnalysisInputType,
+  LevelWiseTestWiseConceptAnalysisForStudentProfileInputType,
 };
