@@ -13,9 +13,24 @@ import {
   GraphQLList as List,
   GraphQLFloat as FloatType,
   GraphQLInputObjectType as InputObjectType,
+  GraphQLEnumType,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 
+export const ModeOfConductEnumType = new GraphQLEnumType({
+  name: 'ModeOfConductEnumType',
+  values: {
+    online: {
+      value: 'online',
+    },
+    offline: {
+      value: 'offline',
+    },
+    both: {
+      value: 'both',
+    },
+  },
+});
 // const GraphQLStringType = require('graphql-StringType');
 const InputSubjectType = new InputObjectType({
   name: 'InputSubjectType',
@@ -243,11 +258,13 @@ export const InputQmapType = new InputObjectType({
   name: 'InputQmapType',
   description: 'Mapping the question with subject, topic and subTopic',
   fields: {
-    questionNumber: { type: new NonNull(StringType), description: 'Quetion number in specified format, ex: Q1,Q2, etc..' },
+    questionNumber: { type: new NonNull(StringType), description: 'Question number in specified format, ex: Q1,Q2, etc..' },
     subject: { type: new NonNull(InputQmapSubjectType), description: 'Subject details in each Qmap object' },
-    topic: { type: new NonNull(InputQmapTopicType), description: 'Topic details in each Qmap object' },
+    // topic is not mandatory anymore
+    topic: { type: (InputQmapTopicType), description: 'Topic details in each Qmap object' },
     subTopic: { type: InputQmapsubTopicType, description: 'subTopic details in each Qmap object' },
     difficulty: { type: StringType, description: 'Difficulty of the question in enumerated form of Easy, Medium and Hard' },
+    key: { type: new List(StringType), description: 'Array of Key for the question' },
   },
 });
 
@@ -255,7 +272,7 @@ export const QmapType = new ObjectType({
   name: 'QmapType',
   description: 'Mapping the question with subject, topic and subTopic',
   fields: {
-    questionNumber: { type: StringType, description: 'Quetion number in specified format, ex: Q1,Q2, etc..' },
+    questionNumber: { type: StringType, description: 'Question number in specified format, ex: Q1,Q2, etc..' },
     subject: { type: QmapSubjectType, description: 'Subject details in each Qmap object' },
     topic: { type: QmapTopicType, description: 'Topic details in each Qmap object' },
     subTopic: { type: QmapsubTopicType, description: 'subTopic details in each Qmap object' },
@@ -263,6 +280,7 @@ export const QmapType = new ObjectType({
     C: { type: StringType, description: 'Marks for answering correctly to this question' },
     W: { type: StringType, description: 'Marks for answering wrongly to this question' },
     U: { type: StringType, description: 'Marks for Not attempting this question' },
+    // key: { type: new List(StringType), description: 'Array of Key for the question' },
   },
 });
 
@@ -283,6 +301,8 @@ export const TestType = new ObjectType({
     testId: { type: StringType, description: 'Unique identifier for the test' },
     academicYear: { type: StringType, description: 'Academic Year in which test was helds' },
     testName: { type: StringType, description: 'Name of the test' },
+    questionNumberFormat: { type: StringType, description: 'format of a question number' },
+    optionNumberFormat: { type: StringType, description: 'format of an option number' },
     testType: { type: TesttypeType, description: 'User defined test pattern' },
     totalMarks: { type: IntType, description: 'Total marks in the test' },
     startTime: { type: StringType, description: 'Time of exam starts' },
@@ -305,13 +325,41 @@ export const TestType = new ObjectType({
     status: { type: StringType, description: 'Current status of the test' },
     colorSchema: { type: new List(ColorSchemaOjbectType), description: 'color schema' },
     gaStatus: { type: StringType, description: 'Current GA Status of the test. Possible State: [not_started,pending,error,finished]' },
+    modeOfConduct: { type: new NonNull(ModeOfConductEnumType), description: 'Mode of conduct of the test which can be Online,Offline or Both' },
+
   },
 });
+
+export const StudentTestType = new ObjectType({
+  name: 'StudentTestType',
+  description: 'Test data',
+  fields: {
+    testId: { type: StringType, description: 'Unique identifier for the test' },
+    academicYear: { type: StringType, description: 'Academic Year in which test was helds' },
+    testName: { type: StringType, description: 'Name of the test' },
+    testType: { type: TesttypeType, description: 'User defined test pattern' },
+    totalMarks: { type: IntType, description: 'Total marks in the test' },
+    startTime: { type: StringType, description: 'Time of exam starts' },
+    date: { type: StringType, description: 'Date of conducting the test.' },
+    duration: { type: IntType, description: 'Test duration in number of minutes' },
+    subjects: { type: new List(SubjectType), description: 'Subjects in the test' },
+    markingSchema: { type: GraphQLJSON, description: 'Marks distribution' },
+    Qmap: { type: new List(QmapType), description: 'Question mapping with subject, topic and subTopic' },
+    status: { type: StringType, description: 'Current status of the test' },
+    colorSchema: { type: new List(ColorSchemaOjbectType), description: 'color schma' },
+    gaStatus: { type: StringType, description: 'Current GA Status of the test. Possible State: [not_started,pending,error,finished]' },
+    modeOfConduct: { type: new NonNull(ModeOfConductEnumType), description: 'Mode of conduct of the test which can be Online,Offline or Both' },
+
+  },
+});
+
 export const InputTestType = new InputObjectType({
   name: 'InputTestType',
   description: 'Input for the test',
   fields: {
     testName: { type: new NonNull(StringType), description: 'Name of the test, testName should not be empty! ' },
+    questionNumberFormat: { type: StringType, description: 'format of a question number' },
+    optionNumberFormat: { type: StringType, description: 'format of an option number' },
     totalMarks: { type: new NonNull(IntType), description: 'totalMarks in the test' },
     date: { type: new NonNull(StringType), description: 'Date of conducting the test.' },
     startTime: { type: new NonNull(StringType), description: 'Time of test starts, should be in range 00:00 to 23:59' },
@@ -323,6 +371,7 @@ export const InputTestType = new InputObjectType({
     subjectsordered: { type: BooleanType, description: 'Subjects ordered or not' },
     markingSchema: { type: MarkingSchemaType, description: 'Marks distribution' },
     // Qmap: { type: InputQmapType, description: 'Question wise description' },
+    modeOfConduct: { type: new NonNull(ModeOfConductEnumType), description: 'Mode of conduct of the test which can be Online,Offline or Both' },
   },
 });
 
@@ -354,6 +403,8 @@ export const UpdateTestType = new InputObjectType({
   fields: {
     testId: { type: new NonNull(StringType), description: 'Unique identifier for test' },
     testName: { type: StringType, description: 'Name of the test, testName should not be empty! ' },
+    questionNumberFormat: { type: StringType, description: 'format of a question number' },
+    optionNumberFormat: { type: StringType, description: 'format of an option number' },
     totalMarks: { type: IntType, description: 'totalMarks in the test' },
     date: { type: StringType, description: 'Date of conducting the test.' },
     startTime: { type: StringType, description: 'Time of test starts, should be in range 00:00 to 23:59' },
@@ -366,6 +417,8 @@ export const UpdateTestType = new InputObjectType({
     markingSchema: { type: MarkingSchemaType, description: 'Marks distribution' },
     Qmap: { type: new List(InputQmapType), description: 'Mapping the question with subject, topic and subTopic' },
     colorSchema: { type: new List(InputColorSchemaOjbectType), description: 'color schema' },
+    modeOfConduct: { type: ModeOfConductEnumType, description: 'Mode of conduct of the test which can be online,offline or both' },
+
   },
 });
 
@@ -406,12 +459,90 @@ export const ErrorListType = new ObjectType({
   },
 });
 
+export const WarningListType = new ObjectType({
+  name: 'WarningListDataType',
+  description: 'Warning List Item type',
+  fields: {
+    warningCode: { type: StringType, description: 'Internal Warning code' },
+    warningMessage: { type: StringType, description: 'Message to be displayed for the given Warning code.' },
+    data: { type: GraphQLJSON, description: 'List of warnings occured on the given warning code.' },
+  },
+});
+
 export const QmapFileUploadType = new ObjectType({
   name: 'QmapFileUploadType',
   description: 'List of all the the Errors occured',
   fields: {
     data: { type: TestType, description: 'TestType data' },
     errors: { type: new List(ErrorListType), description: 'errors' },
+    warnings: { type: new List(WarningListType), description: 'warning' },
+  },
+});
+export const pageInfoType = new ObjectType({
+  name: 'TestPageInfo',
+  fields() {
+    return {
+      pageNumber: {
+        type: IntType,
+      },
+      nextPage: {
+        type: BooleanType,
+      },
+      prevPage: {
+        type: BooleanType,
+      },
+      totalPages: {
+        type: IntType,
+      },
+      totalEntries: {
+        type: IntType,
+      },
+    };
+  },
+});
+
+export const StudentTestsDetailsType = new ObjectType({
+  name: 'StudentTestsDetailsType',
+  fields() {
+    return {
+      page: {
+        type: new List(StudentTestType),
+      },
+      pageInfo: {
+        type: pageInfoType,
+      },
+    };
+  },
+});
+
+export const TestsDetailsType = new ObjectType({
+  name: 'TestsDetailsType',
+  fields() {
+    return {
+      page: {
+        type: new List(TestType),
+      },
+      pageInfo: {
+        type: pageInfoType,
+      },
+    };
+  },
+});
+
+const SubjectNameType = new ObjectType({
+  name: 'SubjectNameType',
+  fields: {
+    subject: { type: StringType },
+  },
+});
+
+export const TestSubjectDetailsType = new ObjectType({
+  name: 'TestSubjectDetailsType',
+  description: 'TestSubjectDetailsType',
+  fields: {
+    testId: { type: StringType, description: 'test Id' },
+    hierarchyTag: { type: StringType, description: 'test hierarchy tag' },
+    subjects: { type: new List(SubjectNameType) },
   },
 });
 
@@ -425,4 +556,8 @@ export default{
   FileStatusType,
   MoveTestType,
   QmapFileUploadType,
+  pageInfoType,
+  StudentTestsDetailsType,
+  TestsDetailsType,
+  TestSubjectDetailsType,
 };
