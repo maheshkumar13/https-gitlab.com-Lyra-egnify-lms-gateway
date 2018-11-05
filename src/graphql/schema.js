@@ -65,6 +65,7 @@ import { ComparisonRankAnalysis } from './test-management/comparisonAnalysis/com
 import { AllTestResultAnalysis } from './test-management/allTestAnalysis/allTestAnalysis.query';
 // import { ComparisonQuestionAnalysis } from './test-management/comparisonAnalysis/comparisonQuestionAnalysis.query';
 
+
 const schema = new Schema({
   query: new ObjectType({
     name: 'Query',
