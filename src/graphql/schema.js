@@ -58,7 +58,8 @@ import { ComparisonTopicAnalysis } from './test-management/comparisonAnalysis/co
 import { ComparisonErrorAnalysis } from './test-management/comparisonAnalysis/comparisonErrorAnalysis.query';
 import { ComparisonRankAnalysis } from './test-management/comparisonAnalysis/comparisonRankAnalysis.query';
 import { AllTestResultAnalysis } from './test-management/allTestAnalysis/allTestAnalysis.query';
-import { ComparisonQuestionAnalysis } from './test-management/comparisonAnalysis/comparisonQuestionAnalysis.query';
+// import { ComparisonQuestionAnalysis } from
+// './test-management/comparisonAnalysis/comparisonQuestionAnalysis.query';
 
 
 const schema = new Schema({
@@ -125,7 +126,7 @@ const schema = new Schema({
       ComparisonTopicAnalysis,
       ComparisonErrorAnalysis,
       ComparisonRankAnalysis,
-      ComparisonQuestionAnalysis,
+      // ComparisonQuestionAnalysis,
     },
   }),
   mutation: new ObjectType({
