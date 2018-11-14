@@ -26,10 +26,10 @@ export const SubjectList = {
         if (response.status >= 400) {
           return new Error(response.statusText);
         }
-        return response.json();
+        return response.json().then(json =>
+          json.subjectList);
       })
-      .then(json =>
-        json.subjectList)
+
       .catch((err) => {
         console.error(err);
       });
@@ -50,7 +50,6 @@ export const SubjectTaxonomy = {
         }
         return response.json();
       })
-      .then(json => json)
       .catch((err) => {
         console.error(err);
       });

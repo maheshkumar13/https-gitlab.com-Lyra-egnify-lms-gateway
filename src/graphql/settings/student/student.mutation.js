@@ -35,9 +35,9 @@ const GenderEnumType = new GraphQLEnumType({ // eslint-disable-line
 const StatusType = new ObjectType({
   name: 'StatusType',
   fields: {
-    status: { type: StringType ,description: "SUCCESS OR FAILED"},
+    status: { type: StringType, description: 'SUCCESS OR FAILED' },
     message: { type: StringType },
-    failed: {type:GraphQLJSON },
+    failed: { type: GraphQLJSON },
   },
 });
 const StudentInputType = new InputObjectType({
@@ -87,9 +87,6 @@ export const createStudent = {
         }
         return response.json();
       })
-      .then(json =>
-
-        json)
       .catch((err) => {
         console.error(err);
         return err.json();
@@ -119,8 +116,6 @@ export const createManyStudents = {
         }
         return response.json();
       })
-      .then(json =>
-        json)
       .catch((err) => {
         console.error(err);
         return err.json();
@@ -154,9 +149,6 @@ export const deleteStudent = {
         }
         return response.json();
       })
-      .then(json =>
-
-        json)
       .catch((err) => {
         console.error(err);
         return err.json();
@@ -187,8 +179,6 @@ export const editStudent = {
         }
         return response.json();
       })
-      .then(json =>
-        json)
       .catch((err) => {
         console.error(err);
         return err.json();
@@ -220,8 +210,6 @@ export const studentBulkMovement = {
         }
         return response.json();
       })
-      .then(json =>
-        json)
       .catch((err) => {
         console.error(err);
         return err.json();

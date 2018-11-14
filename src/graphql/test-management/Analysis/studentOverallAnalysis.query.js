@@ -31,8 +31,7 @@ export const StudentOverallAverageMarks = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 };
 
@@ -55,8 +54,7 @@ export const StudentOverallCWU = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 };
 
