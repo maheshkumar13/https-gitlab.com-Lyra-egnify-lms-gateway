@@ -2,9 +2,11 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+
+
 replicaCount: 1
 image:
-  repository: registry.gitlab.com/lyra-egnify/hydra-graphql-api-gateway/uat
+  repository: registry.gitlab.com/lyra-egnify/hydra-graphql-api-gateway/spica/qa
   tag: latest
   pullPolicy: Always
   pullSecrets: gitlab-registry-pull-secret
@@ -12,16 +14,16 @@ image:
 #project env
 projectEnv:
   nodeEnv: "production"
-  mongodbUri: "mongodb://hydra:AkdjsAIYHjk87y23l1m2klRrtyhjnmrti92w33@35.200.234.132:27017/tenantregistry-uat"
-  jwtSecret: "KAJDK656kllksklfmFGDFGS765ujh765T6GHAJDSjjjkjiursrdauat"
+  mongodbUri: "mongodb://hydra:AkdjsAIYHjk87y23l1m2klRrtyhjnmrti92w33@35.200.234.132:27017/tenantregistry-spica-qa"
+  jwtSecret: "KAJDK656kllksklfmFGDFGS765ujh765T6GHAJDSjjjkjiursrda"
   mailjetApiKey: "a1fb4988b5a359099061d2cb8aebc80d"
-  apolloEngineKey: "service:hydra-jeet-uat:eXO0RSlhWPxRXOa9sTPIww"
-  svcSettings: "http://settings-uat-hydra.uat.svc.cluster.local"
-  svcTest: "http://test-management-uat-hydra.uat.svc.cluster.local"
-  svcSSO: "http://sso-uat-hydra.uat.svc.cluster.local"
+  apolloEngineKey: "service:hydra-jeet-qa:fj7DVXTWfixFSvqedCfYcg"
+  svcSettings: "http://settings-qa-spica.qa.svc.cluster.local"
+  svcTest: "http://test-management-qa-spica.qa.svc.cluster.local"
+  svcSSO: "http://sso-qa-spica.qa.svc.cluster.local"
 
 service:
-  name: hydra-gateway
+  name: spica-gateway
   tier: backend
   type: ClusterIP
   externalPort: 80
@@ -30,16 +32,16 @@ ingress:
   enabled: true
   # Used to create an Ingress record.
   hosts:
-    - api.uat.hydra.egnify.io
+    - api.qa.spica.egnify.io
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "40M"
     kubernetes.io/ingress.class: nginx
     kubernetes.io/tls-acme: "true"
   tls:
     # Secrets must be manually created in the namespace.
-    - secretName: hydra-gateway-tls-uat
+    - secretName: spica-graphql-gateway-tls-qa
       hosts:
-        - api.uat.hydra.egnify.io
+        - api.qa.spica.egnify.io
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little

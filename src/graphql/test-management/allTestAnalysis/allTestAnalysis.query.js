@@ -72,35 +72,34 @@ export const AllTestResultAnalysis = {
         if (response.status >= 400) {
           return new Error(response.statusText);
         }
-        return response.json();
-      })
-      .then((json) => {
-        const data = {};
-        data.page = json.data;
-        const pageInfo = {};
-        pageInfo.prevPage = true;
-        pageInfo.nextPage = true;
-        pageInfo.pageNumber = args.input.pageNumber;
-        pageInfo.totalPages = Math.ceil(json.count / args.input.limit)
-          ? Math.ceil(json.count / args.input.limit)
-          : 1;
-        pageInfo.totalEntries = json.count;
+        return response.json().then((json) => {
+          const data = {};
+          data.page = json.data;
+          const pageInfo = {};
+          pageInfo.prevPage = true;
+          pageInfo.nextPage = true;
+          pageInfo.pageNumber = args.input.pageNumber;
+          pageInfo.totalPages = Math.ceil(json.count / args.input.limit)
+            ? Math.ceil(json.count / args.input.limit)
+            : 1;
+          pageInfo.totalEntries = json.count;
 
-        if (args.input.pageNumber < 1 || args.input.pageNumber > pageInfo.totalPages) {
-          return new Error('Page Number is invalid');
-        }
+          if (args.input.pageNumber < 1 || args.input.pageNumber > pageInfo.totalPages) {
+            return new Error('Page Number is invalid');
+          }
 
-        if (args.input.pageNumber === pageInfo.totalPages) {
-          pageInfo.nextPage = false;
-        }
-        if (args.input.pageNumber === 1) {
-          pageInfo.prevPage = false;
-        }
-        if (pageInfo.totalEntries === 0) {
-          pageInfo.totalPages = 0;
-        }
-        data.pageInfo = pageInfo;
-        return data;
+          if (args.input.pageNumber === pageInfo.totalPages) {
+            pageInfo.nextPage = false;
+          }
+          if (args.input.pageNumber === 1) {
+            pageInfo.prevPage = false;
+          }
+          if (pageInfo.totalEntries === 0) {
+            pageInfo.totalPages = 0;
+          }
+          data.pageInfo = pageInfo;
+          return data;
+        });
       })
       .catch(err => new Error(err.message));
   },

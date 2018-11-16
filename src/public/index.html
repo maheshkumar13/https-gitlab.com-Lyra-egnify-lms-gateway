@@ -17,26 +17,32 @@ if(localStorage){
 		$(".save").click(function(){
 			// Get input name
 			var jwtToken = $("#jwtToken").val();
-
+			var accessToken = $("#accessToken").val();
 			// Store data
-    		localStorage.setItem("jwt_token", jwtToken);
+			localStorage.setItem("jwt_token", jwtToken);
+			localStorage.setItem("token", accessToken);
 			alert("JWT is saved.");
 		});
 		$(".access").click(function(){
 			// Retrieve data
-    		alert("JWT: " + localStorage.getItem("jwt_token"));
+    		alert("JWT: " + localStorage.getItem("jwt_token")+'\n\n'+"Access Token: "+localStorage.getItem("token"));
 		});
+		$
 	});
 } else{
     alert("Sorry, your browser do not support local storage.");
 }
+
+
 </script>
 </head>
 <body>
     <form>
-    	<label>JWT: <input type="text" id="jwtToken" placeholder=" Bearer yourLongJwtToken"></label>
-        <button type="button" class="save">Set JWT</button>
-        <button type="button" class="access">Show JWT</button>
+		<label>JWT: <input type="text" id="jwtToken" placeholder="Bearer TOKEN"></label>
+
+		<label>ACCESS TOKEN: <input type="text" id="accessToken" placeholder="TOKEN"></label>
+		<button type="button" class="save" >Save JWT</button>
+		<button type="button" class="access">Show JWT</button>
     </form>
 </body>
 </html>
