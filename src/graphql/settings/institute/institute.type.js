@@ -46,7 +46,7 @@ export const InstituteType = new ObjectType({
   fields: {
     hierarchy: { type: new List(HierarchyType) },
     email: { type: StringType },
-    phone: { type: IntType },
+    phone: { type: StringType },
     instituteName: { type: StringType },
     instituteType: { type: StringType },
     ownerName: { type: StringType },
@@ -60,6 +60,7 @@ export const InstituteType = new ObjectType({
     proofOfRegistrationUrl: { type: StringType },
     proofOfRegistrationUrlFileName: { type: StringType },
     academicSchedule: { type: AcademicScheduleType },
+    otpUrl: { type: StringType },
     googleTrackingId: { type: StringType },
   },
 });

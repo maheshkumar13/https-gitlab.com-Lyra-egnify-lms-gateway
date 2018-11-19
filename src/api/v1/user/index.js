@@ -4,8 +4,8 @@ import * as auth from '../../../auth/auth.service';
 
 const router = new Router();
 
-router.get('/', auth.hasRole('admin'), controller.index);
-router.delete('/:id', auth.hasRole('admin'), controller.destroy);
+// router.get('/', auth.hasRole('admin'), controller.index);
+// router.delete('/:id', auth.hasRole('admin'), controller.destroy);
 router.get('/me', auth.isAuthenticated(), controller.me);
 router.put('/password', auth.isAuthenticated(), controller.changePassword);
 router.put('/:id/username', auth.isAuthenticated(), controller.changeUsername);

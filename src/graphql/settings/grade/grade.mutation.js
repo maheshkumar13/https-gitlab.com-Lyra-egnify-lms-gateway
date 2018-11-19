@@ -46,7 +46,6 @@ export const createGradePattern = {
         }
         return response.json();
       })
-      .then(json => json)
       .catch((err) => {
         console.error(err);
       });
@@ -70,7 +69,6 @@ export const createGradeSystem = {
         }
         return response.json();
       })
-      .then(json => json)
       .catch((err) => {
         console.error(err);
       });
@@ -93,7 +91,6 @@ export const updateGradeSystem = {
         }
         return response.json();
       })
-      .then(json => json)
       .catch((err) => {
         console.error(err);
       });
@@ -116,7 +113,6 @@ export const updateGradePattern = {
         }
         return response.json();
       })
-      .then(json => json)
       .catch((err) => {
         console.error(err);
       });

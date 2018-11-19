@@ -12,6 +12,7 @@ const uploadFile = require('./uploadFile');
 const downloadReports = require('./downloadReports');
 const user = require('./user');
 const auth = require('./../../auth').default;
+const authValidation = require('./authValidation');
 const converter = require('./converter');
 
 const { Duplex } = stream;
@@ -40,6 +41,7 @@ export default function (app) {
   app.use('/api/v1/users', user);
   app.use('/api/v1/downloadReports', downloadReports);
   app.use('/auth', auth);
+  app.use('/api/v1/authValidation', authValidation);
 
   // Proxy Request below
   app.post(
