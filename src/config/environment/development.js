@@ -10,7 +10,7 @@ module.exports = {
   // Seed database on startup
   seedDB: true,
   services: {
-    settings: 'http://localhost:5001',
+    settings: 'http://localhost:5003',
     test: 'http://localhost:5002',
   },
   apolloEngineKey: 'service:egnify-jeet-dev:-aBvwR1LrRIp5ym1C6gVPQ',
