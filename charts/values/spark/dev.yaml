@@ -12,7 +12,7 @@ image:
 #project env
 projectEnv:
   nodeEnv: "production"
-  mongodbUri: "mongodb://hydra:AkdjsAIYHjk87y23l1m2klRrtyhjnmrti92w33@35.200.196.38:27017/tenantregistry"
+  mongodbUri: "mongodb://hydra:AkdjsAIYHjk87y23l1m2klRrtyhjnmrti92w33@35.200.218.1:27017/tenantregistry"
   jwtSecret: "KAJDK656kllksklfmFGDFGS765ujh765T6GHAJDSjjjkjiursrda"
   mailjetApiKey: "a1fb4988b5a359099061d2cb8aebc80d"
   apolloEngineKey: "service:hydra-jeet-dev:b9DCNb7tCkPO6TO5xHIdmw"

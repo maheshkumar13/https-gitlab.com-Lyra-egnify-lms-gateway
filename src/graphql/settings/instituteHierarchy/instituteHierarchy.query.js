@@ -59,10 +59,9 @@ export const InstituteHierarchySample = {
       },
       context,
     )
-      .then(response => response.json())
-      .then((json) => {
-      
-        return { csvString: json.headers };
+      .then((response) => {
+        if (response.status >= 400) return new Error(response.statusText);
+        return response.json().then(json => ({ csvString: json.headers }));
       });
   },
 };
@@ -112,12 +111,9 @@ export const InstituteHierarchy = {
       context,
     )
       .then(async (response) => {
-        if (response.status >= 400) {
-          return new Error(response.statusText);
-        }
+        if (response.status >= 400) return new Error(response.statusText);
         return response.json();
       })
-      .then(json => json)
       .catch((err) => {
         console.error(err);
       });

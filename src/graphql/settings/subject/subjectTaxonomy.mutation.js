@@ -30,7 +30,6 @@ export const createSubjects = {
         }
         return response.json();
       })
-      .then(json => json)
       .catch((err) => {
         console.error(err);
       });
@@ -55,9 +54,6 @@ export const removeSubjectTaxonomy = {
         }
         return response.json();
       })
-      .then(json =>
-
-        json)
       .catch((err) => {
         console.error(err);
         return err.json();
@@ -88,9 +84,6 @@ export const updateSubjectTaxonomy = {
         }
         return response.json();
       })
-      .then(json =>
-
-        json)
       .catch((err) => {
         console.error(err);
         return err.json();
