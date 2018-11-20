@@ -97,6 +97,7 @@ export const CommonAnalysis = {
   args: {
     testIds: { type: new List(StringType) },
     studentId: { type: StringType },
+    getTestAvg: { type: BooleanType},
     filter: { type: new List(FilterInputType) },
 
   },
@@ -313,6 +314,36 @@ export const MarkAnalysisGraphDataV2 = {
       .catch(err => new Error(err.message));
   },
 };
+
+export const MarkAnalysisGraphDataAllTests = {
+  args: {
+    testIds: { type: new List(StringType), description: 'List of strings with testIds' },
+    testType: { type: new NonNull(StringType), description: 'test type of the tests for mark Analysis Calculation' },
+    studentIds: { type: new List(StringType), description: 'List of strings with studentIds' },
+    divisons: { type: IntType, description: 'Number of divisions' },
+    start: { type: IntType, description: 'Starting point on x-axis ' },
+    end: { type: IntType, description: 'End point on description' },
+    precision: { type: IntType, description: 'Max number of decimal places ' },
+    filter: { type: new List(FilterInputType) },
+  },
+  type: GraphQLJSON,
+  async resolve(obj, args, context) {
+    const url = `${config.services.test}/api/v1/allTestsAnalysis/read/markAnalysisGraphDataV2`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .catch(err => new Error(err.message));
+  },
+};
+
 export const MarksDistributionAnalysis = {
   args: {
     testId: { type: new NonNull(StringType), description: 'Test Id of a particular test' },

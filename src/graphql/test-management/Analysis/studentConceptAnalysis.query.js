@@ -2,7 +2,7 @@ import {
   // GraphQLObjectType as ObjectType,
   GraphQLString as StringType,
   GraphQLNonNull as NonNull,
-  // GraphQLBoolean as BooleanType,
+  GraphQLBoolean as BooleanType,
   GraphQLInt as IntType,
   // GraphQLList as List,
   // GraphQLFloat as FloatType,
@@ -18,6 +18,7 @@ export const StudentConceptAnalysis = {
   args: {
     studentId: { type: new NonNull(StringType), description: 'studentId' },
     testId: { type: StringType, description: 'Unique identifier for the test' },
+    ascendingOrder: { type: BooleanType, description: 'Sorting Order' },
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) {
