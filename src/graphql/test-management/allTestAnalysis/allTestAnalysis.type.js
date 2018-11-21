@@ -8,12 +8,9 @@ import {
   GraphQLObjectType as ObjectType,
   GraphQLString as StringType,
   GraphQLNonNull as NonNull,
-  // GraphQLBoolean as BooleanType,
   GraphQLInt as IntType,
   GraphQLList as List,
-  // GraphQLFloat as FloatType,
   GraphQLInputObjectType as InputObjectType,
-  // GraphQLEnumType,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import { FilterInputType } from '../ga/ga.type';

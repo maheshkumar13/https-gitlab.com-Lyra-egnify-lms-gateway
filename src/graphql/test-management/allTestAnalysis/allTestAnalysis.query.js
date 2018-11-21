@@ -1,14 +1,11 @@
 import {
   GraphQLString as StringType,
-  // GraphQLNonNull as NonNull,
   GraphQLBoolean as BooleanType,
   GraphQLList as List,
   GraphQLInt as IntType,
   GraphQLFloat as FloatType,
   GraphQLObjectType as ObjectType,
 } from 'graphql';
-
-import GraphQLJSON from 'graphql-type-json';
 import { config } from '../../../config/environment';
 import fetch from '../../../utils/fetch';
 import { AllTestAvergareResultsType, allTestResultsInputType } from './allTestAnalysis.type';
@@ -82,7 +79,6 @@ export const AllTestAnalysisPaginatedType = new ObjectType({
   },
 });
 
-// export
 
 export const AllTestResultAnalysis = {
   args: {
@@ -106,7 +102,6 @@ export const AllTestResultAnalysis = {
           return new Error(response.statusText);
         }
         return response.json().then((json) => {
-          // console.log("response", json.testStats);
           const data = {};
           data.page = json.data;
           data.testStats = json.testStats;
