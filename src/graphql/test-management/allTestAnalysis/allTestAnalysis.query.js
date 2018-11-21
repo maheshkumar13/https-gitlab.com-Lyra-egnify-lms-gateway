@@ -1,13 +1,13 @@
 import {
-  GraphQLString as StringType,
-  GraphQLNonNull as NonNull,
+  // GraphQLString as StringType,
+  // GraphQLNonNull as NonNull,
   GraphQLBoolean as BooleanType,
   GraphQLList as List,
   GraphQLInt as IntType,
   GraphQLObjectType as ObjectType,
 } from 'graphql';
 
-// import GraphQLJSON from 'graphql-type-json';
+import GraphQLJSON from 'graphql-type-json';
 import { config } from '../../../config/environment';
 import fetch from '../../../utils/fetch';
 import { AllTestAvergareResultsType, allTestResultsInputType } from './allTestAnalysis.type';
@@ -35,6 +35,23 @@ const pageInfoType = new ObjectType({
   },
 });
 
+// const testStatsType = new ObjectType({
+//   name: 'AllTestResultsTestStatsType',
+//   fields() {
+//     return {
+//       min: {
+//         type: IntType,
+//       },
+//       max: {
+//         type: IntType,
+//       },
+//       avg: {
+//         type: IntType,
+//       },
+//     };
+//   },
+// });
+
 export const AllTestAnalysisPaginatedType = new ObjectType({
   name: 'allTestResultAnalysisPaginatedType',
   fields() {
@@ -44,6 +61,9 @@ export const AllTestAnalysisPaginatedType = new ObjectType({
       },
       pageInfo: {
         type: pageInfoType,
+      },
+      testStats: {
+        type: new List(GraphQLJSON),
       },
     };
   },
@@ -73,8 +93,10 @@ export const AllTestResultAnalysis = {
           return new Error(response.statusText);
         }
         return response.json().then((json) => {
+          // console.log("response", json.testStats);
           const data = {};
           data.page = json.data;
+          data.testStats = json.testStats;
           const pageInfo = {};
           pageInfo.prevPage = true;
           pageInfo.nextPage = true;
