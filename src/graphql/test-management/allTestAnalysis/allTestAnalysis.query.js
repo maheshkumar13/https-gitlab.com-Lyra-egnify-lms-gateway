@@ -1,9 +1,10 @@
 import {
-  // GraphQLString as StringType,
+  GraphQLString as StringType,
   // GraphQLNonNull as NonNull,
   GraphQLBoolean as BooleanType,
   GraphQLList as List,
   GraphQLInt as IntType,
+  GraphQLFloat as FloatType,
   GraphQLObjectType as ObjectType,
 } from 'graphql';
 
@@ -35,22 +36,34 @@ const pageInfoType = new ObjectType({
   },
 });
 
-// const testStatsType = new ObjectType({
-//   name: 'AllTestResultsTestStatsType',
-//   fields() {
-//     return {
-//       min: {
-//         type: IntType,
-//       },
-//       max: {
-//         type: IntType,
-//       },
-//       avg: {
-//         type: IntType,
-//       },
-//     };
-//   },
-// });
+const testStatsType = new ObjectType({
+  name: 'AllTestResultsTestStatsType',
+  fields() {
+    return {
+      minPercent: {
+        type: FloatType,
+      },
+      minMarks: {
+        type: FloatType,
+      },
+      maxMarks: {
+        type: FloatType,
+      },
+      maxPercent: {
+        type: FloatType,
+      },
+      avgPercentage: {
+        type: FloatType,
+      },
+      avgMarks: {
+        type: FloatType,
+      },
+      subject: {
+        type: StringType,
+      },
+    };
+  },
+});
 
 export const AllTestAnalysisPaginatedType = new ObjectType({
   name: 'allTestResultAnalysisPaginatedType',
@@ -63,7 +76,7 @@ export const AllTestAnalysisPaginatedType = new ObjectType({
         type: pageInfoType,
       },
       testStats: {
-        type: new List(GraphQLJSON),
+        type: new List(testStatsType),
       },
     };
   },
