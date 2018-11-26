@@ -64,8 +64,13 @@ import { ComparisonTopicErrorAnalysis } from './test-management/comparisonAnalys
 import { ComparisonErrorAnalysis } from './test-management/comparisonAnalysis/comparisonErrorAnalysis.query';
 import { ComparisonRankAnalysis } from './test-management/comparisonAnalysis/comparisonRankAnalysis.query';
 import { AllTestResultAnalysis } from './test-management/allTestAnalysis/allTestAnalysis.query';
+<<<<<<< HEAD
 // import { ComparisonQuestionAnalysis } from
 // './test-management/comparisonAnalysis/comparisonQuestionAnalysis.query';
+=======
+// import { ComparisonQuestionAnalysis } from './test-management/comparisonAnalysis/comparisonQuestionAnalysis.query';
+
+>>>>>>> 0995c0cc09b3d4837beb68efc594c73947a3cfab
 
 const schema = new Schema({
   query: new ObjectType({
