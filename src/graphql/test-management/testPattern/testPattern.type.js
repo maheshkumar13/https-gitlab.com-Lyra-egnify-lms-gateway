@@ -38,6 +38,21 @@ const QuestionEnumType = new EnumType({
   },
 });
 
+export const markingSchemaEnumType = new EnumType({ // eslint-disable-line
+  name: 'markingSchemaEnumType',
+  values: {
+    competitiveExam: {
+      value: 'competitiveExam',
+    },
+    olympiad: {
+      value: 'olympiad',
+    },
+    acads: {
+      value: 'acads',
+    },
+  },
+});
+
 
 const InputSubjectMarksType = new InputObjectType({
   name: 'InputSubjectMarksType',
@@ -81,6 +96,7 @@ export const InputTestPatternSchemaType = new InputObjectType({
     totalQuestions: { type: new NonNull(IntType), description: 'Total number of questions in the test' },
     totalMarks: { type: new NonNull(IntType), description: 'Total marks in the test' },
     subjects: { type: new NonNull(new List(InputSubjectsType)), description: 'Marks distribution' },
+    markingSchemaType: { type: new NonNull(markingSchemaEnumType), description: 'Type of marking schema' },
   },
 });
 
@@ -133,6 +149,7 @@ export const TestPatternSchemaType = new ObjectType({
     totalQuestions: { type: IntType, description: 'Total number of questions in the test' },
     totalMarks: { type: IntType, description: 'Total marks in the test' },
     subjects: { type: new List(SubjectsType), description: 'Marks distribution' },
+    markingSchemaType: { type: markingSchemaEnumType, description: 'Type of marking schema' },
   },
 });
 
@@ -140,4 +157,5 @@ export const TestPatternSchemaType = new ObjectType({
 export default{
   InputTestPatternSchemaType,
   TestPatternSchemaType,
+  markingSchemaEnumType,
 };
