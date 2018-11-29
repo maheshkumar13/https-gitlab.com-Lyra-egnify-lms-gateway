@@ -22,9 +22,8 @@ export const Curriculum = {
         if (response.status >= 400) {
           return new Error(response.statusText);
         }
-        return response.json();
+        return response.json().then(json => json.curriclumList);
       })
-      .then(json => json.curriclumList)
       .catch((err) => {
         console.error(err);
       });

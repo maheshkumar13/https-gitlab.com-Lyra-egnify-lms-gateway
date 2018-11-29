@@ -68,7 +68,6 @@ export const GenerateConceptTaxonomy = {
         }
         return response.json();
       })
-      .then(json => json)
       .catch((err) => {
         console.error(err);
         return err.json();
@@ -104,10 +103,11 @@ export const ConceptTaxonomyType = new ObjectType({
           },
           context,
         )
-          .then(response => response.json())
-          .then((json) => {
-          
-            return json;
+          .then(async (response) => {
+            if (response.status >= 400) {
+              return new Error(response.statusText);
+            }
+            return response.json();
           });
       },
     },
@@ -141,8 +141,7 @@ export const conceptTaxonomy = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 };
 
@@ -173,8 +172,7 @@ export const ConceptTaxonomyTree = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 
 };

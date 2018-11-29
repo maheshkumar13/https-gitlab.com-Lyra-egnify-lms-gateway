@@ -17,6 +17,7 @@ module.exports = {
   services: {
     settings: process.env.SVC_SETTINGS || 'http://settings-dev-hydra.dev.svc.cluster.local',
     test: process.env.SVC_TEST || 'http://test-management-dev-hydra.dev.svc.cluster.local',
+    sso: process.env.SVC_SSO || 'http://localhost:3002',
   },
   apolloEngineKey: process.env.APOLLO_ENGINE_KEY || 'XXXX',
 };

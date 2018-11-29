@@ -38,8 +38,7 @@ export const removeTest = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 };
 
@@ -61,8 +60,7 @@ export const createDummyTest = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 };
 
@@ -83,8 +81,7 @@ export const createDuplicateTest = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 };
 
@@ -115,8 +112,7 @@ export const createTest = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
   description: 'Create test',
 };
@@ -139,7 +135,6 @@ export const updateTest = {
         }
         return response.json();
       })
-      .then(json => json)
       .catch(err => new Error(err.message)); // eslint-disable-line
   },
   description: 'Defined fields get updated',
@@ -158,15 +153,11 @@ export const QmapFileUpload = {
       body: JSON.stringify(args),
       headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     }, context)
-      .then(response =>
-        // if (response.status >= 400) {
-        //   console.info(response.json());
-        //
-        //   return new Error(response.statusText);
-        // }
-        // console.info(response.json());
-        response.json())
-      .then(json => json)
+      .then((response) => {
+        // only throw error when access is forbidden else it gives the list of errors to show in UI
+        if (response.status === 403) { return new Error(response.statusText); }
+        return response.json();
+      })
       .catch(err => new Error(err.message)); // eslint-disable-line
   },
   description: 'Old Qmap will get totally replaced',
