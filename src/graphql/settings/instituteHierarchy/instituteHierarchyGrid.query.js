@@ -103,9 +103,10 @@ export const LevelFilters = {
         headers: { 'Content-Type': 'application/json' },
       },
       context,
-    )
-      .then(response => response.json())
-      .then(json => json.data);
+    ).then(async (response) => {
+      if (response.status >= 400) return new Error(response.statusText);
+      return response.json().then(json => json.data);
+    });
   },
 };
 
@@ -166,36 +167,35 @@ export const InstituteHierarchyGrid = {
         if (response.status >= 400) {
           return new Error(response.statusText);
         }
-        return response.json();
-      })
-      .then((json) => {
-        if (json.data) {
-          const pageInfo = {};
-          const resp = {};
-          pageInfo.prevPage = true;
-          pageInfo.nextPage = true;
-          pageInfo.pageNumber = args.pageNumber;
-          pageInfo.totalPages = Math.ceil(json.count / args.limit)
-            ? Math.ceil(json.count / args.limit)
-            : 1;
-          pageInfo.totalEntries = json.count;
-          resp.data = json.data;
+        return response.json().then((json) => {
+          if (json.data) {
+            const pageInfo = {};
+            const resp = {};
+            pageInfo.prevPage = true;
+            pageInfo.nextPage = true;
+            pageInfo.pageNumber = args.pageNumber;
+            pageInfo.totalPages = Math.ceil(json.count / args.limit)
+              ? Math.ceil(json.count / args.limit)
+              : 1;
+            pageInfo.totalEntries = json.count;
+            resp.data = json.data;
 
-          if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
-            throw new Error('Page Number is invalid');
-          }
+            if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+              throw new Error('Page Number is invalid');
+            }
 
-          if (args.pageNumber === pageInfo.totalPages) {
-            pageInfo.nextPage = false;
-          }
-          if (args.pageNumber === 1) {
-            pageInfo.prevPage = false;
-          }
+            if (args.pageNumber === pageInfo.totalPages) {
+              pageInfo.nextPage = false;
+            }
+            if (args.pageNumber === 1) {
+              pageInfo.prevPage = false;
+            }
 
-          resp.pageInfo = pageInfo;
-          return resp;
-        }
-        return json;
+            resp.pageInfo = pageInfo;
+            return resp;
+          }
+          return json;
+        });
       })
       .catch((err) => {
         console.error(err);

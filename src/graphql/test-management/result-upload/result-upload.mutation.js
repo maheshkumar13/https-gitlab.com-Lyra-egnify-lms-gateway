@@ -81,7 +81,7 @@ export const uploadResult = {
           return new Error(response.statusText);
         }
         return response.json();
-      }).then(json => json);
+      });
   },
 };
 
@@ -106,7 +106,7 @@ export const uploadResultV2 = {
           return new Error(response.statusText);
         }
         return response.json();
-      }).then(json => json);
+      });
   },
 };
 
@@ -130,7 +130,7 @@ export const updateUploadedResultV2 = {
           return new Error(response.statusText);
         }
         return response.json();
-      }).then(json => json);
+      });
   },
 };
 
@@ -154,7 +154,7 @@ export const updateUploadedResult = {
           return new Error(response.statusText);
         }
         return response.json();
-      }).then(json => json);
+      });
   },
 };
 
@@ -178,8 +178,7 @@ export const comfirmMissingV2 = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 };
 
@@ -202,8 +201,7 @@ export const comfirmMissing = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 };
 
@@ -226,8 +224,7 @@ export const deleteResultV2 = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 };
 
@@ -251,8 +248,7 @@ export const deleteResult = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 };
 

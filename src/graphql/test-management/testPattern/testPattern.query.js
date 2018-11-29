@@ -20,6 +20,7 @@ import { TestPatternSchemaType } from './testPattern.type';
 export const TestPatternSchema = {
   args: {
     testName: { type: StringType },
+    testType: { type: StringType },
   },
   type: new List(TestPatternSchemaType),
   async resolve(obj, args, context) {
@@ -34,8 +35,7 @@ export const TestPatternSchema = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 };
 

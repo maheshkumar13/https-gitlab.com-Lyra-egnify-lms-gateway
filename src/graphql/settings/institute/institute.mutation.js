@@ -84,9 +84,6 @@ export const createInstitute = {
         }
         return response.json();
       })
-      .then((json) => {
-        return json;
-      })
       .catch((err) => {
         console.error(err);
       });
@@ -120,9 +117,6 @@ export const updateInstitute = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then((json) => {
-        return json;
       })
       .catch((err) => {
         console.error(err);
@@ -166,9 +160,6 @@ export const updateHierarchy = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then((json) => {
-        return json;
       })
       .catch((err) => {
         console.error(err);

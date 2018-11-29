@@ -31,7 +31,7 @@ import { SortType } from '../question/question.type';
 //     return fetch(url, { method: 'POST', body: gaBody, headers: { 'Content-Type': 'application/json' } })
 //       .then((response) => {
 //         if (response.status >= 400) {
-//           return new Error(response.statusText);
+//           throw new Error(response.statusText);
 //         }
 //         return response.json();
 //       })
@@ -41,6 +41,20 @@ import { SortType } from '../question/question.type';
 //   },
 // };
 
+function handleCAFetch(url, args, context) {
+  return fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(args),
+    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+  }, context)
+    .then((response) => {
+      if (response.status >= 400) {
+        throw new Error(response.statusText);
+      }
+      return response.json();
+    })
+    .catch(err => new Error(err.message));
+}
 
 const pageInfoType = new ObjectType({
   name: 'CommonAnalysisPageInfo',
@@ -92,24 +106,31 @@ const CommonAnalysisDetailsType = new ObjectType({
   },
 });
 
-
 export const CommonAnalysis = {
   args: {
     testIds: { type: new List(StringType) },
     studentId: { type: StringType },
+    getTestAvg: { type: BooleanType},
     filter: { type: new List(FilterInputType) },
 
   },
   type: new List(CommonAnalysisType),
   async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/masterResult/read/withMultipleTestIds`;
-    return fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(args),
-	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    }, context)
-      .then(response => response.json())
-      .catch(err => new Error(err.message));
+    return handleCAFetch(url, args, context);
+  },
+};
+
+export const CommonAnalysisForStudentProfile = {
+  args: {
+    testIds: { type: new List(StringType) },
+    filter: { type: new List(FilterInputType) },
+  },
+  type: new List(CommonAnalysisType),
+  async resolve(obj, args, context) {
+    args.studentId = context.user.username;
+    const url = `${config.services.test}/api/v1/masterResult/student/read/withMultipleTestIds`;
+    return handleCAFetch(url, args, context);
   },
 };
 
@@ -137,6 +158,31 @@ export const StudentAverageMarks = {
       .catch(err => new Error(err.message));
   },
 };
+
+export const StudentAverageMarksForStudentProfile = {
+  args: {
+    testIds: { type: new List(StringType) },
+    testType: { type: new NonNull(StringType) },
+    filter: { type: new List(FilterInputType) },
+  },
+  type: new List(MarkAnalysisType),
+  async resolve(obj, args, context) {
+    const url = `${config.services.test}/api/v1/masterResult/student/read/studentAverageWithMultipleTestIds`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .catch(err => new Error(err.message));
+  },
+};
+
 export const CommonAnalysisPaginated = {
   args: {
     testIds: { type: new List(StringType) },
@@ -162,37 +208,37 @@ export const CommonAnalysisPaginated = {
     }, context)
       .then((response) => {
         if (response.status >= 400) {
-          return new Error(response.statusText);
+          throw new Error(response.statusText);
         }
-        return response.json();
-      })
-      .then((json) => {
-        const data = {};
-        data.page = json.data;
-        const pageInfo = {};
-        pageInfo.prevPage = true;
-        pageInfo.nextPage = true;
-        pageInfo.pageNumber = args.pageNumber;
-        pageInfo.totalPages = Math.ceil(json.count / args.limit)
-          ? Math.ceil(json.count / args.limit)
-          : 1;
-        pageInfo.totalEntries = json.count;
+        return response.json()
+          .then((json) => {
+            const data = {};
+            data.page = json.data;
+            const pageInfo = {};
+            pageInfo.prevPage = true;
+            pageInfo.nextPage = true;
+            pageInfo.pageNumber = args.pageNumber;
+            pageInfo.totalPages = Math.ceil(json.count / args.limit)
+              ? Math.ceil(json.count / args.limit)
+              : 1;
+            pageInfo.totalEntries = json.count;
 
-        if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
-          return new Error('Page Number is invalid');
-        }
+            if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+              return new Error('Page Number is invalid');
+            }
 
-        if (args.pageNumber === pageInfo.totalPages) {
-          pageInfo.nextPage = false;
-        }
-        if (args.pageNumber === 1) {
-          pageInfo.prevPage = false;
-        }
-        if (pageInfo.totalEntries === 0) {
-          pageInfo.totalPages = 0;
-        }
-        data.pageInfo = pageInfo;
-        return data;
+            if (args.pageNumber === pageInfo.totalPages) {
+              pageInfo.nextPage = false;
+            }
+            if (args.pageNumber === 1) {
+              pageInfo.prevPage = false;
+            }
+            if (pageInfo.totalEntries === 0) {
+              pageInfo.totalPages = 0;
+            }
+            data.pageInfo = pageInfo;
+            return data;
+          });
       })
       .catch(err => new Error(err.message));
   },
@@ -222,37 +268,37 @@ export const LeaderBoardPaginated = {
     }, context)
       .then((response) => {
         if (response.status >= 400) {
-          return new Error(response.statusText);
+          throw new Error(response.statusText);
         }
-        return response.json();
-      })
-      .then((json) => {
-        const data = {};
-        data.page = json.data;
-        const pageInfo = {};
-        pageInfo.prevPage = true;
-        pageInfo.nextPage = true;
-        pageInfo.pageNumber = args.pageNumber;
-        pageInfo.totalPages = Math.ceil(json.count / args.limit)
-          ? Math.ceil(json.count / args.limit)
-          : 1;
-        pageInfo.totalEntries = json.count;
+        return response.json()
+          .then((json) => {
+            const data = {};
+            data.page = json.data;
+            const pageInfo = {};
+            pageInfo.prevPage = true;
+            pageInfo.nextPage = true;
+            pageInfo.pageNumber = args.pageNumber;
+            pageInfo.totalPages = Math.ceil(json.count / args.limit)
+              ? Math.ceil(json.count / args.limit)
+              : 1;
+            pageInfo.totalEntries = json.count;
 
-        if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
-          return new Error('Page Number is invalid');
-        }
+            if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+              return new Error('Page Number is invalid');
+            }
 
-        if (args.pageNumber === pageInfo.totalPages) {
-          pageInfo.nextPage = false;
-        }
-        if (args.pageNumber === 1) {
-          pageInfo.prevPage = false;
-        }
-        if (pageInfo.totalEntries === 0) {
-          pageInfo.totalPages = 0;
-        }
-        data.pageInfo = pageInfo;
-        return data;
+            if (args.pageNumber === pageInfo.totalPages) {
+              pageInfo.nextPage = false;
+            }
+            if (args.pageNumber === 1) {
+              pageInfo.prevPage = false;
+            }
+            if (pageInfo.totalEntries === 0) {
+              pageInfo.totalPages = 0;
+            }
+            data.pageInfo = pageInfo;
+            return data;
+          });
       })
       .catch(err => new Error(err.message));
   },
@@ -278,7 +324,7 @@ export const MarkAnalysisGraphData = {
     }, context)
       .then((response) => {
         if (response.status >= 400) {
-          return new Error(response.statusText);
+          throw new Error(response.statusText);
         }
         return response.json();
       })
@@ -305,6 +351,7 @@ export const MarkAnalysisGraphDataV2 = {
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     }, context)
       .then((response) => {
+        console.info('response.status', response.status);
         if (response.status >= 400) {
           return new Error(response.statusText);
         }
@@ -313,6 +360,36 @@ export const MarkAnalysisGraphDataV2 = {
       .catch(err => new Error(err.message));
   },
 };
+
+export const MarkAnalysisGraphDataAllTests = {
+  args: {
+    testIds: { type: new List(StringType), description: 'List of strings with testIds' },
+    testType: { type: new NonNull(StringType), description: 'test type of the tests for mark Analysis Calculation' },
+    studentIds: { type: new List(StringType), description: 'List of strings with studentIds' },
+    divisons: { type: IntType, description: 'Number of divisions' },
+    start: { type: IntType, description: 'Starting point on x-axis ' },
+    end: { type: IntType, description: 'End point on description' },
+    precision: { type: IntType, description: 'Max number of decimal places ' },
+    filter: { type: new List(FilterInputType) },
+  },
+  type: GraphQLJSON,
+  async resolve(obj, args, context) {
+    const url = `${config.services.test}/api/v1/allTestsAnalysis/read/markAnalysisGraphDataV2`;
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(args),
+	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
+    }, context)
+      .then((response) => {
+        if (response.status >= 400) {
+          return new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .catch(err => new Error(err.message));
+  },
+};
+
 export const MarksDistributionAnalysis = {
   args: {
     testId: { type: new NonNull(StringType), description: 'Test Id of a particular test' },
@@ -328,7 +405,11 @@ export const MarksDistributionAnalysis = {
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     }, context)
-      .then(response => response.json())
+      .then((response) => {
+        if (response.status >= 400) {
+          throw new Error(response.statusText);
+        } return response.json();
+      })
       .catch(err => new Error(err.message));
   },
 
@@ -350,7 +431,10 @@ export const MarksDistributionAnalysisV2 = {
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     }, context)
-      .then(response => response.json())
+      .then((response) => {
+        if (response.status >= 400) { throw new Error(response.statusText); }
+        return response.json();
+      })
       .catch(err => new Error(err.message));
   },
 
@@ -407,7 +491,10 @@ export const MarksDistributionAnalysisV3 = {
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     }, context)
-      .then(response => response.json())
+      .then((response) => {
+        if (response.status >= 400) { throw new Error(response.statusText); }
+        return response.json();
+      })
       .catch(err => new Error(err.message));
   },
 
@@ -427,7 +514,11 @@ export const QuestionErrorAnalysis = {
       body: JSON.stringify(args),
 	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     }, context)
-      .then(response => response.json())
+      .then((response) => {
+        if (response.status >= 400) {
+          throw new Error(response.statusText);
+        } return response.json();
+      })
       .catch(err => new Error(err.message));
   },
 };
@@ -448,7 +539,7 @@ export const StudentPerformanceTrendAnalysis = {
     }, context)
       .then((response) => {
         if (response.status >= 400) {
-          return new Error(response.statusText);
+          throw new Error(response.statusText);
         }
         return response.json();
       })
@@ -491,37 +582,37 @@ export const StudentPerformanceTrendAnalysisPaginated = {
     }, context)
       .then((response) => {
         if (response.status >= 400) {
-          return new Error(response.statusText);
+          throw new Error(response.statusText);
         }
-        return response.json();
-      })
-      .then((json) => {
-        const data = {};
-        data.page = json.data;
-        const pageInfo = {};
-        pageInfo.prevPage = true;
-        pageInfo.nextPage = true;
-        pageInfo.pageNumber = args.pageNumber;
-        pageInfo.totalPages = Math.ceil(json.count / args.limit)
-          ? Math.ceil(json.count / args.limit)
-          : 1;
-        pageInfo.totalEntries = json.count;
+        return response.json()
+          .then((json) => {
+            const data = {};
+            data.page = json.data;
+            const pageInfo = {};
+            pageInfo.prevPage = true;
+            pageInfo.nextPage = true;
+            pageInfo.pageNumber = args.pageNumber;
+            pageInfo.totalPages = Math.ceil(json.count / args.limit)
+              ? Math.ceil(json.count / args.limit)
+              : 1;
+            pageInfo.totalEntries = json.count;
 
-        if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
-          return new Error('Page Number is invalid');
-        }
+            if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+              return new Error('Page Number is invalid');
+            }
 
-        if (args.pageNumber === pageInfo.totalPages) {
-          pageInfo.nextPage = false;
-        }
-        if (args.pageNumber === 1) {
-          pageInfo.prevPage = false;
-        }
-        if (pageInfo.totalEntries === 0) {
-          pageInfo.totalPages = 0;
-        }
-        data.pageInfo = pageInfo;
-        return data;
+            if (args.pageNumber === pageInfo.totalPages) {
+              pageInfo.nextPage = false;
+            }
+            if (args.pageNumber === 1) {
+              pageInfo.prevPage = false;
+            }
+            if (pageInfo.totalEntries === 0) {
+              pageInfo.totalPages = 0;
+            }
+            data.pageInfo = pageInfo;
+            return data;
+          });
       })
       .catch(err => new Error(err.message));
   },
@@ -567,37 +658,36 @@ export const StudentAverageTrendAnalysisPaginated = {
         if (response.status >= 400) {
           throw new Error(response.statusText);
         }
-        return response.json();
-      })
-      .then((json) => {
-        const data = {};
-        data.page = json.data;
-        const pageInfo = {};
-        pageInfo.prevPage = true;
-        pageInfo.nextPage = true;
-        pageInfo.pageNumber = args.pageNumber;
-        pageInfo.totalPages = Math.ceil(json.count / args.limit)
-          ? Math.ceil(json.count / args.limit)
-          : 1;
-        pageInfo.totalEntries = json.count;
+        return response.json()
+          .then((json) => {
+            const data = {};
+            data.page = json.data;
+            const pageInfo = {};
+            pageInfo.prevPage = true;
+            pageInfo.nextPage = true;
+            pageInfo.pageNumber = args.pageNumber;
+            pageInfo.totalPages = Math.ceil(json.count / args.limit)
+              ? Math.ceil(json.count / args.limit)
+              : 1;
+            pageInfo.totalEntries = json.count;
 
-        if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
-          throw new Error('Page Number is invalid');
-        }
+            if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+              return new Error('Page Number is invalid');
+            }
 
-        if (args.pageNumber === pageInfo.totalPages) {
-          pageInfo.nextPage = false;
-        }
-        if (args.pageNumber === 1) {
-          pageInfo.prevPage = false;
-        }
-        if (pageInfo.totalEntries === 0) {
-          pageInfo.totalPages = 0;
-        }
-        data.pageInfo = pageInfo;
-        return data;
-      })
-      .catch(err => new Error(err.message));
+            if (args.pageNumber === pageInfo.totalPages) {
+              pageInfo.nextPage = false;
+            }
+            if (args.pageNumber === 1) {
+              pageInfo.prevPage = false;
+            }
+            if (pageInfo.totalEntries === 0) {
+              pageInfo.totalPages = 0;
+            }
+            data.pageInfo = pageInfo;
+            return data;
+          });
+      }).catch(err => new Error(err.message));
   },
 
 
@@ -618,7 +708,7 @@ export const GenerateAnalysis = {
     }, context)
       .then((response) => {
         if (response.status >= 400) {
-          return new Error(response.statusText);
+          throw new Error(response.statusText);
         }
         return response.json();
       })
@@ -641,7 +731,7 @@ export const GenerateAnalysisv2 = {
     }, context)
       .then((response) => {
         if (response.status >= 400) {
-          return new Error(response.statusText);
+          throw new Error(response.statusText);
         }
         return response.json();
       })
@@ -653,9 +743,11 @@ export const GenerateAnalysisv2 = {
 export default {
   CommonAnalysis,
   CommonAnalysisPaginated,
+  CommonAnalysisForStudentProfile,
   QuestionErrorAnalysis,
   GenerateAnalysis,
   MarkAnalysisGraphData,
   MarkAnalysisGraphDataV2,
   StudentAverageMarks,
+  StudentAverageMarksForStudentProfile,
 };

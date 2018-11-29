@@ -22,7 +22,6 @@ export const createCurriculum = {
   type: new List(SubjectTaxonomyType),
   async resolve(obj, args, context) {
     args.curriculumList = JSON.stringify(args.curriculumList);//eslint-disable-line
-    
     const url = `${config.services.settings}/api/subjectTaxonomy/create/curriculum`;
     return fetch(url, { method: 'POST', body: JSON.stringify(args), headers: { 'Content-Type': 'application/json' } }, context)
       .then((response) => {
@@ -31,7 +30,6 @@ export const createCurriculum = {
         }
         return response.json();
       })
-      .then(json => json)
       .catch((err) => {
         console.error(err);
       });
