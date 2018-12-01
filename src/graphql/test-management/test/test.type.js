@@ -31,6 +31,17 @@ export const ModeOfConductEnumType = new GraphQLEnumType({
     },
   },
 });
+export const IntegerRangeType = new InputObjectType({
+  name: 'IntegerRangeType',
+  description: 'Range type',
+  fields: {
+    beg: { type: IntType, description: 'Begining Value in Integer' },
+    end: { type: IntType, description: 'Ending Value in Integer' },
+    begInclude: { type: BooleanType, description: 'Boolean to included beg integer', defaultValue: false },
+    endInclude: { type: BooleanType, description: 'Boolean to include end integer', defaultValue: false },
+  },
+});
+
 // const GraphQLStringType = require('graphql-StringType');
 const InputSubjectType = new InputObjectType({
   name: 'InputSubjectType',
