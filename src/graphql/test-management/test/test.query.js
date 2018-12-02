@@ -28,6 +28,7 @@ import {
   TestsDetailsType,
   ModeOfConductEnumType,
   TestSubjectDetailsType,
+  IntegerRangeType,
 } from './test.type';
 
 function fetchTest(url, args, context) {
@@ -296,6 +297,7 @@ export const TestHierarchyNodes = {
     hierarchyTag: { type: StringType },
     selected: { type: BooleanType },
     numberOfStudents: { type: IntType },
+    numberOfStudentsRange: { type: IntegerRangeType },
     filterNodesWithAllMissingStudents: { type: BooleanType },
   },
   type: new List(TestHierarchyNodesType), // new List(MarkingSchemaType),
@@ -325,6 +327,7 @@ export const TestHierarchyNodesofMultipleTests = {
     parent: { type: StringType },
     level: { type: IntType },
     selected: { type: BooleanType },
+    numberOfStudentsRange: { type: IntegerRangeType },
     filterNodesWithAllMissingStudents: { type: BooleanType },
   },
   type: new List(TestHierarchyNodesType), // new List(MarkingSchemaType),
