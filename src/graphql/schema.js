@@ -61,6 +61,7 @@ import { StudentConceptAnalysis, allStudentConceptAnalysis, LevelWiseTestWiseCon
 import { ComparisonAnalysis } from './test-management/comparisonAnalysis/comparisonAnalysis.query';
 import { ComparisonTopicAnalysis } from './test-management/comparisonAnalysis/comparisonTopicAnalysis.query';
 import { ComparisonTopicErrorAnalysis } from './test-management/comparisonAnalysis/comparisonTopicErrorAnalysis.query';
+import { ComparisonQuestionWiseAnalysis } from './test-management/comparisonAnalysis/comparisonQuestionWiseAnalysis.query';
 import { ComparisonErrorAnalysis } from './test-management/comparisonAnalysis/comparisonErrorAnalysis.query';
 import { ComparisonRankAnalysis } from './test-management/comparisonAnalysis/comparisonRankAnalysis.query';
 import { AllTestResultAnalysis } from './test-management/allTestAnalysis/allTestAnalysis.query';
@@ -144,6 +145,7 @@ const schema = new Schema({
       StudentAverageMarksForStudentProfile,
       ComparisonTopicAnalysis,
       ComparisonTopicErrorAnalysis,
+      ComparisonQuestionWiseAnalysis,
       ComparisonErrorAnalysis,
       ComparisonRankAnalysis,
       // ComparisonQuestionAnalysis,

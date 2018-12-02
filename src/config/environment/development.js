@@ -5,7 +5,7 @@
 module.exports = {
   // MongoDB connection options
   mongo: {
-    uri: 'mongodb://localhost/tenantregistry-spica-qa',
+    uri: 'mongodb://localhost/tenantregistry',
   },
   // Seed database on startup
   seedDB: true,
