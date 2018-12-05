@@ -15,6 +15,7 @@ import {
   validate,
 } from 'graphql';
 
+import GraphQLDate from 'graphql-date';
 import GraphQLJSON from 'graphql-type-json';
 import { config } from '../../../config/environment';
 import fetch from '../../../utils/fetch';
@@ -109,6 +110,10 @@ export const GetUniqueTestDetails = {
   args: {
     academicYearArgs: { type: new List(StringType) },
     testTypeArgs: { type: new List(StringType) },
+    modeOfTestArgs: { type: new List(StringType), description: 'Filter by mode of test' },
+    startDate: { type: GraphQLDate, description: 'Enter date in YYYY-MM-DD format' },
+    endDate: { type: GraphQLDate, description: 'Enter date in YYYY-MM-DD format' },
+
   },
   type: UniqueTestDetailsType,
   async resolve(obj, args, context) {
