@@ -2,7 +2,7 @@ import {
   // GraphQLObjectType as ObjectType,
   GraphQLString as StringType,
   GraphQLNonNull as NonNull,
-  // GraphQLBoolean as BooleanType,
+  GraphQLBoolean as BooleanType,
   GraphQLInt as IntType,
   GraphQLList as List,
   // GraphQLFloat as FloatType,
@@ -28,6 +28,7 @@ export const ComparisonTopicErrorAnalysisInputType = new InputObjectType({
     testId: { type: new NonNull(StringType), description: 'testId' },
     hierarchies: { type: new List(ComparisonTopicErrorAnalysisHierarchyInputType), description: 'Input type for hierarchies in comaprison analysis' },
     viewLevel: { type: new NonNull(IntType), description: 'Level number of the hierarchy nodes to display data' },
+    topicLevel: { type: BooleanType, description: 'topic wise Analysis' },
   },
 });
 
