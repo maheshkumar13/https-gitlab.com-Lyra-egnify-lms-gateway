@@ -446,6 +446,7 @@ export const TestHierarchyNodesType = new ObjectType({
     hierarchyTag: { type: StringType, description: 'Unique identifier of the test hierarchy nodes' },
     selected: { type: BooleanType, description: 'Node is selected in the hierarchy or not' },
     numberOfStudents: { type: IntType, description: 'Total number of students participating in this node' },
+    numberOfStudentUploaded: { type: IntType, description: 'Total number of students (for which results are uploaded)participating in this node' },
     percentage: { type: FloatType, description: 'Upload percentage' },
     // Qmap:{ type: QmapSchema, description: 'Question wise description' },
   },

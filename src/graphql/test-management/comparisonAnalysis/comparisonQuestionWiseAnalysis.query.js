@@ -13,18 +13,18 @@ import GraphQLJSON from 'graphql-type-json';
 import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
 
-import { ComparisonErrorAnalysisInputType } from './comparisonErrorAnalysis.type';
+import { ComparisonQuestionWiseAnalysisInputType } from './comparisonQuestionWiseAnalysis.type';
 
-export const ComparisonErrorAnalysis = {
+export const ComparisonQuestionWiseAnalysis = {
   args: {
     input: {
-      type: new NonNull(ComparisonErrorAnalysisInputType),
-      description: 'Inputs for comparison error analysis',
+      type: new NonNull(ComparisonQuestionWiseAnalysisInputType),
+      description: 'Inputs for comparison topic error analysis',
     },
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) {
-    const url = `${config.services.test}/api/v1/comparisonAnalysis/error`;
+    const url = `${config.services.test}/api/v1/comparisonAnalysis/questionWiseErrorRate`;
     return fetch(url, {
       method: 'POST',
       body: JSON.stringify(args.input),
@@ -35,11 +35,10 @@ export const ComparisonErrorAnalysis = {
           return new Error(response.statusText);
         }
         return response.json();
-      })
-      .then(json => json);
+      });
   },
 };
 
 export default {
-  ComparisonErrorAnalysis,
+  ComparisonQuestionWiseAnalysis,
 };
