@@ -5,7 +5,7 @@
 module.exports = {
   // MongoDB connection options
   mongo: {
-    uri: 'mongodb://localhost/tenantregistry-qa',
+    uri: 'mongodb://localhost/tenantregistry-uat',
   },
   // Seed database on startup
   seedDB: true,
@@ -13,6 +13,7 @@ module.exports = {
     settings: 'http://localhost:5001',
     test: 'http://localhost:5002',
     sso: 'http://localhost:3002',
+    // egnifyAccountsURL:  process.env.SVC_SSO || 'https://accounts.dev.hydra.egnify.io',
   },
   apolloEngineKey: 'service:egnify-jeet-dev:-aBvwR1LrRIp5ym1C6gVPQ',
 };
