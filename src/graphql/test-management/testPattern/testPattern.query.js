@@ -15,12 +15,13 @@ import fetch from '../../../utils/fetch';
 import { config } from '../../../config/environment';
 
 
-import { TestPatternSchemaType } from './testPattern.type';
+import { TestPatternSchemaType, markingSchemaEnumType } from './testPattern.type';
 
 export const TestPatternSchema = {
   args: {
     testName: { type: StringType },
     testType: { type: StringType },
+    markingSchemaType: { type: markingSchemaEnumType },
   },
   type: new List(TestPatternSchemaType),
   async resolve(obj, args, context) {
