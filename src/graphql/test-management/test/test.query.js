@@ -147,6 +147,7 @@ export const TestsForStudentProfile = {
     limit: { type: IntType },
     modeOfConduct: { type: ModeOfConductEnumType },
     otpSyncStatus: { type: BooleanType },
+    getTestCompletedByStudent: { type: BooleanType },
   },
   type: StudentTestsDetailsType,
   async resolve(obj, args, context) {
