@@ -10,6 +10,8 @@ import { config } from '../../../config/environment';
 import { ResultType } from './result-upload.type';
 import fetch from '../../../utils/fetch';
 
+import { TestType } from '../test/test.type';
+
 
 const HierarchyNodeInputType = new InputObjectType({
   name: 'HierarchyNodeInputType',
@@ -72,7 +74,7 @@ export const syncStudentSnapShot = {
   args: {
     input: { type: new NonNull(syncStudentSnapShotInputType) },
   },
-  type: GraphQLJSON,
+  type: new List(TestType),
   async resolve(obj, args, context) {
     const url = `${config.services.test}/api/v1/resultUpload/syncStudentSnapShot`;
     const body = JSON.parse(JSON.stringify(args.input));
