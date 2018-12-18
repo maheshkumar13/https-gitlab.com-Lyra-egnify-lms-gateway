@@ -19,6 +19,8 @@ projectEnv:
   svcSettings: "http://settings-dev-hydra.dev.svc.cluster.local"
   svcTest: "http://test-management-dev-hydra.dev.svc.cluster.local"
   svcSSO: "http://sso-dev-hydra.dev.svc.cluster.local"
+  parserQueueNs : 'hydra-parser-dev-mq'
+
 
 service:
   name: hydra-gateway

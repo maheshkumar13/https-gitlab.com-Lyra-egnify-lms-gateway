@@ -14,6 +14,7 @@ const user = require('./user');
 const auth = require('./../../auth').default;
 const authValidation = require('./authValidation');
 const converter = require('./converter');
+const parser = require('./parser');
 
 const { Duplex } = stream;
 
@@ -42,7 +43,7 @@ export default function (app) {
   app.use('/api/v1/downloadReports', downloadReports);
   app.use('/auth', auth);
   app.use('/api/v1/authValidation', authValidation);
-
+  app.use('/api/v1/parser', parser);
   // Proxy Request below
   app.post(
     '/api/v1/question/populateQuestion',
@@ -70,7 +71,6 @@ export default function (app) {
       request.post(submissionUrl, { formData }).pipe(res);
     },
   );
-
 
   app.post(
     '/api/v1/student/createBulkStudents',
