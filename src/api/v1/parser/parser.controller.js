@@ -1,7 +1,6 @@
 import celery from 'celery-client';
 import { config } from '../../../config/environment';
 import { uploadToGCS } from '../../../utils/fileUpload';
-import { from } from 'apollo-link';
 
 /**
  * @description Initialize celery connection for parser
