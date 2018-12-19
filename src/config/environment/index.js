@@ -54,11 +54,6 @@ const all = {
     CELERY_BROKER_URL: process.env.CELERY_BROKER_URL || 'redis://vvqfBAUfPI@localhost:6379/0',
     CELERY_RESULT_BACKEND: process.env.CELERY_RESULT_BACKEND || 'redis://vvqfBAUfPI@localhost:6379/0',
     QUEUE_NS: process.env.PARSER_QUEUE_NS || 'hydra-parser-dev-mq',
-    celeryTask: {
-      datConverter: 'datConverter',
-      iitConverter: 'iitConverter',
-      getCsv: 'getCsv',
-    },
   },
 };  
 
