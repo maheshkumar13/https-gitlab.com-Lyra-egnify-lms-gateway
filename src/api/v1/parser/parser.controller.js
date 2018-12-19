@@ -65,7 +65,7 @@ export async function getCsv(req, res) {
     const parserArgs = [{
       file: getFileArgs(req.file, fileUrl),
     }];
-    registerCeleryTask(config.parser.celeryTask.getCsv, parserArgs)
+    registerCeleryTask('getCsv', parserArgs)
       .then(result => res.send(result))
       .catch((err) => {
         console.error(err);
@@ -106,7 +106,7 @@ export function datConverter(req, res) {
       total_questions: req.body.total_questions,
     }];
 
-    registerCeleryTask(config.parser.celeryTask.datConverter, parserArgs)
+    registerCeleryTask('datConverter', parserArgs)
       .then(result => res.send(result))
       .catch((err) => {
         console.error(err);
@@ -124,6 +124,7 @@ export function datConverter(req, res) {
  * @param {*} res
  * @description IIT to CSV converter
  */
+
 export function iitConverter(req, res) {
   if (!req.files.file) res.status(400).send({ err: 'iit file is required' });
   if (!req.files.key) res.status(400).send({ err: 'ias key file is required' });
@@ -146,7 +147,7 @@ export function iitConverter(req, res) {
       testpattern: JSON.parse(req.body.testpattern),
     }];
 
-    registerCeleryTask(config.parser.celeryTask.iitConverter, parserArgs)
+    registerCeleryTask('iitConverter', parserArgs)
       .then(result => res.send(result))
       .catch((err) => {
         console.error(err);

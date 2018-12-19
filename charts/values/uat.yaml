@@ -20,6 +20,8 @@ projectEnv:
   svcTest: "http://test-management-uat-hydra.uat.svc.cluster.local"
   svcSSO: "http://sso-uat-hydra.uat.svc.cluster.local"
   parserQueueNs : 'hydra-parser-uat-mq'
+  celeryBrokerUrl: "redis://:rQsVPF2gbiHi@35.200.196.38:6379/0"
+  celeryResultBackend: "redis://:rQsVPF2gbiHi@35.200.196.38:6379/0"
 
 
 service:
