@@ -38,6 +38,12 @@ spec:
               value: {{ .Values.projectEnv.svcTest }}
             - name: SVC_SSO
               value: {{ .Values.projectEnv.svcSSO }}
+            - name: PARSER_QUEUE_NS
+              value: {{ .Values.projectEnv.parserQueueNs }}
+            - name: CELERY_BROKER_URL
+              value: {{ .Values.projectEnv.celeryBrokerUrl }}
+            - name: CELERY_RESULT_BACKEND
+              value: {{ .Values.projectEnv.celeryResultBackend }}        
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.service.internalPort }}

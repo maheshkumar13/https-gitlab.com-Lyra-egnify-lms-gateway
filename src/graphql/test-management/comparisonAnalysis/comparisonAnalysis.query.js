@@ -1,9 +1,9 @@
 import {
   // GraphQLObjectType as ObjectType,
-  GraphQLString as StringType,
+  // GraphQLString as StringType,
   GraphQLNonNull as NonNull,
   // GraphQLBoolean as BooleanType,
-  GraphQLInt as IntType,
+  // GraphQLInt as IntType,
   // GraphQLList as List,
   // GraphQLFloat as FloatType,
   // GraphQLInputObjectType as InputObjectType,
