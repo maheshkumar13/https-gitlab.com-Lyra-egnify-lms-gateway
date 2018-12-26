@@ -10,8 +10,6 @@ import { config } from '../../../config/environment';
 import { ResultType } from './result-upload.type';
 import fetch from '../../../utils/fetch';
 
-import { TestType } from '../test/test.type';
-
 
 const HierarchyNodeInputType = new InputObjectType({
   name: 'HierarchyNodeInputType',
@@ -61,37 +59,6 @@ const ConfirmMissingInputTypeV2 = new InputObjectType({
     testId: { type: new NonNull(StringType), description: 'unique id of the test' },
   },
 });
-
-const syncStudentSnapShotInputType = new InputObjectType({
-  name: 'syncStudentSnapShotInputType',
-  description: 'syncStudentSnapShot input type',
-  fields: {
-    testIds: { type: new NonNull(new List(StringType)), description: 'unique id of the test' },
-  },
-});
-
-export const syncStudentSnapShot = {
-  args: {
-    input: { type: new NonNull(syncStudentSnapShotInputType) },
-  },
-  type: new List(TestType),
-  async resolve(obj, args, context) {
-    const url = `${config.services.test}/api/v1/resultUpload/syncStudentSnapShot`;
-    const body = JSON.parse(JSON.stringify(args.input));
-    body.path = JSON.stringify(body.path);
-    return fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(body),
-      headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    }, context)
-      .then((response) => {
-        if (response.status >= 400) {
-          return new Error(response.statusText);
-        }
-        return response.json();
-      });
-  },
-};
 
 export const uploadResult = {
   args: {
