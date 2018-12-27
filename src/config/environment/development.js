@@ -5,12 +5,12 @@
 module.exports = {
   // MongoDB connection options
   mongo: {
-    uri: 'mongodb://localhost/tenantregistry-uat',
+    uri: 'mongodb://localhost/tenantregistry-qa',
   },
   // Seed database on startup
   seedDB: true,
   services: {
-    settings: 'http://localhost:5001',
+    settings: 'http://localhost:5003',
     test: 'http://localhost:5002',
     sso: 'http://localhost:3002',
     // egnifyAccountsURL:  process.env.SVC_SSO || 'https://accounts.dev.hydra.egnify.io',
