@@ -69,6 +69,7 @@ export const academicYearDataType = new ObjectType({
   fields: {
     academicYear: { type: StringType, description: 'Academic Year ' },
     testType: { type: new List(StringType), description: 'List of Test Type' },
+    modeOfExam: { type: new List(GraphQLJSON), description: 'List of mode of exams' },
     testData: { type: new List(testDataType), description: 'List of Test data' },
   },
 });
@@ -337,6 +338,7 @@ export const TestType = new ObjectType({
     colorSchema: { type: new List(ColorSchemaOjbectType), description: 'color schema' },
     gaStatus: { type: StringType, description: 'Current GA Status of the test. Possible State: [not_started,pending,error,finished]' },
     modeOfConduct: { type: new NonNull(ModeOfConductEnumType), description: 'Mode of conduct of the test which can be Online,Offline or Both' },
+    testStudentSnapshotStatus: { type: StringType, description: 'Current testStudentSnapshot Sync Status  of the test. Possible State: [not-started,inprogress,scheduled,completed,failed]' },
 
   },
 });

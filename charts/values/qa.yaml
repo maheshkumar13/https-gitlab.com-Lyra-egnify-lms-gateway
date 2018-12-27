@@ -19,6 +19,9 @@ projectEnv:
   svcSettings: "http://settings-qa-hydra.qa.svc.cluster.local"
   svcTest: "http://test-management-qa-hydra.qa.svc.cluster.local"
   svcSSO: "http://sso-qa-hydra.qa.svc.cluster.local"
+  parserQueueNs : 'hydra-parser-qa-mq'
+  celeryBrokerUrl: "redis://:4C00Z1MZXO@redis-qa-master.qa.svc.cluster.local:6379/0"
+  celeryResultBackend: "redis://:4C00Z1MZXO@redis-qa-master.qa.svc.cluster.local:6379/0"
 
 service:
   name: hydra-gateway
