@@ -92,7 +92,7 @@ export function datConverter(req, res) {
   const datfileExtention = datfile.originalname.split('.')[1];
   const datfilekeyExtention = datfilekey.originalname.split('.')[1];
 
-  if (datfileExtention !== 'dat' || datfilekeyExtention !== 'dat' || datfilekeyExtention !== 'ans') {
+  if (datfileExtention !== 'dat' || (datfilekeyExtention !== 'dat' && datfilekeyExtention !== 'ans')) {
     return res.status(400).send({ err: 'only dat file can be converted' });
   }
 
