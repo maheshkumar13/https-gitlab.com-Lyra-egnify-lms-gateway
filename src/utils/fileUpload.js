@@ -75,8 +75,42 @@ const multer = Multer({
 });
 // [END multer]
 
+function uploadToGCS(inputFile) {
+  return new Promise((resolve, reject) => {
+    if (!inputFile) {
+      return false;
+    }
+
+    // console.log('file is', inputFile);
+    const gcsname = Date.now() + inputFile.originalname;
+    const file = bucket.file(gcsname);
+
+    const stream = file.createWriteStream({
+      metadata: {
+        contentType: inputFile.mimetype,
+      },
+    });
+    let fileUrl = '';
+    stream.on('error', (err) => {
+      fileUrl = err.message;
+      reject(err.message);
+    });
+
+    stream.on('finish', () => {
+      fileUrl = gcsname;
+      file.makePublic().then(() => {
+        fileUrl = getPublicUrl(gcsname);
+        resolve(fileUrl);
+      });
+    });
+
+    stream.end(inputFile.buffer);
+  });
+}
+
 module.exports = {
   getPublicUrl,
   sendUploadToGCS,
+  uploadToGCS,
   multer,
 };
