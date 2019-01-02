@@ -110,6 +110,7 @@ export const CommonAnalysis = {
   args: {
     testIds: { type: new List(StringType) },
     studentId: { type: StringType },
+    getTestAvg: { type: BooleanType},
     filter: { type: new List(FilterInputType) },
 
   },

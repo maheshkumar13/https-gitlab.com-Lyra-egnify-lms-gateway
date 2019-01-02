@@ -1,9 +1,9 @@
 import {
   // GraphQLObjectType as ObjectType,
-  GraphQLString as StringType,
+  // GraphQLString as StringType,
   GraphQLNonNull as NonNull,
   // GraphQLBoolean as BooleanType,
-  GraphQLInt as IntType,
+  // GraphQLInt as IntType,
   // GraphQLList as List,
   // GraphQLFloat as FloatType,
   // GraphQLInputObjectType as InputObjectType,
@@ -19,7 +19,7 @@ export const ComparisonTopicAnalysis = {
   args: {
     input: {
       type: new NonNull(ComparisonTopicAnalysisInputType),
-      description: 'Inputs for comparison analysis',
+      description: 'Inputs for comparison topic analysis',
     },
   },
   type: GraphQLJSON,

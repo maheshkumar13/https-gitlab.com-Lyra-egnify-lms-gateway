@@ -48,7 +48,7 @@ import { createInstitute, updateInstitute, updateHierarchy } from './settings/in
 import { saveTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.mutation';
 import { GenerateConceptTaxonomy, conceptTaxonomy, ConceptTaxonomyTree } from './settings/conceptTaxonomy/conceptTaxonomy.query';
 import { createGradeSystem, createGradePattern, removeGradePattern, removeGradeSystem, updateGradeSystem, updateGradePattern } from './settings/grade/grade.mutation';
-import { uploadResult, uploadResultV2, updateUploadedResultV2, updateUploadedResult, comfirmMissingV2, comfirmMissing, deleteResultV2, deleteResult } from './test-management/result-upload/result-upload.mutation';
+import { uploadResult, uploadResultV2, updateUploadedResultV2, updateUploadedResult, comfirmMissingV2, comfirmMissing, deleteResultV2, deleteResult, syncStudentSnapShot } from './test-management/result-upload/result-upload.mutation';
 import { ResultsV2, Results, ResultsSampleDownload, GetOnlineStudents } from './test-management/result-upload/result-upload.query';
 
 import { StudentAverageMarks, StudentAverageMarksForStudentProfile, LeaderBoardPaginated, GenerateAnalysis, GenerateAnalysisv2, CommonAnalysis, MarksDistributionAnalysis, MarksDistributionAnalysisV2, MarksDistributionAnalysisV3, QuestionErrorAnalysis, StudentPerformanceTrendAnalysis, CommonAnalysisPaginated, StudentPerformanceTrendAnalysisPaginated, StudentAverageTrendAnalysisPaginated, MarkAnalysisGraphData, MarkAnalysisGraphDataV2, MarkAnalysisGraphDataAllTests, CommonAnalysisForStudentProfile } from './test-management/ga/ga.query';
@@ -58,12 +58,16 @@ import { ConceptAnalysis } from './test-management/conceptAnalysis/conceptAnalys
 import { QuestionPaperMetrics } from './test-management/questionPaper/questionPaper.query';
 import { StudentOverallAverageMarks, StudentOverallCWU } from './test-management/Analysis/studentOverallAnalysis.query';
 import { StudentConceptAnalysis, allStudentConceptAnalysis, LevelWiseTestWiseConceptAnalysis, LevelWiseTestWiseConceptAnalysisForStudentProfile, StudentConceptAnalysisForStudentProfile } from './test-management/Analysis/studentConceptAnalysis.query';
+import { BehaviourDataForStudentProfile, BehaviourData } from './test-management/Analysis/studentBehaviourData.query';
 import { ComparisonAnalysis } from './test-management/comparisonAnalysis/comparisonAnalysis.query';
 import { ComparisonTopicAnalysis } from './test-management/comparisonAnalysis/comparisonTopicAnalysis.query';
+import { ComparisonTopicErrorAnalysis } from './test-management/comparisonAnalysis/comparisonTopicErrorAnalysis.query';
+import { ComparisonQuestionWiseAnalysis } from './test-management/comparisonAnalysis/comparisonQuestionWiseAnalysis.query';
 import { ComparisonErrorAnalysis } from './test-management/comparisonAnalysis/comparisonErrorAnalysis.query';
 import { ComparisonRankAnalysis } from './test-management/comparisonAnalysis/comparisonRankAnalysis.query';
 import { AllTestResultAnalysis } from './test-management/allTestAnalysis/allTestAnalysis.query';
-// import { ComparisonQuestionAnalysis } from './test-management/comparisonAnalysis/comparisonQuestionAnalysis.query';
+// import { ComparisonQuestionAnalysis } from
+// './test-management/comparisonAnalysis/comparisonQuestionAnalysis.query';
 
 
 const schema = new Schema({
@@ -142,14 +146,19 @@ const schema = new Schema({
       StudentAverageMarks,
       StudentAverageMarksForStudentProfile,
       ComparisonTopicAnalysis,
+      ComparisonTopicErrorAnalysis,
+      ComparisonQuestionWiseAnalysis,
       ComparisonErrorAnalysis,
       ComparisonRankAnalysis,
+      BehaviourDataForStudentProfile,
+      BehaviourData,
       // ComparisonQuestionAnalysis,
     },
   }),
   mutation: new ObjectType({
     name: 'Mutation',
     fields: {
+      syncStudentSnapShot,
       createStudent,
       deleteStudent,
       editStudent,

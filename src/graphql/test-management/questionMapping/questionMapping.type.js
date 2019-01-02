@@ -77,4 +77,5 @@ export const QuestionMappingsType = new ObjectType({
 export default{
   QuestionMappingsInputType,
   QuestionMappingsType,
+  QuestionMappingsDataType
 };

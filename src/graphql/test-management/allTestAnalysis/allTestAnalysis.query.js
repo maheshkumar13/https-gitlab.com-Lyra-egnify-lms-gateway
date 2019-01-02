@@ -1,13 +1,11 @@
 import {
   GraphQLString as StringType,
-  GraphQLNonNull as NonNull,
   GraphQLBoolean as BooleanType,
   GraphQLList as List,
   GraphQLInt as IntType,
+  GraphQLFloat as FloatType,
   GraphQLObjectType as ObjectType,
 } from 'graphql';
-
-// import GraphQLJSON from 'graphql-type-json';
 import { config } from '../../../config/environment';
 import fetch from '../../../utils/fetch';
 import { AllTestAvergareResultsType, allTestResultsInputType } from './allTestAnalysis.type';
@@ -35,6 +33,35 @@ const pageInfoType = new ObjectType({
   },
 });
 
+const testStatsType = new ObjectType({
+  name: 'AllTestResultsTestStatsType',
+  fields() {
+    return {
+      minPercent: {
+        type: FloatType,
+      },
+      minMarks: {
+        type: FloatType,
+      },
+      maxMarks: {
+        type: FloatType,
+      },
+      maxPercent: {
+        type: FloatType,
+      },
+      avgPercentage: {
+        type: FloatType,
+      },
+      avgMarks: {
+        type: FloatType,
+      },
+      subject: {
+        type: StringType,
+      },
+    };
+  },
+});
+
 export const AllTestAnalysisPaginatedType = new ObjectType({
   name: 'allTestResultAnalysisPaginatedType',
   fields() {
@@ -45,11 +72,13 @@ export const AllTestAnalysisPaginatedType = new ObjectType({
       pageInfo: {
         type: pageInfoType,
       },
+      testStats: {
+        type: new List(testStatsType),
+      },
     };
   },
 });
 
-// export
 
 export const AllTestResultAnalysis = {
   args: {
@@ -72,35 +101,35 @@ export const AllTestResultAnalysis = {
         if (response.status >= 400) {
           return new Error(response.statusText);
         }
-        return response.json();
-      })
-      .then((json) => {
-        const data = {};
-        data.page = json.data;
-        const pageInfo = {};
-        pageInfo.prevPage = true;
-        pageInfo.nextPage = true;
-        pageInfo.pageNumber = args.input.pageNumber;
-        pageInfo.totalPages = Math.ceil(json.count / args.input.limit)
-          ? Math.ceil(json.count / args.input.limit)
-          : 1;
-        pageInfo.totalEntries = json.count;
+        return response.json().then((json) => {
+          const data = {};
+          data.page = json.data;
+          data.testStats = json.testStats;
+          const pageInfo = {};
+          pageInfo.prevPage = true;
+          pageInfo.nextPage = true;
+          pageInfo.pageNumber = args.input.pageNumber;
+          pageInfo.totalPages = Math.ceil(json.count / args.input.limit)
+            ? Math.ceil(json.count / args.input.limit)
+            : 1;
+          pageInfo.totalEntries = json.count;
 
-        if (args.input.pageNumber < 1 || args.input.pageNumber > pageInfo.totalPages) {
-          return new Error('Page Number is invalid');
-        }
+          if (args.input.pageNumber < 1 || args.input.pageNumber > pageInfo.totalPages) {
+            return new Error('Page Number is invalid');
+          }
 
-        if (args.input.pageNumber === pageInfo.totalPages) {
-          pageInfo.nextPage = false;
-        }
-        if (args.input.pageNumber === 1) {
-          pageInfo.prevPage = false;
-        }
-        if (pageInfo.totalEntries === 0) {
-          pageInfo.totalPages = 0;
-        }
-        data.pageInfo = pageInfo;
-        return data;
+          if (args.input.pageNumber === pageInfo.totalPages) {
+            pageInfo.nextPage = false;
+          }
+          if (args.input.pageNumber === 1) {
+            pageInfo.prevPage = false;
+          }
+          if (pageInfo.totalEntries === 0) {
+            pageInfo.totalPages = 0;
+          }
+          data.pageInfo = pageInfo;
+          return data;
+        });
       })
       .catch(err => new Error(err.message));
   },

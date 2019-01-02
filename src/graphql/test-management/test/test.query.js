@@ -15,6 +15,7 @@ import {
   validate,
 } from 'graphql';
 
+import GraphQLDate from 'graphql-date';
 import GraphQLJSON from 'graphql-type-json';
 import { config } from '../../../config/environment';
 import fetch from '../../../utils/fetch';
@@ -28,6 +29,7 @@ import {
   TestsDetailsType,
   ModeOfConductEnumType,
   TestSubjectDetailsType,
+  IntegerRangeType,
 } from './test.type';
 
 function fetchTest(url, args, context) {
@@ -108,6 +110,10 @@ export const GetUniqueTestDetails = {
   args: {
     academicYearArgs: { type: new List(StringType) },
     testTypeArgs: { type: new List(StringType) },
+    modeOfTestArgs: { type: new List(StringType), description: 'Filter by mode of test' },
+    startDate: { type: GraphQLDate, description: 'Enter date in YYYY-MM-DD format' },
+    endDate: { type: GraphQLDate, description: 'Enter date in YYYY-MM-DD format' },
+
   },
   type: UniqueTestDetailsType,
   async resolve(obj, args, context) {
@@ -141,6 +147,7 @@ export const TestsForStudentProfile = {
     limit: { type: IntType },
     modeOfConduct: { type: ModeOfConductEnumType },
     otpSyncStatus: { type: BooleanType },
+    getTestCompletedByStudent: { type: BooleanType },
   },
   type: StudentTestsDetailsType,
   async resolve(obj, args, context) {
@@ -296,6 +303,7 @@ export const TestHierarchyNodes = {
     hierarchyTag: { type: StringType },
     selected: { type: BooleanType },
     numberOfStudents: { type: IntType },
+    numberOfStudentsRange: { type: IntegerRangeType },
     filterNodesWithAllMissingStudents: { type: BooleanType },
   },
   type: new List(TestHierarchyNodesType), // new List(MarkingSchemaType),
@@ -325,6 +333,7 @@ export const TestHierarchyNodesofMultipleTests = {
     parent: { type: StringType },
     level: { type: IntType },
     selected: { type: BooleanType },
+    numberOfStudentsRange: { type: IntegerRangeType },
     filterNodesWithAllMissingStudents: { type: BooleanType },
   },
   type: new List(TestHierarchyNodesType), // new List(MarkingSchemaType),
