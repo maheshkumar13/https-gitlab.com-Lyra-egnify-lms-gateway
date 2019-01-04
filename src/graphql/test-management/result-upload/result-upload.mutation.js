@@ -60,7 +60,6 @@ const ConfirmMissingInputTypeV2 = new InputObjectType({
   },
 });
 
-
 export const uploadResult = {
   args: {
     input: { type: new NonNull(UploadResultInputType) },

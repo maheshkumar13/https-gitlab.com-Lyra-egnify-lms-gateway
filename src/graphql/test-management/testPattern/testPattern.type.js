@@ -96,7 +96,7 @@ export const InputTestPatternSchemaType = new InputObjectType({
     totalQuestions: { type: new NonNull(IntType), description: 'Total number of questions in the test' },
     totalMarks: { type: new NonNull(IntType), description: 'Total marks in the test' },
     subjects: { type: new NonNull(new List(InputSubjectsType)), description: 'Marks distribution' },
-    markingSchemaType: { type: new NonNull(markingSchemaEnumType), description: 'Type of marking schema' },
+    markingSchemaType: { type: markingSchemaEnumType, description: 'Type of marking schema' },
   },
 });
 
