@@ -58,6 +58,7 @@ import { ConceptAnalysis } from './test-management/conceptAnalysis/conceptAnalys
 import { QuestionPaperMetrics } from './test-management/questionPaper/questionPaper.query';
 import { StudentOverallAverageMarks, StudentOverallCWU } from './test-management/Analysis/studentOverallAnalysis.query';
 import { StudentConceptAnalysis, allStudentConceptAnalysis, LevelWiseTestWiseConceptAnalysis, LevelWiseTestWiseConceptAnalysisForStudentProfile, StudentConceptAnalysisForStudentProfile } from './test-management/Analysis/studentConceptAnalysis.query';
+import { BehaviourDataForStudentProfile, BehaviourData } from './test-management/Analysis/studentBehaviourData.query';
 import { ComparisonAnalysis } from './test-management/comparisonAnalysis/comparisonAnalysis.query';
 import { ComparisonTopicAnalysis } from './test-management/comparisonAnalysis/comparisonTopicAnalysis.query';
 import { ComparisonTopicErrorAnalysis } from './test-management/comparisonAnalysis/comparisonTopicErrorAnalysis.query';
@@ -148,6 +149,8 @@ const schema = new Schema({
       ComparisonQuestionWiseAnalysis,
       ComparisonErrorAnalysis,
       ComparisonRankAnalysis,
+      BehaviourDataForStudentProfile,
+      BehaviourData,
       // ComparisonQuestionAnalysis,
     },
   }),
