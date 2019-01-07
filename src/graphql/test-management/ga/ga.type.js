@@ -123,7 +123,7 @@ const CWUAnalysisType = new ObjectType({
     subject: { type: StringType, description: 'subject code or name' },
     data: { type: CWUAnalysisDataType, description: 'CWU analysis data type' },
   },
-});   
+});
 
 const ErrorDataType = new ObjectType({
   name: 'ErrorDataType',
@@ -185,7 +185,7 @@ export const CommonAnalysisType = new ObjectType({
     testId: { type: StringType, description: 'ID of the Test' },
 
     // test wise average analysis
-    testAverageAnalysis: { type: new List(GraphQLJSON), description: 'Avaerage Mark Analysis of an Invidual test' },
+    testAverageAnalysis: { type: new List(GraphQLJSON), description: 'Average Mark Analysis of an Invidual test' },
 
     // // Analysis
     data: { type: new List(CommonAnalysisDataType), description: 'Rank Analysis of an Invidual Student' },
