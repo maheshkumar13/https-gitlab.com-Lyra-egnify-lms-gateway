@@ -19,6 +19,7 @@ export const BehaviourDataType = new ObjectType({
     questionNumber: { type: IntType, description: 'question Number' },
     subject: { type: StringType, description: 'name of the subject' },
     status: { type: StringType, description: 'question status C/W/U/P' },
+    timeSpent: { type: IntType, description: 'total time spent for thq question in milliseconds' },
     enterStatus: { type: BooleanType, description: 'collean variable to know if student has viewed the question atlkeast for once' },
     qMap: { type: QuestionMappingsDataType, description: 'question mapping type' },
     marks: { type: IntType, description: 'marks attained for the question' },
