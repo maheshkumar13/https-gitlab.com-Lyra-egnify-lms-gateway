@@ -43,7 +43,7 @@ export const IntegerRangeType = new InputObjectType({
 });
 
 // const GraphQLStringType = require('graphql-StringType');
-const InputSubjectType = new InputObjectType({
+export const InputSubjectType = new InputObjectType({
   name: 'InputSubjectType',
   description: 'Subjects selected for the test',
   fields: {
@@ -54,7 +54,7 @@ const InputSubjectType = new InputObjectType({
   },
 });
 
-const testDataType = new ObjectType({
+export const testDataType = new ObjectType({
   name: 'testDataType',
   description: 'testDataType',
   fields: {
@@ -82,7 +82,7 @@ export const UniqueTestDetailsType = new ObjectType({
     academicYearData: { type: new List(academicYearDataType), description: ' Academic Year Test data' },
   },
 });
-const SubjectType = new ObjectType({
+export const SubjectType = new ObjectType({
   name: 'SubjectType_',
   description: 'Subjects selected for the test',
   fields: {
@@ -96,7 +96,7 @@ const SubjectType = new ObjectType({
 });
 
 
-const InputTesttypeType = new InputObjectType({
+export const InputTesttypeType = new InputObjectType({
   name: 'InputTesttypeType',
   description: 'Mode of exam for the test',
   fields: {
@@ -107,7 +107,7 @@ const InputTesttypeType = new InputObjectType({
   },
 });
 
-const TesttypeType = new ObjectType({
+export const TesttypeType = new ObjectType({
   name: 'TesttypeType',
   description: 'Mode of exam for the test',
   fields: {
@@ -118,7 +118,7 @@ const TesttypeType = new ObjectType({
   },
 });
 
-const InputSelectedHierarhcyType = new InputObjectType({
+export const InputSelectedHierarhcyType = new InputObjectType({
   name: 'InputSelectedHierarhcyType',
   description: 'Highest level of hierarchy selected for the test',
   fields: {
@@ -130,7 +130,7 @@ const InputSelectedHierarhcyType = new InputObjectType({
 });
 
 
-const SelectedHierarhcyType = new ObjectType({
+export const SelectedHierarhcyType = new ObjectType({
   name: 'SelectedHierarhcyType',
   description: 'Highest level of hierarchy selected for the test',
   fields: {
@@ -141,7 +141,7 @@ const SelectedHierarhcyType = new ObjectType({
   },
 });
 
-const InputHierarchyType = new InputObjectType({
+export const InputHierarchyType = new InputObjectType({
   name: 'InputHierarchyType',
   description: 'Institute Hierarchy',
   fields: {
@@ -156,7 +156,7 @@ const InputHierarchyType = new InputObjectType({
   },
 });
 
-const SubjectMarksInMarkingSchemaType = new InputObjectType({
+export const SubjectMarksInMarkingSchemaType = new InputObjectType({
   name: 'SubjectMarksInMarkingSchemaType',
   description: 'Section wise marks in subject',
   fields: {
@@ -176,7 +176,7 @@ const SubjectMarksInMarkingSchemaType = new InputObjectType({
 });
 
 
-const SubjectMarkingSchemaType = new InputObjectType({
+export const SubjectMarkingSchemaType = new InputObjectType({
   name: 'SubjectMarkingSchemaType',
   description: 'Subject wise marks distribution',
   fields: {
@@ -543,7 +543,7 @@ export const TestsDetailsType = new ObjectType({
   },
 });
 
-const SubjectNameType = new ObjectType({
+export const SubjectNameType = new ObjectType({
   name: 'SubjectNameType',
   fields: {
     subject: { type: StringType },
