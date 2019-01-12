@@ -71,7 +71,7 @@ export const moveRetakeTest = {
     const url = `${config.services.test}/api/v1/retakeTest/moveTest`;
     return fetch(url, {
       method: 'POST',
-      body: JSON.stringify(args),
+      body: JSON.stringify(args.input),
       headers: { 'Content-Type': 'application/json' },//eslint-disable-line
     }, context)
       .then((response) => {
