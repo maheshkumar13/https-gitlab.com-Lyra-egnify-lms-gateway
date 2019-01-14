@@ -69,6 +69,7 @@ export const academicYearDataType = new ObjectType({
   fields: {
     academicYear: { type: StringType, description: 'Academic Year ' },
     testType: { type: new List(StringType), description: 'List of Test Type' },
+    modeOfExam: { type: new List(GraphQLJSON), description: 'List of mode of exams' },
     testData: { type: new List(testDataType), description: 'List of Test data' },
   },
 });
