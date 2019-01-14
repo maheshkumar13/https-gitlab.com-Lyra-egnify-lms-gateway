@@ -54,7 +54,7 @@ import { ResultsV2, Results, ResultsSampleDownload, GetOnlineStudents } from './
 import { StudentAverageMarks, StudentAverageMarksForStudentProfile, LeaderBoardPaginated, GenerateAnalysis, GenerateAnalysisv2, CommonAnalysis, MarksDistributionAnalysis, MarksDistributionAnalysisV2, MarksDistributionAnalysisV3, QuestionErrorAnalysis, StudentPerformanceTrendAnalysis, CommonAnalysisPaginated, StudentPerformanceTrendAnalysisPaginated, StudentAverageTrendAnalysisPaginated, MarkAnalysisGraphData, MarkAnalysisGraphDataV2, MarkAnalysisGraphDataAllTests, CommonAnalysisForStudentProfile } from './test-management/ga/ga.query';
 import { createTestPatternSchema, updateTestPatternSchema, removeTestPatternSchema } from './test-management/testPattern/testPattern.mutation';
 import { TestPatternSchema } from './test-management/testPattern/testPattern.query';
-import { ConceptAnalysis } from './test-management/conceptAnalysis/conceptAnalysis.query';
+import { ConceptAnalysis, ConceptAnalysisAllTests } from './test-management/conceptAnalysis/conceptAnalysis.query';
 import { QuestionPaperMetrics } from './test-management/questionPaper/questionPaper.query';
 import { StudentOverallAverageMarks, StudentOverallCWU } from './test-management/Analysis/studentOverallAnalysis.query';
 import { StudentConceptAnalysis, allStudentConceptAnalysis, LevelWiseTestWiseConceptAnalysis, LevelWiseTestWiseConceptAnalysisForStudentProfile, StudentConceptAnalysisForStudentProfile } from './test-management/Analysis/studentConceptAnalysis.query';
@@ -121,6 +121,7 @@ const schema = new Schema({
       QuestionDetails,
       TestPatternSchema,
       ConceptAnalysis,
+      ConceptAnalysisAllTests,
       StudentConceptAnalysis,
       StudentConceptAnalysisForStudentProfile,
       allStudentConceptAnalysis,
