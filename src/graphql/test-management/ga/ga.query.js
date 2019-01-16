@@ -110,7 +110,7 @@ export const CommonAnalysis = {
   args: {
     testIds: { type: new List(StringType) },
     studentId: { type: StringType },
-    getTestAvg: { type: BooleanType},
+    getTestAvg: { type: BooleanType },
     filter: { type: new List(FilterInputType) },
 
   },
@@ -125,6 +125,7 @@ export const CommonAnalysisForStudentProfile = {
   args: {
     testIds: { type: new List(StringType) },
     filter: { type: new List(FilterInputType) },
+    getTestAvg: { type: BooleanType },
   },
   type: new List(CommonAnalysisType),
   async resolve(obj, args, context) {
