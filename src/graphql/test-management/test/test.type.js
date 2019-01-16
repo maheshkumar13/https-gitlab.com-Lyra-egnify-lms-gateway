@@ -31,6 +31,17 @@ export const ModeOfConductEnumType = new GraphQLEnumType({
     },
   },
 });
+export const TestTypeFormatType = new GraphQLEnumType({
+  name: 'TestTypeFormatType',
+  values: {
+    ADMIN_TEST_TYPE: {
+      value: 'ADMIN_TEST_TYPE',
+    },
+    RETAKE_TEST_TYPE: {
+      value: 'RETAKE_TEST_TYPE',
+    },
+  },
+});
 export const IntegerRangeType = new InputObjectType({
   name: 'IntegerRangeType',
   description: 'Range type',
@@ -339,7 +350,6 @@ export const TestType = new ObjectType({
     gaStatus: { type: StringType, description: 'Current GA Status of the test. Possible State: [not_started,pending,error,finished]' },
     modeOfConduct: { type: new NonNull(ModeOfConductEnumType), description: 'Mode of conduct of the test which can be Online,Offline or Both' },
     testStudentSnapshotStatus: { type: StringType, description: 'Current testStudentSnapshot Sync Status  of the test. Possible State: [not-started,inprogress,scheduled,completed,failed]' },
-
   },
 });
 
@@ -363,6 +373,9 @@ export const StudentTestType = new ObjectType({
     gaStatus: { type: StringType, description: 'Current GA Status of the test. Possible State: [not_started,pending,error,finished]' },
     modeOfConduct: { type: new NonNull(ModeOfConductEnumType), description: 'Mode of conduct of the test which can be Online,Offline or Both' },
     questionPaperUrl: { type: StringType, description: 'Question paper url' },
+    testLink: { type: StringType, description: 'TestId Linked to the retake test' },
+    practiceTestId: { type: StringType, description: 'Practice Test Id' },
+    testFormatType: { type: TestTypeFormatType, description: ' Test Type format for a test' },
   },
 });
 

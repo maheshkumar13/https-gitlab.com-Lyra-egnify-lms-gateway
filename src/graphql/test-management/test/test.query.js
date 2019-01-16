@@ -148,6 +148,7 @@ export const TestsForStudentProfile = {
     modeOfConduct: { type: ModeOfConductEnumType },
     otpSyncStatus: { type: BooleanType },
     getTestCompletedByStudent: { type: BooleanType },
+    getRetakeTestByTestId: { type: new List(StringType), description: ' Gets List of All Retake Associate with the given test Id. Please note that this argument will overide other arguments' },
   },
   type: StudentTestsDetailsType,
   async resolve(obj, args, context) {
