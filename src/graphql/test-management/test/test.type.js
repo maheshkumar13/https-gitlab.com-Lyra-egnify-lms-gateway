@@ -350,6 +350,9 @@ export const TestType = new ObjectType({
     gaStatus: { type: StringType, description: 'Current GA Status of the test. Possible State: [not_started,pending,error,finished]' },
     modeOfConduct: { type: new NonNull(ModeOfConductEnumType), description: 'Mode of conduct of the test which can be Online,Offline or Both' },
     testStudentSnapshotStatus: { type: StringType, description: 'Current testStudentSnapshot Sync Status  of the test. Possible State: [not-started,inprogress,scheduled,completed,failed]' },
+    testLink: { type: StringType, description: 'TestId Linked to the retake test' },
+    practiceTestId: { type: StringType, description: 'Practice Test Id' },
+    testFormatType: { type: TestTypeFormatType, description: ' Test Type format for a test' },
   },
 });
 
