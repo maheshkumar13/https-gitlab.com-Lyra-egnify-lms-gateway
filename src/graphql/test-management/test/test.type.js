@@ -338,6 +338,7 @@ export const TestType = new ObjectType({
     colorSchema: { type: new List(ColorSchemaOjbectType), description: 'color schema' },
     gaStatus: { type: StringType, description: 'Current GA Status of the test. Possible State: [not_started,pending,error,finished]' },
     modeOfConduct: { type: new NonNull(ModeOfConductEnumType), description: 'Mode of conduct of the test which can be Online,Offline or Both' },
+    testStudentSnapshotStatus: { type: StringType, description: 'Current testStudentSnapshot Sync Status  of the test. Possible State: [not-started,inprogress,scheduled,completed,failed]' },
 
   },
 });
@@ -361,7 +362,7 @@ export const StudentTestType = new ObjectType({
     colorSchema: { type: new List(ColorSchemaOjbectType), description: 'color schma' },
     gaStatus: { type: StringType, description: 'Current GA Status of the test. Possible State: [not_started,pending,error,finished]' },
     modeOfConduct: { type: new NonNull(ModeOfConductEnumType), description: 'Mode of conduct of the test which can be Online,Offline or Both' },
-
+    questionPaperUrl: { type: StringType, description: 'Question paper url' },
   },
 });
 
