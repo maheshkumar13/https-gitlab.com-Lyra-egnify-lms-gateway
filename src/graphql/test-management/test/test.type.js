@@ -291,6 +291,7 @@ export const InputQmapType = new InputObjectType({
   },
 });
 
+
 export const QmapType = new ObjectType({
   name: 'QmapType',
   description: 'Mapping the question with subject, topic and subTopic',
@@ -303,7 +304,9 @@ export const QmapType = new ObjectType({
     C: { type: StringType, description: 'Marks for answering correctly to this question' },
     W: { type: StringType, description: 'Marks for answering wrongly to this question' },
     U: { type: StringType, description: 'Marks for Not attempting this question' },
-    // key: { type: new List(StringType), description: 'Array of Key for the question' },
+    response: { type: StringType, description: 'Response given by the student for this question' },
+    questionNumberId: { type: StringType, description: 'Question Number Id for this question' },
+    selected: { type: BooleanType, description: 'Boolean Value Indicating if the question is selected for the test or not' },
   },
 });
 
