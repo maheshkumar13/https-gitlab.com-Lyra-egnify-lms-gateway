@@ -4,7 +4,7 @@ import {
   GraphQLNonNull as NonNull,
   GraphQLBoolean as BooleanType,
   GraphQLInt as IntType,
-  // GraphQLList as List,
+  GraphQLList as List,
   // GraphQLFloat as FloatType,
   // GraphQLInputObjectType as InputObjectType,
 } from 'graphql';
@@ -34,6 +34,7 @@ function handleFetch(url, args, context) {
 export const StudentConceptAnalysisForStudentProfile = {
   args: {
     testId: { type: StringType, description: 'Unique identifier for the test' },
+    testIds: { type: new List(StringType), description: 'Array of tests' },
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) {
