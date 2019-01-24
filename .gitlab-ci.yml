@@ -150,7 +150,7 @@ deploy-uat:
   script:
     - export NAMESPACE=uat;
     - cd build/
-    - gsutil cp gs://hydra-config-dev/config/hydra-settings/app.yaml .
+    - gsutil cp gs://hydra-config-dev/config/hydra-graphql-gateway/app.yaml .
     - gcloud app deploy --project egnify-product --stop-previous-version --promote -q
   environment:
     name: uat
