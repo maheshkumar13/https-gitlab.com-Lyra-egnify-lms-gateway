@@ -149,6 +149,7 @@ export const TestsForStudentProfile = {
     otpSyncStatus: { type: BooleanType },
     getTestCompletedByStudent: { type: BooleanType },
     getRetakeTestByTestId: { type: new List(StringType), description: ' Gets List of All Retake Associate with the given test Id. Please note that this argument will overide other arguments' },
+    retakeTestFilterByTestId: { type: new List(StringType), description: 'Filter Retake Test By Id' },
   },
   type: StudentTestsDetailsType,
   async resolve(obj, args, context) {
