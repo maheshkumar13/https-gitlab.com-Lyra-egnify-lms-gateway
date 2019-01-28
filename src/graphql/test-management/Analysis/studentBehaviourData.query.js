@@ -40,7 +40,7 @@ export const BehaviourDataForStudentProfile = {
   type: new List(BehaviourDataType),
   async resolve(obj, args, context) {
     args.studentId = context.user.username;
-    const url = `${config.services.test}/api/v1/testStudentSnapshot/getBehaviourData`;
+    const url = `${config.services.test}/api/v1/testStudentSnapshot/student/getBehaviourData`;
     return handleFetch(url, args, context);
   },
 };
@@ -57,4 +57,4 @@ export const BehaviourData = {
   },
 };
 
-export default { BehaviourDataForStudentProfile, BehaviourData }
+export default { BehaviourDataForStudentProfile, BehaviourData };
