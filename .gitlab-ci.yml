@@ -72,7 +72,6 @@ release:
   only:
     - development
     - qa
-    - uat
     - spark/development
     - spark/qa
     - china/development
@@ -150,13 +149,14 @@ deploy-uat:
   script:
     - export NAMESPACE=uat;
     - cd build/
-    - gsutil cp gs://hydra-config-dev/config/hydra-graphql-gateway/app.yaml .
+    - gsutil cp gs://hydra-config-dev/config/${CI_PROJECT_NAME}/app.yaml .
     - gcloud app deploy --project egnify-product --stop-previous-version --promote -q
   environment:
     name: uat
     # url: https://qa.hydra.egnify.io
   only:
     - uat
+
 deploy-spark-dev:
   stage: deploy
   image: arbaz7/gcloud-kubectl-helm:latest
