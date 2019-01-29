@@ -41,6 +41,7 @@ build:
     - yarn install
     - yarn run build --release
   only:
+    - master
     - development
     - qa
     - uat
@@ -156,6 +157,27 @@ deploy-uat:
     # url: https://qa.hydra.egnify.io
   only:
     - uat
+
+deploy-prod:
+  stage: deploy
+  image: google/cloud-sdk:latest
+  services:
+    - docker:dind
+  before_script:
+    - mkdir -p /etc/deploy
+    - echo ${GLOUD_AUTH_PROD} > gcloud_auth.base64
+    - base64 -d gcloud_auth.base64 > gcloud_auth.json
+    - gcloud auth activate-service-account --key-file=gcloud_auth.json
+  script:
+    - export NAMESPACE=prod;
+    - cd build/
+    - gsutil cp gs://hydra-config-prod/config/${CI_PROJECT_NAME}/app.yaml .
+    - gcloud app deploy --project egnify-product-production --stop-previous-version --promote -q
+  environment:
+    name: production
+  when: manual
+  only:
+    - master
 
 deploy-spark-dev:
   stage: deploy
