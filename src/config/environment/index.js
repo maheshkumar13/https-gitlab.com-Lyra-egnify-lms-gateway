@@ -55,7 +55,7 @@ const all = {
     CELERY_RESULT_BACKEND: process.env.CELERY_RESULT_BACKEND || 'redis://vvqfBAUfPI@localhost:6379/0',
     QUEUE_NS: process.env.PARSER_QUEUE_NS || 'hydra-parser-dev-mq',
   },
-};  
+};
 
 // Export the config object based on the NODE_ENV
 // ==============================================
