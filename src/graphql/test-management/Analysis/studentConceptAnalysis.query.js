@@ -4,7 +4,7 @@ import {
   GraphQLNonNull as NonNull,
   GraphQLBoolean as BooleanType,
   GraphQLInt as IntType,
-  // GraphQLList as List,
+  GraphQLList as List,
   // GraphQLFloat as FloatType,
   // GraphQLInputObjectType as InputObjectType,
 } from 'graphql';
@@ -34,6 +34,7 @@ function handleFetch(url, args, context) {
 export const StudentConceptAnalysisForStudentProfile = {
   args: {
     testId: { type: StringType, description: 'Unique identifier for the test' },
+    testIds: { type: new List(StringType), description: 'Array of tests' },
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) {
@@ -47,6 +48,7 @@ export const StudentConceptAnalysis = {
   args: {
     studentId: { type: new NonNull(StringType), description: 'studentId' },
     testId: { type: StringType, description: 'Unique identifier for the test' },
+    testIds: { type: new List(StringType), description: 'Array of tests' },
     ascendingOrder: { type: BooleanType, description: 'Sorting Order' },
   },
   type: GraphQLJSON,
@@ -61,6 +63,7 @@ export const allStudentConceptAnalysis = {
     limit: { type: IntType, description: 'number of imtems per page' },
     pageNumber: { type: IntType, description: 'unique identifier for page number' },
     testId: { type: StringType, description: 'Unique identifier for the test' },
+    nodes: { type: new List(StringType), description: 'Unique identifier for the test'}
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) {

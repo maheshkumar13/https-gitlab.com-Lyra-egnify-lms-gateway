@@ -16,6 +16,8 @@ export const LevelWiseTestWiseConceptAnalysisInputType = new InputObjectType({
   fields: {
     studentId: { type: new NonNull(StringType), description: 'id of the student' },
     level: { type: new NonNull(StringType), description: 'level for which break down is required (subject / topic)' },
+    testType: { type: StringType, description: 'filteration using test types' },
+    testIds: { type: new List(StringType), description: 'filteration using testIds' },
     filter: { type: new List(StringType), description: 'list of nodes to filter in the level next to the level mentioned' },
   },
 });
@@ -24,6 +26,8 @@ export const LevelWiseTestWiseConceptAnalysisForStudentProfileInputType = new In
   description: 'level (topic / sub-topic) wise test wise concept analysis ',
   fields: {
     level: { type: new NonNull(StringType), description: 'level for which break down is required (subject / topic)' },
+    testType: { type: StringType, description: 'filteration using test types' },
+    testIds: { type: new List(StringType), description: 'filteration using testIds' },
     filter: { type: new List(StringType), description: 'list of nodes to filter in the level next to the level mentioned' },
   },
 });

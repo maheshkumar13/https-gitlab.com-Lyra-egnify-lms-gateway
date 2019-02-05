@@ -17,6 +17,7 @@ export const ConceptAnalysisType = new ObjectType({
   fields: {
     testId: { type: StringType, description: 'Unique identifier for test' },
     node: { type: StringType, description: 'childCode of the Hierarchy node' },
+    testType: { type: StringType, description: 'type of test' },
     parent: { type: StringType, description: 'childCode of parent of Hierarchy node' },
     Analysis: { type: GraphQLJSON, description: 'Question wise Analysis' }  //eslint-disable-line
   },
