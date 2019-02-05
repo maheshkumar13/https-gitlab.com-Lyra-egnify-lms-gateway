@@ -4,7 +4,7 @@ import {
   GraphQLNonNull as NonNull,
   GraphQLBoolean as BooleanType,
   GraphQLInt as IntType,
-  // GraphQLList as List,
+  GraphQLList as List,
   // GraphQLFloat as FloatType,
   // GraphQLInputObjectType as InputObjectType,
 } from 'graphql';
@@ -61,6 +61,7 @@ export const allStudentConceptAnalysis = {
     limit: { type: IntType, description: 'number of imtems per page' },
     pageNumber: { type: IntType, description: 'unique identifier for page number' },
     testId: { type: StringType, description: 'Unique identifier for the test' },
+    nodes: { type: new List(StringType), description: 'Unique identifier for the test'}
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) {
