@@ -34,6 +34,7 @@ function handleFetch(url, args, context) {
 export const StudentConceptAnalysisForStudentProfile = {
   args: {
     testId: { type: StringType, description: 'Unique identifier for the test' },
+    testIds: { type: new List(StringType), description: 'Array of tests' },
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) {
@@ -47,6 +48,7 @@ export const StudentConceptAnalysis = {
   args: {
     studentId: { type: new NonNull(StringType), description: 'studentId' },
     testId: { type: StringType, description: 'Unique identifier for the test' },
+    testIds: { type: new List(StringType), description: 'Array of tests' },
     ascendingOrder: { type: BooleanType, description: 'Sorting Order' },
   },
   type: GraphQLJSON,
