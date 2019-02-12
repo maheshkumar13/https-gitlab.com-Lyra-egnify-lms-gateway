@@ -54,7 +54,7 @@ import { ResultsV2, Results, ResultsSampleDownload, GetOnlineStudents } from './
 import { StudentAverageMarks, StudentAverageMarksForStudentProfile, LeaderBoardPaginated, GenerateAnalysis, GenerateAnalysisv2, CommonAnalysis, MarksDistributionAnalysis, MarksDistributionAnalysisV2, MarksDistributionAnalysisV3, QuestionErrorAnalysis, StudentPerformanceTrendAnalysis, CommonAnalysisPaginated, StudentPerformanceTrendAnalysisPaginated, StudentAverageTrendAnalysisPaginated, MarkAnalysisGraphData, MarkAnalysisGraphDataV2, MarkAnalysisGraphDataAllTests, CommonAnalysisForStudentProfile } from './test-management/ga/ga.query';
 import { createTestPatternSchema, updateTestPatternSchema, removeTestPatternSchema } from './test-management/testPattern/testPattern.mutation';
 import { TestPatternSchema } from './test-management/testPattern/testPattern.query';
-import { ConceptAnalysis } from './test-management/conceptAnalysis/conceptAnalysis.query';
+import { ConceptAnalysis, ConceptAnalysisAllTests, ConceptAnalysisAllTestsStudentWise } from './test-management/conceptAnalysis/conceptAnalysis.query';
 import { QuestionPaperMetrics } from './test-management/questionPaper/questionPaper.query';
 import { StudentOverallAverageMarks, StudentOverallCWU } from './test-management/Analysis/studentOverallAnalysis.query';
 import { StudentConceptAnalysis, allStudentConceptAnalysis, LevelWiseTestWiseConceptAnalysis, LevelWiseTestWiseConceptAnalysisForStudentProfile, StudentConceptAnalysisForStudentProfile } from './test-management/Analysis/studentConceptAnalysis.query';
@@ -67,6 +67,7 @@ import { ComparisonErrorAnalysis } from './test-management/comparisonAnalysis/co
 import { ComparisonRankAnalysis } from './test-management/comparisonAnalysis/comparisonRankAnalysis.query';
 import { AllTestResultAnalysis } from './test-management/allTestAnalysis/allTestAnalysis.query';
 import { createRetakeTest, updateRetakeTest, moveRetakeTest } from './test-management/retakeTest/retakeTest.mutation';
+import { HierarchalAnalysisForStudentProfile, HierarchalAnalysis } from './test-management/hierarchalAnalysis/hierarchalAnalysis.query';
 // import { ComparisonQuestionAnalysis } from
 // './test-management/comparisonAnalysis/comparisonQuestionAnalysis.query';
 
@@ -124,6 +125,8 @@ const schema = new Schema({
       QuestionDetails,
       TestPatternSchema,
       ConceptAnalysis,
+      ConceptAnalysisAllTests,
+      ConceptAnalysisAllTestsStudentWise,
       StudentConceptAnalysis,
       StudentConceptAnalysisForStudentProfile,
       allStudentConceptAnalysis,
@@ -153,6 +156,8 @@ const schema = new Schema({
       ComparisonRankAnalysis,
       BehaviourDataForStudentProfile,
       BehaviourData,
+      HierarchalAnalysisForStudentProfile,
+      HierarchalAnalysis,
       // ComparisonQuestionAnalysis,
     },
   }),
