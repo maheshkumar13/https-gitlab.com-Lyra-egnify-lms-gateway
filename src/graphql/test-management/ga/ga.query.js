@@ -126,6 +126,7 @@ export const CommonAnalysisForStudentProfile = {
     testIds: { type: new List(StringType) },
     filter: { type: new List(FilterInputType) },
     getTestAvg: { type: BooleanType },
+    getRetakeTestByTestId: { type: new List(StringType), description: ' Gets List of All Retake Associate with the given test Id' },
   },
   type: new List(CommonAnalysisType),
   async resolve(obj, args, context) {
