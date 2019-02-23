@@ -66,6 +66,7 @@ import { ComparisonQuestionWiseAnalysis } from './test-management/comparisonAnal
 import { ComparisonErrorAnalysis } from './test-management/comparisonAnalysis/comparisonErrorAnalysis.query';
 import { ComparisonRankAnalysis } from './test-management/comparisonAnalysis/comparisonRankAnalysis.query';
 import { AllTestResultAnalysis } from './test-management/allTestAnalysis/allTestAnalysis.query';
+import { createRetakeTest, updateRetakeTest, moveRetakeTest } from './test-management/retakeTest/retakeTest.mutation';
 import { HierarchalAnalysisForStudentProfile, HierarchalAnalysis } from './test-management/hierarchalAnalysis/hierarchalAnalysis.query';
 // import { ComparisonQuestionAnalysis } from
 // './test-management/comparisonAnalysis/comparisonQuestionAnalysis.query';
@@ -206,6 +207,9 @@ const schema = new Schema({
       createTestPatternSchema,
       updateTestPatternSchema,
       removeTestPatternSchema,
+      createRetakeTest,
+      updateRetakeTest,
+      moveRetakeTest,
     },
   }),
 });

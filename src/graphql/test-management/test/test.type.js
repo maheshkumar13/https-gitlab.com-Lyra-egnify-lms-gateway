@@ -31,6 +31,17 @@ export const ModeOfConductEnumType = new GraphQLEnumType({
     },
   },
 });
+export const TestTypeFormatType = new GraphQLEnumType({
+  name: 'TestTypeFormatType',
+  values: {
+    ADMIN_TEST_TYPE: {
+      value: 'ADMIN_TEST_TYPE',
+    },
+    RETAKE_TEST_TYPE: {
+      value: 'RETAKE_TEST_TYPE',
+    },
+  },
+});
 export const IntegerRangeType = new InputObjectType({
   name: 'IntegerRangeType',
   description: 'Range type',
@@ -43,7 +54,7 @@ export const IntegerRangeType = new InputObjectType({
 });
 
 // const GraphQLStringType = require('graphql-StringType');
-const InputSubjectType = new InputObjectType({
+export const InputSubjectType = new InputObjectType({
   name: 'InputSubjectType',
   description: 'Subjects selected for the test',
   fields: {
@@ -54,7 +65,7 @@ const InputSubjectType = new InputObjectType({
   },
 });
 
-const testDataType = new ObjectType({
+export const testDataType = new ObjectType({
   name: 'testDataType',
   description: 'testDataType',
   fields: {
@@ -82,7 +93,7 @@ export const UniqueTestDetailsType = new ObjectType({
     academicYearData: { type: new List(academicYearDataType), description: ' Academic Year Test data' },
   },
 });
-const SubjectType = new ObjectType({
+export const SubjectType = new ObjectType({
   name: 'SubjectType_',
   description: 'Subjects selected for the test',
   fields: {
@@ -96,7 +107,7 @@ const SubjectType = new ObjectType({
 });
 
 
-const InputTesttypeType = new InputObjectType({
+export const InputTesttypeType = new InputObjectType({
   name: 'InputTesttypeType',
   description: 'Mode of exam for the test',
   fields: {
@@ -107,7 +118,7 @@ const InputTesttypeType = new InputObjectType({
   },
 });
 
-const TesttypeType = new ObjectType({
+export const TesttypeType = new ObjectType({
   name: 'TesttypeType',
   description: 'Mode of exam for the test',
   fields: {
@@ -118,7 +129,7 @@ const TesttypeType = new ObjectType({
   },
 });
 
-const InputSelectedHierarhcyType = new InputObjectType({
+export const InputSelectedHierarhcyType = new InputObjectType({
   name: 'InputSelectedHierarhcyType',
   description: 'Highest level of hierarchy selected for the test',
   fields: {
@@ -130,7 +141,7 @@ const InputSelectedHierarhcyType = new InputObjectType({
 });
 
 
-const SelectedHierarhcyType = new ObjectType({
+export const SelectedHierarhcyType = new ObjectType({
   name: 'SelectedHierarhcyType',
   description: 'Highest level of hierarchy selected for the test',
   fields: {
@@ -141,7 +152,7 @@ const SelectedHierarhcyType = new ObjectType({
   },
 });
 
-const InputHierarchyType = new InputObjectType({
+export const InputHierarchyType = new InputObjectType({
   name: 'InputHierarchyType',
   description: 'Institute Hierarchy',
   fields: {
@@ -156,7 +167,7 @@ const InputHierarchyType = new InputObjectType({
   },
 });
 
-const SubjectMarksInMarkingSchemaType = new InputObjectType({
+export const SubjectMarksInMarkingSchemaType = new InputObjectType({
   name: 'SubjectMarksInMarkingSchemaType',
   description: 'Section wise marks in subject',
   fields: {
@@ -176,7 +187,7 @@ const SubjectMarksInMarkingSchemaType = new InputObjectType({
 });
 
 
-const SubjectMarkingSchemaType = new InputObjectType({
+export const SubjectMarkingSchemaType = new InputObjectType({
   name: 'SubjectMarkingSchemaType',
   description: 'Subject wise marks distribution',
   fields: {
@@ -280,6 +291,7 @@ export const InputQmapType = new InputObjectType({
   },
 });
 
+
 export const QmapType = new ObjectType({
   name: 'QmapType',
   description: 'Mapping the question with subject, topic and subTopic',
@@ -292,7 +304,9 @@ export const QmapType = new ObjectType({
     C: { type: StringType, description: 'Marks for answering correctly to this question' },
     W: { type: StringType, description: 'Marks for answering wrongly to this question' },
     U: { type: StringType, description: 'Marks for Not attempting this question' },
-    // key: { type: new List(StringType), description: 'Array of Key for the question' },
+    response: { type: StringType, description: 'Response given by the student for this question' },
+    questionNumberId: { type: StringType, description: 'Question Number Id for this question' },
+    selected: { type: BooleanType, description: 'Boolean Value Indicating if the question is selected for the test or not' },
   },
 });
 
@@ -339,7 +353,9 @@ export const TestType = new ObjectType({
     gaStatus: { type: StringType, description: 'Current GA Status of the test. Possible State: [not_started,pending,error,finished]' },
     modeOfConduct: { type: new NonNull(ModeOfConductEnumType), description: 'Mode of conduct of the test which can be Online,Offline or Both' },
     testStudentSnapshotStatus: { type: StringType, description: 'Current testStudentSnapshot Sync Status  of the test. Possible State: [not-started,inprogress,scheduled,completed,failed]' },
-
+    testLink: { type: StringType, description: 'TestId Linked to the retake test' },
+    practiceTestId: { type: StringType, description: 'Practice Test Id' },
+    testFormatType: { type: TestTypeFormatType, description: ' Test Type format for a test' },
   },
 });
 
@@ -363,6 +379,9 @@ export const StudentTestType = new ObjectType({
     gaStatus: { type: StringType, description: 'Current GA Status of the test. Possible State: [not_started,pending,error,finished]' },
     modeOfConduct: { type: new NonNull(ModeOfConductEnumType), description: 'Mode of conduct of the test which can be Online,Offline or Both' },
     questionPaperUrl: { type: StringType, description: 'Question paper url' },
+    testLink: { type: StringType, description: 'TestId Linked to the retake test' },
+    practiceTestId: { type: StringType, description: 'Practice Test Id' },
+    testFormatType: { type: TestTypeFormatType, description: ' Test Type format for a test' },
   },
 });
 
@@ -543,7 +562,7 @@ export const TestsDetailsType = new ObjectType({
   },
 });
 
-const SubjectNameType = new ObjectType({
+export const SubjectNameType = new ObjectType({
   name: 'SubjectNameType',
   fields: {
     subject: { type: StringType },
