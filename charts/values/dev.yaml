@@ -4,7 +4,7 @@
 
 replicaCount: 1
 image:
-  repository: registry.gitlab.com/lyra-egnify/hydra-graphql-api-gateway/development
+  repository: registry.gitlab.com/egnify-lms/lms-gateway/development
   tag: latest
   pullPolicy: Always
   pullSecrets: gitlab-registry-pull-secret
@@ -12,20 +12,20 @@ image:
 #project env
 projectEnv:
   nodeEnv: "production"
-  mongodbUri: "mongodb://hydra:AkdjsAIYHjk87y23l1m2klRrtyhjnmrti92w33@35.200.234.132:27017/tenantregistry"
+  mongodbUri: "mongodb://hydra:AkdjsAIYHjk87y23l1m2klRrtyhjnmrti92w33@35.200.234.132:27017/tenantregistry-lms-dev"
   jwtSecret: "KAJDK656kllksklfmFGDFGS765ujh765T6GHAJDSjjjkjiursrda"
   mailjetApiKey: "a1fb4988b5a359099061d2cb8aebc80d"
   apolloEngineKey: "service:hydra-jeet-dev:b9DCNb7tCkPO6TO5xHIdmw"
-  svcSettings: "http://settings-dev-hydra.dev.svc.cluster.local"
-  svcTest: "http://test-management-dev-hydra.dev.svc.cluster.local"
-  svcSSO: "http://sso-dev-hydra.dev.svc.cluster.local"
-  parserQueueNs : 'hydra-parser-dev-mq'
+  svcSettings: "http://settings-dev-lms.dev.svc.cluster.local"
+  svcTest: "http://test-management-dev-lms.dev.svc.cluster.local"
+  svcSSO: "http://sso-dev-lms.dev.svc.cluster.local"
+  parserQueueNs : 'lms-parser-dev-mq'
   celeryBrokerUrl: "redis://:vvqfBAUfPI@redis-master.dev.svc.cluster.local:6379/0"
   celeryResultBackend: "redis://:vvqfBAUfPI@redis-master.dev.svc.cluster.local:6379/0"
 
 
 service:
-  name: hydra-gateway
+  name: lms-gateway
   tier: backend
   type: ClusterIP
   externalPort: 80
@@ -34,16 +34,16 @@ ingress:
   enabled: true
   # Used to create an Ingress record.
   hosts:
-    - api.dev.hydra.egnify.io
+    - api.dev.lms.egnify.io
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "40M"
     kubernetes.io/ingress.class: nginx
     kubernetes.io/tls-acme: "true"
   tls:
     # Secrets must be manually created in the namespace.
-    - secretName: hydra-gateway-tls-dev
+    - secretName: lms-gateway-tls-dev
       hosts:
-        - api.dev.hydra.egnify.io
+        - api.dev.lms.egnify.io
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
