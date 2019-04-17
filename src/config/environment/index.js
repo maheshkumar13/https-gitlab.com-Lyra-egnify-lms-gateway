@@ -29,7 +29,11 @@ const all = {
   port: process.env.PORT || 3000,
 
   // Should we populate the DB with sample data?
-  seedDB: true,
+  seedDB: false,
+
+  // DB Connection Cleanup Interval In minuter
+  timeInterval: process.env.DB_TTL || 10,
+  modelTimeInterval: process.env.MODEL_TTL || 10,
 
   secrets: {
     session: 'vega-secret',
@@ -44,17 +48,13 @@ const all = {
   // MongoDB connection options
   mongo: {
     options: {
+      poolsize: 20,
       db: {
         safe: true,
       },
     },
   },
-  // Parser related config
-  parser: {
-    CELERY_BROKER_URL: process.env.CELERY_BROKER_URL || 'redis://vvqfBAUfPI@localhost:6379/0',
-    CELERY_RESULT_BACKEND: process.env.CELERY_RESULT_BACKEND || 'redis://vvqfBAUfPI@localhost:6379/0',
-    QUEUE_NS: process.env.PARSER_QUEUE_NS || 'hydra-parser-dev-mq',
-  },
+
 };
 
 // Export the config object based on the NODE_ENV
