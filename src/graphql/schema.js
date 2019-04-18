@@ -11,6 +11,7 @@ import {
 
 import { Subjects } from './settings/subject/subject.query';
 import { InstituteHierarchy } from './settings/instituteHierarchy/instituteHierarchy.query';
+import { createSubject } from './settings/subject/subject.mutation';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -20,11 +21,12 @@ const schema = new Schema({
       InstituteHierarchy,
     },
   }),
-  // mutation: new ObjectType({
-  //   name: 'Mutation',
-  //   fields: {
-  //   },
-  // }),
+  mutation: new ObjectType({
+    name: 'Mutation',
+    fields: {
+      createSubject
+    },
+  }),
 });
 
 export default schema;
