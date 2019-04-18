@@ -34,7 +34,6 @@ export const InstituteHierarchy = {
   type: new List(InstituteHierarchyType),
   async resolve(obj, args, context) {
     return controller.fetchNodes(args, context).then(nodesArray => {
-      console.log(nodesArray);
       return nodesArray;
     });
   }

@@ -2,7 +2,6 @@ import { getModel } from './instituteHierarchy.model';
 
 export function fetchNodes(args, context) {
   const filters = args.input;
-  console.log("args", filters);
   // console.log(filters);
   return new Promise((resolve, reject) => {
     filterNodes(filters, context)
@@ -64,4 +63,3 @@ async function filterNodes(fltrs, context) {
 export default {
   fetchNodes,
 };
-
