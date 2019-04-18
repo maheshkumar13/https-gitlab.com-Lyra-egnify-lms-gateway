@@ -10,6 +10,7 @@ import {
 } from 'graphql';
 
 import { Subjects } from './settings/subject/subject.query';
+import { InstituteHierarchy } from './settings/instituteHierarchy/instituteHierarchy.query';
 import { createSubject } from './settings/subject/subject.mutation';
 
 const schema = new Schema({
@@ -17,6 +18,7 @@ const schema = new Schema({
     name: 'Query',
     fields: {
       Subjects,
+      InstituteHierarchy,
     },
   }),
   mutation: new ObjectType({
