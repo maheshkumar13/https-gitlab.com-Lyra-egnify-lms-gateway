@@ -6,8 +6,8 @@ import {
   GraphQLNonNull as NonNull,
   GraphQLInt as IntType,
 } from 'graphql';
-import { config } from '../../../config/environment';
-import fetch from '../../../utils/fetch';
+
+const controller = require('../../../api/settings/instituteHierarchy/instituteHierarchy.controller');
 
 
 const anscetors = new ObjectType({
@@ -38,18 +38,8 @@ const InstituteHierarchyType = new ObjectType({
       type: new List(InstituteHierarchyType),
       async resolve(obj, args, context) {
         const filters = {};
-        const url = `${config.services.settings}/api/instituteHierarchy/filter/nodes`;
         filters.parentCode = obj.childCode;
-        return fetch(url, {
-          method: 'POST',
-          body: JSON.stringify({ filters: JSON.stringify(filters) }),
-          headers: { 'Content-Type': 'application/json' },
-        }, context)
-          .then(response => response.json())
-          .then(json => json)
-          .catch((err) => {
-            console.error(err);
-          });
+        return controller.fetchNodes(args, context);
       },
     },
   }),

@@ -60,7 +60,7 @@ app.use(
     console.info('Yay!! GraphQL Initilized');
     return {
       schema,
-      context: { user: req.user },
+      context: req.user,
       tracing: true,
       cacheControl: true,
     };
@@ -68,7 +68,7 @@ app.use(
 );
 
 
-require('./api/v1').default(app);
+require('./api').default(app);
 
 app.get('/', (req, res) => res.send('Oh!! Yeah.'));
 

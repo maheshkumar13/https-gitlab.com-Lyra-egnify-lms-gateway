@@ -5,16 +5,15 @@
 module.exports = {
   // MongoDB connection options
   mongo: {
-    uri: 'mongodb://localhost/tenantregistry',
+    uri: 'mongodb://localhost/tenantregistry-lms-dev',
   },
   // Seed database on startup
-  seedDB: true,
+  seedDB: false,
   services: {
-    settings: 'http://localhost:5001',
-    test: 'http://localhost:5002',
     // sso: 'http://localhost:3002',
-    sso: 'https://accounts.dev.hydra.egnify.io',
-    egnifyAccountsURL: process.env.SVC_SSO || 'https://accounts.dev.hydra.egnify.io',
+    sso: 'https://accounts.dev.lms.egnify.io',
+    // egnifyAccountsURL: process.env.SVC_SSO || 'http://localhost:3002',
+    egnifyAccountsURL: process.env.SVC_SSO || 'https://accounts.dev.lms.egnify.io',
   },
   apolloEngineKey: 'service:egnify-jeet-dev:-aBvwR1LrRIp5ym1C6gVPQ',
 };
