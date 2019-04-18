@@ -7,6 +7,7 @@
 import {
   GraphQLList as List,
   GraphQLObjectType as ObjectType,
+  GraphQLInputObjectType as InputType,
   GraphQLString as StringType,
   GraphQLNonNull as NonNull,
   GraphQLInt as IntType,
@@ -25,7 +26,7 @@ export const nameCodeType = new ObjectType({
 export const refsType = new ObjectType({
   name: 'refsType',
   fields: {
-    boad: { type: nameCodeType, description: 'Name of the subject' },
+    board: { type: nameCodeType, description: 'Name of the subject' },
     class: { type: nameCodeType, description: 'Interal code of the subject' },
     subjecttype: { type: nameCodeType, description: 'Subject type' },
   },
@@ -49,6 +50,16 @@ export const SubjectType = new ObjectType({
   },
 });
 
+export const SubjectInputType = new InputType({
+  name: 'SubjectInputType',
+  fields: {
+    subject: { type: new NonNull(StringType), description: 'Name of the subject' },
+    boards: { type: new NonNull(new List(StringType)), description: 'List board codes' },
+    classes: { type: new NonNull(new List(StringType)), description: 'List of classes codes' }
+  }
+})
+
 export default {
   SubjectType,
+  SubjectInputType,
 };

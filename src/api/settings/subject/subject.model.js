@@ -9,6 +9,8 @@
 import mongoose from 'mongoose';
 import { getDB } from '../../../db';
 
+const crypto = require('crypto')
+
 const subSubjectSchema = new mongoose.Schema({
   name: { type: String, required: true }
 })
@@ -18,15 +20,20 @@ const nameCodeSchema = new mongoose.Schema({
   code: { type: String, required: true }
 })
 
+const SubjecttypeNameCodeSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  code: { type: String, }
+})
+
 const refsSchema = new mongoose.Schema({
   board: { type: nameCodeSchema, required: true },
   class: { type: nameCodeSchema, required: true },
-  subjecttype: { type: nameCodeSchema, required: true }, 
+  subjecttype: { type: SubjecttypeNameCodeSchema, required: true }, 
 })
 
 const SubjectSchema = new mongoose.Schema({
   subject: { type: String, required: true, description: 'Name of the subject' },
-  code: { type: String, required: true, description: 'Internal code for the subject' },
+  code: { type: String, default: `${Date.now()}${crypto.randomBytes(3).toString('hex')}`, description: 'Internal code for the subject' },
   subsubjects: [subSubjectSchema],
   refs: { type: refsSchema, required: true, description: 'Reference data for subject' },
   active: { type: Boolean, default: true }
@@ -37,7 +44,7 @@ const SubjectSchema = new mongoose.Schema({
 export async function getModel(userCxt) {
   const { instituteId } = userCxt;
   const db = await getDB(instituteId);
-  return db.model('SubjectSchema', SubjectSchema);
+  return db.model('Subject', SubjectSchema);
 }
 export default {
   getModel,
