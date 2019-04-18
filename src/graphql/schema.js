@@ -10,12 +10,14 @@ import {
 } from 'graphql';
 
 import { Subjects } from './settings/subject/subject.query';
+import { InstituteHierarchy } from './settings/instituteHierarchy/instituteHierarchy.query';
 
 const schema = new Schema({
   query: new ObjectType({
     name: 'Query',
     fields: {
       Subjects,
+      InstituteHierarchy,
     },
   }),
   // mutation: new ObjectType({

@@ -45,7 +45,7 @@ export const SubjectType = new ObjectType({
     subject: { type: StringType, description: 'Name of the subject' },
     code: { type: StringType, description: 'Interal code of the subject' },
     subsubjects: { type: new List(subsubjectsType) },
-    refs: { type: refsType, description: 'ref'}
+    refs: { type: refsType, description: 'ref' }
   },
 });
 

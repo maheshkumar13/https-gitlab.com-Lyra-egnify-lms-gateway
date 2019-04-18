@@ -1,46 +1,49 @@
-/**
-@author Aakash Parsi
-@date    XX/XX/XXXX
-@version 1.0.0
-*/
-
 import {
   GraphQLList as List,
   GraphQLObjectType as ObjectType,
   GraphQLString as StringType,
+  GraphQLBoolean as BooleanType,
   GraphQLNonNull as NonNull,
   GraphQLInt as IntType,
 } from 'graphql';
 
-import GraphQLJSON from 'graphql-type-json';
+const controller = require('../../../api/settings/instituteHierarchy/instituteHierarchy.controller');
 
-export const instituteHierarchyInputType = new ObjectType({
-  name: 'refsType',
+
+const anscetors = new ObjectType({
+  name: 'AnscetorsType',
   fields: {
-    boad: { type: nameCodeType, description: 'Name of the subject' },
-    class: { type: nameCodeType, description: 'Interal code of the subject' },
-    subjecttype: { type: nameCodeType, description: 'Subject type' },
+    child: { type: StringType },
+    childCode: { type: StringType },
+    parent: { type: StringType },
+    parentCode: { type: StringType },
+    level: { type: IntType },
+    levelName: { type: IntType },
   },
 });
 
-export const subsubjectsType = new ObjectType({
-  name: 'subsubjectsType',
-  fields: {
-    name: { type: StringType, description: 'sub subject name' },
-  },
+const InstituteHierarchyType = new ObjectType({
+  name: 'InstituteHierarchyTree',
+  fields: () => ({
+    child: { type: new NonNull(StringType) },
+    childCode: { type: new NonNull(StringType) },
+    parent: { type: StringType },
+    parentCode: { type: StringType },
+    level: { type: IntType },
+    levelName: { type: StringType },
+    isLeafNode: { type: BooleanType },
+    anscetors: { type: new List(anscetors) },
+    description: { type: StringType },
+    next: {
+      type: new List(InstituteHierarchyType),
+      async resolve(obj, args, context) {
+        const filters = {};
+        filters.parentCode = obj.childCode;
+        return controller.fetchNodes(args, context);
+      },
+    },
+  }),
 });
 
 
-export const SubjectType = new ObjectType({
-  name: 'SubjectType',
-  fields: {
-    subject: { type: StringType, description: 'Name of the subject' },
-    code: { type: StringType, description: 'Interal code of the subject' },
-    subsubjects: { type: new List(subsubjectsType) },
-    refs: { type: refsType, description: 'ref'}
-  },
-});
-
-export default {
-  SubjectType,
-};
+export default InstituteHierarchyType;
