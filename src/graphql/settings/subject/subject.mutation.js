@@ -5,13 +5,14 @@
 */
 
 import {
-  GraphQLList as List,
-  GraphQLNonNull as NonNull,
+  // GraphQLList as List,
+  // GraphQLNonNull as NonNull,
   GraphQLString as StringType,
 
 } from 'graphql';
 
 import { SubjectInputType } from './subject.type';
+
 const controller = require('../../../api/settings/subject/subject.controller');
 
 export const createSubject = {
