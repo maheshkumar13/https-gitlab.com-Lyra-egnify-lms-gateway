@@ -1,6 +1,8 @@
 import { getModel as SubjectModel } from './subject.model';
 import { getModel as InstituteHierarchyModel} from '../instituteHierarchy/instituteHierarchy.model'
 
+const crypto = require('crypto')
+
 function getSubjectsQuery(args){
   const query = { active: true }
   if (args.boardCode) query['refs.board.code'] = args.boardCode;
@@ -29,7 +31,6 @@ function getObjectCombinations(boards, classes) {
 }
 
 async function validateAndGetHierarchyData(context, hierarchyCodes){
-  console.log(hierarchyCodes)
   return InstituteHierarchyModel(context).then((InstituteHierarchy) => {
     const query = {
       active: true,
@@ -54,9 +55,8 @@ async function insertSubjectsDataByfind(Subject, data) {
           if(!doc) finalData.push(obj.objData)
       })
   })).then(() => {
-    console.log('finalData', finalData)
     if(!finalData.length) return true
-    return Subject.insertMany(finalData).then(() => {
+    return Subject.create(finalData).then(() => {
       return true
     }).catch((err) => {
       console.error(err)
@@ -98,6 +98,7 @@ export async function createSubject(args, context) {
           }
           const objData = {
             subject,
+            code: `${Date.now()}${crypto.randomBytes(5).toString('hex')}`,
             refs: {
               'board': {
                 'name': boardData.child,

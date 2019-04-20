@@ -33,7 +33,7 @@ const refsSchema = new mongoose.Schema({
 
 const SubjectSchema = new mongoose.Schema({
   subject: { type: String, required: true, description: 'Name of the subject' },
-  code: { type: String, default: `${Date.now()}${crypto.randomBytes(3).toString('hex')}`, description: 'Internal code for the subject' },
+  code: { type: String, required: true, description: 'Internal code for the subject' },
   subsubjects: [subSubjectSchema],
   refs: { type: refsSchema, required: true, description: 'Reference data for subject' },
   active: { type: Boolean, default: true }
