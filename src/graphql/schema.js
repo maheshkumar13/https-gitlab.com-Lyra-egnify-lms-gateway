@@ -14,7 +14,7 @@ import { InstituteHierarchy } from './settings/instituteHierarchy/instituteHiera
 import { createSubject } from './settings/subject/subject.mutation';
 
 import { Textbooks } from './settings/textbook/textbook.query';
-import { createTextbook } from './settings/textbook/textbook.mutation';
+import { createTextbook, updateTextbook, deleteTextbook } from './settings/textbook/textbook.mutation';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -29,7 +29,9 @@ const schema = new Schema({
     name: 'Mutation',
     fields: {
       createSubject,
-      createTextbook
+      createTextbook,
+      updateTextbook,
+      deleteTextbook
     },
   }),
 });

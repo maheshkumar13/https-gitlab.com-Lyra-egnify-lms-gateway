@@ -53,7 +53,18 @@ export const TextbookInputType = new InputType({
   }
 })
 
+export const updateTextbookInputType = new InputType({
+  name: 'updateTextbookInputType',
+  fields: {
+    name: { type: StringType, description: 'Name of the textbook' },
+    imageUrl: { type: StringType, description: 'image url' },
+    code: { type: new NonNull(StringType), description: 'Internal code of textbook' },
+  }
+})
+
+
 export default {
   TextbookType,
   TextbookInputType,
+  updateTextbookInputType,
 };

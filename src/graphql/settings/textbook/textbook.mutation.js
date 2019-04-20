@@ -11,7 +11,7 @@ import {
 
 } from 'graphql';
 
-import { TextbookInputType, TextbookType } from './textbook.type';
+import { TextbookInputType, TextbookType, updateTextbookInputType } from './textbook.type';
 const controller = require('../../../api/settings/textbook/textbook.controller');
 
 export const createTextbook = {
@@ -24,6 +24,29 @@ export const createTextbook = {
   },
 };
 
+export const updateTextbook = {
+  args: {
+    input: { type: updateTextbookInputType, description: 'Textbook input type for update' },
+  },
+  type: TextbookType,
+  async resolve(obj, args, context) {
+    return controller.updateTextbook(args.input, context);
+  },
+};
+
+export const deleteTextbook = {
+  args: {
+    code: { type: StringType, description: 'Internal code for text book' },
+  },
+  type: TextbookType,
+  async resolve(obj, args, context) {
+    return controller.deleteTextbook(args, context);
+  },
+};
+
+
 export default{
   createTextbook,
+  updateTextbook,
+  deleteTextbook
 };
