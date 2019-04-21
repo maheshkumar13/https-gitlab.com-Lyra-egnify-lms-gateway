@@ -67,7 +67,7 @@ app.use(
   }),
 );
 
-
+app.use('/api', auth.isAuthenticated())
 require('./api').default(app);
 
 app.get('/', (req, res) => res.send('Oh!! Yeah.'));

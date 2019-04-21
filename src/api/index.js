@@ -2,6 +2,8 @@
  * API
  */
 
+const concpetTaxonomy = require('./settings/conceptTaxonomy');
+
 // Util modules
 const uploadFile = require('./v1/uploadFile');
 const downloadReports = require('./v1/downloadReports');
@@ -11,9 +13,10 @@ const authValidation = require('./v1/authValidation');
 const converter = require('./v1/converter');
 const parser = require('./v1/parser');
 
+
 export default function (app) {
   //  Insert API below
-
+  app.use('/api/concpetTaxonomy', concpetTaxonomy);
   // Util APIs
   app.use('/api/v1/converter', converter);
   app.use('/api/v1/uploadFile', uploadFile);

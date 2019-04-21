@@ -32,6 +32,7 @@ export function isAuthenticated() {
               authorization: req.headers.authorization,
               accesscontroltoken: req.headers.accesscontroltoken,
             };
+            req.user_cxt = req.user
             next();
           }
         } catch (e) {
