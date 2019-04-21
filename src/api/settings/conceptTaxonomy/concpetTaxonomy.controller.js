@@ -1,5 +1,6 @@
 import { getModel as ConcpetTaxonomyModel } from './concpetTaxonomy.model';
 import { getModel as TextbookModel} from '../textbook/textbook.model';
+import { ConceptTaxonomy } from '../../../graphql/settings/conceptTaxonomy/conceptTaxonomy.query';
 
 const crypto = require('crypto')
 const xlsx = require('xlsx');
@@ -187,4 +188,20 @@ export async function downloadSample(req, res){
     workbook.xlsx.write(res).then(function(){
         res.end();
     });
+}
+
+function getFetchNodesQuery(args){
+	const query = { active: true }
+	if(args.childCode) query.childCode = args.childCode
+	if(args.parentCode) query.parentCode = args.parentCode
+	if(args.levelName) query.levelName = args.levelName
+	if(args.textbookCode) query['refs.textbook.code'] = args.textbookCode;
+	return query;
+}
+
+export async function fetchNodes(args, context){
+	const query = getFetchNodesQuery(args);
+	return ConcpetTaxonomyModel(context).then((ConceptTaxonomy) => {
+		return ConceptTaxonomy.find(query);
+	})
 }
