@@ -13,18 +13,27 @@ import { Subjects } from './settings/subject/subject.query';
 import { InstituteHierarchy } from './settings/instituteHierarchy/instituteHierarchy.query';
 import { createSubject } from './settings/subject/subject.mutation';
 
+import { Textbooks } from './settings/textbook/textbook.query';
+import { createTextbook, updateTextbook, deleteTextbook } from './settings/textbook/textbook.mutation';
+
+import { ConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.query';
 const schema = new Schema({
   query: new ObjectType({
     name: 'Query',
     fields: {
       Subjects,
       InstituteHierarchy,
+      Textbooks,
+      ConceptTaxonomy
     },
   }),
   mutation: new ObjectType({
     name: 'Mutation',
     fields: {
-      createSubject
+      createSubject,
+      createTextbook,
+      updateTextbook,
+      deleteTextbook
     },
   }),
 });
