@@ -17,7 +17,7 @@ import { createSubject } from './settings/subject/subject.mutation';
 
 import { Textbooks } from './settings/textbook/textbook.query';
 import { createTextbook, updateTextbook, deleteTextbook } from './settings/textbook/textbook.mutation';
-
+import { Students, StudentUniqueValues, StudentsByLastNode } from './settings/student/student.query';
 import { ConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.query';
 
 const schema = new Schema({
@@ -29,7 +29,10 @@ const schema = new Schema({
       Institute,
       InstituteHierarchyGrid,
       Textbooks,
-      ConceptTaxonomy
+      ConceptTaxonomy,
+      Students,
+      StudentUniqueValues,
+      StudentsByLastNode,
     },
   }),
   mutation: new ObjectType({
@@ -38,7 +41,7 @@ const schema = new Schema({
       createSubject,
       createTextbook,
       updateTextbook,
-      deleteTextbook
+      deleteTextbook,
     },
   }),
 });
