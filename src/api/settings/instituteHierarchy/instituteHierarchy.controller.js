@@ -194,6 +194,54 @@ export async function getDataGrid(body, context) {
     .catch(err => err);
 }
 
+function getMongoQueryInstituteHierarchyPaginated(args){
+  const query = { active: true };
+
+
+  if(args.childCodeList && args.childCodeList.length) {
+    query.childCode = {
+      $in: args.childCodeList,
+    }
+  }
+
+  if(args.parentCodeList && args.parentCodeList.length) {
+    query.parentCode = {
+      $in: args.parentCodeList,
+    }
+  }
+
+  if (args.ancestorCode) {
+    query.$or = [
+      { childCode: args.ancestorCode },
+      { anscetors: { $elemMatch: { childCode: args.ancestorCode } } },
+    ];
+  }
+
+  if (args.levelName) query.levelName = args.levelName
+  
+  if (args.category) query.category = args.category
+
+  return query;
+  
+}
+
+export async function getInstituteHierarchyPaginated(args, context){
+  if(!args.limit) args.limit = 0;
+  const query = getMongoQueryInstituteHierarchyPaginated(args);
+  const skip = (args.pageNumber - 1) * args.limit;
+  return getModel(context).then((InstituteHierarchy) => {
+    return Promise.all([
+      InstituteHierarchy.find(query).skip(skip).limit(args.limit),
+      InstituteHierarchy.count(query)
+    ]).then(([data, count]) => {
+      return {
+        data,
+        count
+      }
+    })
+  })
+}
+
 
 export default {
   fetchNodes,

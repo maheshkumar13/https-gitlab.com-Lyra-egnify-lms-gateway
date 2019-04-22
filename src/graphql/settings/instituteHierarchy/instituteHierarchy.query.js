@@ -11,9 +11,13 @@ import {
   GraphQLString as StringType,
   GraphQLInt as IntType,
   GraphQLInputObjectType as InputType,
+  GraphQLObjectType as ObjectType,
+  GraphQLBoolean as BooleanType,
+  GraphQLEnumType as EnumType,
 } from 'graphql';
 
 import InstituteHierarchyType from './instituteHierarchy.type';
+import { LIST } from 'graphql/language/kinds';
 
 const controller = require('../../../api/settings/instituteHierarchy/instituteHierarchy.controller');
 
@@ -38,4 +42,103 @@ export const InstituteHierarchy = {
   },
 };
 
-export default { InstituteHierarchy };
+// ----------------Institute Hierarchy Paginated ---------------------------
+const pageInfoType = new ObjectType({
+  name: 'InstituteHierarcyPaginatedPageInfoType',
+  fields() {
+    return {
+      pageNumber: {
+        type: IntType,
+      },
+      nextPage: {
+        type: BooleanType,
+      },
+      prevPage: {
+        type: BooleanType,
+      },
+      totalPages: {
+        type: IntType,
+      },
+      totalEntries: {
+        type: IntType,
+      },
+    };
+  },
+});
+
+const InstituteHierarchyPaginatedType = new ObjectType({
+  name: 'InstituteHierarchyPaginatedType',
+  fields() {
+    return {
+      data: {
+        type: new List(InstituteHierarchyType),
+      },
+      pageInfo: {
+        type: pageInfoType,
+      },
+    };
+  },
+});
+
+const CategoryEnumType = new EnumType({
+  name: 'CategoryEnumType',
+  values: {
+    A: {
+      value: 'A',
+    },
+    B: {
+      value: 'B',
+    },
+    C: {
+      value: 'C',
+    },
+  },
+});
+
+
+export const InstituteHierarchyPaginated = {
+  args: {
+    pageNumber: { type: IntType },
+    limit: { type: IntType },
+    childCodeList: { type: new List(StringType)},
+    parentCodeList: { type: new List(StringType)},
+    ancestorCodeList: { type: new List(StringType)},
+    levelName: { type: new List(StringType)},
+    level: { type: IntType },
+    category: { type:  CategoryEnumType}
+  },
+  type: InstituteHierarchyPaginatedType,
+  async resolve(obj, args, context) {
+    if(!args.pageNumber) args.pageNumber = 1
+    if(!args.limit) args.limit = 0
+    return controller.getInstituteHierarchyPaginated(args, context)
+      .then(async (json) => {
+        if (json && json.data) {
+          const pageInfo = {};
+          const resp = {};
+          pageInfo.prevPage = true;
+          pageInfo.nextPage = true;
+          pageInfo.pageNumber = args.pageNumber;
+          pageInfo.totalPages = args.limit ? Math.ceil(json.count / args.limit) : 1;
+          pageInfo.totalEntries = json.count;
+          resp.data = json.data;
+
+          if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+            throw new Error('Page Number is invalid');
+          }
+          if (args.pageNumber === pageInfo.totalPages) {
+            pageInfo.nextPage = false;
+          }
+          if (args.pageNumber === 1) {
+            pageInfo.prevPage = false;
+          }
+          resp.pageInfo = pageInfo;
+          return resp;
+        }
+        return json;
+      })
+  },
+};
+
+
+export default { InstituteHierarchy, InstituteHierarchyPaginated };

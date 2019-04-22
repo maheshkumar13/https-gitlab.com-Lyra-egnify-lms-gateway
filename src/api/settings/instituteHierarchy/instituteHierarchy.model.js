@@ -26,6 +26,7 @@ const instituteHierarchy = new mongoose.Schema({
   anscetors: { type: [ancestorSchema], default: [] },
   taxonomyReferences: {},
   isLeafNode: { type: Boolean, default: true },
+  category: { type: String, enum: ['A', 'B', 'C'], description: 'Category' }, 
   active: { type: Boolean, default: true },
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
