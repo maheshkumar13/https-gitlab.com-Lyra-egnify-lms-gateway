@@ -1,6 +1,8 @@
 import { getModel as SubjectModel } from './subject.model';
 import { getModel as InstituteHierarchyModel } from '../instituteHierarchy/instituteHierarchy.model';
 
+const crypto = require('crypto');
+
 function getSubjectsQuery(args) {
   const query = { active: true };
   if (args.boardCode) query['refs.board.code'] = args.boardCode;
@@ -27,7 +29,6 @@ function getObjectCombinations(boards, classes) {
 }
 
 async function validateAndGetHierarchyData(context, hierarchyCodes) {
-  // console.log(hierarchyCodes);
   return InstituteHierarchyModel(context).then((InstituteHierarchy) => {
     const query = {
       active: true,
@@ -50,9 +51,8 @@ async function insertSubjectsDataByfind(Subject, data) {
   return Promise.all(await data.map(obj => Subject.findOne(obj.findQuery).then((doc) => {
     if (!doc) finalData.push(obj.objData);
   }))).then(() => {
-    // console.log('finalData', finalData);
     if (!finalData.length) return true;
-    return Subject.insertMany(finalData).then(() => true).catch((err) => {
+    return Subject.create(finalData).then(() => true).catch((err) => {
       console.error(err);
       throw new Error('Something went wrong!');
     });
@@ -77,9 +77,9 @@ export async function createSubject(args, context) {
     SubjectModel(context),
   ]).then(([hierarchyData, Subject]) => {
     const objectCombs = getObjectCombinations(args.boards, args.classes);
-    // console.log('objectCombs', objectCombs);
+    console.log('objectCombs', objectCombs);
     const data = [];
-    objectCombs.map((obj) => { //eslint-disable-line
+    objectCombs.map((obj) => {
       const boardData = hierarchyData.find(x => x.levelName === 'Board' && x.childCode === obj.boardCode);
       const classData = hierarchyData.find(x => x.levelName === 'Class' && x.childCode === obj.classCode);
       if (!boardData || !classData) throw new Error('Invalid childCodes');
@@ -92,6 +92,7 @@ export async function createSubject(args, context) {
       };
       const objData = {
         subject,
+        code: `${Date.now()}${crypto.randomBytes(5).toString('hex')}`,
         refs: {
           board: {
             name: boardData.child,
@@ -117,7 +118,7 @@ export async function createSubject(args, context) {
       throw new Error('Could not insert data');
     });
   }).catch((err) => {
-    console.error(err);
+    console.log(err);
     throw new Error('Could not insert data');
   });
 }
