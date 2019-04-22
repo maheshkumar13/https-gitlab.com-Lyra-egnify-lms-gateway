@@ -9,13 +9,14 @@
 import {
   GraphQLList as List,
   GraphQLString as StringType,
-  GraphQLObjectType as ObjectType,
   GraphQLInt as IntType,
   GraphQLInputObjectType as InputType,
 } from 'graphql';
 
 import InstituteHierarchyType from './instituteHierarchy.type';
+
 const controller = require('../../../api/settings/instituteHierarchy/instituteHierarchy.controller');
+
 const InstituteHierarchyFilterType = new InputType({
   name: 'InstituteHierarchyFilterType',
   fields: {
@@ -23,7 +24,7 @@ const InstituteHierarchyFilterType = new InputType({
     childCode: { type: StringType },
     level: { type: IntType },
     ancestorCode: { type: StringType },
-    levelName: { type: StringType},
+    levelName: { type: StringType },
   },
 });
 
@@ -33,10 +34,8 @@ export const InstituteHierarchy = {
   },
   type: new List(InstituteHierarchyType),
   async resolve(obj, args, context) {
-    return controller.fetchNodes(args, context).then(nodesArray => {
-      return nodesArray;
-    });
-  }
+    return controller.fetchNodes(args, context).then(nodesArray => nodesArray).catch(err => err);
+  },
 };
 
 export default { InstituteHierarchy };
