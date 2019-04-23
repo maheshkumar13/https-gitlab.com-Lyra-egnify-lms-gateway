@@ -39,7 +39,8 @@ const CategoryEnumType = new EnumType({
 const UpdateCategoryInputType = new InputType({
   name: 'UpdateCategoryInputType',
   fields: {
-    name: { type: new NonNull(StringType) },
+    board: { type: new NonNull(StringType)},
+    branch: { type: new NonNull(StringType) },
     category: { type: new NonNull(CategoryEnumType) },
   },
 });
@@ -47,7 +48,7 @@ const UpdateCategoryInputType = new InputType({
 const UpdateCategoryInputDataType = new InputType({
   name: 'UpdateCategoryInputDataType',
   fields: {
-    data: { type: new List(UpdateCategoryInputType)}
+    data: { type: new NonNull(new List(UpdateCategoryInputType))}
   },
 });
 

@@ -199,7 +199,7 @@ export async function getDataGrid(body, context) {
 }
 
 function getMongoQueryInstituteHierarchyPaginated(args){
-  const query = { active: true };
+  const query = { active: true};
 
 
   if(args.childCodeList && args.childCodeList.length) {
@@ -216,8 +216,8 @@ function getMongoQueryInstituteHierarchyPaginated(args){
 
   if (args.ancestorCodeList) {
     query.$or = [
-      { childCode: args.ancestorCodeList },
-      { anscetors: { $elemMatch: { childCode: args.ancestorCodeList } } },
+      { childCode: {$in: args.ancestorCodeList} },
+      { anscetors: { $elemMatch: { childCode: {$in: args.ancestorCodeList} } } },
     ];
   }
 
@@ -246,6 +246,49 @@ export async function getInstituteHierarchyPaginated(args, context){
   })
 }
 
+export async function getUniqueBoardAndBranch(context, filters={}){
+  return getModel(context).then((InstituteHierarchy) => {
+    const aggregateQuery = []
+    const match = {
+      active: true,
+      levelName: 'Branch',
+    }
+    if(filters.ancestorCodeList) {
+      match['$or'] = [
+        { childCode: {$in: filters.ancestorCodeList} },
+        { anscetors: { $elemMatch: { childCode: {$in: filters.ancestorCodeList} } } },
+      ];
+    }
+    aggregateQuery.push({
+      $match: match
+    })
+
+    aggregateQuery.push({
+      $unwind: '$anscetors'
+    })
+
+    aggregateQuery.push({
+      $match: {
+        'anscetors.levelName': 'Board',
+      }
+    })
+
+    aggregateQuery.push({
+      $group: {_id: { board: '$anscetors.child', branch: '$child'}}
+    })
+
+    aggregateQuery.push({
+      $project: { board: '$_id.board', branch: '$_id.branch', _id: 0}
+    })
+
+    aggregateQuery.push({
+      $sort: { board: 1, branch: 1} 
+    })
+    return InstituteHierarchy.aggregate(aggregateQuery).allowDiskUse(true)
+  })
+}
+
+
 export async function downloadSampleForCategory(req, res){
   const args = req.body;
   
@@ -264,38 +307,29 @@ export async function downloadSampleForCategory(req, res){
     return res.status(400).end('ancestorCodeList required')
   }
 
-  return getModel(req.user_cxt).then((InstituteHierarchy) => {
-    const query = {
-      active: true,
-      $or: [
-        { childCode: args.ancestorCodeList },
-        { anscetors: { $elemMatch: { childCode: args.ancestorCodeList } } },
-      ],
-      levelName: 'Branch',
-    }
-    
-    return InstituteHierarchy.distinct('child', query).then((branches) => {
-        if(!branches || !branches.length) {
-          return res.status(400).end('No branches found')
-        }
-        const workbook = new Excel.Workbook();
-        const worksheet = workbook.addWorksheet('My Sheet');
-        worksheet.columns = [
-          { header: 'Branch', key: 'Branch', width: 32 },
-          { header: 'Category', key: 'Category', width: 10 },
-        ];
-        for(let i = 0; i < branches.length; i+=1 ){
-          worksheet.addRow({Branch: branches[i]});
-        }
-        const fileName = 'SampleUplodCategory.xlsx';
-        
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+  return getUniqueBoardAndBranch(req.user_cxt, args).then((data) => {
+      if(!data || !data.length) {
+        return res.status(400).end('No branches found')
+      }
+      const workbook = new Excel.Workbook();
+      const worksheet = workbook.addWorksheet('My Sheet');
+      worksheet.columns = [
+        { header: 'Board', key: 'Board', width: 10 },
+        { header: 'Branch', key: 'Branch', width: 20 },
+        { header: 'Category', key: 'Category', width: 10 },
+      ];
+      for(let i = 0; i < data.length; i+=1 ){
+        const obj = data[i] 
+        worksheet.addRow({Board: obj.board, Branch: obj.branch});
+      }
+      const fileName = 'SampleUplodCategory.xlsx';
+      
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader("Content-Disposition", "attachment; filename=" + fileName);
 
-        return workbook.xlsx.write(res).then(function(){
-            return res.end();
-        });
-    })
+      return workbook.xlsx.write(res).then(function(){
+          return res.end();
+      });
   })
 }
 
@@ -307,20 +341,33 @@ export async function updateCategory(args, context){
   }
   const categories = ['A', 'B', 'C']
   return getModel(context).then((InstituteHierarchy) => {
-    return InstituteHierarchy.distinct('child',{levelName: 'Branch', active: true}).then((branches) => {
+    return getUniqueBoardAndBranch(context).then((uniqueData) => {
       const bulk = InstituteHierarchy.collection.initializeUnorderedBulkOp();
       for(let i=0; i < data.length; i+=1){
         const obj = data[i];
-        if(!obj.name && !obj.category) {
-          throw new Error('child and category are required')
+        if(!obj.board || !obj.branch || !obj.category) {
+          throw new Error('board, branch and category are required')
         }
-        if(!branches.includes(obj.name)) {
-          throw new Error(`${obj.name} is not a valid branch`)
+        const uniqueObj = uniqueData.find( x=> x.board === obj.board && x.branch === obj.branch)
+        if (!uniqueObj) {
+          throw new Error(`Inavlid board(${obj.board}) or branch(${obj.branch})`)
         }
+
         if(!categories.includes(obj.category)) {
-          throw new Error(`Invalid category for ${obj.name}`)
+          throw new Error(`Invalid category for ${obj.board}-${obj.branch}`)
         }
-        bulk.find( { child: obj.name, levelName: 'Branch' } ).update( { $set: { category: obj.category } }, {multi: true} );  
+        const findQuery = {
+          active: true,
+          levelName: 'Branch',
+          child: obj.branch,
+          anscetors: {
+            $elemMatch: {
+              levelName: 'Board',
+              child: obj.board
+            }
+          }
+        }
+        bulk.find(findQuery).update( { $set: { category: obj.category } }, {multi: true});  
       }
       return bulk.execute().then(() => {
         return 'Update categories successfully'
@@ -374,15 +421,15 @@ function validateSheetAndGetData(req) {
 	// validate mandetory fields
 	for (let j = 0; j < data.length; j += 1) {
     const obj = data[j]
-    if(obj.Branch && obj.Category) {
+    if(obj.Board && obj.Branch && obj.Category) {
       const temp = {
-        name: obj.Branch,
+        board: obj.Board,
+        branch: obj.Branch,
         category: obj.Category,
       }
       finalData.push(temp)
     }  
 	}
-
 	if(!finalData.length) {
 		result.success = false;
 		result.message = `No valid data found in sheet`;
@@ -397,7 +444,6 @@ function validateSheetAndGetData(req) {
 export async function uploadCategory(req, res){
   if (!req.file) return res.status(400).end('File required');
   const validateResult = validateSheetAndGetData(req);
-  console.log(req.data, validateResult)
   if(!validateResult.success) return res.status(400).end(validateResult.message)
   const args = { data: req.data }
   return updateCategory(args, req.user_cxt).then(() => {
