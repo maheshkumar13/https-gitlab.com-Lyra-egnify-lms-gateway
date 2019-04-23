@@ -28,6 +28,7 @@ const studentSchema = new mongoose.Schema(
     gender: { type: String },
     category: { type: String },
     hierarchy: { type: [hierarchySchema], required: true },
+    hierarchyLevels: {},
     active: { type: Boolean, default: true },
     userCreated: { type: Boolean, default: false },
   },
