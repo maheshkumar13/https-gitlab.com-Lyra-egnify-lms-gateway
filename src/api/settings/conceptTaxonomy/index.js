@@ -26,7 +26,7 @@ router.post(
   );
 
 router.post(
-'/downloadSample', multer.single('file'),
+'/downloadSample',
 controller.downloadSample,
 );
 

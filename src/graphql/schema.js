@@ -13,6 +13,7 @@ import { Subjects } from './settings/subject/subject.query';
 import { InstituteHierarchy, InstituteHierarchyPaginated } from './settings/instituteHierarchy/instituteHierarchy.query';
 import { Institute } from './settings/institute/institute.query';
 import { InstituteHierarchyGrid } from './settings/instituteHierarchy/instituteHierarchyGrid.query';
+import { updateCategory } from './settings/instituteHierarchy/instituteHierarchy.mutaion';
 import { createSubject } from './settings/subject/subject.mutation';
 
 import { Textbooks } from './settings/textbook/textbook.query';
@@ -39,7 +40,8 @@ const schema = new Schema({
       createSubject,
       createTextbook,
       updateTextbook,
-      deleteTextbook
+      deleteTextbook,
+      updateCategory
     },
   }),
 });

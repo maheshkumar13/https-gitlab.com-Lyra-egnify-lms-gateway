@@ -3,6 +3,7 @@
  */
 
 const concpetTaxonomy = require('./settings/conceptTaxonomy');
+const instituteHierarchy = require('./settings/instituteHierarchy');
 
 // Util modules
 const uploadFile = require('./v1/uploadFile');
@@ -17,6 +18,7 @@ const parser = require('./v1/parser');
 export default function (app) {
   //  Insert API below
   app.use('/api/concpetTaxonomy', concpetTaxonomy);
+  app.use('/api/instituteHierarchy', instituteHierarchy);
   // Util APIs
   app.use('/api/v1/converter', converter);
   app.use('/api/v1/uploadFile', uploadFile);
