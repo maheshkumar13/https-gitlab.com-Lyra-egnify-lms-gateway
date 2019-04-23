@@ -370,7 +370,7 @@ export async function updateCategory(args, context){
         bulk.find(findQuery).update( { $set: { category: obj.category } }, {multi: true});  
       }
       return bulk.execute().then(() => {
-        return 'Update categories successfully'
+        return 'Updated successfully'
       })
     })
   })

@@ -31,7 +31,7 @@ const schema = new Schema({
       InstituteHierarchyGrid,
       Textbooks,
       ConceptTaxonomy,
-      InstituteHierarchyPaginated
+      InstituteHierarchyPaginated,
       Students,
       StudentUniqueValues,
       StudentsByLastNode,
