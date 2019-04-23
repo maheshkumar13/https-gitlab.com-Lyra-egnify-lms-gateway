@@ -23,6 +23,7 @@ const studentSchema = new mongoose.Schema(
     egnifyId: { type: String },
     fatherName: { type: String },
     password: { type: Number },
+    orientation: { type: String },
     dob: { type: Date },
     gender: { type: String },
     category: { type: String },

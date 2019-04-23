@@ -14,7 +14,7 @@ import { InstituteHierarchy } from './settings/instituteHierarchy/instituteHiera
 import { Institute } from './settings/institute/institute.query';
 import { InstituteHierarchyGrid } from './settings/instituteHierarchy/instituteHierarchyGrid.query';
 import { createSubject } from './settings/subject/subject.mutation';
-
+import { Programs } from './settings/programs/programs.query';
 import { Textbooks } from './settings/textbook/textbook.query';
 import { createTextbook, updateTextbook, deleteTextbook } from './settings/textbook/textbook.mutation';
 import { Students, StudentUniqueValues, StudentsByLastNode } from './settings/student/student.query';
@@ -33,6 +33,7 @@ const schema = new Schema({
       Students,
       StudentUniqueValues,
       StudentsByLastNode,
+      Programs,
     },
   }),
   mutation: new ObjectType({
