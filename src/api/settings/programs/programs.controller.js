@@ -25,7 +25,7 @@ export async function fetchProgramsBasedOnBoard(body, context) {
         { board: '$hierarchyLevels.L_2', class: '$hierarchyLevels.L_3', program: '$orientation' },
         studentCount: { $sum: 1 },
       },
-    }]);
+    }]).allowDiskUse(true);
   tempProgramWiseStudentCount.forEach((programWise) => {
     // console.log(programWise)
     const temp = programWise._id; //eslint-disable-line
