@@ -29,6 +29,7 @@ const StudentType = new ObjectType({
     hierarchy: { type: GraphQLJSON },
     userCreated: { type: BooleanType },
     password: { type: IntType },
+    hierarchyLevels: { type: GraphQLJSON },
   },
 });
 
