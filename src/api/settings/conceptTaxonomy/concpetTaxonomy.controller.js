@@ -1,11 +1,10 @@
 import { getModel as ConcpetTaxonomyModel } from './concpetTaxonomy.model';
 import { getModel as TextbookModel} from '../textbook/textbook.model';
-import { ConceptTaxonomy } from '../../../graphql/settings/conceptTaxonomy/conceptTaxonomy.query';
 
 const crypto = require('crypto')
 const xlsx = require('xlsx');
 const csvjson = require('csvjson');
-var Excel = require('exceljs');
+const Excel = require('exceljs');
 
 function validateSheet(req) {
 	const result = {

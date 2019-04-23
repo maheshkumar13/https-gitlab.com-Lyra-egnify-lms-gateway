@@ -10,9 +10,10 @@ import {
 } from 'graphql';
 
 import { Subjects } from './settings/subject/subject.query';
-import { InstituteHierarchy } from './settings/instituteHierarchy/instituteHierarchy.query';
+import { InstituteHierarchy, InstituteHierarchyPaginated } from './settings/instituteHierarchy/instituteHierarchy.query';
 import { Institute } from './settings/institute/institute.query';
 import { InstituteHierarchyGrid } from './settings/instituteHierarchy/instituteHierarchyGrid.query';
+import { updateCategory } from './settings/instituteHierarchy/instituteHierarchy.mutaion';
 import { createSubject } from './settings/subject/subject.mutation';
 import { Programs } from './settings/programs/programs.query';
 import { Textbooks } from './settings/textbook/textbook.query';
@@ -30,6 +31,7 @@ const schema = new Schema({
       InstituteHierarchyGrid,
       Textbooks,
       ConceptTaxonomy,
+      InstituteHierarchyPaginated,
       Students,
       StudentUniqueValues,
       StudentsByLastNode,
@@ -43,6 +45,7 @@ const schema = new Schema({
       createTextbook,
       updateTextbook,
       deleteTextbook,
+      updateCategory
     },
   }),
 });

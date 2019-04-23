@@ -1,6 +1,10 @@
 import { getModel } from './instituteHierarchy.model';
 import InstituteModel from '../institute/institute.model';
 
+const Excel = require('exceljs');
+const xlsx = require('xlsx');
+const csvjson = require('csvjson');
+
 function getMongoQuery(fltrs, regex) {
   let filters = [];
   if (fltrs) {
@@ -194,6 +198,260 @@ export async function getDataGrid(body, context) {
     .catch(err => err);
 }
 
+function getMongoQueryInstituteHierarchyPaginated(args){
+  const query = { active: true};
+
+
+  if(args.childCodeList && args.childCodeList.length) {
+    query.childCode = {
+      $in: args.childCodeList,
+    }
+  }
+
+  if(args.parentCodeList && args.parentCodeList.length) {
+    query.parentCode = {
+      $in: args.parentCodeList,
+    }
+  }
+
+  if (args.ancestorCodeList) {
+    query.$or = [
+      { childCode: {$in: args.ancestorCodeList} },
+      { anscetors: { $elemMatch: { childCode: {$in: args.ancestorCodeList} } } },
+    ];
+  }
+
+  if (args.levelName) query.levelName = args.levelName
+  
+  if (args.category) query.category = args.category
+
+  return query;
+  
+}
+
+export async function getInstituteHierarchyPaginated(args, context){
+  if(!args.limit) args.limit = 0;
+  const query = getMongoQueryInstituteHierarchyPaginated(args);
+  const skip = (args.pageNumber - 1) * args.limit;
+  return getModel(context).then((InstituteHierarchy) => {
+    return Promise.all([
+      InstituteHierarchy.find(query).skip(skip).limit(args.limit),
+      InstituteHierarchy.count(query)
+    ]).then(([data, count]) => {
+      return {
+        data,
+        count
+      }
+    })
+  })
+}
+
+export async function getUniqueBoardAndBranch(context, filters={}){
+  return getModel(context).then((InstituteHierarchy) => {
+    const aggregateQuery = []
+    const match = {
+      active: true,
+      levelName: 'Branch',
+    }
+    if(filters.ancestorCodeList) {
+      match['$or'] = [
+        { childCode: {$in: filters.ancestorCodeList} },
+        { anscetors: { $elemMatch: { childCode: {$in: filters.ancestorCodeList} } } },
+      ];
+    }
+    aggregateQuery.push({
+      $match: match
+    })
+
+    aggregateQuery.push({
+      $unwind: '$anscetors'
+    })
+
+    aggregateQuery.push({
+      $match: {
+        'anscetors.levelName': 'Board',
+      }
+    })
+
+    aggregateQuery.push({
+      $group: {_id: { board: '$anscetors.child', branch: '$child'}}
+    })
+
+    aggregateQuery.push({
+      $project: { board: '$_id.board', branch: '$_id.branch', _id: 0}
+    })
+
+    aggregateQuery.push({
+      $sort: { board: 1, branch: 1} 
+    })
+    return InstituteHierarchy.aggregate(aggregateQuery).allowDiskUse(true)
+  })
+}
+
+
+export async function downloadSampleForCategory(req, res){
+  const args = req.body;
+  
+  if(!args.ancestorCodeList) {
+    return res.status(400).end('ancestorCodeList required')
+  }
+
+  try {
+    args.ancestorCodeList = JSON.parse(args.ancestorCodeList)
+  } 
+  catch(err){
+    return res.status(400).end('Invalid ancestorCodeList')
+  }
+
+  if(!args.ancestorCodeList.length) {
+    return res.status(400).end('ancestorCodeList required')
+  }
+
+  return getUniqueBoardAndBranch(req.user_cxt, args).then((data) => {
+      if(!data || !data.length) {
+        return res.status(400).end('No branches found')
+      }
+      const workbook = new Excel.Workbook();
+      const worksheet = workbook.addWorksheet('My Sheet');
+      worksheet.columns = [
+        { header: 'Board', key: 'Board', width: 10 },
+        { header: 'Branch', key: 'Branch', width: 20 },
+        { header: 'Category', key: 'Category', width: 10 },
+      ];
+      for(let i = 0; i < data.length; i+=1 ){
+        const obj = data[i] 
+        worksheet.addRow({Board: obj.board, Branch: obj.branch});
+      }
+      const fileName = 'SampleUplodCategory.xlsx';
+      
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+
+      return workbook.xlsx.write(res).then(function(){
+          return res.end();
+      });
+  })
+}
+
+
+export async function updateCategory(args, context){
+  const { data } = args
+  if(!data || !data.length) {
+      throw new Error('Empty list')
+  }
+  const categories = ['A', 'B', 'C']
+  return getModel(context).then((InstituteHierarchy) => {
+    return getUniqueBoardAndBranch(context).then((uniqueData) => {
+      const bulk = InstituteHierarchy.collection.initializeUnorderedBulkOp();
+      for(let i=0; i < data.length; i+=1){
+        const obj = data[i];
+        if(!obj.board || !obj.branch || !obj.category) {
+          throw new Error('board, branch and category are required')
+        }
+        const uniqueObj = uniqueData.find( x=> x.board === obj.board && x.branch === obj.branch)
+        if (!uniqueObj) {
+          throw new Error(`Inavlid board(${obj.board}) or branch(${obj.branch})`)
+        }
+
+        if(!categories.includes(obj.category)) {
+          throw new Error(`Invalid category for ${obj.board}-${obj.branch}`)
+        }
+        const findQuery = {
+          active: true,
+          levelName: 'Branch',
+          child: obj.branch,
+          anscetors: {
+            $elemMatch: {
+              levelName: 'Board',
+              child: obj.board
+            }
+          }
+        }
+        bulk.find(findQuery).update( { $set: { category: obj.category } }, {multi: true});  
+      }
+      return bulk.execute().then(() => {
+        return 'Updated successfully'
+      })
+    })
+  })
+}
+
+function validateSheetAndGetData(req) {
+  const finalData = []
+	const result = {
+		success: true,
+		message: ''
+	}
+
+	// validate extension
+	const name = req.file.originalname.split('.');
+	const extname = name[name.length - 1];
+	if ( extname !== 'xlsx') {
+		result.success = false;
+		result.message = 'Invalid extension'
+		return result;
+	}
+	
+
+	// Reading  workbook
+  const workbook = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true });
+
+  // converting the sheet data to csv
+  const csvdata = xlsx.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]]);
+
+  // converting csvdata to array of json objects
+	const data = csvjson.toObject(csvdata);
+	
+	// deleting all trailing empty rows
+	for (let i = data.length - 1; i >= 0; i -= 1) {
+		const values = Object.values(data[i]);
+		const vals = values.map(x => x.trim());
+		if (vals.every(x => x === '')) data.pop();
+		else break;
+	}
+
+	// deleting empty string keys from all objects
+	data.forEach((v) => { delete v['']; }); // eslint-disable-line
+	
+	// trim and remove whitespace
+	data.forEach((obj) => {
+		Object.keys(obj).forEach((key) => { obj[key] = obj[key].replace(/\s\s+/g, ' ').trim()})
+	})
+
+	// validate mandetory fields
+	for (let j = 0; j < data.length; j += 1) {
+    const obj = data[j]
+    if(obj.Board && obj.Branch && obj.Category) {
+      const temp = {
+        board: obj.Board,
+        branch: obj.Branch,
+        category: obj.Category,
+      }
+      finalData.push(temp)
+    }  
+	}
+	if(!finalData.length) {
+		result.success = false;
+		result.message = `No valid data found in sheet`;
+		return result
+	}
+
+	req.data = finalData;
+	return result;
+	
+}
+
+export async function uploadCategory(req, res){
+  if (!req.file) return res.status(400).end('File required');
+  const validateResult = validateSheetAndGetData(req);
+  if(!validateResult.success) return res.status(400).end(validateResult.message)
+  const args = { data: req.data }
+  return updateCategory(args, req.user_cxt).then(() => {
+    return res.send('data uploaded successfully')
+  }).catch((err) => {
+    return res.status(400).end(err.message)
+  })
+}
 
 export default {
   fetchNodes,

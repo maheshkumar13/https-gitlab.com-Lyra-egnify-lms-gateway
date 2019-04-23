@@ -34,6 +34,7 @@ const InstituteHierarchyType = new ObjectType({
     isLeafNode: { type: BooleanType },
     anscetors: { type: new List(anscetors) },
     description: { type: StringType },
+    category: { type: StringType },
     next: {
       type: new List(InstituteHierarchyType),
       async resolve(obj, args, context) {
