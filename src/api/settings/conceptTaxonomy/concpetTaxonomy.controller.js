@@ -49,7 +49,7 @@ function validateSheet(req) {
 
 	// validate mandetory fields
 	const codes = {}
-	const mandetoryFields = ['code', 'chapter', 'subchapter']
+	const mandetoryFields = ['code', 'chapter']
 	for (let j = 0; j < data.length; j += 1) {
 		const obj = data[j]
 		for(let i=0; i<mandetoryFields.length; i+=1){
@@ -75,7 +75,6 @@ function validateSheet(req) {
 	}
 
 	
-
 	req.data = data;
 	return result;
 	
@@ -87,8 +86,8 @@ function buildDataTree(data){
 		const code = data[i].code;
 		const topic = data[i].chapter;
 		const subtopic = data[i].subchapter;
-		if(!dataTree[topic]) dataTree[topic] = {}
-		if(!dataTree[topic][subtopic]) dataTree[topic][subtopic] = { code }
+		if(!dataTree[topic]) dataTree[topic] = { code }
+		// if(!dataTree[topic][subtopic]) dataTree[topic][subtopic] = { code }
 	}
 	return dataTree
 }
@@ -115,23 +114,23 @@ function buildConcpetTaxonomyTree(dataTree, textbook) {
 		const topicData = {
 			child: topic,
 			childCode: `${Date.now()}${crypto.randomBytes(5).toString('hex')}`,
-			code: '',
+			code: dataTree[topic].code,
 			levelName: 'topic',
 			parentCode: subjectData.childCode,
 			refs,
 		}
 		data.push(topicData);
-		Object.keys(dataTree[topic]).forEach((subtopic) => {
-			const subtopicData = {
-				child: subtopic,
-				childCode: `${Date.now()}${crypto.randomBytes(5).toString('hex')}`,
-				code: dataTree[topic][subtopic].code,
-				levelName: 'subtopic',
-				parentCode: topicData.childCode,
-				refs,
-			}
-			data.push(subtopicData);
-		})
+		// Object.keys(dataTree[topic]).forEach((subtopic) => {
+		// 	const subtopicData = {
+		// 		child: subtopic,
+		// 		childCode: `${Date.now()}${crypto.randomBytes(5).toString('hex')}`,
+		// 		code: dataTree[topic][subtopic].code,
+		// 		levelName: 'subtopic',
+		// 		parentCode: topicData.childCode,
+		// 		refs,
+		// 	}
+		// 	data.push(subtopicData);
+		// })
 	})
 	
 	return data;
@@ -177,7 +176,7 @@ export async function downloadSample(req, res){
 	worksheet.columns = [
 		{ header: 'code', key: 'code', width: 10 },
 		{ header: 'chapter', key: 'chapter', width: 25 },
-		{ header: 'subchapter', key: 'subchapter', width: 42 }
+		// { header: 'subchapter', key: 'subchapter', width: 42 }
 ];
 	var fileName = 'sample.xlsx';
 	
