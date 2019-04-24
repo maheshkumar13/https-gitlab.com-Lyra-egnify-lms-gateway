@@ -22,7 +22,9 @@ projectEnv:
   parserQueueNs : 'lms-parser-dev-mq'
   celeryBrokerUrl: "redis://:vvqfBAUfPI@redis-master.dev.svc.cluster.local:6379/0"
   celeryResultBackend: "redis://:vvqfBAUfPI@redis-master.dev.svc.cluster.local:6379/0"
-
+  AWS_S3_KEY: 'AKIA4XBZMKL5IIJGR4UK', 
+  AWS_S3_SECRET: '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', 
+	AWS_S3_REGION: 'ap-south-1',
 
 service:
   name: lms-gateway
