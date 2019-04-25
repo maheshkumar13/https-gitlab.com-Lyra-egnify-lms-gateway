@@ -20,6 +20,7 @@ import { Textbooks } from './settings/textbook/textbook.query';
 import { createTextbook, updateTextbook, deleteTextbook } from './settings/textbook/textbook.mutation';
 import { Students, StudentUniqueValues, StudentsByLastNode } from './settings/student/student.query';
 import { ConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.query';
+import { ContentMapping } from './settings/contentMapping/contentMapping.query';
 import { LaunchRequest } from './launcher/launchRequest/launchRequest.query';
 
 const schema = new Schema({
@@ -37,6 +38,7 @@ const schema = new Schema({
       StudentUniqueValues,
       StudentsByLastNode,
       Programs,
+      ContentMapping,
       LaunchRequest,
     },
   }),
