@@ -21,6 +21,7 @@ import { createTextbook, updateTextbook, deleteTextbook } from './settings/textb
 import { Students, StudentUniqueValues, StudentsByLastNode } from './settings/student/student.query';
 import { ConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.query';
 import { ContentMapping } from './settings/contentMapping/contentMapping.query';
+import { LaunchRequest } from './launcher/launchRequest/launchRequest.query';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -38,6 +39,7 @@ const schema = new Schema({
       StudentsByLastNode,
       Programs,
       ContentMapping,
+      LaunchRequest,
     },
   }),
   mutation: new ObjectType({

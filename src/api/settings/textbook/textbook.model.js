@@ -25,6 +25,7 @@ const TextbookSchema = new mongoose.Schema({
   imageUrl: { type: String, description: 'Image url of the textbook' },
   code: { type: String, required: true, index: true, description: 'Internal code for the textbook' },
   refs: { type: refsSchema, description: 'References'},
+  publisher: { type: String },
   active: { type: Boolean, default: true },
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },

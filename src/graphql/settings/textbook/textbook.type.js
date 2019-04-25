@@ -38,6 +38,7 @@ export const TextbookType = new ObjectType({
     name: { type: StringType, description: 'Name of the textbook' },
     code: { type: StringType, description: 'Interal code of the subject' },
     imageUrl: { type: StringType, description: 'image url' },
+    publisher:{ type: StringType, description: 'Publisher name' },
     refs: { type: refsType, description: 'refs' },
   },
 });
@@ -50,6 +51,7 @@ export const TextbookInputType = new InputType({
     classCode: { type: new NonNull(StringType), description: 'childCode of class' },
     subjectCode: { type: new NonNull(StringType), description: 'Internal code of subject' },
     imageUrl: { type: StringType, description: 'image url' },
+    publisher:{ type: StringType, description: 'Publisher name' },
   }
 })
 
@@ -58,6 +60,7 @@ export const updateTextbookInputType = new InputType({
   fields: {
     name: { type: StringType, description: 'Name of the textbook' },
     imageUrl: { type: StringType, description: 'image url' },
+    publisher:{ type: StringType, description: 'Publisher name' },
     code: { type: new NonNull(StringType), description: 'Internal code of textbook' },
   }
 })

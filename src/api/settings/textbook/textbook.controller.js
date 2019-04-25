@@ -74,6 +74,7 @@ function validateUrl(value) {
 
 export async function createTextbook(args, context){
   args.name = args.name ? args.name.replace(/\s\s+/g, ' ').trim() : ''
+  args.publisher = args.publisher ? args.publisher.replace(/\s\s+/g, ' ').trim() : ''
   if (
     !args.name ||
     !args.boardCode ||
@@ -110,6 +111,7 @@ export async function createTextbook(args, context){
         name: args.name,
         code: `${Date.now()}${crypto.randomBytes(5).toString('hex')}`,
         imageUrl: args.imageUrl,
+        publisher: args.publisher,
         refs: {
           board: {
             name: boardData.child,
@@ -161,9 +163,10 @@ export async function validateTextbookForUpdate(args, context){
 
 export async function updateTextbook(args, context){
   args.name = args.name ? args.name.replace(/\s\s+/g, ' ').trim() : ''
+  args.publisher = args.publisher ? args.publisher.replace(/\s\s+/g, ' ').trim() : ''
   if (
       !args.code ||
-     (!args.name && !args.imageUrl)
+     (!args.name && !args.imageUrl && !args.publisher)
      ){
     throw new Error('Insufficient data')
   }
@@ -178,9 +181,11 @@ export async function updateTextbook(args, context){
     const patch = {}
     if(args.name) patch.name = args.name
     if(args.imageUrl) patch.imageUrl = args.imageUrl
+    if(args.publisher) patch.publisher = args.publisher
     return Textbook.findOneAndUpdate(matchQuery, patch).then((doc) => {
       if(args.name) doc.name = args.name
       if(args.imageUrl) doc.imageUrl = args.imageUrl
+      if(args.publisher) doc.publisher = args.publisher
       return doc
     })
   })

@@ -311,25 +311,17 @@ export async function downloadSampleForCategory(req, res){
       if(!data || !data.length) {
         return res.status(400).end('No branches found')
       }
-      const workbook = new Excel.Workbook();
-      const worksheet = workbook.addWorksheet('My Sheet');
-      worksheet.columns = [
-        { header: 'Board', key: 'Board', width: 10 },
-        { header: 'Branch', key: 'Branch', width: 20 },
-        { header: 'Category', key: 'Category', width: 10 },
-      ];
+      const finalData = [];
       for(let i = 0; i < data.length; i+=1 ){
-        const obj = data[i] 
-        worksheet.addRow({Board: obj.board, Branch: obj.branch});
+        const obj = data[i]
+        const temp = {
+          'Board': obj.board,
+          'Branch': obj.branch,
+          'Category': '',
+        } 
+        finalData.push(temp);
       }
-      const fileName = 'SampleUplodCategory.xlsx';
-      
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader("Content-Disposition", "attachment; filename=" + fileName);
-
-      return workbook.xlsx.write(res).then(function(){
-          return res.end();
-      });
+      return res.send(finalData)
   })
 }
 
