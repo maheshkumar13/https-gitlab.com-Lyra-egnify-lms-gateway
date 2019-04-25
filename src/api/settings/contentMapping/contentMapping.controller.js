@@ -94,8 +94,8 @@ function validateSheetAndGetData(req, dbData, textbookData) {
   const csvdata = xlsx.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]]);
 
   // converting csvdata to array of json objects
-	const data = csvjson.toObject(csvdata);
-	
+  const data = csvjson.toObject(csvdata);
+  	
 	// deleting all trailing empty rows
 	for (let i = data.length - 1; i >= 0; i -= 1) {
 		const values = Object.values(data[i]);
@@ -235,6 +235,7 @@ export async function uploadContentMapping(req, res){
           }
         },
         branches: temp['branches'],
+        category: temp['category'],
         active: true,
       }
       const findQuery = {
@@ -244,6 +245,7 @@ export async function uploadContentMapping(req, res){
         'content.name': temp['content name'],
         'content.category': temp['content category'],
         'content.type': temp['content type'],
+        'category': temp['category']
       }
       bulk.find(findQuery).upsert().updateOne(obj)
     }
@@ -251,4 +253,31 @@ export async function uploadContentMapping(req, res){
       return res.send('Data inserted/updated successfully')
     })
   }) 
+}
+
+function getMongoQueryForContentMapping(args){
+  const query = { active: true }
+  if(args.textbookCode) query['refs.textbook.code'] = args.textbookCode;
+  if(args.topicCode) query['refs.topic.code'] = args.topicCode;
+  if(args.contentCategory) query['content.category'] = args.contentCategory;
+  if(args.contentType) query['content.type'] = args.contentType;
+  if(args.resourceType) query['resource.type'] = args.resourceType
+  return query;
+}
+
+export async function getContentMapping(args, context){
+  if(!args.textbookCode) throw new Error('textbookCode required')
+  const query = getMongoQueryForContentMapping(args)
+  const skip = (args.pageNumber - 1) * args.limit;
+  return ContentMappingModel(context).then((ContentMapping) => {
+    return Promise.all([
+      ContentMapping.find(query).skip(skip).limit(args.limit),
+      ContentMapping.count(query)
+    ]).then(([data, count]) => {
+      return {
+        data,
+        count
+      }
+    })
+  })
 }
