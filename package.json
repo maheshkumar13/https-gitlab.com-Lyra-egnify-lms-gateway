@@ -54,6 +54,7 @@
     "stream": "^0.0.2",
     "swagger-tools": "^0.10.3",
     "universal-fetch": "^1.0.0",
+    "upath": "^1.1.2",
     "xlsx": "^0.14.2",
     "yamljs": "^0.3.0"
   },

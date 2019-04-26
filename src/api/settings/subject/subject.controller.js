@@ -10,6 +10,13 @@ function getSubjectsQuery(args) {
   return query;
 }
 export async function getSubjects(args, context) {
+  const { rawHierarchy } = context
+  if(rawHierarchy && rawHierarchy.length) {
+    const boardData = rawHierarchy.find(x => x.level === 2)
+    const classData = rawHierarchy.find(x => x.level === 3)
+    args.boardCode = boardData.childCode;
+    args.classCode = classData.childCode;
+  }
   const query = getSubjectsQuery(args);
   return SubjectModel(context).then(Subject => Subject.find(query));
 }
