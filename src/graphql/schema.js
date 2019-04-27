@@ -23,6 +23,8 @@ import { ConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.quer
 import { ContentMapping } from './settings/contentMapping/contentMapping.query';
 import { LaunchRequest } from './launcher/launchRequest/launchRequest.query';
 
+import { Questions } from './tests/questions/questions.query';
+
 const schema = new Schema({
   query: new ObjectType({
     name: 'Query',
@@ -40,6 +42,7 @@ const schema = new Schema({
       Programs,
       ContentMapping,
       LaunchRequest,
+      Questions
     },
   }),
   mutation: new ObjectType({
