@@ -23,7 +23,7 @@ import { ConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.quer
 import { ContentMapping } from './settings/contentMapping/contentMapping.query';
 import { LaunchRequest } from './launcher/launchRequest/launchRequest.query';
 
-import { Questions } from './tests/questions/questions.query';
+import { Questions, Results } from './tests/questions/questions.query';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -42,7 +42,8 @@ const schema = new Schema({
       Programs,
       ContentMapping,
       LaunchRequest,
-      Questions
+      Questions,
+      Results,
     },
   }),
   mutation: new ObjectType({
@@ -52,7 +53,7 @@ const schema = new Schema({
       createTextbook,
       updateTextbook,
       deleteTextbook,
-      updateCategory
+      updateCategory,
     },
   }),
 });

@@ -11,7 +11,8 @@ import {
 
 } from 'graphql';
 
-import { QuestionType } from './questions.type';
+import { QuestionType, ResultInputType, ResultOutputType } from './questions.type';
+
 const controller = require('../../../api/tests/questions/questions.controller');
 
 export const Questions = {
@@ -24,6 +25,17 @@ export const Questions = {
   },
 };
 
+export const Results = {
+  args: {
+    input: { type: new NonNull(ResultInputType), description: 'Question Paper Id and student responses' },
+  },
+  type: ResultOutputType,
+  async resolve(obj, args, context) {
+    return controller.getResults(args, context);
+  },
+};
+
 export default{
   Questions,
+  Results,
 };
