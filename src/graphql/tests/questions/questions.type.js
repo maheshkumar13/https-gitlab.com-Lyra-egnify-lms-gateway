@@ -9,7 +9,7 @@ import {
   GraphQLObjectType as ObjectType,
   GraphQLInputObjectType as InputType,
   GraphQLString as StringType,
-  GraphQLNonNull as NonNull,
+  // GraphQLNonNull as NonNull,
   GraphQLInt as IntType,
   GraphQLBoolean as BooleanType,
 } from 'graphql';
@@ -35,10 +35,30 @@ export const QuestionType = new ObjectType({
     q_category: { type: StringType, description: 'question category' },
     key: { type: new List(StringType), description: 'List of keys' },
     difficulty: { type: StringType, description: 'Difficulty' },
-    revised_blooms_taxonomy: { type: StringType, description: 'revised_blooms_taxonomy' }
+    revised_blooms_taxonomy: { type: StringType, description: 'revised_blooms_taxonomy' },
+  },
+});
+
+export const ResultInputType = new InputType({
+  name: 'ResultInputType',
+  fields: {
+    questionPaperId: { type: StringType },
+    responses: { type: GraphQLJSON },
+  },
+});
+
+export const ResultOutputType = new ObjectType({
+  name: 'ResultOutputType',
+  fields: {
+    countOfC: { type: IntType },
+    countOfW: { type: IntType },
+    countOfU: { type: IntType },
+    obtainedMarks: { type: IntType },
   },
 });
 
 export default {
   QuestionType,
+  ResultInputType,
+  ResultOutputType,
 };
