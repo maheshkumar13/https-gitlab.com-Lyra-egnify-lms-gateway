@@ -117,6 +117,7 @@ export async function getFiltersOnLevel(body, context) {
 }
 
 export async function getDataGrid(body, context) {
+  // console.log("body", body);
   const InstituteHierarchy = await getModel(context);
   const Institute = await InstituteModel.getModel(context); //eslint-disable-line
   const { pagination } = body;
@@ -138,6 +139,7 @@ export async function getDataGrid(body, context) {
 
   return Institute.findOne({})
     .then((instituteDoc) => {
+      // console.log("instituteDoc", instituteDoc);
       const { hierarchy } = instituteDoc;
       const keys = [];
       for (let l = 0; l < hierarchy.length; l += 1) {
@@ -192,6 +194,7 @@ export async function getDataGrid(body, context) {
             count,
             data,
           };
+          console.log("resp", resp);
           return resp;
         });
     })
@@ -222,11 +225,11 @@ function getMongoQueryInstituteHierarchyPaginated(args){
   }
 
   if (args.levelName) query.levelName = args.levelName
-  
+
   if (args.category) query.category = args.category
 
   return query;
-  
+
 }
 
 export async function getInstituteHierarchyPaginated(args, context){
@@ -282,7 +285,7 @@ export async function getUniqueBoardAndBranch(context, filters={}){
     })
 
     aggregateQuery.push({
-      $sort: { board: 1, branch: 1} 
+      $sort: { board: 1, branch: 1}
     })
     return InstituteHierarchy.aggregate(aggregateQuery).allowDiskUse(true)
   })
@@ -291,14 +294,14 @@ export async function getUniqueBoardAndBranch(context, filters={}){
 
 export async function downloadSampleForCategory(req, res){
   const args = req.body;
-  
+
   if(!args.ancestorCodeList) {
     return res.status(400).end('ancestorCodeList required')
   }
 
   try {
     args.ancestorCodeList = JSON.parse(args.ancestorCodeList)
-  } 
+  }
   catch(err){
     return res.status(400).end('Invalid ancestorCodeList')
   }
@@ -318,7 +321,7 @@ export async function downloadSampleForCategory(req, res){
           'Board': obj.board,
           'Branch': obj.branch,
           'Category': '',
-        } 
+        }
         finalData.push(temp);
       }
       return res.send(finalData)
@@ -359,7 +362,7 @@ export async function updateCategory(args, context){
             }
           }
         }
-        bulk.find(findQuery).update( { $set: { category: obj.category } }, {multi: true});  
+        bulk.find(findQuery).update( { $set: { category: obj.category } }, {multi: true});
       }
       return bulk.execute().then(() => {
         return 'Updated successfully'
@@ -383,7 +386,7 @@ function validateSheetAndGetData(req) {
 		result.message = 'Invalid extension'
 		return result;
 	}
-	
+
 
 	// Reading  workbook
   const workbook = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true });
@@ -393,7 +396,7 @@ function validateSheetAndGetData(req) {
 
   // converting csvdata to array of json objects
 	const data = csvjson.toObject(csvdata);
-	
+
 	// deleting all trailing empty rows
 	for (let i = data.length - 1; i >= 0; i -= 1) {
 		const values = Object.values(data[i]);
@@ -404,7 +407,7 @@ function validateSheetAndGetData(req) {
 
 	// deleting empty string keys from all objects
 	data.forEach((v) => { delete v['']; }); // eslint-disable-line
-	
+
 	// trim and remove whitespace
 	data.forEach((obj) => {
 		Object.keys(obj).forEach((key) => { obj[key] = obj[key].replace(/\s\s+/g, ' ').trim()})
@@ -420,7 +423,7 @@ function validateSheetAndGetData(req) {
         category: obj.Category,
       }
       finalData.push(temp)
-    }  
+    }
 	}
 	if(!finalData.length) {
 		result.success = false;
@@ -430,7 +433,7 @@ function validateSheetAndGetData(req) {
 
 	req.data = finalData;
 	return result;
-	
+
 }
 
 export async function uploadCategory(req, res){

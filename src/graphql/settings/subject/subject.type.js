@@ -15,6 +15,9 @@ import {
 
 import GraphQLJSON from 'graphql-type-json';
 
+import { TextbookType } from '../textbook/textbook.type';
+const textBookController = require('../../../api/settings/textbook/textbook.controller');
+
 export const nameCodeType = new ObjectType({
   name: 'nameCodeType',
   fields: {
@@ -46,7 +49,14 @@ export const SubjectType = new ObjectType({
     subject: { type: StringType, description: 'Name of the subject' },
     code: { type: StringType, description: 'Interal code of the subject' },
     subsubjects: { type: new List(subsubjectsType) },
-    refs: { type: refsType, description: 'ref' }
+    refs: { type: refsType, description: 'ref' },
+    next: {
+      type: new List(TextbookType),
+      async resolve(obj, args, context) {
+        args.subjectCode = obj.code;
+        return textBookController.getTextbooks(args, context);
+      },
+    },
   },
 });
 

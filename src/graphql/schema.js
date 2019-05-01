@@ -18,10 +18,13 @@ import { createSubject } from './settings/subject/subject.mutation';
 import { Programs } from './settings/programs/programs.query';
 import { Textbooks } from './settings/textbook/textbook.query';
 import { createTextbook, updateTextbook, deleteTextbook } from './settings/textbook/textbook.mutation';
-import { Students, StudentUniqueValues, StudentsByLastNode } from './settings/student/student.query';
+import { Students, StudentUniqueValues, StudentsByLastNode, StudentById } from './settings/student/student.query';
+import { updateStudentAvatar } from './settings/student/student.mutation';
 import { ConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.query';
 import { ContentMapping } from './settings/contentMapping/contentMapping.query';
 import { LaunchRequest } from './launcher/launchRequest/launchRequest.query';
+
+import { Questions, Results } from './tests/questions/questions.query';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -40,6 +43,9 @@ const schema = new Schema({
       Programs,
       ContentMapping,
       LaunchRequest,
+      Questions,
+      Results,
+      StudentById,
     },
   }),
   mutation: new ObjectType({
@@ -49,7 +55,8 @@ const schema = new Schema({
       createTextbook,
       updateTextbook,
       deleteTextbook,
-      updateCategory
+      updateCategory,
+      updateStudentAvatar,
     },
   }),
 });

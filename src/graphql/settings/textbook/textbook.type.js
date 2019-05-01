@@ -13,6 +13,10 @@ import {
   GraphQLInt as IntType,
 } from 'graphql';
 
+import { ConceptTaxonomyType } from '../conceptTaxonomy/conceptTaxonomy.type';
+const ConceptTaxonomyTypeController = require('../../../api/settings/conceptTaxonomy/concpetTaxonomy.controller');
+
+
 export const nameCodeType = new ObjectType({
   name: 'TextbookNameCodeType',
   fields: {
@@ -40,6 +44,14 @@ export const TextbookType = new ObjectType({
     imageUrl: { type: StringType, description: 'image url' },
     publisher:{ type: StringType, description: 'Publisher name' },
     refs: { type: refsType, description: 'refs' },
+    next: {
+      type: new List(ConceptTaxonomyType),
+      async resolve(obj, args, context) {
+        args.textbookCode = obj.code;
+        args.levelName = 'topic';
+        return ConceptTaxonomyTypeController.fetchNodes(args, context);
+      },
+    },
   },
 });
 
