@@ -17,7 +17,6 @@ const hierarchySchema = new mongoose.Schema({
 
 const studentSchema = new mongoose.Schema(
   {
-
     studentName: { type: String },
     studentId: { type: String },
     egnifyId: { type: String },
@@ -30,6 +29,7 @@ const studentSchema = new mongoose.Schema(
     hierarchy: { type: [hierarchySchema], required: true },
     hierarchyLevels: {},
     active: { type: Boolean, default: true },
+    avatarUrl: { type: String },
     userCreated: { type: Boolean, default: false },
   },
   {

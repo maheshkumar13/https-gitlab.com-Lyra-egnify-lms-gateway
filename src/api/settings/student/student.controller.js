@@ -5,7 +5,7 @@ import { uniqBy, filter } from 'lodash';
 import { getModel } from './student.model';
 import { getLastKLevels } from '../institute/institute.controller';
 
-function getMongoQuery(args, res) {
+function getMongoQuery(args) {
   const query = {};
   query.active = true;
   if (args.egnifyId !== undefined && args.egnifyId !== '') {
@@ -20,8 +20,6 @@ function getMongoQuery(args, res) {
     try {
       filters = JSON.parse(args.filters);
     } catch (e) {
-      res.statusMessage = 'Invalid json in filters';
-      res.status(404).end();
       return false;
     }
     const allKeys = Object.keys(filters);
@@ -139,7 +137,7 @@ export async function getUniqueValues(args, context) {
 }
 
 export async function numberOfStudentsByLastNode(args, context) { // eslint-disable-line
-  console.log('args', args);
+  // console.log('args', args);
   const Student = await getModel(context);
 
   let list = [];
@@ -164,8 +162,40 @@ export async function numberOfStudentsByLastNode(args, context) { // eslint-disa
   });
 }
 
+export async function getStudentDetailsById(args, context) { // eslint-disable-line
+  // console.log('args', args);
+  const Student = await getModel(context);
+  return Student.findOne(
+    { studentId: args.studentId },
+    {
+      studentId: 1,
+      studentName: 1,
+      hierarchyLevels: 1,
+      avatarUrl: 1,
+    },
+  ).then(student => student);
+}
+
+export async function updateStudentAvatar(args, context) { // eslint-disable-line
+  const Student = await getModel(context);
+  return Student.updateOne(
+    { studentId: args.studentId },
+    { avatarUrl: args.avatarUrl },
+  ).then((status) => {
+    if (status.nModified > 0) {
+      return `AvatarUrl has been updated for ${args.studentId}`;
+    }
+    return `StudentId ${args.studentId} Not found `;
+  }).catch((err) => {
+    console.info(err);
+    return 'AvatarUrl updation is FAILED';
+  });
+}
+
 export default{
   getStudents,
   getUniqueValues,
   numberOfStudentsByLastNode,
+  getStudentDetailsById,
+  updateStudentAvatar,
 };

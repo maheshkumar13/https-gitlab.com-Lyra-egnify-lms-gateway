@@ -16,7 +16,7 @@ import GraphQLJSON from 'graphql-type-json';
 
 // const GraphQLDate = require('graphql-date');
 
-const StudentType = new ObjectType({
+export const StudentType = new ObjectType({
   name: 'StudentType',
   fields: {
     egnifyId: { type: StringType },
@@ -34,4 +34,17 @@ const StudentType = new ObjectType({
   },
 });
 
-export default StudentType;
+export const StudentDetailsOutputType = new ObjectType({
+  name: 'StudentDetailsOutputType',
+  fields: {
+    studentId: { type: StringType },
+    studentName: { type: StringType },
+    hierarchyLevels: { type: GraphQLJSON },
+    avatarUrl: { type: StringType },
+  },
+});
+
+export default {
+  StudentType,
+  StudentDetailsOutputType,
+};
