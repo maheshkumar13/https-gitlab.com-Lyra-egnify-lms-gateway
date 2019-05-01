@@ -14,7 +14,7 @@ import {
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import controller from '../../../api/settings/student/student.controller';
-import StudentType from './student.type';
+import { StudentType, StudentDetailsOutputType } from './student.type';
 
 const pageInfoType = new ObjectType({
   name: 'StudentpageInfo',
@@ -156,8 +156,22 @@ export const StudentsByLastNode = {
   },
 };
 
+export const StudentById = {
+  args: {
+    studentId: { type: new NonNull(StringType) },
+  },
+  type: StudentDetailsOutputType,
+  async resolve(obj, args, context) { // eslint-disable-line
+    // args.list = JSON.stringify(args.list) // eslint-disable-line
+    return controller.getStudentDetailsById(args, context) //eslint-disable-line
+      .then(response => response)
+      .catch(err => err);
+  },
+};
+
 export default{
   StudentUniqueValues,
   Students,
   StudentsByLastNode,
+  StudentById,
 };
