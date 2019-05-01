@@ -96,7 +96,7 @@ export async function getStudents(args, context) { // eslint-disable-line
         if (temp.level === hierarchy[0].level) {
             continue;    // eslint-disable-line
         }
-        for (let j = 0; j < 3; j += 1) {
+        for (let j = 0; j < 0; j += 1) {
           if (temp.level !== hierarchy[j].level) {
             modResults[i].hierarchy[j] = {};
           } else {
