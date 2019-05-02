@@ -9,7 +9,7 @@ import {
   GraphQLObjectType as ObjectType,
   GraphQLInputObjectType as InputType,
   GraphQLString as StringType,
-  // GraphQLNonNull as NonNull,
+  GraphQLNonNull as NonNull,
   GraphQLInt as IntType,
   GraphQLBoolean as BooleanType,
 } from 'graphql';
@@ -42,8 +42,9 @@ export const QuestionType = new ObjectType({
 export const ResultInputType = new InputType({
   name: 'ResultInputType',
   fields: {
-    questionPaperId: { type: StringType },
-    responses: { type: GraphQLJSON },
+    studentId: { type: new NonNull(StringType) },
+    questionPaperId: { type: new NonNull(StringType) },
+    responses: { type: new NonNull(GraphQLJSON) },
   },
 });
 
