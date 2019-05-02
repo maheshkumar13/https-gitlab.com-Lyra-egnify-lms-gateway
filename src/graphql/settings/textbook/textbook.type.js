@@ -28,7 +28,6 @@ export const nameCodeType = new ObjectType({
 export const refsType = new ObjectType({
   name: 'TextbookRefsType',
   fields: {
-    board: { type: nameCodeType, description: 'Board' },
     class: { type: nameCodeType, description: 'Class' },
     subject: { type: nameCodeType, description: 'Subject' }
   },
@@ -59,7 +58,6 @@ export const TextbookInputType = new InputType({
   name: 'TextbookInputType',
   fields: {
     name: { type: new NonNull(StringType), description: 'Name of the textbook' },
-    boardCode: { type: new NonNull(StringType), description: 'childCode of board' },
     classCode: { type: new NonNull(StringType), description: 'childCode of class' },
     subjectCode: { type: new NonNull(StringType), description: 'Internal code of subject' },
     imageUrl: { type: StringType, description: 'image url' },

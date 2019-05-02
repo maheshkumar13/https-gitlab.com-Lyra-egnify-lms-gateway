@@ -15,7 +15,6 @@ const nameCodeSchema = new mongoose.Schema({
 })
 
 const refsSchema = new mongoose.Schema({
-  board: { type: nameCodeSchema, required: true },
   class: { type: nameCodeSchema, required: true },
   subject: { type: nameCodeSchema, required: true },
 })

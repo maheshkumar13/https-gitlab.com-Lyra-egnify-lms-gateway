@@ -6,9 +6,7 @@ const crypto = require('crypto')
 
 function getTextbooksQuery(args){
   const query = { active: true }
-  if (args.boardCode) query['refs.board.code'] = args.boardCode;
   if (args.classCode) query['refs.class.code'] = args.classCode;
-  if (args.programCode) query['refs.program.code'] = args.programCode;
   if (args.subjectCode) query['refs.subject.code'] = args.subjectCode;
   return query
 }
@@ -41,12 +39,9 @@ async function getHierarchyData(context, hierarchyCodes){
 async function getSubjectData(context, args){
   const findQuery = {
     code: args.subjectCode,
-    'refs.board.code': args.boardCode,
     'refs.class.code': args.classCode,
     active: true
-  }
-  console.log('findQuery', findQuery);
-  
+  }  
   return SubjectModel(context).then((Subject) => {
     return Subject.findOne(findQuery);
   })
@@ -56,7 +51,6 @@ export async function validateTextbook(args, context){
   const query = {
     active: true,
     name: args.name,
-    'refs.board.code': args.boardCode,
     'refs.class.code': args.classCode,
     'refs.subject.code': args.subjectCode,
   }
@@ -77,7 +71,6 @@ export async function createTextbook(args, context){
   args.publisher = args.publisher ? args.publisher.replace(/\s\s+/g, ' ').trim() : ''
   if (
     !args.name ||
-    !args.boardCode ||
     !args.classCode ||
     !args.subjectCode
   ) {
@@ -86,7 +79,7 @@ export async function createTextbook(args, context){
   return validateTextbook(args, context).then((isTextbookExist) => {
     if(isTextbookExist) throw new Error('Textbook already exists')
     return Promise.all([
-      getHierarchyData(context, [args.boardCode, args.classCode]),
+      getHierarchyData(context, [args.classCode]),
       getSubjectData(context, args),
       TextbookModel(context)
     ]).then(([
@@ -94,18 +87,12 @@ export async function createTextbook(args, context){
       subjectData,
       Textbook
     ]) => {
-      const boardData = hierarchyData.find( x => x.levelName === 'Board' && x.childCode === args.boardCode)
       const classData = hierarchyData.find( x => x.levelName === 'Class' && x.childCode === args.classCode)
-      console.log('boardData', boardData, 'classData',classData);
       if(
-        !boardData ||
         !classData ||
         !subjectData
       ) {
         throw new Error('Invalid input codes ')
-      }
-      if (boardData.childCode !== classData.parentCode) {
-        throw new Error('Invalid board class mapping ')
       }
       const obj = {
         name: args.name,
@@ -113,10 +100,6 @@ export async function createTextbook(args, context){
         imageUrl: args.imageUrl,
         publisher: args.publisher,
         refs: {
-          board: {
-            name: boardData.child,
-            code: boardData.childCode,
-          },
           class: {
             name: classData.child,
             code: classData.childCode,
@@ -146,7 +129,6 @@ export async function validateTextbookForUpdate(args, context){
           active: true,
           name: args.name,
           code: { $ne: args.code },
-          'refs.board.code': obj.refs.board.code,
           'refs.class.code': obj.refs.class.code,
           'refs.subject.code': obj.refs.subject.code
         }

@@ -17,9 +17,7 @@ const controller = require('../../../api/settings/textbook/textbook.controller')
 export const Textbooks = {
   args: {
     code: { type: StringType, description: 'Internal code of textbook' },
-    boardCode: { type: StringType, description: 'childCode of board' },
     classCode: { type: StringType, description: 'childCode code of class' },
-    programCode: { type: StringType, description: 'Internal code of program' },
     subjectCode: { type: StringType, description: 'Internal code of subject' }
   },
   type: new List(TextbookType),
