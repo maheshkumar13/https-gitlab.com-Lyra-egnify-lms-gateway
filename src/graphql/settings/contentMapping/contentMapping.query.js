@@ -67,9 +67,9 @@ export const ContentMapping = {
     limit: { type: IntType, description: 'Number of items per page' },
     textbookCode: { type: new NonNull(StringType), description: 'Internal code of Textbook '},
     topicCode: { type: StringType, description: 'Internal code of Topic'},
-    contentCategory: { type: StringType, description: 'Category of the content' },
+    contentCategory: { type: new List(StringType), description: 'Category of the content' },
     contentType: { type: StringType, description: 'Content type' },
-    resourceType: { type: StringType, description: 'Type of resource' }
+    resourceType: { type: new List(StringType), description: 'Type of resource' }
   },
   type: ContentMappingPaginatedType,
   async resolve(obj, args, context) {

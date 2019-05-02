@@ -118,7 +118,7 @@ function validateSheetAndGetData(req, dbData, textbookData) {
   const mandetoryFields = [
     'class', 'subject', 'textbook', 'chapter code', 'orientation', 'category',
     'publisher', 'publish year', 'content name', 'content category', 'content type',
-    'file path', 'file size', 'media type'
+    'file path', 'file size', 'media type', 'coins'
   ]
 	for (let i = 0; i < data.length; i += 1) {
     const obj = data[i];
@@ -203,6 +203,7 @@ export async function uploadContentMapping(req, res){
     const data = req.data;
     for(let i = 0; i < data.length; i+=1 ){
       const temp = data[i];
+      const coins = temp['coins'] ? temp['coins'] : 0;
       const obj = {
         content : {
           name: temp['content name'],
@@ -218,6 +219,7 @@ export async function uploadContentMapping(req, res){
           publisher: temp['publisher'],
           year: temp['publish year']
         },
+        coins,
         orientation: temp['orientation'],
         refs: {
           topic: {
@@ -252,9 +254,9 @@ function getMongoQueryForContentMapping(args){
   const query = { active: true }
   if(args.textbookCode) query['refs.textbook.code'] = args.textbookCode;
   if(args.topicCode) query['refs.topic.code'] = args.topicCode;
-  if(args.contentCategory) query['content.category'] = args.contentCategory;
+  if(args.contentCategory) query['content.category'] = { $in: args.contentCategory }
   if(args.contentType) query['content.type'] = args.contentType;
-  if(args.resourceType) query['resource.type'] = args.resourceType
+  if(args.resourceType) query['resource.type'] = { $in: args.resourceType }
   return query;
 }
 

@@ -45,6 +45,7 @@ const contentMappingSchema = new mongoose.Schema({
   category: { type: String, enum: ['A', 'B', 'C'], required: true },
   branches: [String],
   active: { type: Boolean, default: true },
+  coins: { type: Number, default: 0 },
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 });

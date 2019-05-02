@@ -1,6 +1,7 @@
 import {
     GraphQLObjectType as ObjectType,
-    GraphQLString as StringType,
+	GraphQLString as StringType,
+	GraphQLInt as IntType,
   } from 'graphql';
     
 
@@ -54,6 +55,7 @@ import {
 			orientation: { type: StringType, description: 'Orientation' },
 			publication: { type: publicationType, description: 'Publication details' },
 			category: { type: StringType, description: 'Category' },
+			coins: { type: IntType, description: 'Coins' }
     },
   });
   
