@@ -11,6 +11,7 @@ import {
   GraphQLString as StringType,
   GraphQLNonNull as NonNull,
   GraphQLInt as IntType,
+  GraphQLBoolean as BooleanType,
 } from 'graphql';
 
 import GraphQLJSON from 'graphql-type-json';
@@ -29,7 +30,6 @@ export const nameCodeType = new ObjectType({
 export const refsType = new ObjectType({
   name: 'refsType',
   fields: {
-    board: { type: nameCodeType, description: 'Name of the subject' },
     class: { type: nameCodeType, description: 'Interal code of the subject' },
     subjecttype: { type: nameCodeType, description: 'Subject type' },
   },
@@ -48,6 +48,7 @@ export const SubjectType = new ObjectType({
   fields: {
     subject: { type: StringType, description: 'Name of the subject' },
     code: { type: StringType, description: 'Interal code of the subject' },
+    isMandatory: { type: BooleanType, description: 'true/false' },
     subsubjects: { type: new List(subsubjectsType) },
     refs: { type: refsType, description: 'ref' },
     next: {
@@ -64,7 +65,7 @@ export const SubjectInputType = new InputType({
   name: 'SubjectInputType',
   fields: {
     subject: { type: new NonNull(StringType), description: 'Name of the subject' },
-    boards: { type: new NonNull(new List(StringType)), description: 'List board codes' },
+    isMandatory: { type: BooleanType, description: 'is mandatory' },
     classes: { type: new NonNull(new List(StringType)), description: 'List of classes codes' }
   }
 })

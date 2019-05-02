@@ -67,32 +67,25 @@ async function insertSubjectsDataByfind(Subject, data) {
 }
 
 export async function createSubject(args, context) {
-  // console.log(args);
   const subject = args.subject ? args.subject.replace(/\s\s+/g, ' ').trim() : '';
   if (
     !subject ||
-     !(args.boards && args.boards.length) ||
-     !(args.classes && args.classes.length)
+    !(args.classes && args.classes.length)
   ) {
-    throw new Error('subject, boards, classess data required');
+    throw new Error('subject, classess data required');
   }
-  let hierarchyCodes = [];
-  hierarchyCodes = hierarchyCodes.concat(args.boards);
-  hierarchyCodes = hierarchyCodes.concat(args.classes);
+  const isMandatory = args.isMandatory === false ? false : true;
+  let hierarchyCodes = args.classes;
   return Promise.all([
     validateAndGetHierarchyData(context, hierarchyCodes),
     SubjectModel(context),
   ]).then(([hierarchyData, Subject]) => {
-    const objectCombs = getObjectCombinations(args.boards, args.classes);
-    console.log('objectCombs', objectCombs);
     const data = [];
-    objectCombs.map((obj) => {
-      const boardData = hierarchyData.find(x => x.levelName === 'Board' && x.childCode === obj.boardCode);
-      const classData = hierarchyData.find(x => x.levelName === 'Class' && x.childCode === obj.classCode);
-      if (!boardData || !classData) throw new Error('Invalid childCodes');
+    args.classes.map((classCode) => {
+      const classData = hierarchyData.find(x => x.levelName === 'Class' && x.childCode === classCode);
+      if (!classData) throw new Error('Invalid childCodes');
       const findQuery = {
         subject,
-        'refs.board.code': boardData.childCode,
         'refs.class.code': classData.childCode,
         'refs.subjecttype.name': 'Scholastics',
         active: true,
@@ -100,11 +93,8 @@ export async function createSubject(args, context) {
       const objData = {
         subject,
         code: `${Date.now()}${crypto.randomBytes(5).toString('hex')}`,
+        isMandatory,
         refs: {
-          board: {
-            name: boardData.child,
-            code: boardData.childCode,
-          },
           class: {
             name: classData.child,
             code: classData.childCode,
@@ -124,8 +114,5 @@ export async function createSubject(args, context) {
       console.error(err);
       throw new Error('Could not insert data');
     });
-  }).catch((err) => {
-    console.log(err);
-    throw new Error('Could not insert data');
-  });
+  })
 }

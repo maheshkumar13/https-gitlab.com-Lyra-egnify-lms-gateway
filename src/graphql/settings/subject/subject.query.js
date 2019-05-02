@@ -17,7 +17,6 @@ const controller = require('../../../api/settings/subject/subject.controller');
 
 export const Subjects = {
   args: {
-    boardCode: { type: StringType, description: 'Internal code of board' },
     classCode: { type: StringType, description: 'Internal code of class' },
     SubjectType: { type: StringType, description: 'Internal code of subjecttype' },
   },

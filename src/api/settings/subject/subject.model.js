@@ -26,7 +26,6 @@ const SubjecttypeNameCodeSchema = new mongoose.Schema({
 })
 
 const refsSchema = new mongoose.Schema({
-  board: { type: nameCodeSchema, required: true },
   class: { type: nameCodeSchema, required: true },
   subjecttype: { type: SubjecttypeNameCodeSchema, required: true }, 
 })
@@ -34,6 +33,7 @@ const refsSchema = new mongoose.Schema({
 const SubjectSchema = new mongoose.Schema({
   subject: { type: String, required: true, description: 'Name of the subject' },
   code: { type: String, required: true, description: 'Internal code for the subject' },
+  isMandatory: { type: Boolean, default: true },
   subsubjects: [subSubjectSchema],
   refs: { type: refsSchema, required: true, description: 'Reference data for subject' },
   active: { type: Boolean, default: true }
