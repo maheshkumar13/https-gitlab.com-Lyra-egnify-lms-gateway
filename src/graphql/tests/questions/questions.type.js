@@ -36,6 +36,7 @@ export const QuestionType = new ObjectType({
     key: { type: new List(StringType), description: 'List of keys' },
     difficulty: { type: StringType, description: 'Difficulty' },
     revised_blooms_taxonomy: { type: StringType, description: 'revised_blooms_taxonomy' },
+    questionTypeMetaData: { type: GraphQLJSON, description: 'Metadata'}
   },
 });
 
