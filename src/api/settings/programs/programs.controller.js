@@ -6,11 +6,8 @@ export async function fetchProgramsBasedOnBoard(body, context) {
   const args = body.input;
   const query = {};
   const programWiseStudentCount = [];
-  if (args && args.board && args.board.length) {
-    query['hierarchyLevels.L_2'] = { $in: args.board };
-  }
   if (args && args.class && args.class.length) {
-    query['hierarchyLevels.L_3'] = { $in: args.class };
+    query['hierarchyLevels.L_2'] = { $in: args.class };
   }
   if (args && args.program && args.program.length) {
     query.orientation = { $in: args.program };
@@ -22,7 +19,7 @@ export async function fetchProgramsBasedOnBoard(body, context) {
       $group:
       {
         _id:
-        { board: '$hierarchyLevels.L_2', class: '$hierarchyLevels.L_3', program: '$orientation' },
+        { class: '$hierarchyLevels.L_2', program: '$orientation' },
         studentCount: { $sum: 1 },
       },
     }]).allowDiskUse(true);

@@ -9,7 +9,6 @@ import {
 export const ProgramInputType = new InputType({
   name: 'ProgramInputType',
   fields: {
-    board: { type: new List(StringType) },
     program: { type: new List(StringType) },
     class: { type: new List(StringType) },
   },
@@ -18,7 +17,6 @@ export const ProgramInputType = new InputType({
 export const ProgramOutputType = new ObjectType({
   name: 'ProgramOutputType',
   fields: {
-    board: { type: StringType },
     program: { type: StringType },
     class: { type: StringType },
     studentCount: { type: IntType },
