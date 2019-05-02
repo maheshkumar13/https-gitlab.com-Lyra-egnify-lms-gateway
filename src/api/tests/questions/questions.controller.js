@@ -15,9 +15,6 @@ export async function getQuestions(args, context) {
 }
 
 async function prepareDataForMasterResults(args, resultStats, evaluation, context) {
-  // console.info('args', args);
-  // console.info('resultStats', resultStats);
-  // console.info('evaluatedResponses', evaluation);
   const {
     studentId, questionPaperId, responses,
   } = args;
@@ -44,8 +41,8 @@ async function prepareDataForMasterResults(args, resultStats, evaluation, contex
     cwuAnalysis,
     studentName: studentData && studentData.studentName ? studentData.studentName : '',
     refs,
+    obtainedMarks: resultStats.obtainedMarks,
   };
-
   await MasterResultModel(context).then(masterResults =>
     masterResults.updateOne(whereObj, { $set: setObj }, { upsert: true }, (err) => {
       if (err) {

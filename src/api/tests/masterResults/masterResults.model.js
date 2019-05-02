@@ -25,7 +25,7 @@ const CWUAnalysisType = new mongoose.Schema({
   U: { type: Number },
 });
 
-const MasterResult = new mongoose.Schema(
+const MasterResultSchema = new mongoose.Schema(
   {
     // test data
     questionPaperId: { type: String, required: true },
@@ -39,6 +39,7 @@ const MasterResult = new mongoose.Schema(
 
     // Analysis data
     cwuAnalysis: { type: CWUAnalysisType },
+    obtainedMarks: { type: Number },
   },
   {
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
@@ -46,25 +47,9 @@ const MasterResult = new mongoose.Schema(
 );
 
 export async function getModel(userCxt) {
-  // getting user context
   const { instituteId } = userCxt;
-  const { roleName } = userCxt.access;
-  const contextConfig = getContextPluginConfig();
-  contextConfig.tenantIdType = String;
-  let context = userCxt.access.hierarchy;
-
-  if (roleName.includes(config.userRoles.studentRole)) {
-    contextConfig.tenantIdKey = 'accessTag.student';
-    context = [];
-    context.push(userCxt.username);
-  }
-  MasterResult.plugin(contextPlugin, contextConfig);
-
-
-  // initiating the model
-  const db = await getDB(instituteId, userCxt);
-  const Model = db.model('MasterResult', MasterResult);
-  return Model.getModelWithContext(context, instituteId);
+  const db = await getDB(instituteId);
+  return db.model('MasterResult', MasterResultSchema);
 }
 
 export default {
