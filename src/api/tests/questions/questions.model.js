@@ -33,6 +33,7 @@ const QuestionSchema = new mongoose.Schema({
   key: { type: [String] },
   difficulty: { type: String },
   revised_blooms_taxonomy: { type: String },
+  questionTypeMetaData: {},
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 });
