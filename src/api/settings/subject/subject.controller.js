@@ -5,16 +5,13 @@ const crypto = require('crypto');
 
 function getSubjectsQuery(args) {
   const query = { active: true };
-  if (args.boardCode) query['refs.board.code'] = args.boardCode;
   if (args.classCode) query['refs.class.code'] = args.classCode;
   return query;
 }
 export async function getSubjects(args, context) {
   const { rawHierarchy } = context;
   if (rawHierarchy && rawHierarchy.length) {
-    const boardData = rawHierarchy.find(x => x.level === 2);
-    const classData = rawHierarchy.find(x => x.level === 3);
-    args.boardCode = boardData.childCode;
+    const classData = rawHierarchy.find(x => x.level === 2);
     args.classCode = classData.childCode;
   }
   const query = getSubjectsQuery(args);
