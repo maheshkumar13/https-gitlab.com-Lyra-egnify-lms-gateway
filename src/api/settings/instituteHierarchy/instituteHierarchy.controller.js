@@ -252,42 +252,17 @@ export async function getInstituteHierarchyPaginated(args, context){
 export async function getUniqueBoardAndBranch(context, filters={}){
   return getModel(context).then((InstituteHierarchy) => {
     const aggregateQuery = []
-    const match = {
+    const findQuery = {
       active: true,
       levelName: 'Branch',
     }
     if(filters.ancestorCodeList) {
-      match['$or'] = [
+      findQuery['$or'] = [
         { childCode: {$in: filters.ancestorCodeList} },
         { anscetors: { $elemMatch: { childCode: {$in: filters.ancestorCodeList} } } },
       ];
     }
-    aggregateQuery.push({
-      $match: match
-    })
-
-    aggregateQuery.push({
-      $unwind: '$anscetors'
-    })
-
-    aggregateQuery.push({
-      $match: {
-        'anscetors.levelName': 'Board',
-      }
-    })
-
-    aggregateQuery.push({
-      $group: {_id: { board: '$anscetors.child', branch: '$child'}}
-    })
-
-    aggregateQuery.push({
-      $project: { board: '$_id.board', branch: '$_id.branch', _id: 0}
-    })
-
-    aggregateQuery.push({
-      $sort: { board: 1, branch: 1}
-    })
-    return InstituteHierarchy.aggregate(aggregateQuery).allowDiskUse(true)
+    return InstituteHierarchy.distinct('child', findQuery)
   })
 }
 
@@ -316,10 +291,9 @@ export async function downloadSampleForCategory(req, res){
       }
       const finalData = [];
       for(let i = 0; i < data.length; i+=1 ){
-        const obj = data[i]
+        const branch = data[i]
         const temp = {
-          'Board': obj.board,
-          'Branch': obj.branch,
+          'Branch': branch,
           'Category': '',
         }
         finalData.push(temp);
@@ -340,27 +314,21 @@ export async function updateCategory(args, context){
       const bulk = InstituteHierarchy.collection.initializeUnorderedBulkOp();
       for(let i=0; i < data.length; i+=1){
         const obj = data[i];
-        if(!obj.board || !obj.branch || !obj.category) {
-          throw new Error('board, branch and category are required')
+        if(!obj.branch || !obj.category) {
+          throw new Error('branch and category are required')
         }
-        const uniqueObj = uniqueData.find( x=> x.board === obj.board && x.branch === obj.branch)
+        const uniqueObj = uniqueData.includes(obj.branch)
         if (!uniqueObj) {
-          throw new Error(`Inavlid board(${obj.board}) or branch(${obj.branch})`)
+          throw new Error(`Inavlid branch(${obj.branch})`)
         }
 
         if(!categories.includes(obj.category)) {
-          throw new Error(`Invalid category for ${obj.board}-${obj.branch}`)
+          throw new Error(`Invalid category for ${obj.branch}`)
         }
         const findQuery = {
           active: true,
           levelName: 'Branch',
           child: obj.branch,
-          anscetors: {
-            $elemMatch: {
-              levelName: 'Board',
-              child: obj.board
-            }
-          }
         }
         bulk.find(findQuery).update( { $set: { category: obj.category } }, {multi: true});
       }
@@ -416,9 +384,8 @@ function validateSheetAndGetData(req) {
 	// validate mandetory fields
 	for (let j = 0; j < data.length; j += 1) {
     const obj = data[j]
-    if(obj.Board && obj.Branch && obj.Category) {
+    if(obj.Branch && obj.Category) {
       const temp = {
-        board: obj.Board,
         branch: obj.Branch,
         category: obj.Category,
       }
