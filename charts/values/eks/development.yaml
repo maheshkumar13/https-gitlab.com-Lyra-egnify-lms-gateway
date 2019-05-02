@@ -18,7 +18,7 @@ projectEnv:
   apolloEngineKey: "service:hydra-jeet-dev:b9DCNb7tCkPO6TO5xHIdmw"
   svcSettings: "http://settings-dev-lms.dev.svc.cluster.local"
   svcTest: "http://test-management-dev-lms.dev.svc.cluster.local"
-  svcSSO: "http://sso-dev-lms.development.svc.cluster.local"
+  svcSSO: "http://sso-development-lms.development.svc.cluster.local"
   parserQueueNs : 'lms-parser-dev-mq'
   celeryBrokerUrl: "redis://:vvqfBAUfPI@redis-master.dev.svc.cluster.local:6379/0"
   celeryResultBackend: "redis://:vvqfBAUfPI@redis-master.dev.svc.cluster.local:6379/0"
