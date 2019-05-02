@@ -49,7 +49,6 @@ export async function getUniqueDataForValidation(context){
 
     aggregateQuery.push({
       $group: {_id: { 
-        board: '$refs.board.name', 
         class: '$refs.class.name', 
         subject: '$refs.subject.name', 
         textbook: '$name', 
@@ -61,10 +60,9 @@ export async function getUniqueDataForValidation(context){
     return Textbook.aggregate(aggregateQuery).allowDiskUse(true).then((data) => {
       const finalData = {}
       data.forEach((e) => {
-        if(!finalData[e._id.board]) finalData[e._id.board] = {}
-        if(!finalData[e._id.board][e._id.class]) finalData[e._id.board][e._id.class] = {}
-        if(!finalData[e._id.board][e._id.class][e._id.subject]) finalData[e._id.board][e._id.class][e._id.subject] = {}
-        if(!finalData[e._id.board][e._id.class][e._id.subject][e._id.textbook]) finalData[e._id.board][e._id.class][e._id.subject][e._id.textbook] = e._id.code
+        if(!finalData[e._id.class]) finalData[e._id.class] = {}
+        if(!finalData[e._id.class][e._id.subject]) finalData[e._id.class][e._id.subject] = {}
+        if(!finalData[e._id.class][e._id.subject][e._id.textbook]) finalData[e._id.class][e._id.subject][e._id.textbook] = e._id.code
       })
       return finalData;
     })
@@ -118,7 +116,7 @@ function validateSheetAndGetData(req, dbData, textbookData) {
 	})
 
   const mandetoryFields = [
-    'board', 'class', 'subject', 'textbook', 'chapter code', 'orientation', 'category',
+    'class', 'subject', 'textbook', 'chapter code', 'orientation', 'category',
     'publisher', 'publish year', 'content name', 'content category', 'content type',
     'file path', 'file size', 'media type'
   ]
@@ -136,25 +134,20 @@ function validateSheetAndGetData(req, dbData, textbookData) {
   for ( let i = 0; i < data.length; i += 1) {
     const row = i+2
     const obj = data[i]
-    if (!dbData[obj.board]) {
-      result.success = false;
-      result.message = `Invalid BOARD at row ${row}`;
-      return result
-    }
 
-    if (!dbData[obj.board][obj.class]) {
+    if (!dbData[obj.class]) {
       result.success = false;
       result.message = `Invalid CLASS at row ${row}`;
       return result
     }
 
-    if (!dbData[obj.board][obj.class][obj.subject]) {
+    if (!dbData[obj.class][obj.subject]) {
       result.success = false;
       result.message = `Invalid SUBJECT at row ${row}`;
       return result
     }
 
-    const textbookCode = dbData[obj.board][obj.class][obj.subject][obj.textbook]
+    const textbookCode = dbData[obj.class][obj.subject][obj.textbook]
     if (!textbookCode) {
       result.success = false;
       result.message = `Invalid TEXTBOOK at row ${row}`;
@@ -170,7 +163,7 @@ function validateSheetAndGetData(req, dbData, textbookData) {
     obj['file path'] = upath.toUnix(obj['file path'])
     
     obj.textbookCode = textbookCode;
-    ['board', 'class', 'subject', 'textbook'].forEach(e => delete obj[e]);
+    ['class', 'subject', 'textbook'].forEach(e => delete obj[e]);
 
     const categories = ['A', 'B', 'C']
     if (!categories.includes(obj.category)) {
