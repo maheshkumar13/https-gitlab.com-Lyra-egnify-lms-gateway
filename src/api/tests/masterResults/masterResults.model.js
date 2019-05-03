@@ -8,10 +8,6 @@
  */
 import mongoose from 'mongoose';
 import { getDB } from '../../../db';
-import { config } from '../../../config/environment';
-
-const contextPlugin = require('../../../db/contextPlugin');
-const { getContextPluginConfig } = require('../../../db/contextPlugin/config');
 
 const ResponseDataSchema = new mongoose.Schema({
   evaluation: Object,
@@ -31,7 +27,6 @@ const MasterResultSchema = new mongoose.Schema(
     questionPaperId: { type: String, required: true },
     // student data
     studentId: { type: String, required: true },
-    studentName: { type: String },
 
     // response data
     responseData: ResponseDataSchema,

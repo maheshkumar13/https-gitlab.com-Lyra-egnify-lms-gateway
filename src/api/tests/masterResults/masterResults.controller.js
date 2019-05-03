@@ -12,11 +12,10 @@ export async function getMasterResults(args, context) {
   }
   const resultsObj = {};
   return MasterResultModel(context).then(MasterResult => MasterResult.find(query, {
-    studentId: 1, studentName: 1, obtainedMarks: 1, questionPaperId: 1, cwuAnalysis: 1,
+    studentId: 1, obtainedMarks: 1, questionPaperId: 1, cwuAnalysis: 1,
   }).then((objs) => {
     if (objs && objs.length) {
       resultsObj.studentId = objs[0].studentId;
-      resultsObj.studentName = objs[0].studentName;
       const results = [];
       objs.forEach((obj) => {
         results.push({

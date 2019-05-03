@@ -1,6 +1,5 @@
 import { getModel as QuestionModel } from './questions.model';
 import { getModel as MasterResultModel } from '../masterResults/masterResults.model';
-import { getModel as StudentModel } from '../../settings/student/student.model';
 
 function getQuery(args) {
   const query = {};
@@ -18,9 +17,6 @@ async function prepareDataForMasterResults(args, resultStats, evaluation, contex
   const {
     studentId, questionPaperId, responses,
   } = args;
-  const studentData = await StudentModel(context)
-    .then(Student =>
-      Student.findOne({ studentId }, { studentName: 1, studentId: 1 }));
   const whereObj = { studentId, questionPaperId };
   const responseData = {
     evaluation: evaluation.evaluatedResponse,
@@ -39,7 +35,6 @@ async function prepareDataForMasterResults(args, resultStats, evaluation, contex
     studentId,
     responseData,
     cwuAnalysis,
-    studentName: studentData && studentData.studentName ? studentData.studentName : '',
     refs,
     obtainedMarks: resultStats.obtainedMarks,
   };
@@ -70,8 +65,12 @@ export async function getAndSaveResults(args, context) {
     const evaluation = { evaluatedResponse: {}, evaluatedScore: {} };
     const quesKeyObject = {};
     questionsObj.forEach((qObj) => {
+      const keyArray = [];
+      qObj.key.forEach((keyValue) => {
+        keyArray.push(keyValue.toLowerCase());
+      });
       quesKeyObject[qObj.qno] = {
-        key: qObj.key,
+        key: keyArray,
         C: qObj.C,
         W: qObj.W,
         U: qObj.U,
@@ -87,7 +86,9 @@ export async function getAndSaveResults(args, context) {
         } else if (responses[qno].length === quesKeyObject[qno].key.length) {
           let tempCount = 0;
           responses[qno].forEach((option) => {
-            if (quesKeyObject[qno].key.includes(option)) {
+            if (quesKeyObject[qno].key.includes(option.toLowerCase())) {
+              console.info(quesKeyObject[qno].key);
+              console.info(option.toLowerCase());
               tempCount += 1;
             }
           });
