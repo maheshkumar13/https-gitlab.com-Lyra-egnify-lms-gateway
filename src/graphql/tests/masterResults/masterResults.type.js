@@ -19,7 +19,6 @@ export const MasterResultOutputType = new ObjectType({
   fields: {
     studentId: { type: StringType, description: 'Student Id' },
     results: { type: GraphQLJSON },
-    studentName: { type: StringType },
   },
 });
 
