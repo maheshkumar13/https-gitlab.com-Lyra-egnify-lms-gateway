@@ -41,6 +41,7 @@ export const StudentDetailsOutputType = new ObjectType({
     studentName: { type: StringType },
     hierarchyLevels: { type: GraphQLJSON },
     avatarUrl: { type: StringType },
+    subjects: { type: GraphQLJSON }
   },
 });
 

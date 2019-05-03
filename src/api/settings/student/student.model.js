@@ -31,6 +31,7 @@ const studentSchema = new mongoose.Schema(
     active: { type: Boolean, default: true },
     avatarUrl: { type: String },
     userCreated: { type: Boolean, default: false },
+    subjects: {},
   },
   {
     collection: 'studentInfo',

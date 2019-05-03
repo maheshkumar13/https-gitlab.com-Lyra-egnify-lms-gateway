@@ -3,6 +3,7 @@ import { uniqBy, filter } from 'lodash';
 
 /* eslint import/no-named-as-default-member: 0 */
 import { getModel } from './student.model';
+import { getModel as SubjectModel } from '../subject/subject.model';
 import { getLastKLevels } from '../institute/institute.controller';
 
 function getMongoQuery(args) {
@@ -172,6 +173,7 @@ export async function getStudentDetailsById(args, context) { // eslint-disable-l
       studentName: 1,
       hierarchyLevels: 1,
       avatarUrl: 1,
+      subjects: 1,
     },
   ).then(student => student);
 }
@@ -192,10 +194,52 @@ export async function updateStudentAvatar(args, context) { // eslint-disable-lin
   });
 }
 
+export async function updateStudentSubjects(args, context) {
+  if(!args.studentId || !args.subjectCodes || !args.subjectCodes.length) {
+    throw new Error('Insufficient data')
+  } 
+  return Promise.all([
+    getModel(context),
+    SubjectModel(context)
+  ]).then(([Student, Subject]) => {
+    return Promise.all([
+      Student.findOne({studentId: args.studentId}),
+      Subject.find({code: {$in: args.subjectCodes}})
+    ]).then(([studentData, subjectsData]) => {
+      const finalSubjects = [];
+      if (!studentData) throw new Error('Invalid studentId')
+      if (!subjectsData || !subjectsData.length) throw new Error('Invalid subjects')
+      const classData = studentData.hierarchy.find( x => x.level === 2)
+      for(let i = 0; i < args.subjectCodes.length; i += 1){
+         const subjectCode = args.subjectCodes[i];
+         const tempSubject = subjectsData.find( x => x.code === subjectCode && x.refs.class.code === classData.childCode)
+         if(!tempSubject) throw new Error('Invalid subject data')
+         if(tempSubject.isMandatory === true) {
+           throw new Error('Mandetory subjects can not be added')
+         }
+         finalSubjects.push({
+           subject: tempSubject.subject,
+           code: tempSubject.code,
+         });      
+      }
+      const query = {
+        studentId : args.studentId,
+      }
+      const patch = {
+        subjects: finalSubjects,
+      }
+      return Student.update(query, patch).then(() => {
+        return 'Subjects updated successfully'
+      })
+    })
+  })
+  
+}
 export default{
   getStudents,
   getUniqueValues,
   numberOfStudentsByLastNode,
   getStudentDetailsById,
   updateStudentAvatar,
+  updateStudentSubjects,
 };

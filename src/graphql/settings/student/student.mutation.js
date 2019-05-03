@@ -5,7 +5,7 @@
 */
 
 import {
-  // GraphQLList as List,
+  GraphQLList as List,
   GraphQLNonNull as NonNull,
   GraphQLString as StringType,
 
@@ -24,6 +24,18 @@ export const updateStudentAvatar = {
   },
 };
 
+export const updateStudentSubjects = {
+  args: {
+    studentId: { type: new NonNull(StringType), description: 'Unique identifier for student' },
+    subjectCodes: { type: new NonNull(new List(StringType)), description: 'Subject codes'},
+  },
+  type: StringType,
+  async resolve(obj, args, context) {
+    return controller.updateStudentSubjects(args, context); 
+  }
+}
+
 export default{
   updateStudentAvatar,
+  updateStudentSubjects
 };
