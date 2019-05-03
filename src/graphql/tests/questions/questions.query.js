@@ -27,11 +27,11 @@ export const Questions = {
 
 export const Results = {
   args: {
-    input: { type: new NonNull(ResultInputType), description: 'Question Paper Id and student responses' },
+    input: { type: ResultInputType, description: 'Question Paper Id and student responses' },
   },
   type: ResultOutputType,
   async resolve(obj, args, context) {
-    return controller.getResults(args, context);
+    return controller.getAndSaveResults(args, context);
   },
 };
 
