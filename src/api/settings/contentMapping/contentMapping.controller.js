@@ -2,9 +2,7 @@ import { getModel as TextbookModel } from '../textbook/textbook.model';
 import { getModel as ConceptTaxonomyModel } from '../conceptTaxonomy/concpetTaxonomy.model'; 
 import { getModel as ContentMappingModel } from './contentMapping.model';
 import { getModel as InstituteHierarchyModel } from '../instituteHierarchy/instituteHierarchy.model';
-import { getModel as StudentModel } from '../student/student.model';
 const xlsx = require('xlsx');
-const csvjson = require('csvjson');
 const upath = require('upath');
 
 
