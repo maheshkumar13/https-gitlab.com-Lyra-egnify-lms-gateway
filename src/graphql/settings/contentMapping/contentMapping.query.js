@@ -10,14 +10,12 @@ import {
   GraphQLList as List,
   GraphQLString as StringType,
   GraphQLInt as IntType,
-  GraphQLInputObjectType as InputType,
   GraphQLObjectType as ObjectType,
   GraphQLBoolean as BooleanType,
-  GraphQLEnumType as EnumType,
   GraphQLNonNull as NonNull,
 } from 'graphql';
 
-import ContentMappingType from './contentMapping.type';
+import { ContentMappingType, CmsCategoryStatsOutputType, CmsCategoryStatsInputType } from './contentMapping.type';
 
 const controller = require('../../../api/settings/contentMapping/contentMapping.controller');
 
@@ -60,21 +58,20 @@ const ContentMappingPaginatedType = new ObjectType({
 });
 
 
-
 export const ContentMapping = {
   args: {
     pageNumber: { type: IntType, description: 'Page Number' },
     limit: { type: IntType, description: 'Number of items per page' },
-    textbookCode: { type: new NonNull(StringType), description: 'Internal code of Textbook '},
-    topicCode: { type: StringType, description: 'Internal code of Topic'},
+    textbookCode: { type: new NonNull(StringType), description: 'Internal code of Textbook ' },
+    topicCode: { type: StringType, description: 'Internal code of Topic' },
     contentCategory: { type: new List(StringType), description: 'Category of the content' },
     contentType: { type: StringType, description: 'Content type' },
-    resourceType: { type: new List(StringType), description: 'Type of resource' }
+    resourceType: { type: new List(StringType), description: 'Type of resource' },
   },
   type: ContentMappingPaginatedType,
   async resolve(obj, args, context) {
-    if(!args.pageNumber) args.pageNumber = 1
-    if(!args.limit) args.limit = 0
+    if (!args.pageNumber) args.pageNumber = 1;
+    if (!args.limit) args.limit = 0;
     return controller.getContentMapping(args, context)
       .then(async (json) => {
         if (json && json.data) {
@@ -100,9 +97,19 @@ export const ContentMapping = {
           return resp;
         }
         return json;
-      })
+      });
   },
 };
 
+export const CmsCategoryStats = {
+  args: {
+    input: { type: CmsCategoryStatsInputType },
+  },
+  type: new List(CmsCategoryStatsOutputType),
+  async resolve(obj, args, context) {
+    return controller.getCMSCategoryStats(args, context)
+      .then(async json => json);
+  },
+};
 
-export default { ContentMapping };
+export default { ContentMapping, CmsCategoryStats };
