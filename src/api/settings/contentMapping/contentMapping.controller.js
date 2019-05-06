@@ -2,6 +2,7 @@ import { getModel as TextbookModel } from '../textbook/textbook.model';
 import { getModel as ConceptTaxonomyModel } from '../conceptTaxonomy/concpetTaxonomy.model'; 
 import { getModel as ContentMappingModel } from './contentMapping.model';
 import { getModel as InstituteHierarchyModel } from '../instituteHierarchy/instituteHierarchy.model';
+import { getModel as StudentModel } from '../student/student.model';
 const xlsx = require('xlsx');
 const csvjson = require('csvjson');
 const upath = require('upath');
@@ -272,7 +273,19 @@ export async function uploadContentMapping(req, res){
   }) 
 }
 
-function getMongoQueryForContentMapping(args){
+export async function getBranchNameAndCategory(context) {
+  return InstituteHierarchyModel(context).then((InstituteHierarchy) => {
+    const { rawHierarchy } = context;
+    if(rawHierarchy && rawHierarchy.length) {
+      const branchData = rawHierarchy.find(x => x.level === 5);
+      const project = { _id: 0, child: 1, childCode: 1, category: 1 }
+      return InstituteHierarchy.findOne({ childCode: branchData.childCode },project)
+    }
+    return false
+  })
+}
+
+function getMongoQueryForContentMapping(args, context){
   const query = { active: true }
   if(args.textbookCode) query['refs.textbook.code'] = args.textbookCode;
   if(args.topicCode) query['refs.topic.code'] = args.topicCode;
@@ -284,17 +297,28 @@ function getMongoQueryForContentMapping(args){
 
 export async function getContentMapping(args, context){
   if(!args.textbookCode) throw new Error('textbookCode required')
-  const query = getMongoQueryForContentMapping(args)
-  const skip = (args.pageNumber - 1) * args.limit;
-  return ContentMappingModel(context).then((ContentMapping) => {
-    return Promise.all([
-      ContentMapping.find(query).skip(skip).limit(args.limit),
-      ContentMapping.count(query)
-    ]).then(([data, count]) => {
-      return {
-        data,
-        count
+  const query = getMongoQueryForContentMapping(args,context)
+  return getBranchNameAndCategory(context).then((obj) => {
+    if(obj) {
+      if (obj.child) {
+        query['$or'] = [
+          { branches: null },
+          { branches: obj.child }
+        ]
       }
+      if (obj.category) query['category'] = obj.category;
+    }
+    const skip = (args.pageNumber - 1) * args.limit;
+    return ContentMappingModel(context).then((ContentMapping) => {
+      return Promise.all([
+        ContentMapping.find(query).skip(skip).limit(args.limit),
+        ContentMapping.count(query)
+      ]).then(([data, count]) => {
+        return {
+          data,
+          count
+        }
+      })
     })
   })
 }
