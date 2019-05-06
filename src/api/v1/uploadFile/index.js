@@ -7,7 +7,6 @@ const express = require('express');
 
 const fileUpload = require('../../../utils/fileUpload');
 const controller = require('./uploadFile.controller');
-// const AWSFileUpload = require('../../../utils/AWSFileUpload');
 const router = express.Router();
 
 router.post(
