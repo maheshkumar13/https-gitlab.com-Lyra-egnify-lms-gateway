@@ -122,7 +122,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
   const mandetoryFields = [
     'class', 'subject', 'textbook', 'chapter code', 'orientation', 'category',
     'publisher', 'publish year', 'content name', 'content category', 'content type',
-    'file path', 'file size', 'media type', 'coins',
+    'file path', 'file size', 'media type',
   ]
 	for (let i = 0; i < data.length; i += 1) {
     const obj = data[i];
@@ -176,12 +176,13 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
       return result
     }
 
-    const mediaTypes = ['PDF', 'DOCX', 'DOC', 'MP3', 'MP4', 'JPEG', 'JPG', 'PNG', 'HTML']
-    if (!mediaTypes.includes(obj['media type'])) {
-      result.success = false;
-      result.message = `Invalid MEDIA TYPE at row ${row}`;
-      return result
-    }
+    if(obj['media type']) obj['media type'] = obj['media type'].toLowerCase();
+    // const mediaTypes = ['PDF', 'DOCX', 'DOC', 'MP3', 'MP4', 'JPEG', 'JPG', 'PNG', 'HTML']
+    // if (!mediaTypes.includes(obj['media type'])) {
+    //   result.success = false;
+    //   result.message = `Invalid MEDIA TYPE at row ${row}`;
+    //   return result
+    // }
 
     if(obj['branches']) {
       const branchNames = obj['branches'].split(',').map(x => x.replace(/\s\s+/g, ' ').trim())
@@ -289,7 +290,10 @@ function getMongoQueryForContentMapping(args, context){
   if(args.topicCode) query['refs.topic.code'] = args.topicCode;
   if(args.contentCategory) query['content.category'] = { $in: args.contentCategory }
   if(args.contentType) query['content.type'] = args.contentType;
-  if(args.resourceType) query['resource.type'] = { $in: args.resourceType }
+  if(args.resourceType) {
+    args.resourceType = args.resourceType.map( x => x.toLowerCase());
+    query['resource.type'] = { $in: args.resourceType }
+  }  
   return query;
 }
 
