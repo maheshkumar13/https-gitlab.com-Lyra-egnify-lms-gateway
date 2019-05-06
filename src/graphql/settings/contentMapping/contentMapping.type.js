@@ -3,6 +3,7 @@ import {
   GraphQLString as StringType,
   GraphQLInt as IntType,
   GraphQLInputObjectType as InputType,
+  GraphQLNonNull as NonNull,
 } from 'graphql';
 
 
@@ -77,6 +78,23 @@ export const CmsCategoryStatsOutputType = new ObjectType({
   },
 });
 
+export const CategoryWiseFilesInputType = new InputType({
+  name: 'CategoryWiseFilesInputType',
+  fields: {
+    classCode: { type: StringType, description: 'Name of the class' },
+    subjectCode: { type: StringType, description: 'Name of the subject' },
+    chapterCode: { type: StringType, description: 'Name of the chapter' },
+    category: { type: new NonNull(StringType), description: 'Name of the category' },
+  },
+});
+
+export const CategoryWiseFilesOutputType = new ObjectType({
+  name: 'CategoryWiseFilesOutputType',
+  fields: {
+    category: { type: StringType, description: 'Name of the category' },
+    resource: { type: StringType, description: 'Url of the file' },
+  },
+});
 
 export default {
   ContentMappingType,

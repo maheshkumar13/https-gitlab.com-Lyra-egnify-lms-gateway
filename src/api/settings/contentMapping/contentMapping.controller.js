@@ -123,8 +123,8 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     'class', 'subject', 'textbook', 'chapter code', 'orientation', 'category',
     'publisher', 'publish year', 'content name', 'content category', 'content type',
     'file path', 'file size', 'media type',
-  ]
-	for (let i = 0; i < data.length; i += 1) {
+  ];
+  for (let i = 0; i < data.length; i += 1) {
     const obj = data[i];
     for (let j = 0; j < mandetoryFields.length; j += 1) {
       if (!obj[mandetoryFields[j]]) {
@@ -176,7 +176,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
       return result;
     }
 
-    if(obj['media type']) obj['media type'] = obj['media type'].toLowerCase();
+    if (obj['media type']) obj['media type'] = obj['media type'].toLowerCase();
     // const mediaTypes = ['PDF', 'DOCX', 'DOC', 'MP3', 'MP4', 'JPEG', 'JPG', 'PNG', 'HTML']
     // if (!mediaTypes.includes(obj['media type'])) {
     //   result.success = false;
@@ -282,15 +282,15 @@ export async function getBranchNameAndCategory(context) {
   });
 }
 
-function getMongoQueryForContentMapping(args, context){
-  const query = { active: true }
-  if(args.textbookCode) query['refs.textbook.code'] = args.textbookCode;
-  if(args.topicCode) query['refs.topic.code'] = args.topicCode;
-  if(args.contentCategory) query['content.category'] = { $in: args.contentCategory }
-  if(args.contentType) query['content.type'] = args.contentType;
-  if(args.resourceType) {
-    args.resourceType = args.resourceType.map( x => x.toLowerCase());
-    query['resource.type'] = { $in: args.resourceType }
+function getMongoQueryForContentMapping(args, context) {
+  const query = { active: true };
+  if (args.textbookCode) query['refs.textbook.code'] = args.textbookCode;
+  if (args.topicCode) query['refs.topic.code'] = args.topicCode;
+  if (args.contentCategory) query['content.category'] = { $in: args.contentCategory };
+  if (args.contentType) query['content.type'] = args.contentType;
+  if (args.resourceType) {
+    args.resourceType = args.resourceType.map(x => x.toLowerCase());
+    query['resource.type'] = { $in: args.resourceType };
   }
   return query;
 }
@@ -371,4 +371,62 @@ export async function getCMSCategoryStats(args, context) {
     });
   });
   return categoryWiseCount;
+}
+
+export async function getCategoryWiseFiles(args, context) {
+  const classCode = args && args.input && args.input.classCode ? args.input.classCode : null;
+  const chapterCode = args && args.input && args.input.chapterCode ? args.input.chapterCode : null;
+  const subjectCode = args && args.input && args.input.subjectCode ? args.input.subjectCode : null;
+  if (!args.input.category) {
+    return 'Please select correct category';
+  }
+  const category = args && args.input && args.input.category ? args.input.category : null;
+  const query = {};
+  const query1 = {};
+  if (classCode) {
+    query1['refs.class.code'] = classCode;
+  } if (subjectCode) {
+    query1['refs.subject.code'] = subjectCode;
+  }
+  const textBookCodes = [];
+  if (query1) {
+    await TextbookModel(context).then(async (TextBook) => {
+      await TextBook.find(query1, { code: 1, _id: 0 }).then((textBookCodeObjs) => {
+        if (textBookCodeObjs && textBookCodeObjs.length) {
+          for (let t = 0; t < textBookCodeObjs.length; t += 1) {
+            textBookCodes.push(textBookCodeObjs[t].code);
+            // console.log('textBookCodes', textBookCodes);
+          }
+        }
+      });
+    });
+  }
+  if (textBookCodes.length === 0) {
+    return null;
+  }
+  if (chapterCode) {
+    query['refs.topic.code'] = chapterCode;
+  } if (textBookCodes && textBookCodes.length) {
+    query['refs.textbook.code'] = {
+      $in: textBookCodes,
+    };
+  }
+  if (category) {
+    query['content.category'] = category;
+  }
+  // console.log('query', query);
+  const categoryFiles = [];
+  await ContentMappingModel(context).then(async (ContentMappings) => {
+    await ContentMappings.find(query, { 'content.category': 1, _id: 0, 'resource.key': 1 }).then((contentObjs) => {
+      // console.log("contentObjs", contentObjs);
+      for (let c = 0; c < contentObjs.length; c += 1) {
+        const tempCategory = {
+          category: contentObjs[c].content.category, //eslint-disable-line
+          resource: contentObjs[c].resource.key,
+        };
+        categoryFiles.push(tempCategory);
+      }
+    });
+  });
+  return categoryFiles;
 }
