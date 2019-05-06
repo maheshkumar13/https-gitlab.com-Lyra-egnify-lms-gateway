@@ -1,7 +1,7 @@
 import { getModel as TextbookModel } from '../textbook/textbook.model';
 import { getModel as ConceptTaxonomyModel } from '../conceptTaxonomy/concpetTaxonomy.model'; 
 import { getModel as ContentMappingModel } from './contentMapping.model';
-
+import { getModel as InstituteHierarchyModel } from '../instituteHierarchy/instituteHierarchy.model';
 const xlsx = require('xlsx');
 const csvjson = require('csvjson');
 const upath = require('upath');
@@ -69,7 +69,13 @@ export async function getUniqueDataForValidation(context){
   })
 }
 
-function validateSheetAndGetData(req, dbData, textbookData) {
+export async function getUniqueBranchesForValidation(context) {
+  return InstituteHierarchyModel(context).then((InstituteHierarchy) => {
+    return InstituteHierarchy.distinct('child', { levelName: 'Branch'});
+  })
+}
+
+function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
 	const result = {
 		success: true,
 		message: ''
@@ -89,14 +95,12 @@ function validateSheetAndGetData(req, dbData, textbookData) {
   const workbook = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true });
 
   // converting the sheet data to csv
-  const csvdata = xlsx.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]]);
-
-  // converting csvdata to array of json objects
-  const data = csvjson.toObject(csvdata);
+  const data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
   	
 	// deleting all trailing empty rows
 	for (let i = data.length - 1; i >= 0; i -= 1) {
-		const values = Object.values(data[i]);
+    let values = Object.values(data[i]);
+    values = values.map(x => x.toString());
 		const vals = values.map(x => x.trim());
 		if (vals.every(x => x === '')) data.pop();
 		else break;
@@ -110,15 +114,16 @@ function validateSheetAndGetData(req, dbData, textbookData) {
     const keys = Object.keys(obj)
     for(let i=0; i<keys.length; i+=1){
       const key = keys[i];
-      obj[key.toLowerCase()] = obj[key].replace(/\s\s+/g, ' ').trim()
-      delete obj[key]
+      const lowerKey = key.toLowerCase();
+      obj[lowerKey] = obj[key].toString().replace(/\s\s+/g, ' ').trim()
+      if(key !== lowerKey) delete obj[key];
     }
 	})
 
   const mandetoryFields = [
     'class', 'subject', 'textbook', 'chapter code', 'orientation', 'category',
     'publisher', 'publish year', 'content name', 'content category', 'content type',
-    'file path', 'file size', 'media type', 'coins'
+    'file path', 'file size', 'media type', 'coins',
   ]
 	for (let i = 0; i < data.length; i += 1) {
     const obj = data[i];
@@ -178,6 +183,22 @@ function validateSheetAndGetData(req, dbData, textbookData) {
       result.message = `Invalid MEDIA TYPE at row ${row}`;
       return result
     }
+
+    if(obj['branches']) {
+      const branchNames = obj['branches'].split(',').map(x => x.replace(/\s\s+/g, ' ').trim())
+      const finalBranchNames = []
+      for(let j = 0; j < branchNames.length; j+=1 ){
+        const branch = branchNames[j];
+        if(!branch) continue;
+        if (!uniqueBranches.includes(branch)) {
+          result.success = false;
+          result.message = `Invalid branch name (${branch}) at row ${row}`;
+          return result
+        }
+        finalBranchNames.push(branch);
+      }
+      obj['branches'] = finalBranchNames;
+    }
     
   }
 	if(!data.length) {
@@ -194,13 +215,14 @@ export async function uploadContentMapping(req, res){
   if (!req.file) return res.status(400).end('File required');
   return Promise.all([
     getUniqueDataForValidation(req.user_cxt),
+    getUniqueBranchesForValidation(req.user_cxt),
     getTextbookWiseTopicCodes(req.user_cxt),
     ContentMappingModel(req.user_cxt)
-  ]).then(([dbData, textbookData, ContentMapping]) => {
-    const validate = validateSheetAndGetData(req, dbData, textbookData)
+  ]).then(([dbData, uniqueBranches, textbookData, ContentMapping]) => {
+    const validate = validateSheetAndGetData(req, dbData, textbookData, uniqueBranches)
     if(!validate.success) return res.status(400).end(validate.message)
-    const bulk = ContentMapping.collection.initializeUnorderedBulkOp();
     const data = req.data;
+    const bulk = ContentMapping.collection.initializeUnorderedBulkOp();
     for(let i = 0; i < data.length; i+=1 ){
       const temp = data[i];
       const coins = temp['coins'] ? temp['coins'] : 0;
