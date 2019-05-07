@@ -28,6 +28,7 @@ function getTextbooksQuery(args){
     query['$or'] = [
       { orientations: null },
       { orientations: { $exists: false }},
+      { orientations: {$size: 0} },
       { orientations: args.orientation }
     ]
   }
