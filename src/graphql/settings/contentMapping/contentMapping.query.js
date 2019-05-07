@@ -116,9 +116,9 @@ export const CategoryWiseFiles = {
   args: {
     input: { type: CategoryWiseFilesInputType },
   },
-  type: new List(CategoryWiseFilesOutputType),
+  type: CategoryWiseFilesOutputType,
   async resolve(obj, args, context) {
-    return controller.getCategoryWiseFiles(args, context)
+    return controller.getCategoryWiseFilesPaginated(args, context)
       .then(async json => json);
   },
 };
