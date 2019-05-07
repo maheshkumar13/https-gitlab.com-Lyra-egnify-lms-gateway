@@ -5,7 +5,6 @@ import { getModel as InstituteHierarchyModel } from '../instituteHierarchy/insti
 
 const xlsx = require('xlsx');
 const upath = require('upath');
-const cloneDeep = require('lodash/cloneDeep');
 
 export async function getTextbookWiseTopicCodes(context) {
   return ConceptTaxonomyModel(context).then((ConceptTaxonomy) => {
