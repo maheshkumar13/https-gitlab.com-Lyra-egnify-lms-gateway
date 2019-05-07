@@ -1,19 +1,48 @@
 import { getModel as TextbookModel } from './textbook.model';
 import { getModel as InstituteHierarchyModel} from '../instituteHierarchy/instituteHierarchy.model'
 import { getModel as SubjectModel } from '../subject/subject.model'
+import { getModel as StudentModel } from '../student/student.model'
 
 const crypto = require('crypto')
+
+export async function getStudentData(context) {
+  const { studentId } = context;
+  return StudentModel(context).then((Student) => {
+    if(!studentId) return false;
+    const project = {
+      _id: 0,
+      subjects: 1,
+      hierarchy: 1,
+      orientation: 1,
+      active: true,
+    }
+    return Student.findOne({ studentId }, project)
+  })
+}
 
 function getTextbooksQuery(args){
   const query = { active: true }
   if (args.classCode) query['refs.class.code'] = args.classCode;
   if (args.subjectCode) query['refs.subject.code'] = args.subjectCode;
+  if (args.orientation) {
+    query['$or'] = [
+      { orientations: null },
+      { orientations: { $exists: false }},
+      { orientations: {$size: 0} },
+      { orientations: args.orientation }
+    ]
+  }
   return query
 }
 export async function getTextbooks(args, context){
-  const query = getTextbooksQuery(args)
-  return TextbookModel(context).then( (Textbook) => {
-    return Textbook.find(query)
+  return getStudentData(context).then((obj) => {
+    if(obj && obj.orientation){
+      args.orientation = obj.orientation;
+    }
+    const query = getTextbooksQuery(args)
+    return TextbookModel(context).then( (Textbook) => {
+      return Textbook.find(query)
+    })
   })
 }
 
@@ -99,6 +128,7 @@ export async function createTextbook(args, context){
         code: `${Date.now()}${crypto.randomBytes(5).toString('hex')}`,
         imageUrl: args.imageUrl,
         publisher: args.publisher,
+        orientations: args.orientations,
         refs: {
           class: {
             name: classData.child,
@@ -148,7 +178,7 @@ export async function updateTextbook(args, context){
   args.publisher = args.publisher ? args.publisher.replace(/\s\s+/g, ' ').trim() : ''
   if (
       !args.code ||
-     (!args.name && !args.imageUrl && !args.publisher)
+     (!args.name && !args.imageUrl && !args.publisher && !args.orientations)
      ){
     throw new Error('Insufficient data')
   }
@@ -164,11 +194,9 @@ export async function updateTextbook(args, context){
     if(args.name) patch.name = args.name
     if(args.imageUrl) patch.imageUrl = args.imageUrl
     if(args.publisher) patch.publisher = args.publisher
-    return Textbook.findOneAndUpdate(matchQuery, patch).then((doc) => {
-      if(args.name) doc.name = args.name
-      if(args.imageUrl) doc.imageUrl = args.imageUrl
-      if(args.publisher) doc.publisher = args.publisher
-      return doc
+    if(args.orientations) patch.orientations = args.orientations;
+    return Textbook.updateOne(matchQuery, patch).then(() => {
+      return Textbook.findOne(matchQuery)
     })
   })
 }

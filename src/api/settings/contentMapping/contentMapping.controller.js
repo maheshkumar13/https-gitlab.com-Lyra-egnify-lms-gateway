@@ -20,7 +20,7 @@ export async function getTextbookWiseTopicCodes(context) {
     aggregateQuery.push({
       $group: {
         _id: '$refs.textbook.code',
-        codes: { $addToSet: '$code' },
+        codes: { $push: { code: '$code', name: '$child'} },
       },
     });
 
@@ -120,7 +120,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
   });
 
   const mandetoryFields = [
-    'class', 'subject', 'textbook', 'chapter code', 'orientation', 'category',
+    'class', 'subject', 'textbook', 'chapter', 'orientation', 'category',
     'publisher', 'publish year', 'content name', 'content category', 'content type',
     'file path', 'file size', 'media type',
   ];
@@ -134,6 +134,8 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
       }
     }
   }
+
+  let invalidBranches = new Set();
 
   for (let i = 0; i < data.length; i += 1) {
     const row = i + 2;
@@ -157,12 +159,14 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
       result.message = `Invalid TEXTBOOK at row ${row}`;
       return result;
     }
-
-    if (!textbookData[textbookCode] || !textbookData[textbookCode].includes(obj['chapter code'])) {
+    const topicData = textbookData[textbookCode] ? textbookData[textbookCode].find( x => x.name === obj['chapter']) : ''
+    if (!topicData) {
       result.success = false;
       result.message = `Invalid CHAPTER CODE at row ${row}`;
       return result;
     }
+
+    obj['chapter code'] = topicData.code;
 
     obj['file path'] = upath.toUnix(obj['file path']);
 
@@ -183,25 +187,25 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     //   result.message = `Invalid MEDIA TYPE at row ${row}`;
     //   return result
     // }
-    const invalidBranches = [];
-    if (obj.branches) {
-      const branchNames = obj.branches.split(',');
-      const finalBranchNames = [];
-      for (let j = 0; j < branchNames.length; j += 1) {
+    if(obj['branches']) {
+      const branchNames = obj['branches'].split(',')
+      const finalBranchNames = []
+      for(let j = 0; j < branchNames.length; j+=1 ){
         const branch = branchNames[j];
         if (!branch) continue;
         if (!uniqueBranches.includes(branch)) {
-          invalidBranches.push(branch);
+          invalidBranches.add(branch)
         }
         finalBranchNames.push(branch);
       }
-      if (invalidBranches.length) {
-        result.success = false;
-        result.message = `Invalid branch(s) [${invalidBranches}] at row ${row}`;
-        return result;
-      }
-      obj.branches = finalBranchNames;
+      obj['branches'] = finalBranchNames;
     }
+  }
+  invalidBranches = Array.from(invalidBranches);
+  if (invalidBranches.length) {
+    result.success = false;
+    result.message = `Invalid branch(s) [${invalidBranches}]`;
+    return result
   }
   if (!data.length) {
     result.success = false;
