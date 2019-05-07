@@ -2,8 +2,10 @@ import {
   GraphQLObjectType as ObjectType,
   GraphQLString as StringType,
   GraphQLInt as IntType,
+  GraphQLBoolean as BooleanType,
   GraphQLInputObjectType as InputType,
   GraphQLNonNull as NonNull,
+  GraphQLList as List,
 } from 'graphql';
 
 
@@ -87,14 +89,36 @@ export const CategoryWiseFilesInputType = new InputType({
     chapterCode: { type: StringType, description: 'Name of the chapter' },
     orientation: { type: StringType, description: 'Name of the Orientation' },
     category: { type: new NonNull(StringType), description: 'Name of the category' },
+    pageNumber: { type: IntType, description: 'Page number' },
+    limit: { type: IntType, description: 'Limit of the records to be fetched' },
+  },
+});
+
+const pageInfoType = new ObjectType({
+  name: 'pageInfoType',
+  fields: {
+    pageNumber: { type: IntType, description: 'Page number' },
+    nextPage: { type: BooleanType, description: 'Is there a next Page' },
+    prevPage: { type: BooleanType, description: 'Is there a previous Page' },
+    recordsShown: { type: IntType, description: 'How many records are being showed in this page' },
+    totalPages: { type: IntType, description: 'How many overall pages' },
+    totalEntries: { type: IntType, description: 'How many overall records' },
+  },
+});
+
+const categoryListType = new ObjectType({
+  name: 'categoryListType',
+  fields: {
+    category: { type: StringType, description: 'Name of the category' },
+    resource: { type: StringType, description: 'Url of the file' },
   },
 });
 
 export const CategoryWiseFilesOutputType = new ObjectType({
   name: 'CategoryWiseFilesOutputType',
   fields: {
-    category: { type: StringType, description: 'Name of the category' },
-    resource: { type: StringType, description: 'Url of the file' },
+    page: { type: new List(categoryListType), description: 'list of categories' },
+    pageInfo: { type: pageInfoType, description: 'Info of the page which is getting displayed' },
   },
 });
 

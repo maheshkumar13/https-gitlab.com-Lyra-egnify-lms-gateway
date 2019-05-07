@@ -376,11 +376,13 @@ export async function getCMSCategoryStats(args, context) {
   return categoryWiseCount;
 }
 
-export async function getCategoryWiseFiles(args, context) {
+export async function getCategoryWiseFilesPaginated(args, context) {
   const classCode = args && args.input && args.input.classCode ? args.input.classCode : null;
   const chapterCode = args && args.input && args.input.chapterCode ? args.input.chapterCode : null;
   const subjectCode = args && args.input && args.input.subjectCode ? args.input.subjectCode : null;
   const orientation = args && args.input && args.input.orientation ? args.input.orientation : null;
+  const pageNumber = args && args.input && args.input.pageNumber ? args.input.pageNumber : 1;
+  const limit = args && args.input && args.input.limit ? args.input.limit : 0;
   if (!args.input.category) {
     return 'Please select correct category';
   }
@@ -420,11 +422,18 @@ export async function getCategoryWiseFiles(args, context) {
   } if (orientation) {
     query.orientation = orientation;
   }
-  // console.log('query', query);
+  const skip = (pageNumber - 1) * limit;
   const categoryFiles = [];
-  await ContentMappingModel(context).then(async (ContentMappings) => {
-    await ContentMappings.find(query, { 'content.category': 1, _id: 0, 'resource.key': 1 }).then((contentObjs) => {
-      // console.log("contentObjs", contentObjs);
+  const finalJson = {};
+  await ContentMappingModel(context).then(async ContentMappings =>
+    Promise.all([
+      ContentMappings.find(query, { 'content.category': 1, _id: 0, 'resource.key': 1 }).skip(skip).limit(limit),
+      ContentMappings.find(query).skip(skip).limit(limit).count(),
+      ContentMappings.count(query),
+    ]).then(([contentObjs, queryCount, count]) => {
+      console.info('contentObjs', contentObjs);
+      console.info('queryCount', queryCount);
+      console.info('count', count);
       for (let c = 0; c < contentObjs.length; c += 1) {
         const tempCategory = {
           category: contentObjs[c].content.category, //eslint-disable-line
@@ -432,7 +441,16 @@ export async function getCategoryWiseFiles(args, context) {
         };
         categoryFiles.push(tempCategory);
       }
-    });
-  });
-  return categoryFiles;
+      const pageInfo = {
+        pageNumber,
+        recordsShown: queryCount,
+        nextPage: limit !== 0 && limit * pageNumber < count,
+        prevPage: pageNumber !== 1 && count > 0,
+        totalEntries: count,
+        totalPages: limit > 0 ? Math.ceil(count / limit) : 1,
+      };
+      finalJson.page = categoryFiles;
+      finalJson.pageInfo = pageInfo;
+    }));
+  return finalJson;
 }
