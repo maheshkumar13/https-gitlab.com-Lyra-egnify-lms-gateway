@@ -6,7 +6,6 @@ import { getModel as InstituteHierarchyModel } from '../instituteHierarchy/insti
 const xlsx = require('xlsx');
 const upath = require('upath');
 
-
 export async function getTextbookWiseTopicCodes(context) {
   return ConceptTaxonomyModel(context).then((ConceptTaxonomy) => {
     const aggregateQuery = [];
@@ -100,10 +99,10 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
   for (let i = data.length - 1; i >= 0; i -= 1) {
     let values = Object.values(data[i]);
     values = values.map(x => x.toString());
-		// const vals = values.map(x => x.trim());
-		if (values.every(x => x === '')) data.pop();
-		else break;
-	}
+    // const vals = values.map(x => x.trim());
+    if (values.every(x => x === '')) data.pop();
+    else break;
+  }
 
   // deleting empty string keys from all objects
 	data.forEach((v) => { delete v['']; }); // eslint-disable-line
@@ -114,9 +113,9 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     for (let i = 0; i < keys.length; i += 1) {
       const key = keys[i];
       const lowerKey = key.toLowerCase();
-      if (lowerKey === 'branches') obj[lowerKey] = obj[key]
-      else obj[lowerKey] = obj[key].toString().replace(/\s\s+/g, ' ').trim()
-      if(key !== lowerKey) delete obj[key];
+      if (lowerKey === 'branches') obj[lowerKey] = obj[key];
+      else obj[lowerKey] = obj[key].toString().replace(/\s\s+/g, ' ').trim();
+      if (key !== lowerKey) delete obj[key];
     }
   });
 
@@ -458,4 +457,57 @@ export async function getCategoryWiseFilesPaginated(args, context) {
       finalJson.pageInfo = pageInfo;
     }));
   return finalJson;
+}
+
+export async function getFileData(args, context) {
+  const fileKey = args && args.input && args.input.fileKey ?
+    args.input.fileKey : null;
+  const textBookCode = args && args.input && args.input.textBookCode ?
+    args.input.textBookCode : null;
+  const query = {};
+  const query1 = {};
+  if (!fileKey) {
+    return 'Please select a fileKey';
+  }
+  query['resource.key'] = fileKey;
+  if (!textBookCode) {
+    return 'Please provide textBookCode';
+  }
+  query['refs.textbook.code'] = textBookCode;
+  query1.code = textBookCode;
+  return Promise.all([TextbookModel(context), ContentMappingModel(context)])
+    .then(([TextBook, ContentMapping]) => Promise.all([TextBook.findOne(query1, {
+      code: 1, 'refs.class.name': 1, 'refs.subject.name': 1, name: 1,
+    }), ContentMapping.findOne(query)]).then(async ([textBookRefs, contentMappingObjs]) =>
+      // const topicName = null;
+      ConceptTaxonomyModel(context).then(ConceptTaxonomy => ConceptTaxonomy.findOne(
+        {
+          code: contentMappingObjs.refs.topic.code,
+          'refs.textbook.code': contentMappingObjs.refs.textbook.code,
+        },
+        { child: 1 },
+      ).then((topicObj) => {
+        const finalObj = {
+          content: contentMappingObjs.content,
+          resource: contentMappingObjs.resource,
+          publication: contentMappingObjs.publication,
+          orientation: contentMappingObjs.orientation,
+          refs: contentMappingObjs.refs,
+          branches: contentMappingObjs.branches,
+          class: textBookRefs &&
+          textBookRefs.refs &&
+          textBookRefs.refs.class &&
+          textBookRefs.refs.class.name ?
+            textBookRefs.refs.class.name : null,
+          subject: textBookRefs &&
+          textBookRefs.refs &&
+          textBookRefs.refs.subject &&
+          textBookRefs.refs.subject.name ?
+            textBookRefs.refs.subject.name : null,
+          category: contentMappingObjs.category,
+          textBookName: textBookRefs && textBookRefs.name ? textBookRefs.name : null,
+          topicName: topicObj.child,
+        };
+        return finalObj;
+      }))));
 }
