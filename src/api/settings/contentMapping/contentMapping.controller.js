@@ -435,9 +435,6 @@ export async function getCategoryWiseFilesPaginated(args, context) {
       ContentMappings.find(query).skip(skip).limit(limit).count(),
       ContentMappings.count(query),
     ]).then(([contentObjs, queryCount, count]) => {
-      console.info('contentObjs', contentObjs);
-      console.info('queryCount', queryCount);
-      console.info('count', count);
       for (let c = 0; c < contentObjs.length; c += 1) {
         const tempCategory = {
           category: contentObjs[c].content.category, //eslint-disable-line
