@@ -21,7 +21,7 @@ import { createTextbook, updateTextbook, deleteTextbook } from './settings/textb
 import { Students, StudentUniqueValues, StudentsByLastNode, StudentById } from './settings/student/student.query';
 import { updateStudentAvatar, updateStudentSubjects } from './settings/student/student.mutation';
 import { ConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.query';
-import { ContentMapping } from './settings/contentMapping/contentMapping.query';
+import { ContentMapping, CmsCategoryStats, CategoryWiseFiles } from './settings/contentMapping/contentMapping.query';
 import { LaunchRequest } from './launcher/launchRequest/launchRequest.query';
 import { Questions, Results } from './tests/questions/questions.query';
 import { MasterResults } from './tests/masterResults/masterResults.query';
@@ -47,6 +47,8 @@ const schema = new Schema({
       Results,
       StudentById,
       MasterResults,
+      CmsCategoryStats,
+      CategoryWiseFiles,
     },
   }),
   mutation: new ObjectType({
