@@ -67,6 +67,7 @@ export const CmsCategoryStatsInputType = new InputType({
     classCode: { type: StringType, description: 'Name of the class' },
     subjectCode: { type: StringType, description: 'Name of the subject' },
     chapterCode: { type: StringType, description: 'Name of the chapter' },
+    orientation: { type: StringType, description: 'Name of the Orientation' },
   },
 });
 
@@ -84,6 +85,7 @@ export const CategoryWiseFilesInputType = new InputType({
     classCode: { type: StringType, description: 'Name of the class' },
     subjectCode: { type: StringType, description: 'Name of the subject' },
     chapterCode: { type: StringType, description: 'Name of the chapter' },
+    orientation: { type: StringType, description: 'Name of the Orientation' },
     category: { type: new NonNull(StringType), description: 'Name of the category' },
   },
 });

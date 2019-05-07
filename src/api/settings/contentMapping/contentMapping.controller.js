@@ -323,6 +323,7 @@ export async function getCMSCategoryStats(args, context) {
   const classCode = args && args.input && args.input.classCode ? args.input.classCode : null;
   const chapterCode = args && args.input && args.input.chapterCode ? args.input.chapterCode : null;
   const subjectCode = args && args.input && args.input.subjectCode ? args.input.subjectCode : null;
+  const orientation = args && args.input && args.input.orientation ? args.input.orientation : null;
   const query = {};
   const query1 = {};
   if (classCode) {
@@ -352,6 +353,8 @@ export async function getCMSCategoryStats(args, context) {
     query['refs.textbook.code'] = {
       $in: textBookCodes,
     };
+  } if (orientation) {
+    query.orientation = orientation;
   }
   // console.log('query', query);
   const categoryWiseCount = [];
@@ -360,7 +363,7 @@ export async function getCMSCategoryStats(args, context) {
       { $match: query },
       { $project: { 'content.category': 1, _id: 0 } },
       { $group: { _id: { category: '$content.category' }, count: { $sum: 1 } } },
-    ]).then((contentObjs) => {
+    ]).allowDiskUse(true).then((contentObjs) => {
       for (let c = 0; c < contentObjs.length; c += 1) {
         const tempCategory = {
           category: contentObjs[c]._id.category, //eslint-disable-line
@@ -377,6 +380,7 @@ export async function getCategoryWiseFiles(args, context) {
   const classCode = args && args.input && args.input.classCode ? args.input.classCode : null;
   const chapterCode = args && args.input && args.input.chapterCode ? args.input.chapterCode : null;
   const subjectCode = args && args.input && args.input.subjectCode ? args.input.subjectCode : null;
+  const orientation = args && args.input && args.input.orientation ? args.input.orientation : null;
   if (!args.input.category) {
     return 'Please select correct category';
   }
@@ -413,6 +417,8 @@ export async function getCategoryWiseFiles(args, context) {
   }
   if (category) {
     query['content.category'] = category;
+  } if (orientation) {
+    query.orientation = orientation;
   }
   // console.log('query', query);
   const categoryFiles = [];
