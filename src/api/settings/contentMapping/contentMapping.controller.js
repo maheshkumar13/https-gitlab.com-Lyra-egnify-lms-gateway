@@ -100,10 +100,10 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
   for (let i = data.length - 1; i >= 0; i -= 1) {
     let values = Object.values(data[i]);
     values = values.map(x => x.toString());
-    const vals = values.map(x => x.trim());
-    if (vals.every(x => x === '')) data.pop();
-    else break;
-  }
+		// const vals = values.map(x => x.trim());
+		if (values.every(x => x === '')) data.pop();
+		else break;
+	}
 
   // deleting empty string keys from all objects
 	data.forEach((v) => { delete v['']; }); // eslint-disable-line
@@ -114,8 +114,9 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     for (let i = 0; i < keys.length; i += 1) {
       const key = keys[i];
       const lowerKey = key.toLowerCase();
-      obj[lowerKey] = obj[key].toString().replace(/\s\s+/g, ' ').trim();
-      if (key !== lowerKey) delete obj[key];
+      if (lowerKey === 'branches') obj[lowerKey] = obj[key]
+      else obj[lowerKey] = obj[key].toString().replace(/\s\s+/g, ' ').trim()
+      if(key !== lowerKey) delete obj[key];
     }
   });
 
@@ -183,21 +184,24 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     //   result.message = `Invalid MEDIA TYPE at row ${row}`;
     //   return result
     // }
-
-    if (obj.branches) {
-      const branchNames = obj.branches.split(',').map(x => x.replace(/\s\s+/g, ' ').trim());
-      const finalBranchNames = [];
-      for (let j = 0; j < branchNames.length; j += 1) {
+    const invalidBranches = []
+    if(obj['branches']) {
+      const branchNames = obj['branches'].split(',')
+      const finalBranchNames = []
+      for(let j = 0; j < branchNames.length; j+=1 ){
         const branch = branchNames[j];
         if (!branch) continue;
         if (!uniqueBranches.includes(branch)) {
-          result.success = false;
-          result.message = `Invalid branch name (${branch}) at row ${row}`;
-          return result;
+          invalidBranches.push(branch)
         }
         finalBranchNames.push(branch);
       }
-      obj.branches = finalBranchNames;
+      if (invalidBranches.length) {
+        result.success = false;
+        result.message = `Invalid branch(s) [${invalidBranches}] at row ${row}`;
+        return result
+      }
+      obj['branches'] = finalBranchNames;
     }
   }
   if (!data.length) {
