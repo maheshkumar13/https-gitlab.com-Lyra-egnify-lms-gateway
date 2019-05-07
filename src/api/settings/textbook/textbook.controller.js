@@ -1,19 +1,47 @@
 import { getModel as TextbookModel } from './textbook.model';
 import { getModel as InstituteHierarchyModel} from '../instituteHierarchy/instituteHierarchy.model'
 import { getModel as SubjectModel } from '../subject/subject.model'
+import { getModel as StudentModel } from '../student/student.model'
 
 const crypto = require('crypto')
+
+export async function getStudentData(context) {
+  const { studentId } = context;
+  return StudentModel(context).then((Student) => {
+    if(!studentId) return false;
+    const project = {
+      _id: 0,
+      subjects: 1,
+      hierarchy: 1,
+      orientation: 1,
+      active: true,
+    }
+    return Student.findOne({ studentId }, project)
+  })
+}
 
 function getTextbooksQuery(args){
   const query = { active: true }
   if (args.classCode) query['refs.class.code'] = args.classCode;
   if (args.subjectCode) query['refs.subject.code'] = args.subjectCode;
+  if (args.orientation) {
+    query['$or'] = [
+      { orientations: null },
+      { orientations: { $exists: false }},
+      { orientations: args.orientation }
+    ]
+  }
   return query
 }
 export async function getTextbooks(args, context){
-  const query = getTextbooksQuery(args)
-  return TextbookModel(context).then( (Textbook) => {
-    return Textbook.find(query)
+  return getStudentData(context).then((obj) => {
+    if(obj && obj.orientation){
+      args.orientation = obj.orientation;
+    }
+    const query = getTextbooksQuery(args)
+    return TextbookModel(context).then( (Textbook) => {
+      return Textbook.find(query)
+    })
   })
 }
 
