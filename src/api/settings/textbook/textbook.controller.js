@@ -99,6 +99,7 @@ export async function createTextbook(args, context){
         code: `${Date.now()}${crypto.randomBytes(5).toString('hex')}`,
         imageUrl: args.imageUrl,
         publisher: args.publisher,
+        orientations: args.orientations,
         refs: {
           class: {
             name: classData.child,
@@ -148,7 +149,7 @@ export async function updateTextbook(args, context){
   args.publisher = args.publisher ? args.publisher.replace(/\s\s+/g, ' ').trim() : ''
   if (
       !args.code ||
-     (!args.name && !args.imageUrl && !args.publisher)
+     (!args.name && !args.imageUrl && !args.publisher && !args.orientations)
      ){
     throw new Error('Insufficient data')
   }
@@ -164,11 +165,9 @@ export async function updateTextbook(args, context){
     if(args.name) patch.name = args.name
     if(args.imageUrl) patch.imageUrl = args.imageUrl
     if(args.publisher) patch.publisher = args.publisher
-    return Textbook.findOneAndUpdate(matchQuery, patch).then((doc) => {
-      if(args.name) doc.name = args.name
-      if(args.imageUrl) doc.imageUrl = args.imageUrl
-      if(args.publisher) doc.publisher = args.publisher
-      return doc
+    if(args.orientations) patch.orientations = args.orientations;
+    return Textbook.updateOne(matchQuery, patch).then(() => {
+      return Textbook.findOne(matchQuery)
     })
   })
 }
