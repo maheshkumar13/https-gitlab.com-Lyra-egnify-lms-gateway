@@ -8,6 +8,7 @@ import {
   GraphQLList as List,
 } from 'graphql';
 
+import GraphQLJSON from 'graphql-type-json';
 
 const contentType = new ObjectType({
   name: 'ContentMappingContentType',
@@ -122,8 +123,35 @@ export const CategoryWiseFilesOutputType = new ObjectType({
   },
 });
 
+export const FileDataInputType = new InputType({
+  name: 'FileDataInputType',
+  fields: {
+    fileKey: { type: new NonNull(StringType), description: 'Key of the file' },
+    textBookCode: { type: new NonNull(StringType), description: 'code of textbook ' },
+  },
+});
+
+export const FileDataOutputType = new ObjectType({
+  name: 'FileDataOutputType',
+  fields: {
+    content: { type: contentType, description: 'content of the file' },
+    resource: { type: resourceType, description: 'resource of the file' },
+    publication: { type: publicationType, description: 'publisher of the file' },
+    orientation: { type: StringType, description: 'Orientation to which that file belongs to' },
+    refs: { type: refsType, description: 'References of the file to which it belongs to' },
+    branches: { type: GraphQLJSON, description: 'List of branches to which the file belongs to' },
+    category: { type: StringType, description: 'Category of the file' },
+    class: { type: StringType, description: 'Class to which the file belongs to' },
+    subject: { type: StringType, description: 'subject to which the file belongs to' },
+    textBookName: { type: StringType, description: 'Name of the textBook' },
+    topicName: { type: StringType, description: 'Name of the topic' },
+  },
+});
+
 export default {
   ContentMappingType,
   CmsCategoryStatsOutputType,
   CmsCategoryStatsInputType,
+  FileDataOutputType,
+  FileDataInputType,
 };
