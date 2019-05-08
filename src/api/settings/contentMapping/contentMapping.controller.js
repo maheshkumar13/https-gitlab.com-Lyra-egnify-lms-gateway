@@ -324,9 +324,9 @@ export async function getContentMapping(args, context) {
 
 export async function getCMSCategoryStats(args, context) {
   const classCode = args && args.input && args.input.classCode ? args.input.classCode : null;
-  const chapterCode = args && args.input && args.input.chapterCode ? args.input.chapterCode : null;
   const subjectCode = args && args.input && args.input.subjectCode ? args.input.subjectCode : null;
-  const orientation = args && args.input && args.input.orientation ? args.input.orientation : null;
+  const textBookCode = args && args.input && args.input.textBookCode ? args.input.textBookCode : null;
+  const chapterCode = args && args.input && args.input.chapterCode ? args.input.chapterCode : null;
   const query = {};
   const query1 = {};
   if (classCode) {
@@ -335,17 +335,22 @@ export async function getCMSCategoryStats(args, context) {
     query1['refs.subject.code'] = subjectCode;
   }
   const textBookCodes = [];
-  if (query1) {
-    await TextbookModel(context).then(async (TextBook) => {
-      await TextBook.find(query1, { code: 1, _id: 0 }).then((textBookCodeObjs) => {
-        if (textBookCodeObjs && textBookCodeObjs.length) {
-          for (let t = 0; t < textBookCodeObjs.length; t += 1) {
-            textBookCodes.push(textBookCodeObjs[t].code);
-            // console.log('textBookCodes', textBookCodes);
+  if (textBookCode) {
+    textBookCodes.push(textBookCode);
+  }
+  if (textBookCodes.length === 0) {
+    if (query1) {
+      await TextbookModel(context).then(async (TextBook) => {
+        await TextBook.find(query1, { code: 1, _id: 0 }).then((textBookCodeObjs) => {
+          if (textBookCodeObjs && textBookCodeObjs.length) {
+            for (let t = 0; t < textBookCodeObjs.length; t += 1) {
+              textBookCodes.push(textBookCodeObjs[t].code);
+              // console.log('textBookCodes', textBookCodes);
+            }
           }
-        }
+        });
       });
-    });
+    }
   }
   if (textBookCodes.length === 0) {
     return null;
@@ -356,8 +361,6 @@ export async function getCMSCategoryStats(args, context) {
     query['refs.textbook.code'] = {
       $in: textBookCodes,
     };
-  } if (orientation) {
-    query.orientation = orientation;
   }
   // console.log('query', query);
   const categoryWiseCount = [];
@@ -381,9 +384,9 @@ export async function getCMSCategoryStats(args, context) {
 
 export async function getCategoryWiseFilesPaginated(args, context) {
   const classCode = args && args.input && args.input.classCode ? args.input.classCode : null;
-  const chapterCode = args && args.input && args.input.chapterCode ? args.input.chapterCode : null;
   const subjectCode = args && args.input && args.input.subjectCode ? args.input.subjectCode : null;
-  const orientation = args && args.input && args.input.orientation ? args.input.orientation : null;
+  const textBookCode = args && args.input && args.input.textBookCode ? args.input.textBookCode : null;
+  const chapterCode = args && args.input && args.input.chapterCode ? args.input.chapterCode : null;
   const pageNumber = args && args.input && args.input.pageNumber ? args.input.pageNumber : 1;
   const limit = args && args.input && args.input.limit ? args.input.limit : 0;
   if (!args.input.category) {
@@ -398,17 +401,22 @@ export async function getCategoryWiseFilesPaginated(args, context) {
     query1['refs.subject.code'] = subjectCode;
   }
   const textBookCodes = [];
-  if (query1) {
-    await TextbookModel(context).then(async (TextBook) => {
-      await TextBook.find(query1, { code: 1, _id: 0 }).then((textBookCodeObjs) => {
-        if (textBookCodeObjs && textBookCodeObjs.length) {
-          for (let t = 0; t < textBookCodeObjs.length; t += 1) {
-            textBookCodes.push(textBookCodeObjs[t].code);
-            // console.log('textBookCodes', textBookCodes);
+  if (textBookCode) {
+    textBookCodes.push(textBookCode);
+  }
+  if (textBookCodes.length === 0) {
+    if (query1) {
+      await TextbookModel(context).then(async (TextBook) => {
+        await TextBook.find(query1, { code: 1, _id: 0 }).then((textBookCodeObjs) => {
+          if (textBookCodeObjs && textBookCodeObjs.length) {
+            for (let t = 0; t < textBookCodeObjs.length; t += 1) {
+              textBookCodes.push(textBookCodeObjs[t].code);
+              // console.log('textBookCodes', textBookCodes);
+            }
           }
-        }
+        });
       });
-    });
+    }
   }
   if (textBookCodes.length === 0) {
     return null;
@@ -422,8 +430,6 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   }
   if (category) {
     query['content.category'] = category;
-  } if (orientation) {
-    query.orientation = orientation;
   }
   const skip = (pageNumber - 1) * limit;
   const categoryFiles = [];
