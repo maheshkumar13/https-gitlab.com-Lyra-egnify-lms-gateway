@@ -67,10 +67,10 @@ export const ContentMappingType = new ObjectType({
 export const CmsCategoryStatsInputType = new InputType({
   name: 'CmsCategoryStatsInputType',
   fields: {
-    classCode: { type: StringType, description: 'Name of the class' },
-    subjectCode: { type: StringType, description: 'Name of the subject' },
-    chapterCode: { type: StringType, description: 'Name of the chapter' },
-    orientation: { type: StringType, description: 'Name of the Orientation' },
+    classCode: { type: StringType, description: 'Code of the class' },
+    subjectCode: { type: StringType, description: 'Code of the subject' },
+    chapterCode: { type: StringType, description: 'Code of the chapter' },
+    textBookCode: { type: StringType, description: 'Code of the textBook' },
   },
 });
 
@@ -85,10 +85,10 @@ export const CmsCategoryStatsOutputType = new ObjectType({
 export const CategoryWiseFilesInputType = new InputType({
   name: 'CategoryWiseFilesInputType',
   fields: {
-    classCode: { type: StringType, description: 'Name of the class' },
-    subjectCode: { type: StringType, description: 'Name of the subject' },
-    chapterCode: { type: StringType, description: 'Name of the chapter' },
-    orientation: { type: StringType, description: 'Name of the Orientation' },
+    classCode: { type: StringType, description: 'Code of the class' },
+    subjectCode: { type: StringType, description: 'Code of the subject' },
+    chapterCode: { type: StringType, description: 'Code of the chapter' },
+    textBookCode: { type: StringType, description: 'Code of the textBook' },
     category: { type: new NonNull(StringType), description: 'Name of the category' },
     pageNumber: { type: IntType, description: 'Page number' },
     limit: { type: IntType, description: 'Limit of the records to be fetched' },
