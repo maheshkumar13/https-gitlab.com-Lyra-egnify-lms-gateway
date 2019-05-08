@@ -7,6 +7,7 @@ const express = require('express');
 
 const fileUpload = require('../../../utils/fileUpload');
 const controller = require('./uploadFile.controller');
+
 const router = express.Router();
 
 router.post(
@@ -17,9 +18,9 @@ router.post(
 );
 
 router.post(
-  '/aws',
+  '/public/aws',
   fileUpload.multer.single('file'),
-  fileUpload.AWSFileUpload,
+  fileUpload.AWSPublicFileUpload,
 );
 
 module.exports = router;

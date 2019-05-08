@@ -109,26 +109,27 @@ function uploadToGCS(inputFile) {
   });
 }
 
-const AWSFileUpload = (req, res) => {
+const AWSPublicFileUpload = (req, res) => {
   AWS.config.update({
     accessKeyId: config.AWS_S3_KEY,
     secretAccessKey: config.AWS_S3_SECRET,
   });
-  const folderName = config.AWS_bucket_folder;
+  const buketName = config.AWS_PUBLIC_BUCKET;
+  const folderName = config.AWS_PUBLIC_BUCKET_FOLDER;
   const s3 = new AWS.S3();
   const date = new Date();
   const originalname = `${date}_${req.file.originalname}`;
   const Key = `${folderName}/${originalname}`; // upload to s3 folder "id" with filename === fn
   const params = {
     Key,
-    Bucket: 'ekslmsproject', // set somewhere
+    Bucket: buketName, // set somewhere
     Body: req.file.buffer, // req is a stream
+    ACL: 'public-read', // making the file public
   };
   s3.upload(params, (err, data) => {
     if (err) {
       res.send(`Error Uploading Data: ${JSON.stringify(err)}\n${JSON.stringify(err.stack)}`);
     } else {
-      console.log("data", data);
       res.send(data.Location);
     }
   });
@@ -139,5 +140,5 @@ module.exports = {
   sendUploadToGCS,
   uploadToGCS,
   multer,
-  AWSFileUpload,
+  AWSPublicFileUpload,
 };
