@@ -26,10 +26,7 @@ function validateSheet(req) {
   const workbook = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true });
 
   // converting the sheet data to csv
-  const csvdata = xlsx.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]]);
-
-  // converting csvdata to array of json objects
-	const data = csvjson.toObject(csvdata);
+  const data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
 	
 	// deleting all trailing empty rows
 	for (let i = data.length - 1; i >= 0; i -= 1) {
