@@ -31,7 +31,7 @@ function validateSheet(req) {
 	// deleting all trailing empty rows
 	for (let i = data.length - 1; i >= 0; i -= 1) {
 		const values = Object.values(data[i]);
-		const vals = values.map(x => x.trim());
+		const vals = values.map(x => x.toString().trim());
 		if (vals.every(x => x === '')) data.pop();
 		else break;
 	}
@@ -41,7 +41,7 @@ function validateSheet(req) {
 	
 	// trim and remove whitespace
 	data.forEach((obj) => {
-		Object.keys(obj).forEach((key) => { obj[key] = obj[key].replace(/\s\s+/g, ' ').trim()})
+		Object.keys(obj).forEach((key) => { obj[key] = obj[key].toString().replace(/\s\s+/g, ' ').trim()})
 	})
 
 	// validate mandetory fields
