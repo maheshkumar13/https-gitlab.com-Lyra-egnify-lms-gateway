@@ -63,7 +63,7 @@ export const QuestionEvalInputType = new InputType({
   name: 'QuestionEvalInputType',
   fields: {
     questionPaperId: { type: new NonNull(StringType), description: 'Question Paper Id' },
-    questionNos: { type: new NonNull(new List(StringType)) },
+    questionNos: { type: new List(StringType) },
   },
 });
 
