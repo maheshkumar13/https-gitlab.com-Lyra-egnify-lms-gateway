@@ -123,32 +123,25 @@ export async function getQuestionLevelEvaluatedData(args, context) {
   } else {
     query.questionPaperId = args.input.questionPaperId;
   }
-  if (!args.input.questionNos) {
-    throw new Error('questionNos are required');
-  } else {
+  if (args.input.questionNos) {
     query.qno = {
       $in: args.input.questionNos,
     };
   }
-  const questionNos = args &&
-                      args.input &&
-                      args.input.questionNos ? args.input.questionNos : {};
   return QuestionModel(context).then(Question => Question.find(query, {
     key: 1, qno: 1, questionPaperId: 1, _id: 0,
   }).then((res) => {
     // console.info('res', res);
     const finalObj = { questionPaperId: res[0].questionPaperId };
     const tempArray = [];
-    for (let i = 0; i < questionNos.length; i += 1) {
-      const questionNo = questionNos[i];
-      const questionObj = res.find(x => x.qno === questionNo);
+    res.forEach((quesObj) => {
       tempArray.push({
-        questionNo,
-        key: questionObj.key,
+        questionNo: quesObj.qno,
+        key: quesObj.key,
         hint: null,
         solution: null,
       });
-    }
+    });
     finalObj.evaluatedData = tempArray;
     return finalObj;
   }));
