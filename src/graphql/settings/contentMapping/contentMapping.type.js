@@ -137,7 +137,7 @@ export const FileDataOutputType = new ObjectType({
     content: { type: contentType, description: 'content of the file' },
     resource: { type: resourceType, description: 'resource of the file' },
     publication: { type: publicationType, description: 'publisher of the file' },
-    orientation: { type: StringType, description: 'Orientation to which that file belongs to' },
+    orientation: { type: new List(StringType), description: 'Orientation to which that file belongs to' },
     refs: { type: refsType, description: 'References of the file to which it belongs to' },
     branches: { type: GraphQLJSON, description: 'List of branches to which the file belongs to' },
     category: { type: StringType, description: 'Category of the file' },
