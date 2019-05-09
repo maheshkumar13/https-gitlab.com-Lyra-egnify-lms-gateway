@@ -114,4 +114,44 @@ export async function getAndSaveResults(args, context) {
   }));
 }
 
-export default { getQuestions, getAndSaveResults };
+export async function getQuestionLevelEvaluatedData(args, context) {
+  console.info('args', args);
+  console.info('context', context);
+  const query = {};
+  if (!args.input.questionPaperId) {
+    throw new Error('questionPaperId is required');
+  } else {
+    query.questionPaperId = args.input.questionPaperId;
+  }
+  if (!args.input.questionNos) {
+    throw new Error('questionNos are required');
+  } else {
+    query.qno = {
+      $in: args.input.questionNos,
+    };
+  }
+  const questionNos = args &&
+                      args.input &&
+                      args.input.questionNos ? args.input.questionNos : {};
+  return QuestionModel(context).then(Question => Question.find(query, {
+    key: 1, qno: 1, questionPaperId: 1, _id: 0,
+  }).then((res) => {
+    // console.info('res', res);
+    const finalObj = { questionPaperId: res[0].questionPaperId };
+    const tempArray = [];
+    for (let i = 0; i < questionNos.length; i += 1) {
+      const questionNo = questionNos[i];
+      const questionObj = res.find(x => x.qno === questionNo);
+      tempArray.push({
+        questionNo,
+        key: questionObj.key,
+        hint: null,
+        solution: null,
+      });
+    }
+    finalObj.evaluatedData = tempArray;
+    return finalObj;
+  }));
+}
+
+export default { getQuestions, getAndSaveResults, getQuestionLevelEvaluatedData };
