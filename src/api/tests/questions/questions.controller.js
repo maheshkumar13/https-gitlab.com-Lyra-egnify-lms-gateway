@@ -137,7 +137,7 @@ export async function getQuestionLevelEvaluatedData(args, context) {
     key: 1, qno: 1, questionPaperId: 1, _id: 0,
   }).then((res) => {
     // console.info('res', res);
-    const finalObj = { questionPaperId: res.questionPaperId };
+    const finalObj = { questionPaperId: res[0].questionPaperId };
     const tempArray = [];
     for (let i = 0; i < questionNos.length; i += 1) {
       const questionNo = questionNos[i];
