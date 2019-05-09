@@ -7,6 +7,7 @@
 /* eslint consistent-return: 0 */
 import { config } from '../config/environment';
 
+const AWS = require('aws-sdk');
 const Storage = require('@google-cloud/storage');
 
 const { CLOUD_BUCKET } = config;
@@ -108,9 +109,36 @@ function uploadToGCS(inputFile) {
   });
 }
 
+const AWSPublicFileUpload = (req, res) => {
+  AWS.config.update({
+    accessKeyId: config.AWS_S3_KEY,
+    secretAccessKey: config.AWS_S3_SECRET,
+  });
+  const buketName = config.AWS_PUBLIC_BUCKET;
+  const folderName = config.AWS_PUBLIC_BUCKET_FOLDER;
+  const s3 = new AWS.S3();
+  const date = new Date();
+  const originalname = `${date}_${req.file.originalname}`;
+  const Key = `${folderName}/${originalname}`; // upload to s3 folder "id" with filename === fn
+  const params = {
+    Key,
+    Bucket: buketName, // set somewhere
+    Body: req.file.buffer, // req is a stream
+    ACL: 'public-read', // making the file public
+  };
+  s3.upload(params, (err, data) => {
+    if (err) {
+      res.send(`Error Uploading Data: ${JSON.stringify(err)}\n${JSON.stringify(err.stack)}`);
+    } else {
+      res.send(data.Location);
+    }
+  });
+};
+
 module.exports = {
   getPublicUrl,
   sendUploadToGCS,
   uploadToGCS,
   multer,
+  AWSPublicFileUpload,
 };
