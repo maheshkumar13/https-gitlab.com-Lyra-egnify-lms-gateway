@@ -21,7 +21,7 @@ export async function getTextbookWiseTopicCodes(context) {
     aggregateQuery.push({
       $group: {
         _id: '$refs.textbook.code',
-        codes: { $push: { code: '$code', name: '$child'} },
+        codes: { $push: { code: '$code', name: '$child' } },
       },
     });
 
@@ -74,18 +74,17 @@ export async function getUniqueBranchesForValidation(context) {
   return InstituteHierarchyModel(context).then(InstituteHierarchy => InstituteHierarchy.distinct('child', { levelName: 'Branch' }));
 }
 
-function checkUniqueRowByCondition(data, temp, index, ){
-  const tempdata = data.slice(0,index);
-  const prindex = tempdata.findIndex( x => 
+function checkUniqueRowByCondition(data, temp, index) {
+  const tempdata = data.slice(0, index);
+  const prindex = tempdata.findIndex(x =>
     x.textbookCode === temp.textbookCode &&
     x['chapter code'] === temp['chapter code'] &&
-    x['originalContentName'] === temp['originalContentName'] &&
+    x.originalContentName === temp.originalContentName &&
     x['content category'] === temp['content category'] &&
     x['content type'] === temp['content type'] &&
-    x.category === temp['category'] &&
-    x.orientationString === temp['orientationString']
-    )
-    return prindex;
+    x.category === temp.category &&
+    x.orientationString === temp.orientationString);
+  return prindex;
 }
 
 function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
@@ -175,7 +174,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
       result.message = `Invalid TEXTBOOK at row ${row}`;
       return result;
     }
-    const topicData = textbookData[textbookCode] ? textbookData[textbookCode].find( x => x.name === obj['chapter']) : ''
+    const topicData = textbookData[textbookCode] ? textbookData[textbookCode].find(x => x.name === obj.chapter) : '';
     if (!topicData) {
       result.success = false;
       result.message = `Invalid CHAPTER at row ${row}`;
@@ -198,52 +197,52 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
 
     if (obj['media type']) obj['media type'] = obj['media type'].toLowerCase();
 
-    if (obj['orientation']) {
-      obj['orientationString'] = obj['orientation'];
-      let values = obj['orientation'].split(',');
-      values = values.map(x => x.toString().replace(/\s\s+/g, ' ').trim())
-      const finalOrientations = []
+    if (obj.orientation) {
+      obj.orientationString = obj.orientation;
+      let values = obj.orientation.split(',');
+      values = values.map(x => x.toString().replace(/\s\s+/g, ' ').trim());
+      const finalOrientations = [];
       values.forEach((x) => {
-        if(x) finalOrientations.push(x);
-      })
-      obj['orientation'] = finalOrientations;
-    }  
-    if(obj['branches']) {
-      const branchNames = obj['branches'].split(',')
-      const finalBranchNames = []
-      for(let j = 0; j < branchNames.length; j+=1 ){
+        if (x) finalOrientations.push(x);
+      });
+      obj.orientation = finalOrientations;
+    }
+    if (obj.branches) {
+      const branchNames = obj.branches.split(',');
+      const finalBranchNames = [];
+      for (let j = 0; j < branchNames.length; j += 1) {
         const branch = branchNames[j];
         if (!branch) continue;
         if (!uniqueBranches.includes(branch)) {
-          invalidBranches.add(branch)
+          invalidBranches.add(branch);
         }
         finalBranchNames.push(branch);
       }
-      obj['branches'] = finalBranchNames;
+      obj.branches = finalBranchNames;
     }
-    
-    obj['tempunqiuecode'] = crypto.randomBytes(10).toString('hex');
 
-    obj['originalContentName'] = obj['content name']
+    obj.tempunqiuecode = crypto.randomBytes(10).toString('hex');
 
-    const prindex = checkUniqueRowByCondition(data, obj, i)
-    if(prindex > -1) {
-      const tempunqiuecode = data[prindex]['tempunqiuecode'];
-      if(!dupmapping[tempunqiuecode]) {
+    obj.originalContentName = obj['content name'];
+
+    const prindex = checkUniqueRowByCondition(data, obj, i);
+    if (prindex > -1) {
+      const tempunqiuecode = data[prindex].tempunqiuecode;
+      if (!dupmapping[tempunqiuecode]) {
         dupmapping[tempunqiuecode] = 1;
-        data[prindex]['content name'] = `${obj['originalContentName']} - 1`
+        data[prindex]['content name'] = `${obj.originalContentName} - 1`;
       }
       dupmapping[tempunqiuecode] += 1;
-      obj['tempunqiuecode'] = tempunqiuecode;
-      const seqNumber = dupmapping[tempunqiuecode]
-      obj['content name'] = `${obj['originalContentName']} - ${seqNumber}`
+      obj.tempunqiuecode = tempunqiuecode;
+      const seqNumber = dupmapping[tempunqiuecode];
+      obj['content name'] = `${obj.originalContentName} - ${seqNumber}`;
     }
   }
   invalidBranches = Array.from(invalidBranches);
   if (invalidBranches.length) {
     result.success = false;
     result.message = `Invalid branch(s) [${invalidBranches}]`;
-    return result
+    return result;
   }
   if (!data.length) {
     result.success = false;
@@ -307,13 +306,13 @@ export async function uploadContentMapping(req, res) {
         'content.category': temp['content category'],
         'content.type': temp['content type'],
         category: temp.category,
-        orientation: { $in: temp.orientation }
+        orientation: { $in: temp.orientation },
       };
       bulk.find(findQuery).upsert().updateOne(obj);
     }
     return bulk.execute().then(() => res.send('Data inserted/updated successfully')).catch((err) => {
-      console.log(JSON.stringify(err))
-    })
+      console.log(JSON.stringify(err));
+    });
   });
 }
 
@@ -350,11 +349,11 @@ export async function getContentMapping(args, context) {
   return getBranchNameAndCategory(context).then((obj) => {
     if (obj) {
       if (obj.child) {
-        query.branches = { $in: [ null, undefined, obj.child ] };
+        query.branches = { $in: [null, undefined, obj.child] };
       }
       if (obj.category) {
-        query.category = { $in: [ null, undefined, obj.category ] };
-      }  
+        query.category = { $in: [null, undefined, obj.category] };
+      }
     }
     const skip = (args.pageNumber - 1) * args.limit;
     return ContentMappingModel(context).then(ContentMapping => Promise.all([
@@ -370,7 +369,8 @@ export async function getContentMapping(args, context) {
 export async function getCMSCategoryStats(args, context) {
   const classCode = args && args.input && args.input.classCode ? args.input.classCode : null;
   const subjectCode = args && args.input && args.input.subjectCode ? args.input.subjectCode : null;
-  const textBookCode = args && args.input && args.input.textBookCode ? args.input.textBookCode : null;
+  const textBookCode = args && args.input && args.input.textBookCode ?
+    args.input.textBookCode : null;
   const chapterCode = args && args.input && args.input.chapterCode ? args.input.chapterCode : null;
   const query = {};
   const query1 = {};
@@ -430,14 +430,15 @@ export async function getCMSCategoryStats(args, context) {
 export async function getCategoryWiseFilesPaginated(args, context) {
   const classCode = args && args.input && args.input.classCode ? args.input.classCode : null;
   const subjectCode = args && args.input && args.input.subjectCode ? args.input.subjectCode : null;
-  const textBookCode = args && args.input && args.input.textBookCode ? args.input.textBookCode : null;
+  const textBookCode = args && args.input && args.input.textBookCode ?
+    args.input.textBookCode : null;
   const chapterCode = args && args.input && args.input.chapterCode ? args.input.chapterCode : null;
   const pageNumber = args && args.input && args.input.pageNumber ? args.input.pageNumber : 1;
   const limit = args && args.input && args.input.limit ? args.input.limit : 0;
-  if (!args.input.category) {
-    return 'Please select correct category';
-  }
   const category = args && args.input && args.input.category ? args.input.category : null;
+  if (!category) {
+    throw new Error('Please select correct category');
+  }
   const query = {};
   const query1 = {};
   if (classCode) {
@@ -514,11 +515,11 @@ export async function getFileData(args, context) {
   const query = {};
   const query1 = {};
   if (!fileKey) {
-    return 'Please select a fileKey';
+    throw new Error('Please select a fileKey');
   }
   query['resource.key'] = fileKey;
   if (!textBookCode) {
-    return 'Please provide textBookCode';
+    throw new Error('Please provide textBookCode');
   }
   query['refs.textbook.code'] = textBookCode;
   query1.code = textBookCode;
@@ -535,12 +536,18 @@ export async function getFileData(args, context) {
         { child: 1 },
       ).then((topicObj) => {
         const finalObj = {
-          content: contentMappingObjs.content,
-          resource: contentMappingObjs.resource,
-          publication: contentMappingObjs.publication,
-          orientation: contentMappingObjs.orientation,
-          refs: contentMappingObjs.refs,
-          branches: contentMappingObjs.branches,
+          content: contentMappingObjs && contentMappingObjs.content ?
+            contentMappingObjs.content : null,
+          resource: contentMappingObjs && contentMappingObjs.resource ?
+            contentMappingObjs.resource : null,
+          publication: contentMappingObjs && contentMappingObjs.publication ?
+            contentMappingObjs.publication : null,
+          orientation: contentMappingObjs && contentMappingObjs.orientation ?
+            contentMappingObjs.orientation : null,
+          refs: contentMappingObjs && contentMappingObjs.refs ?
+            contentMappingObjs.refs : null,
+          branches: contentMappingObjs && contentMappingObjs.branches ?
+            contentMappingObjs.branches : null,
           class: textBookRefs &&
           textBookRefs.refs &&
           textBookRefs.refs.class &&
