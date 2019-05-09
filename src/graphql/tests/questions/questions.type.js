@@ -36,7 +36,7 @@ export const QuestionType = new ObjectType({
     key: { type: new List(StringType), description: 'List of keys' },
     difficulty: { type: StringType, description: 'Difficulty' },
     revised_blooms_taxonomy: { type: StringType, description: 'revised_blooms_taxonomy' },
-    questionTypeMetaData: { type: GraphQLJSON, description: 'Metadata'}
+    questionTypeMetaData: { type: GraphQLJSON, description: 'Metadata' },
   },
 });
 
@@ -59,8 +59,36 @@ export const ResultOutputType = new ObjectType({
   },
 });
 
+export const QuestionEvalInputType = new InputType({
+  name: 'QuestionEvalInputType',
+  fields: {
+    questionPaperId: { type: new NonNull(StringType), description: 'Question Paper Id' },
+    questionNos: { type: new NonNull(new List(StringType)) },
+  },
+});
+
+const EvaluatedDataType = new ObjectType({
+  name: 'EvaluatedDataType',
+  fields: {
+    questionNo: { type: StringType, description: 'questionNumber' },
+    key: { type: new List(StringType), description: 'Key of the question' },
+    hint: { type: StringType, description: 'hint of the question' },
+    solution: { type: StringType, description: 'Solution of the question' },
+  },
+});
+
+export const QuestionEvalOutputType = new ObjectType({
+  name: 'QuestionEvalOutputType',
+  fields: {
+    questionPaperId: { type: StringType, description: 'Question Paper Id' },
+    evaluatedData: { type: new List(EvaluatedDataType), description: 'question, key, hint, solution, response' },
+  },
+});
+
 export default {
   QuestionType,
   ResultInputType,
   ResultOutputType,
+  QuestionEvalInputType,
+  QuestionEvalOutputType,
 };
