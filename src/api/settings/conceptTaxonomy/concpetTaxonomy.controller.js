@@ -26,15 +26,12 @@ function validateSheet(req) {
   const workbook = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true });
 
   // converting the sheet data to csv
-  const csvdata = xlsx.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]]);
-
-  // converting csvdata to array of json objects
-	const data = csvjson.toObject(csvdata);
+  const data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
 	
 	// deleting all trailing empty rows
 	for (let i = data.length - 1; i >= 0; i -= 1) {
 		const values = Object.values(data[i]);
-		const vals = values.map(x => x.trim());
+		const vals = values.map(x => x.toString().trim());
 		if (vals.every(x => x === '')) data.pop();
 		else break;
 	}
@@ -44,7 +41,7 @@ function validateSheet(req) {
 	
 	// trim and remove whitespace
 	data.forEach((obj) => {
-		Object.keys(obj).forEach((key) => { obj[key] = obj[key].replace(/\s\s+/g, ' ').trim()})
+		Object.keys(obj).forEach((key) => { obj[key] = obj[key].toString().replace(/\s\s+/g, ' ').trim()})
 	})
 
 	// validate mandetory fields

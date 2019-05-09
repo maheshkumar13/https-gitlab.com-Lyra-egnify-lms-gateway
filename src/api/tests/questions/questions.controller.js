@@ -114,4 +114,37 @@ export async function getAndSaveResults(args, context) {
   }));
 }
 
-export default { getQuestions, getAndSaveResults };
+export async function getQuestionLevelEvaluatedData(args, context) {
+  console.info('args', args);
+  console.info('context', context);
+  const query = {};
+  if (!args.input.questionPaperId) {
+    throw new Error('questionPaperId is required');
+  } else {
+    query.questionPaperId = args.input.questionPaperId;
+  }
+  if (args.input.questionNos) {
+    query.qno = {
+      $in: args.input.questionNos,
+    };
+  }
+  return QuestionModel(context).then(Question => Question.find(query, {
+    key: 1, qno: 1, questionPaperId: 1, _id: 0,
+  }).then((res) => {
+    // console.info('res', res);
+    const finalObj = { questionPaperId: res[0].questionPaperId };
+    const tempArray = [];
+    res.forEach((quesObj) => {
+      tempArray.push({
+        questionNo: quesObj.qno,
+        key: quesObj.key,
+        hint: null,
+        solution: null,
+      });
+    });
+    finalObj.evaluatedData = tempArray;
+    return finalObj;
+  }));
+}
+
+export default { getQuestions, getAndSaveResults, getQuestionLevelEvaluatedData };

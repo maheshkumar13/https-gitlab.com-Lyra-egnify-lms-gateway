@@ -13,8 +13,8 @@ const optionsSchema = new mongoose.Schema({
   optionText: { type: String },
   option: { type: String },
   error: {},
-  comment: { type: String }
-})
+  comment: { type: String },
+});
 
 const QuestionSchema = new mongoose.Schema({
   questionPaperId: { type: String },
