@@ -15,6 +15,7 @@ export function isAuthenticated() {
         },
       };
       request.post(options, (err, response, body) => {
+        if (!response) response = {}
         let { statusCode, statusMessage } = response;
         if (!statusCode) statusCode = 401;
         if (statusCode !== 200) {
