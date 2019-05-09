@@ -496,12 +496,18 @@ export async function getFileData(args, context) {
         { child: 1 },
       ).then((topicObj) => {
         const finalObj = {
-          content: contentMappingObjs.content,
-          resource: contentMappingObjs.resource,
-          publication: contentMappingObjs.publication,
-          orientation: contentMappingObjs.orientation,
-          refs: contentMappingObjs.refs,
-          branches: contentMappingObjs.branches,
+          content: contentMappingObjs && contentMappingObjs.content ?
+            contentMappingObjs.content : null,
+          resource: contentMappingObjs && contentMappingObjs.resource ?
+            contentMappingObjs.resource : null,
+          publication: contentMappingObjs && contentMappingObjs.publication ?
+            contentMappingObjs.publication : null,
+          orientation: contentMappingObjs && contentMappingObjs.orientation ?
+            contentMappingObjs.orientation : null,
+          refs: contentMappingObjs && contentMappingObjs.refs ?
+            contentMappingObjs.refs : null,
+          branches: contentMappingObjs && contentMappingObjs.branches ?
+            contentMappingObjs.branches : null,
           class: textBookRefs &&
           textBookRefs.refs &&
           textBookRefs.refs.class &&
