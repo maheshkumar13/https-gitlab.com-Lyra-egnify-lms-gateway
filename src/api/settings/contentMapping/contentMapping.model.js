@@ -13,32 +13,32 @@ const contentSchema = new mongoose.Schema({
   name: { type: String },
   category: { type: String },
   type: { type: String },
-})
+});
 
 const resourceSchema = new mongoose.Schema({
   key: { type: String },
   size: { type: Number },
   type: { type: String },
-})
+});
 
 const publicationSchema = new mongoose.Schema({
   publisher: { type: String },
   year: { type: String },
-})
+});
 
 const nameCodeSchema = new mongoose.Schema({
   code: { type: String, required: true },
-})
+});
 
 const refsSchema = new mongoose.Schema({
   textbook: { type: nameCodeSchema, required: true },
   topic: { type: nameCodeSchema, required: true },
-})
+});
 
 
 const contentMappingSchema = new mongoose.Schema({
   content: { type: contentSchema },
-  resource:{ type: resourceSchema },
+  resource: { type: resourceSchema },
   refs: { type: refsSchema, required: true },
   orientation: { type: String },
   publication: { type: publicationSchema },

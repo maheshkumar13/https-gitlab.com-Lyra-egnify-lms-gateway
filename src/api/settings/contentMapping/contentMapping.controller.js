@@ -20,7 +20,7 @@ export async function getTextbookWiseTopicCodes(context) {
     aggregateQuery.push({
       $group: {
         _id: '$refs.textbook.code',
-        codes: { $push: { code: '$code', name: '$child'} },
+        codes: { $push: { code: '$code', name: '$child' } },
       },
     });
 
@@ -159,7 +159,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
       result.message = `Invalid TEXTBOOK at row ${row}`;
       return result;
     }
-    const topicData = textbookData[textbookCode] ? textbookData[textbookCode].find( x => x.name === obj['chapter']) : ''
+    const topicData = textbookData[textbookCode] ? textbookData[textbookCode].find(x => x.name === obj.chapter) : '';
     if (!topicData) {
       result.success = false;
       result.message = `Invalid CHAPTER CODE at row ${row}`;
@@ -187,25 +187,25 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     //   result.message = `Invalid MEDIA TYPE at row ${row}`;
     //   return result
     // }
-    if(obj['branches']) {
-      const branchNames = obj['branches'].split(',')
-      const finalBranchNames = []
-      for(let j = 0; j < branchNames.length; j+=1 ){
+    if (obj.branches) {
+      const branchNames = obj.branches.split(',');
+      const finalBranchNames = [];
+      for (let j = 0; j < branchNames.length; j += 1) {
         const branch = branchNames[j];
         if (!branch) continue;
         if (!uniqueBranches.includes(branch)) {
-          invalidBranches.add(branch)
+          invalidBranches.add(branch);
         }
         finalBranchNames.push(branch);
       }
-      obj['branches'] = finalBranchNames;
+      obj.branches = finalBranchNames;
     }
   }
   invalidBranches = Array.from(invalidBranches);
   if (invalidBranches.length) {
     result.success = false;
     result.message = `Invalid branch(s) [${invalidBranches}]`;
-    return result
+    return result;
   }
   if (!data.length) {
     result.success = false;
@@ -329,7 +329,8 @@ export async function getContentMapping(args, context) {
 export async function getCMSCategoryStats(args, context) {
   const classCode = args && args.input && args.input.classCode ? args.input.classCode : null;
   const subjectCode = args && args.input && args.input.subjectCode ? args.input.subjectCode : null;
-  const textBookCode = args && args.input && args.input.textBookCode ? args.input.textBookCode : null;
+  const textBookCode = args && args.input && args.input.textBookCode ?
+    args.input.textBookCode : null;
   const chapterCode = args && args.input && args.input.chapterCode ? args.input.chapterCode : null;
   const query = {};
   const query1 = {};
@@ -389,14 +390,15 @@ export async function getCMSCategoryStats(args, context) {
 export async function getCategoryWiseFilesPaginated(args, context) {
   const classCode = args && args.input && args.input.classCode ? args.input.classCode : null;
   const subjectCode = args && args.input && args.input.subjectCode ? args.input.subjectCode : null;
-  const textBookCode = args && args.input && args.input.textBookCode ? args.input.textBookCode : null;
+  const textBookCode = args && args.input && args.input.textBookCode ?
+    args.input.textBookCode : null;
   const chapterCode = args && args.input && args.input.chapterCode ? args.input.chapterCode : null;
   const pageNumber = args && args.input && args.input.pageNumber ? args.input.pageNumber : 1;
   const limit = args && args.input && args.input.limit ? args.input.limit : 0;
-  if (!args.input.category) {
-    return 'Please select correct category';
-  }
   const category = args && args.input && args.input.category ? args.input.category : null;
+  if (!category) {
+    throw new Error('Please select correct category');
+  }
   const query = {};
   const query1 = {};
   if (classCode) {
@@ -473,11 +475,11 @@ export async function getFileData(args, context) {
   const query = {};
   const query1 = {};
   if (!fileKey) {
-    return 'Please select a fileKey';
+    throw new Error('Please select a fileKey');
   }
   query['resource.key'] = fileKey;
   if (!textBookCode) {
-    return 'Please provide textBookCode';
+    throw new Error('Please provide textBookCode');
   }
   query['refs.textbook.code'] = textBookCode;
   query1.code = textBookCode;
