@@ -17,6 +17,9 @@ const storage = Storage({
 });
 const bucket = storage.bucket(CLOUD_BUCKET);
 
+const controller = require('../api/launcher/launchRequest/launchRequest.controller');
+
+// const getPreSignedUrl = '../../launcher/launchRequest.controller';
 // Returns the public, anonymously accessable URL to a given Cloud Storage
 // object.
 // The object's ACL has to be set to public read.
@@ -139,13 +142,39 @@ const AWSPublicFileUpload = (req, res) => {
     }
   });
 };
-//   s3.upload(params, (err, data) => {
-//     if (err) {
-//       res.send(`Error Uploading Data: ${JSON.stringify(err)}\n${JSON.stringify(err.stack)}`);
-//     } else {
-//       res.send(data.Location);
-//     }
-//   });
+
+const AWSPrivateFileUpload = (req, res) => {
+  AWS.config.update({
+    accessKeyId: config.AWS_S3_KEY,
+    secretAccessKey: config.AWS_S3_SECRET,
+  });
+  const buketName = config.AWS_PRIVATE_BUCKET;
+  const folderName = config.AWS_PRIVATE_BUCKET_FOLDER;
+  const s3 = new AWS.S3();
+  const date = new Date();
+  const originalname = `${date}_${req.file.originalname}`;
+  const Key = `${folderName}/${originalname}`; // upload to s3 folder "id" with filename === fn
+  const params = {
+    Key,
+    Bucket: buketName, // set somewhere
+    Body: req.file.buffer, // req is a stream
+    // ACL: 'public-read', // making the file public
+  };
+  // console.log(req.file.buffer.byteLength);
+  s3.upload(params).on('httpUploadProgress', (progress) => {
+    console.info('Uploaded Percentage', `${Math.floor((progress.loaded * 100) / progress.total)}%`);
+  }).send(async (err, data) => {
+    if (err) {
+      res.send(`Error Uploading Data: ${JSON.stringify(err)}\n${JSON.stringify(err.stack)}`);
+    }
+    if (data) {
+      await controller.getPreSignedUrl(data).then((a) => {
+        console.info('a', a);
+      });
+      res.send(data.key);
+    }
+  });
+};
 
 module.exports = {
   getPublicUrl,
@@ -153,4 +182,5 @@ module.exports = {
   uploadToGCS,
   multer,
   AWSPublicFileUpload,
+  AWSPrivateFileUpload,
 };

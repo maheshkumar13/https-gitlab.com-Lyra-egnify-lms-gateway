@@ -23,4 +23,10 @@ router.post(
   fileUpload.AWSPublicFileUpload,
 );
 
+router.post(
+  '/private/aws',
+  fileUpload.multer.single('file'),
+  fileUpload.AWSPrivateFileUpload,
+);
+
 module.exports = router;

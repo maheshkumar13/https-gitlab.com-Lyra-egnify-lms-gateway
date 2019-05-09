@@ -23,13 +23,11 @@ export async function getPreSignedUrl(args, context) {
   const params = {
     Bucket: 'ekslmsproject',
     Key: args.key,
-    Expires: 60 * 5   //5 minutes
-	};
-  return getUrl(params).then((url) => {
-    return {
-			key: params.Key,
-			preSignedUrl: url,
-			expires: params.Expires,
-    }
-  })
+    Expires: 60 * 5, // 5 minutes
+  };
+  return getUrl(params).then(url => ({
+    key: params.Key,
+    preSignedUrl: url,
+    expires: params.Expires,
+  }));
 }
