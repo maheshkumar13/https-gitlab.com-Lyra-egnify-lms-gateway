@@ -57,7 +57,7 @@ export const ContentMappingType = new ObjectType({
     content: { type: contentType, description: 'Content details' },
     resource: { type: resourceType, description: 'Resource details' },
     refs: { type: refsType, description: 'References to the object' },
-    orientation: { type: StringType, description: 'Orientation' },
+    orientation: { type: new List(StringType), description: 'Orientation' },
     publication: { type: publicationType, description: 'Publication details' },
     category: { type: StringType, description: 'Category' },
     coins: { type: IntType, description: 'Coins' },

@@ -136,7 +136,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
   });
 
   const mandetoryFields = [
-    'class', 'subject', 'textbook', 'chapter', 'orientation', 'category',
+    'class', 'subject', 'textbook', 'chapter', 'orientation',
     'publisher', 'publish year', 'content name', 'content category', 'content type',
     'file path', 'file size', 'media type',
   ];
@@ -190,7 +190,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     ['class', 'subject', 'textbook'].forEach(e => delete obj[e]);
 
     const categories = ['A', 'B', 'C'];
-    if (!categories.includes(obj.category)) {
+    if (obj.category && !categories.includes(obj.category)) {
       result.success = false;
       result.message = `Invalid CATEGORY at row ${row}`;
       return result;
@@ -350,12 +350,11 @@ export async function getContentMapping(args, context) {
   return getBranchNameAndCategory(context).then((obj) => {
     if (obj) {
       if (obj.child) {
-        query.$or = [
-          { branches: null },
-          { branches: obj.child },
-        ];
+        query.branches = { $in: [ null, undefined, obj.child ] };
       }
-      if (obj.category) query.category = obj.category;
+      if (obj.category) {
+        query.category = { $in: [ null, undefined, obj.category ] };
+      }  
     }
     const skip = (args.pageNumber - 1) * args.limit;
     return ContentMappingModel(context).then(ContentMapping => Promise.all([
