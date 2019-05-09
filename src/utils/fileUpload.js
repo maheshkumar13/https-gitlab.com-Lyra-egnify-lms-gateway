@@ -126,14 +126,26 @@ const AWSPublicFileUpload = (req, res) => {
     Body: req.file.buffer, // req is a stream
     ACL: 'public-read', // making the file public
   };
-  s3.upload(params, (err, data) => {
+  // console.log(req.file.buffer.byteLength);
+  s3.upload(params).on('httpUploadProgress', (progress) => {
+    console.info('Uploaded Percentage', `${Math.floor((progress.loaded * 100) / progress.total)}%`);
+  }).send((err, data) => {
     if (err) {
       res.send(`Error Uploading Data: ${JSON.stringify(err)}\n${JSON.stringify(err.stack)}`);
-    } else {
+    }
+    if (data) {
       res.send(data.Location);
+    // console.log("Uploaded in:", data.Location);
     }
   });
 };
+//   s3.upload(params, (err, data) => {
+//     if (err) {
+//       res.send(`Error Uploading Data: ${JSON.stringify(err)}\n${JSON.stringify(err.stack)}`);
+//     } else {
+//       res.send(data.Location);
+//     }
+//   });
 
 module.exports = {
   getPublicUrl,
