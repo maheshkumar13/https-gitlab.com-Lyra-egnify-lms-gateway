@@ -347,14 +347,14 @@ export async function getContentMapping(args, context) {
   if (!args.textbookCode) throw new Error('textbookCode required');
   const query = getMongoQueryForContentMapping(args, context);
   return getBranchNameAndCategory(context).then((obj) => {
-    if (obj) {
-      if (obj.child) {
-        query.branches = { $in: [null, undefined, obj.child] };
-      }
-      if (obj.category) {
-        query.category = { $in: [null, undefined, obj.category] };
-      }
-    }
+    // if (obj) {
+    //   if (obj.child) {
+    //     query.branches = { $in: [null, undefined, obj.child] };
+    //   }
+    //   if (obj.category) {
+    //     query.category = { $in: [null, undefined, obj.category] };
+    //   }
+    // }
     const skip = (args.pageNumber - 1) * args.limit;
     return ContentMappingModel(context).then(ContentMapping => Promise.all([
       ContentMapping.find(query).skip(skip).limit(args.limit),
