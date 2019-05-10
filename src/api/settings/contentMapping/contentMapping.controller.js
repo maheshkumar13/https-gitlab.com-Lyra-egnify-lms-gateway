@@ -163,7 +163,9 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
   for (let i = 0; i < data.length; i += 1) {
     const row = i + 2;
     const obj = data[i];
-    
+    const subjectName = obj.subject
+    const textbookName = obj.textbook
+    const chapterName = obj.chapter
     obj.class = obj.class.toLowerCase();
     obj.subject = obj.subject.toLowerCase();
     obj.textbook = obj.textbook.toLowerCase();
@@ -188,7 +190,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     const textbookCode = dbData[obj.class][obj.subject][obj.textbook];
     if (!textbookCode) {
       result.success = false;
-      result.message = `Invalid TEXTBOOK at row ${row}`;
+      result.message = `Invalid TEXTBOOK at row ${row} (${subjectName}->${textbookName})`;
       // return result;
       errors.push(result.message)
       continue;
@@ -196,7 +198,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     const topicData = textbookData[textbookCode] ? textbookData[textbookCode].find(x => x.name === obj.chapter) : '';
     if (!topicData) {
       result.success = false;
-      result.message = `Invalid CHAPTER at row ${row}`;
+      result.message = `Invalid CHAPTER at row ${row} (${subjectName}->${textbookName}->${chapterName})`;
       // return result;
       errors.push(result.message)
       continue;
@@ -296,7 +298,10 @@ export async function uploadContentMapping(req, res) {
     const validate = validateSheetAndGetData(req, dbData, textbookData, uniqueBranches);
     if (!validate.success) {
       const obj = { message: validate.message };
-      if(validate.errors && validate.errors.length) obj.errors = validate.errors;
+      if(validate.errors && validate.errors.length) {
+        obj.count = validate.errors.length;
+        obj.errors = validate.errors;
+      }  
       res.status(400);
       return res.send(obj);
     }  
