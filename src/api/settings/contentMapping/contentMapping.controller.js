@@ -28,6 +28,10 @@ export async function getTextbookWiseTopicCodes(context) {
     return ConceptTaxonomy.aggregate(aggregateQuery).then((docs) => {
       const finalData = {};
       docs.forEach((e) => {
+        e.codes = e.codes.map(x => { 
+          x.name = x.name.toLowerCase()
+          return x;
+        })
         finalData[e._id] = e.codes;
       });
       return finalData;
@@ -61,6 +65,9 @@ export async function getUniqueDataForValidation(context) {
     return Textbook.aggregate(aggregateQuery).allowDiskUse(true).then((data) => {
       const finalData = {};
       data.forEach((e) => {
+        e._id.class = e._id.class.toLowerCase();
+        e._id.subject = e._id.subject.toLowerCase();
+        e._id.textbook = e._id.textbook.toLowerCase();
         if (!finalData[e._id.class]) finalData[e._id.class] = {};
         if (!finalData[e._id.class][e._id.subject]) finalData[e._id.class][e._id.subject] = {};
         if (!finalData[e._id.class][e._id.subject][e._id.textbook]) finalData[e._id.class][e._id.subject][e._id.textbook] = e._id.code;
@@ -155,6 +162,11 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
   for (let i = 0; i < data.length; i += 1) {
     const row = i + 2;
     const obj = data[i];
+    
+    obj.class = obj.class.toLowerCase();
+    obj.subject = obj.subject.toLowerCase();
+    obj.textbook = obj.textbook.toLowerCase();
+    obj.chapter = obj.chapter.toLowerCase();
 
     if (!dbData[obj.class]) {
       result.success = false;
