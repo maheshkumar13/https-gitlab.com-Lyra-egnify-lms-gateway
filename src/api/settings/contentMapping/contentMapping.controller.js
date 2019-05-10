@@ -111,6 +111,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
 
   const dupmapping = {};
 
+  const errors = [];
   // Reading  workbook
   const workbook = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true });
 
@@ -171,26 +172,34 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     if (!dbData[obj.class]) {
       result.success = false;
       result.message = `Invalid CLASS at row ${row}`;
-      return result;
+      // return result;
+      errors.push(result.message)
+      continue;
     }
 
     if (!dbData[obj.class][obj.subject]) {
       result.success = false;
       result.message = `Invalid SUBJECT at row ${row}`;
-      return result;
+      // return result;
+      errors.push(result.message)
+      continue;
     }
 
     const textbookCode = dbData[obj.class][obj.subject][obj.textbook];
     if (!textbookCode) {
       result.success = false;
       result.message = `Invalid TEXTBOOK at row ${row}`;
-      return result;
+      // return result;
+      errors.push(result.message)
+      continue;
     }
     const topicData = textbookData[textbookCode] ? textbookData[textbookCode].find(x => x.name === obj.chapter) : '';
     if (!topicData) {
       result.success = false;
       result.message = `Invalid CHAPTER at row ${row}`;
-      return result;
+      // return result;
+      errors.push(result.message)
+      continue;
     }
 
     obj['chapter code'] = topicData.code;
@@ -204,7 +213,9 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     if (obj.category && !categories.includes(obj.category)) {
       result.success = false;
       result.message = `Invalid CATEGORY at row ${row}`;
-      return result;
+      // return result;
+      errors.push(result.message)
+      continue;
     }
 
     if (obj['media type']) obj['media type'] = obj['media type'].toLowerCase();
@@ -250,10 +261,19 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
       obj['content name'] = `${obj.originalContentName} - ${seqNumber}`;
     }
   }
+  if(errors.length) {
+    result.success = false;
+    result.message = 'invalid data',
+    result.errors = errors
+    result.isArray = true;
+    return result;
+  }
   invalidBranches = Array.from(invalidBranches);
   if (invalidBranches.length) {
     result.success = false;
-    result.message = `Invalid branch(s) [${invalidBranches}]`;
+    result.message = 'Invalid branche(s)'
+    result.errors = invalidBranches;
+    result.isArray = true;
     return result;
   }
   if (!data.length) {
@@ -274,7 +294,12 @@ export async function uploadContentMapping(req, res) {
     ContentMappingModel(req.user_cxt),
   ]).then(([dbData, uniqueBranches, textbookData, ContentMapping]) => {
     const validate = validateSheetAndGetData(req, dbData, textbookData, uniqueBranches);
-    if (!validate.success) return res.status(400).end(validate.message);
+    if (!validate.success) {
+      const obj = { message: validate.message };
+      if(validate.errors && validate.errors.length) obj.errors = validate.errors;
+      res.status(400);
+      return res.send(obj);
+    }  
     const data = req.data;
     // return res.send({data: data.map(x => x.orientation)})
     const bulk = ContentMapping.collection.initializeUnorderedBulkOp();
