@@ -17,8 +17,6 @@ const storage = Storage({
 });
 const bucket = storage.bucket(CLOUD_BUCKET);
 
-const controller = require('../api/launcher/launchRequest/launchRequest.controller');
-
 // const getPreSignedUrl = '../../launcher/launchRequest.controller';
 // Returns the public, anonymously accessable URL to a given Cloud Storage
 // object.
