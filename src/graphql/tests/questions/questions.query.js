@@ -11,7 +11,13 @@ import {
 
 } from 'graphql';
 
-import { QuestionType, ResultInputType, ResultOutputType } from './questions.type';
+import {
+  QuestionType,
+  ResultInputType,
+  ResultOutputType,
+  QuestionEvalInputType,
+  QuestionEvalOutputType,
+} from './questions.type';
 
 const controller = require('../../../api/tests/questions/questions.controller');
 
@@ -35,7 +41,18 @@ export const Results = {
   },
 };
 
+export const QuestionEvaluation = {
+  args: {
+    input: { type: QuestionEvalInputType, description: 'Question level evaluation' },
+  },
+  type: QuestionEvalOutputType,
+  async resolve(obj, args, context) {
+    return controller.getQuestionLevelEvaluatedData(args, context);
+  },
+};
+
 export default{
   Questions,
   Results,
+  QuestionEvaluation,
 };

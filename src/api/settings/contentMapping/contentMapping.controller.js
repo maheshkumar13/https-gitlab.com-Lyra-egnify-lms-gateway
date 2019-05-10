@@ -5,6 +5,7 @@ import { getModel as InstituteHierarchyModel } from '../instituteHierarchy/insti
 
 const xlsx = require('xlsx');
 const upath = require('upath');
+const crypto = require('crypto');
 
 export async function getTextbookWiseTopicCodes(context) {
   return ConceptTaxonomyModel(context).then((ConceptTaxonomy) => {
@@ -73,6 +74,19 @@ export async function getUniqueBranchesForValidation(context) {
   return InstituteHierarchyModel(context).then(InstituteHierarchy => InstituteHierarchy.distinct('child', { levelName: 'Branch' }));
 }
 
+function checkUniqueRowByCondition(data, temp, index) {
+  const tempdata = data.slice(0, index);
+  const prindex = tempdata.findIndex(x =>
+    x.textbookCode === temp.textbookCode &&
+    x['chapter code'] === temp['chapter code'] &&
+    x.originalContentName === temp.originalContentName &&
+    x['content category'] === temp['content category'] &&
+    x['content type'] === temp['content type'] &&
+    x.category === temp.category &&
+    x.orientationString === temp.orientationString);
+  return prindex;
+}
+
 function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
   const result = {
     success: true,
@@ -88,6 +102,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     return result;
   }
 
+  const dupmapping = {};
 
   // Reading  workbook
   const workbook = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true });
@@ -120,7 +135,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
   });
 
   const mandetoryFields = [
-    'class', 'subject', 'textbook', 'chapter', 'orientation', 'category',
+    'class', 'subject', 'textbook', 'chapter', 'orientation',
     'publisher', 'publish year', 'content name', 'content category', 'content type',
     'file path', 'file size', 'media type',
   ];
@@ -162,7 +177,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     const topicData = textbookData[textbookCode] ? textbookData[textbookCode].find(x => x.name === obj.chapter) : '';
     if (!topicData) {
       result.success = false;
-      result.message = `Invalid CHAPTER CODE at row ${row}`;
+      result.message = `Invalid CHAPTER at row ${row}`;
       return result;
     }
 
@@ -174,19 +189,24 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     ['class', 'subject', 'textbook'].forEach(e => delete obj[e]);
 
     const categories = ['A', 'B', 'C'];
-    if (!categories.includes(obj.category)) {
+    if (obj.category && !categories.includes(obj.category)) {
       result.success = false;
       result.message = `Invalid CATEGORY at row ${row}`;
       return result;
     }
 
     if (obj['media type']) obj['media type'] = obj['media type'].toLowerCase();
-    // const mediaTypes = ['PDF', 'DOCX', 'DOC', 'MP3', 'MP4', 'JPEG', 'JPG', 'PNG', 'HTML']
-    // if (!mediaTypes.includes(obj['media type'])) {
-    //   result.success = false;
-    //   result.message = `Invalid MEDIA TYPE at row ${row}`;
-    //   return result
-    // }
+
+    if (obj.orientation) {
+      obj.orientationString = obj.orientation;
+      let values = obj.orientation.split(',');
+      values = values.map(x => x.toString().replace(/\s\s+/g, ' ').trim());
+      const finalOrientations = [];
+      values.forEach((x) => {
+        if (x) finalOrientations.push(x);
+      });
+      obj.orientation = finalOrientations;
+    }
     if (obj.branches) {
       const branchNames = obj.branches.split(',');
       const finalBranchNames = [];
@@ -199,6 +219,23 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
         finalBranchNames.push(branch);
       }
       obj.branches = finalBranchNames;
+    }
+
+    obj.tempunqiuecode = crypto.randomBytes(10).toString('hex');
+
+    obj.originalContentName = obj['content name'];
+
+    const prindex = checkUniqueRowByCondition(data, obj, i);
+    if (prindex > -1) {
+      const tempunqiuecode = data[prindex].tempunqiuecode;
+      if (!dupmapping[tempunqiuecode]) {
+        dupmapping[tempunqiuecode] = 1;
+        data[prindex]['content name'] = `${obj.originalContentName} - 1`;
+      }
+      dupmapping[tempunqiuecode] += 1;
+      obj.tempunqiuecode = tempunqiuecode;
+      const seqNumber = dupmapping[tempunqiuecode];
+      obj['content name'] = `${obj.originalContentName} - ${seqNumber}`;
     }
   }
   invalidBranches = Array.from(invalidBranches);
@@ -227,6 +264,7 @@ export async function uploadContentMapping(req, res) {
     const validate = validateSheetAndGetData(req, dbData, textbookData, uniqueBranches);
     if (!validate.success) return res.status(400).end(validate.message);
     const data = req.data;
+    // return res.send({data: data.map(x => x.orientation)})
     const bulk = ContentMapping.collection.initializeUnorderedBulkOp();
     for (let i = 0; i < data.length; i += 1) {
       const temp = data[i];
@@ -268,10 +306,13 @@ export async function uploadContentMapping(req, res) {
         'content.category': temp['content category'],
         'content.type': temp['content type'],
         category: temp.category,
+        orientation: { $in: temp.orientation },
       };
       bulk.find(findQuery).upsert().updateOne(obj);
     }
-    return bulk.execute().then(() => res.send('Data inserted/updated successfully'));
+    return bulk.execute().then(() => res.send('Data inserted/updated successfully')).catch((err) => {
+      console.log(JSON.stringify(err));
+    });
   });
 }
 
@@ -306,15 +347,14 @@ export async function getContentMapping(args, context) {
   if (!args.textbookCode) throw new Error('textbookCode required');
   const query = getMongoQueryForContentMapping(args, context);
   return getBranchNameAndCategory(context).then((obj) => {
-    if (obj) {
-      if (obj.child) {
-        query.$or = [
-          { branches: null },
-          { branches: obj.child },
-        ];
-      }
-      if (obj.category) query.category = obj.category;
-    }
+    // if (obj) {
+    //   if (obj.child) {
+    //     query.branches = { $in: [null, undefined, obj.child] };
+    //   }
+    //   if (obj.category) {
+    //     query.category = { $in: [null, undefined, obj.category] };
+    //   }
+    // }
     const skip = (args.pageNumber - 1) * args.limit;
     return ContentMappingModel(context).then(ContentMapping => Promise.all([
       ContentMapping.find(query).skip(skip).limit(args.limit),
@@ -329,7 +369,8 @@ export async function getContentMapping(args, context) {
 export async function getCMSCategoryStats(args, context) {
   const classCode = args && args.input && args.input.classCode ? args.input.classCode : null;
   const subjectCode = args && args.input && args.input.subjectCode ? args.input.subjectCode : null;
-  const textBookCode = args && args.input && args.input.textBookCode ? args.input.textBookCode : null;
+  const textBookCode = args && args.input && args.input.textBookCode ?
+    args.input.textBookCode : null;
   const chapterCode = args && args.input && args.input.chapterCode ? args.input.chapterCode : null;
   const query = {};
   const query1 = {};
@@ -389,14 +430,15 @@ export async function getCMSCategoryStats(args, context) {
 export async function getCategoryWiseFilesPaginated(args, context) {
   const classCode = args && args.input && args.input.classCode ? args.input.classCode : null;
   const subjectCode = args && args.input && args.input.subjectCode ? args.input.subjectCode : null;
-  const textBookCode = args && args.input && args.input.textBookCode ? args.input.textBookCode : null;
+  const textBookCode = args && args.input && args.input.textBookCode ?
+    args.input.textBookCode : null;
   const chapterCode = args && args.input && args.input.chapterCode ? args.input.chapterCode : null;
   const pageNumber = args && args.input && args.input.pageNumber ? args.input.pageNumber : 1;
   const limit = args && args.input && args.input.limit ? args.input.limit : 0;
-  if (!args.input.category) {
-    return 'Please select correct category';
-  }
   const category = args && args.input && args.input.category ? args.input.category : null;
+  if (!category) {
+    throw new Error('Please select correct category');
+  }
   const query = {};
   const query1 = {};
   if (classCode) {
@@ -473,11 +515,11 @@ export async function getFileData(args, context) {
   const query = {};
   const query1 = {};
   if (!fileKey) {
-    return 'Please select a fileKey';
+    throw new Error('Please select a fileKey');
   }
   query['resource.key'] = fileKey;
   if (!textBookCode) {
-    return 'Please provide textBookCode';
+    throw new Error('Please provide textBookCode');
   }
   query['refs.textbook.code'] = textBookCode;
   query1.code = textBookCode;
@@ -494,12 +536,18 @@ export async function getFileData(args, context) {
         { child: 1 },
       ).then((topicObj) => {
         const finalObj = {
-          content: contentMappingObjs.content,
-          resource: contentMappingObjs.resource,
-          publication: contentMappingObjs.publication,
-          orientation: contentMappingObjs.orientation,
-          refs: contentMappingObjs.refs,
-          branches: contentMappingObjs.branches,
+          content: contentMappingObjs && contentMappingObjs.content ?
+            contentMappingObjs.content : null,
+          resource: contentMappingObjs && contentMappingObjs.resource ?
+            contentMappingObjs.resource : null,
+          publication: contentMappingObjs && contentMappingObjs.publication ?
+            contentMappingObjs.publication : null,
+          orientation: contentMappingObjs && contentMappingObjs.orientation ?
+            contentMappingObjs.orientation : null,
+          refs: contentMappingObjs && contentMappingObjs.refs ?
+            contentMappingObjs.refs : null,
+          branches: contentMappingObjs && contentMappingObjs.branches ?
+            contentMappingObjs.branches : null,
           class: textBookRefs &&
           textBookRefs.refs &&
           textBookRefs.refs.class &&

@@ -40,10 +40,10 @@ const contentMappingSchema = new mongoose.Schema({
   content: { type: contentSchema },
   resource: { type: resourceSchema },
   refs: { type: refsSchema, required: true },
-  orientation: { type: [String] },
+  orientation: [String],
   publication: { type: publicationSchema },
-  category: { type: String, enum: ['A', 'B', 'C'], required: true },
-  branches: [String],
+  category: { type: String, enum: ['A', 'B', 'C'], default: null },
+  branches: { type: [String], default: null },
   active: { type: Boolean, default: true },
   coins: { type: Number, default: 0 },
 }, {

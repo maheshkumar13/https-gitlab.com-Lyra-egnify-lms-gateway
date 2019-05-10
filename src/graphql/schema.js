@@ -23,7 +23,7 @@ import { updateStudentAvatar, updateStudentSubjects } from './settings/student/s
 import { ConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.query';
 import { ContentMapping, CmsCategoryStats, CategoryWiseFiles, FileData } from './settings/contentMapping/contentMapping.query';
 import { LaunchRequest } from './launcher/launchRequest/launchRequest.query';
-import { Questions, Results } from './tests/questions/questions.query';
+import { Questions, Results, QuestionEvaluation } from './tests/questions/questions.query';
 import { MasterResults } from './tests/masterResults/masterResults.query';
 import { InsertContent } from './settings/contentMapping/contentMapping.mutation';
 
@@ -51,6 +51,7 @@ const schema = new Schema({
       CmsCategoryStats,
       CategoryWiseFiles,
       FileData,
+      QuestionEvaluation,
     },
   }),
   mutation: new ObjectType({
