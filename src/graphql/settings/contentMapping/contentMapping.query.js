@@ -78,8 +78,8 @@ export const ContentMapping = {
   },
   type: ContentMappingPaginatedType,
   async resolve(obj, args, context) {
-    if (!args.pageNumber) args.pageNumber = 1;
-    if (!args.limit) args.limit = 0;
+    if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line 
+    if (!args.limit) args.limit = 0; // eslint-disable-line
     return controller.getContentMapping(args, context)
       .then(async (json) => {
         if (json && json.data) {

@@ -154,6 +154,8 @@ const AWSPrivateFileUpload = (req, res) => {
   const date = new Date();
   const originalname = `${date}_${req.file.originalname}`;
   const Key = `${folderName}/${originalname}`; // upload to s3 folder "id" with filename === fn
+  const fileSize = req.file.buffer.byteLength;
+  // console.log("req.file", req.file);
   const params = {
     Key,
     Bucket: buketName, // set somewhere
@@ -168,10 +170,7 @@ const AWSPrivateFileUpload = (req, res) => {
       res.send(`Error Uploading Data: ${JSON.stringify(err)}\n${JSON.stringify(err.stack)}`);
     }
     if (data) {
-      await controller.getPreSignedUrl(data).then((a) => {
-        console.info('a', a);
-      });
-      res.send(data.key);
+      res.send({ key: data.key, fileSize, fileType: req.file.mimetype });
     }
   });
 };

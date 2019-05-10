@@ -20,7 +20,7 @@ export async function getTextbookWiseTopicCodes(context) {
     aggregateQuery.push({
       $group: {
         _id: '$refs.textbook.code',
-        codes: { $push: { code: '$code', name: '$child'} },
+        codes: { $push: { code: '$code', name: '$child' } },
       },
     });
 
@@ -159,7 +159,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
       result.message = `Invalid TEXTBOOK at row ${row}`;
       return result;
     }
-    const topicData = textbookData[textbookCode] ? textbookData[textbookCode].find( x => x.name === obj['chapter']) : ''
+    const topicData = textbookData[textbookCode] ? textbookData[textbookCode].find(x => x.name === obj.chapter) : '';
     if (!topicData) {
       result.success = false;
       result.message = `Invalid CHAPTER CODE at row ${row}`;
@@ -187,25 +187,25 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     //   result.message = `Invalid MEDIA TYPE at row ${row}`;
     //   return result
     // }
-    if(obj['branches']) {
-      const branchNames = obj['branches'].split(',')
-      const finalBranchNames = []
-      for(let j = 0; j < branchNames.length; j+=1 ){
+    if (obj.branches) {
+      const branchNames = obj.branches.split(',');
+      const finalBranchNames = [];
+      for (let j = 0; j < branchNames.length; j += 1) {
         const branch = branchNames[j];
         if (!branch) continue;
         if (!uniqueBranches.includes(branch)) {
-          invalidBranches.add(branch)
+          invalidBranches.add(branch);
         }
         finalBranchNames.push(branch);
       }
-      obj['branches'] = finalBranchNames;
+      obj.branches = finalBranchNames;
     }
   }
   invalidBranches = Array.from(invalidBranches);
   if (invalidBranches.length) {
     result.success = false;
     result.message = `Invalid branch(s) [${invalidBranches}]`;
-    return result
+    return result;
   }
   if (!data.length) {
     result.success = false;
@@ -516,4 +516,62 @@ export async function getFileData(args, context) {
         };
         return finalObj;
       }))));
+}
+
+export async function insertContent(args, context) {
+  if (!args.textBookCode) {
+    throw new Error('please send textBookCode');
+  }
+  if (!args.topicCode) {
+    throw new Error('Please send topicCode');
+  }
+  if (!args.contentCategory) {
+    throw new Error('Please send category of the content');
+  }
+  if (!args.fileKey) {
+    throw new Error('Please send the key of the file by uploading it to AWS');
+  }
+  if (!args.contentName) {
+    throw new Error('Please send the name of the content');
+  }
+  const dataToInsert = {
+    content: {
+      category: args && args.contentCategory ? args.contentCategory : null,
+      name: args && args.contentName ? args.contentName : null,
+      type: args && args.contentType ? args.contentType : null, // not mandatory
+    },
+    refs: {
+      topic: {
+        code: args && args.topicCode ? args.topicCode : null,
+      },
+      textbook: {
+        code: args && args.textBookCode ? args.textBookCode : null,
+      },
+    },
+    resource: {
+      key: args && args.fileKey ? args.fileKey : null,
+      size: args && args.fileSize ? (args.fileSize / (1024 * 1024)) : null,
+      type: args && args.fileType ? args.fileType : null,
+    },
+    publication: {
+      publisher: args && args.publisher ? args.publisher : null,
+      publishedYear: args && args.publishedYear ? args.publishedYear : null,
+    },
+    orientation: args && args.orientation ? args.orientation : [],
+    branches: args && args.branches ? args.branches : [],
+    category: args && args.category ? args.category : null,
+    coins: args && args.coins ? args.coins : 0,
+    active: true,
+  };
+  const whereObj = {
+    category: dataToInsert.category,
+    branches: dataToInsert.branches,
+    'refs.topic.code': dataToInsert.refs.topic.code,
+    'refs.textbook.code': dataToInsert.refs.textbook.code,
+    'content.name': dataToInsert.content.name,
+    'content.category': dataToInsert.content.category,
+    'content.type': dataToInsert.content.type,
+  };
+  return ContentMappingModel(context).then(ContentMapping =>
+    ContentMapping.updateOne(whereObj, { $set: dataToInsert }, { upsert: true }).then(() => 'Inserted Successfully').catch(err => err));
 }
