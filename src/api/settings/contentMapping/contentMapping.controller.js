@@ -610,6 +610,7 @@ export async function insertContent(args, context) {
     category: args && args.category ? args.category : null,
     coins: args && args.coins ? args.coins : 0,
     active: true,
+    audioFiles: args && args.audioFiles ? args.audioFiles : [],
   };
   const whereObj = {
     category: dataToInsert.category,

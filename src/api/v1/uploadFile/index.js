@@ -25,7 +25,7 @@ router.post(
 
 router.post(
   '/private/aws',
-  fileUpload.multer.single('file'),
+  fileUpload.multer.array('file'),
   fileUpload.AWSPrivateFileUpload,
 );
 

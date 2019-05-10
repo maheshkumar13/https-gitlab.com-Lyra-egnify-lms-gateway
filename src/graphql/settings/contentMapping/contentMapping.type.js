@@ -165,6 +165,7 @@ export const ContentMappingInsertionInputType = new InputType({
     branches: { type: new List(StringType), description: 'branches to which the content belongs to ' },
     category: { type: StringType, description: 'Category to which the content belongs to' },
     coins: { type: IntType, description: 'No. of Coins we get once student completes the content' },
+    audioFiles: { type: new List(StringType), description: 'Array of Audio files Keys' },
   },
 });
 
