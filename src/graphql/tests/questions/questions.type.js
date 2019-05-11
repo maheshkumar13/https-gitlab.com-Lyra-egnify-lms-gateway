@@ -37,8 +37,12 @@ export const QuestionType = new ObjectType({
     difficulty: { type: StringType, description: 'Difficulty' },
     revised_blooms_taxonomy: { type: StringType, description: 'revised_blooms_taxonomy' },
     questionTypeMetaData: { type: GraphQLJSON, description: 'Metadata' },
+    hint: { type: StringType, description: 'Hint'},
+    skill: { type: StringType, description: 'Skill' },
+    solution: { type: StringType, description: 'Solution' }
   },
 });
+
 
 export const ResultInputType = new InputType({
   name: 'ResultInputType',
