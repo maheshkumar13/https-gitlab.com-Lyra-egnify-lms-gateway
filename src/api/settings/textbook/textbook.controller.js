@@ -36,9 +36,9 @@ function getTextbooksQuery(args){
 }
 export async function getTextbooks(args, context){
   return getStudentData(context).then((obj) => {
-    if(obj && obj.orientation){
-      args.orientation = obj.orientation;
-    }
+    // if(obj && obj.orientation){
+    //   args.orientation = obj.orientation;
+    // }
     const query = getTextbooksQuery(args)
     return TextbookModel(context).then( (Textbook) => {
       return Textbook.find(query)
