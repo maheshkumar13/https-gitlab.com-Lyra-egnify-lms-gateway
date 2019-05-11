@@ -163,6 +163,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
   for (let i = 0; i < data.length; i += 1) {
     const row = i + 2;
     const obj = data[i];
+    const className = obj.class
     const subjectName = obj.subject
     const textbookName = obj.textbook
     const chapterName = obj.chapter
@@ -173,7 +174,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
 
     if (!dbData[obj.class]) {
       result.success = false;
-      result.message = `Invalid CLASS at row ${row}`;
+      result.message = `Invalid CLASS at row ${row} (${className})`;
       // return result;
       errors.push(result.message)
       continue;
@@ -181,7 +182,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
 
     if (!dbData[obj.class][obj.subject]) {
       result.success = false;
-      result.message = `Invalid SUBJECT at row ${row}`;
+      result.message = `Invalid SUBJECT at row ${row} (${className}->${subjectName})`;
       // return result;
       errors.push(result.message)
       continue;
