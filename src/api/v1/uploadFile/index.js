@@ -29,4 +29,10 @@ router.post(
   fileUpload.AWSPrivateFileUpload,
 );
 
+router.post(
+  '/aws/html',
+  fileUpload.multerNameAsPath.array('file'),
+  fileUpload.AWSHTMLUpload,
+);
+
 module.exports = router;

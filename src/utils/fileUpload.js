@@ -75,6 +75,15 @@ const multer = Multer({
     fileSize: 50 * 1024 * 1024, // no larger than 5mb
   },
 });
+const multerNameAsPath = Multer({ // in this function the file name is
+  // stored as the absolute path of the file
+  storage: Multer.MemoryStorage,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // no larger than 50mb
+  },
+  preservePath: 1,
+});
+
 // [END multer]
 
 function uploadToGCS(inputFile) {
@@ -125,6 +134,7 @@ const AWSPublicFileUpload = (req, res) => {
     Key,
     Bucket: buketName, // set somewhere
     Body: req.file.buffer, // req is a stream
+    ContentType: req.file.mimetype,
     ACL: 'public-read', // making the file public
   };
   // console.log(req.file.buffer.byteLength);
@@ -162,6 +172,7 @@ const AWSPrivateFileUpload = (req, res) => {
       Key,
       Bucket: buketName,
       Body: file.buffer,
+      ContentType: file.mimetype,
     };
     s3.upload(params).on('httpUploadProgress', (progress) => {
       console.info('Uploaded Percentage', `${Math.floor((progress.loaded * 100) / progress.total)}%`);
@@ -184,6 +195,53 @@ const AWSPrivateFileUpload = (req, res) => {
   });
 };
 
+const AWSHTMLUpload = (req, res) => {
+  let dataCount = 0;
+  AWS.config.update({
+    accessKeyId: config.AWS_S3_KEY,
+    secretAccessKey: config.AWS_S3_SECRET,
+  });
+  const buketName = config.AWS_PUBLIC_BUCKET;
+
+  // console.log('req', req.files);
+  const s3 = new AWS.S3();
+  const { files } = req;
+  const ResponseData = [];
+  files.forEach((file) => {
+    const originalnameArray = file.originalname.split('/');
+    const Key = file.originalname; // upload to s3 folder "id" with filename === Key
+    const params = {
+      Key,
+      Bucket: buketName,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+      ACL: 'public-read',
+    };
+    s3.upload(params).on('httpUploadProgress', (progress) => {
+      console.info('Uploaded Percentage', `${Math.floor((progress.loaded * 100) / progress.total)}%`);
+    }).send((err, data) => {
+      if (err) {
+        res.send(`Error Uploading Data: ${JSON.stringify(err)}\n${JSON.stringify(err.stack)}`);
+      }
+      if (data) {
+        dataCount += 1;
+        if (data.key === `${originalnameArray[0]}/index.html`) {
+          const tempData = {
+            key: data.Location, // since it is a public file location is stored in our db
+            originalKey: data.key,
+            fileType: file.mimetype,
+          };
+          ResponseData.push(tempData);
+        }
+        if (dataCount === files.length) {
+          console.info('ResponseData', ResponseData);
+          res.json({ error: false, Message: 'File Uploaded    SuceesFully', Data: ResponseData });
+        }
+      }
+    });
+  });
+};
+
 module.exports = {
   getPublicUrl,
   sendUploadToGCS,
@@ -191,4 +249,6 @@ module.exports = {
   multer,
   AWSPublicFileUpload,
   AWSPrivateFileUpload,
+  AWSHTMLUpload,
+  multerNameAsPath,
 };
