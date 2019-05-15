@@ -222,7 +222,7 @@ const AWSHTMLUpload = (req, res) => {
   files.forEach((file) => {
     const fileSize = file.buffer.byteLength;
     const originalnameArray = file.originalname.split('/');
-    const Key = file.originalname; // upload to s3 folder "id" with filename === Key
+    const Key = `htmlContentSamples/${file.originalname}`; // upload to s3 folder "id" with filename === Key
     const params = {
       Key,
       Bucket: buketName,
