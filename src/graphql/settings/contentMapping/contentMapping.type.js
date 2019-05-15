@@ -148,10 +148,21 @@ export const FileDataOutputType = new ObjectType({
   },
 });
 
+export const CmsTopicLevelStatsInputType = new InputType({
+  name: 'CmsTopicLevelStatsInputType',
+  fields: {
+    classCode: { type: StringType, description: 'Class code' },
+    subjectCode: { type: StringType, description: 'subject code' },
+    textbookCode: { type: StringType, description: 'Code of the textBook' },
+    category: { type: StringType, description: 'category' },
+  },
+});
+
 export default {
   ContentMappingType,
   CmsCategoryStatsOutputType,
   CmsCategoryStatsInputType,
   FileDataOutputType,
   FileDataInputType,
+  CmsTopicLevelStatsInputType,
 };

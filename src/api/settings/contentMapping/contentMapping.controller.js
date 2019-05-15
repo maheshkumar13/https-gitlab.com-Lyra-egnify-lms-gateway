@@ -7,6 +7,7 @@ import { config } from '../../../config/environment';
 const xlsx = require('xlsx');
 const upath = require('upath');
 const crypto = require('crypto');
+const util = require('util');
 
 export async function getTextbookWiseTopicCodes(context) {
   return ConceptTaxonomyModel(context).then((ConceptTaxonomy) => {
@@ -29,10 +30,10 @@ export async function getTextbookWiseTopicCodes(context) {
     return ConceptTaxonomy.aggregate(aggregateQuery).then((docs) => {
       const finalData = {};
       docs.forEach((e) => {
-        e.codes = e.codes.map(x => { 
-          x.name = x.name.toLowerCase()
+        e.codes = e.codes.map((x) => {
+          x.name = x.name.toLowerCase();
           return x;
-        })
+        });
         finalData[e._id] = e.codes;
       });
       return finalData;
@@ -164,10 +165,10 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
   for (let i = 0; i < data.length; i += 1) {
     const row = i + 2;
     const obj = data[i];
-    const className = obj.class
-    const subjectName = obj.subject
-    const textbookName = obj.textbook
-    const chapterName = obj.chapter
+    const className = obj.class;
+    const subjectName = obj.subject;
+    const textbookName = obj.textbook;
+    const chapterName = obj.chapter;
     obj.class = obj.class.toLowerCase();
     obj.subject = obj.subject.toLowerCase();
     obj.textbook = obj.textbook.toLowerCase();
@@ -177,7 +178,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
       result.success = false;
       result.message = `Invalid CLASS at row ${row} (${className})`;
       // return result;
-      errors.push(result.message)
+      errors.push(result.message);
       continue;
     }
 
@@ -185,7 +186,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
       result.success = false;
       result.message = `Invalid SUBJECT at row ${row} (${className}->${subjectName})`;
       // return result;
-      errors.push(result.message)
+      errors.push(result.message);
       continue;
     }
 
@@ -194,7 +195,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
       result.success = false;
       result.message = `Invalid TEXTBOOK at row ${row} (${subjectName}->${textbookName})`;
       // return result;
-      errors.push(result.message)
+      errors.push(result.message);
       continue;
     }
     const topicData = textbookData[textbookCode] ? textbookData[textbookCode].find(x => x.name === obj.chapter) : '';
@@ -202,7 +203,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
       result.success = false;
       result.message = `Invalid CHAPTER at row ${row} (${subjectName}->${textbookName}->${chapterName})`;
       // return result;
-      errors.push(result.message)
+      errors.push(result.message);
       continue;
     }
 
@@ -218,7 +219,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
       result.success = false;
       result.message = `Invalid CATEGORY at row ${row}`;
       // return result;
-      errors.push(result.message)
+      errors.push(result.message);
       continue;
     }
 
@@ -265,17 +266,17 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
       obj['content name'] = `${obj.originalContentName} - ${seqNumber}`;
     }
   }
-  if(errors.length) {
+  if (errors.length) {
     result.success = false;
     result.message = 'invalid data',
-    result.errors = errors
+    result.errors = errors;
     result.isArray = true;
     return result;
   }
   invalidBranches = Array.from(invalidBranches);
   if (invalidBranches.length) {
     result.success = false;
-    result.message = 'Invalid branche(s)'
+    result.message = 'Invalid branche(s)';
     result.errors = invalidBranches;
     result.isArray = true;
     return result;
@@ -300,13 +301,13 @@ export async function uploadContentMapping(req, res) {
     const validate = validateSheetAndGetData(req, dbData, textbookData, uniqueBranches);
     if (!validate.success) {
       const obj = { message: validate.message };
-      if(validate.errors && validate.errors.length) {
+      if (validate.errors && validate.errors.length) {
         obj.count = validate.errors.length;
         obj.errors = validate.errors;
-      }  
+      }
       res.status(400);
       return res.send(obj);
-    }  
+    }
     const data = req.data;
     // return res.send({data: data.map(x => x.orientation)})
     const bulk = ContentMapping.collection.initializeUnorderedBulkOp();
@@ -608,4 +609,97 @@ export async function getFileData(args, context) {
         };
         return finalObj;
       }))));
+}
+
+export async function getCmsTopicLevelStats(args, context) {
+  const classCode = args && args.input && args.input.classCode ?
+    args.input.classCode : null;
+  const subjectCode = args && args.input && args.input.subjectCode ?
+    args.input.subjectCode : null;
+  const textbookCode = args && args.input && args.input.textbookCode ?
+    args.input.textbookCode : null;
+  const category = args && args.input && args.input.category ?
+    args.input.category : null;
+  const query = {};
+  const query1 = {};
+  if (!classCode) {
+    throw new Error('Please select a classCode');
+  }
+  if (classCode) {
+    query1['refs.class.code'] = classCode;
+  } if (subjectCode) {
+    query1['refs.subject.code'] = subjectCode;
+  }
+  const textbookCodes = [];
+  if (textbookCode) {
+    textbookCodes.push(textbookCode);
+  }
+  if (textbookCodes.length === 0) {
+    if (query1) {
+      await TextbookModel(context).then(async (Textbook) => {
+        await Textbook.find(query1, { code: 1, _id: 0 }).then((textbookCodeObjs) => {
+          if (textbookCodeObjs && textbookCodeObjs.length) {
+            for (let t = 0; t < textbookCodeObjs.length; t += 1) {
+              textbookCodes.push(textbookCodeObjs[t].code);
+            }
+          }
+        });
+      });
+    }
+  }
+  if (textbookCodes.length === 0) {
+    return null;
+  }
+  if (textbookCodes && textbookCodes.length) {
+    query['refs.textbook.code'] = {
+      $in: textbookCodes,
+    };
+  }
+  if (category) {
+    query['content.category'] = category;
+  }
+  return ContentMappingModel(context).then(async ContentMappings => ContentMappings.aggregate([
+    { $match: query },
+    {
+      $project: {
+        'content.category': 1, _id: 0, refs: 1,
+      },
+    },
+    {
+      $group: {
+        _id: {
+          category: '$content.category', textbookCode: '$refs.textbook.code', topicCode: '$refs.topic.code',
+        },
+        count: { $sum: 1 },
+      },
+    },
+  ]).allowDiskUse(true).then((contentObjs) => {
+    const finalObj = {};
+    for (let c = 0; c < contentObjs.length; c += 1) {
+      // const tempObj = contentObjs[c];
+        const tempCategory = contentObjs[c]._id.category; // eslint-disable-line
+        const tempTextbookCode = contentObjs[c]._id.textbookCode; // eslint-disable-line
+        const tempTopicCode = contentObjs[c]._id.topicCode; // eslint-disable-line
+        const tempTopicLevelCount = contentObjs[c].count; // eslint-disable-line
+      if (!finalObj[tempCategory]) {
+        finalObj[tempCategory] = {};
+        finalObj[tempCategory][tempTextbookCode] = {
+          count: tempTopicLevelCount,
+        };
+        finalObj[tempCategory][tempTextbookCode].next = {};
+        finalObj[tempCategory][tempTextbookCode].next[tempTopicCode] = tempTopicLevelCount;
+      } else if (!finalObj[tempCategory][tempTextbookCode]) {
+        finalObj[tempCategory][tempTextbookCode] = {
+          count: tempTopicLevelCount,
+        };
+        finalObj[tempCategory][tempTextbookCode].next = {};
+        finalObj[tempCategory][tempTextbookCode].next[tempTopicCode] = tempTopicLevelCount;
+      } else {
+        finalObj[tempCategory][tempTextbookCode].count += tempTopicLevelCount;
+        finalObj[tempCategory][tempTextbookCode].next[tempTopicCode] =
+              tempTopicLevelCount;
+      }
+    }
+    return finalObj;
+  }));
 }
