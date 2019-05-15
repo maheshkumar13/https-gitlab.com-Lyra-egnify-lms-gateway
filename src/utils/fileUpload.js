@@ -240,10 +240,9 @@ const AWSHTMLUpload = (req, res) => {
         dataCount += 1;
         if (data.key === `${originalnameArray[0]}/index.html`) {
           const tempData = {
-            key: data.Location, // since it is a public file location is stored in our db
-            originalKey: data.key,
-            fileType: file.mimetype,
+            key: data.key, // since it is a public file location is stored in our db
             fileSize,
+            fileType: file.mimetype,
           };
           ResponseData.push(tempData);
         }
