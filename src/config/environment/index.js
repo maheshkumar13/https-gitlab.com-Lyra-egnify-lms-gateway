@@ -56,13 +56,13 @@ const all = {
   },
 
   cacheTimeOut: {
-    subject: 86400,
-    textbook: 86400,
-    topic: 86400,
-    contentMapping: 86400,
-    question: 86400,
-    instituteHierarchy: 86400,
-    student: 43200,
+    subject: 1, //86400,
+    textbook: 1, //86400,
+    topic: 1, //86400,
+    contentMapping: 1, //86400,
+    question: 1, //86400,
+    instituteHierarchy: 1, //86400,
+    student: 1, //43200,
   },
 
   redis: {
