@@ -6,19 +6,19 @@
 const express = require('express');
 
 const fileUpload = require('../../../utils/fileUpload');
-const controller = require('./uploadFile.controller');
+// const controller = require('./uploadFile.controller');
 
 const router = express.Router();
 
-router.post(
-  '/',
-  fileUpload.multer.single('file'),
-  fileUpload.sendUploadToGCS,
-  controller.index,
-);
+// router.post(
+//   '/',
+//   fileUpload.multer.single('file'),
+//   fileUpload.sendUploadToGCS,
+//   controller.index,
+// );
 
 router.post(
-  '/public/aws',
+  '/',
   fileUpload.multer.single('file'),
   fileUpload.AWSPublicFileUpload,
 );

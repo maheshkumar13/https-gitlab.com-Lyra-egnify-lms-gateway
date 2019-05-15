@@ -120,6 +120,9 @@ function uploadToGCS(inputFile) {
 }
 
 const AWSPublicFileUpload = (req, res) => {
+  if (!(req && req.file)) {
+    res.status(404).send('Please upload a file');
+  }
   AWS.config.update({
     accessKeyId: config.AWS_S3_KEY,
     secretAccessKey: config.AWS_S3_SECRET,
@@ -128,7 +131,10 @@ const AWSPublicFileUpload = (req, res) => {
   const folderName = config.AWS_PUBLIC_BUCKET_FOLDER;
   const s3 = new AWS.S3();
   const date = new Date();
-  const originalname = `${date}_${req.file.originalname}`;
+  let originalname = '';
+  if (req && req.file && req.file.originalname) {
+    originalname = `${date}_${req.file.originalname}`;
+  }
   const Key = `${folderName}/${originalname}`; // upload to s3 folder "id" with filename === fn
   const params = {
     Key,
@@ -145,13 +151,16 @@ const AWSPublicFileUpload = (req, res) => {
       res.send(`Error Uploading Data: ${JSON.stringify(err)}\n${JSON.stringify(err.stack)}`);
     }
     if (data) {
-      res.send(data.Location);
+      res.send({ fileUrl: data.Location });
     // console.log("Uploaded in:", data.Location);
     }
   });
 };
 
 const AWSPrivateFileUpload = (req, res) => {
+  if (!(req && req.files)) {
+    res.status(404).send('Please upload files');
+  }
   AWS.config.update({
     accessKeyId: config.AWS_S3_KEY,
     secretAccessKey: config.AWS_S3_SECRET,
@@ -196,6 +205,9 @@ const AWSPrivateFileUpload = (req, res) => {
 };
 
 const AWSHTMLUpload = (req, res) => {
+  if (!(req && req.files)) {
+    res.status(404).send('Please upload files');
+  }
   let dataCount = 0;
   AWS.config.update({
     accessKeyId: config.AWS_S3_KEY,
@@ -208,6 +220,7 @@ const AWSHTMLUpload = (req, res) => {
   const { files } = req;
   const ResponseData = [];
   files.forEach((file) => {
+    const fileSize = file.buffer.byteLength;
     const originalnameArray = file.originalname.split('/');
     const Key = file.originalname; // upload to s3 folder "id" with filename === Key
     const params = {
@@ -230,12 +243,13 @@ const AWSHTMLUpload = (req, res) => {
             key: data.Location, // since it is a public file location is stored in our db
             originalKey: data.key,
             fileType: file.mimetype,
+            fileSize,
           };
           ResponseData.push(tempData);
         }
         if (dataCount === files.length) {
           console.info('ResponseData', ResponseData);
-          res.json({ error: false, Message: 'File Uploaded    SuceesFully', Data: ResponseData });
+          res.json({ error: false, Message: 'File Uploaded SuceesFully', Data: ResponseData });
         }
       }
     });
