@@ -55,6 +55,21 @@ const all = {
     },
   },
 
+  cacheTimeOut: {
+    subject: 86400,
+    textbook: 86400,
+    topic: 86400,
+    contentMapping: 86400,
+    question: 86400,
+    instituteHierarchy: 86400,
+    student: 43200,
+  },
+
+  redis: {
+    host: process.env.REDIS_HOST || '35.244.34.84',
+    password: process.env.REDIS_PASSWORD || 'rQsVPF2gbiHi',
+  },
+
   // AWS
   AWS_S3_KEY: process.env.AWS_S3_KEY || 'AKIA4XBZMKL5IIJGR4UK',
   AWS_S3_SECRET: process.env.AWS_S3_SECRET || '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',

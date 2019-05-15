@@ -1,6 +1,7 @@
 import { getModel as SubjectModel } from './subject.model';
 import { getModel as InstituteHierarchyModel } from '../instituteHierarchy/instituteHierarchy.model';
 import { getModel as StudentModel } from '../student/student.model';
+import { config } from '../../../config/environment';
 
 const crypto = require('crypto');
 
@@ -20,7 +21,7 @@ export async function getStudentData(context) {
       hierarchy: 1,
       active: true,
     }
-    return Student.findOne({ studentId }, project)
+    return Student.findOne({ studentId }, project).cache(config.cacheTimeOut.student)
   })
 }
 export async function getSubjects(args, context) {
@@ -37,7 +38,7 @@ export async function getSubjects(args, context) {
         ]
       }
     }
-    return SubjectModel(context).then(Subject => Subject.find(query));
+    return SubjectModel(context).then(Subject => Subject.find(query).cache(config.cacheTimeOut.subject));
   })
 }
 

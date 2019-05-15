@@ -23,6 +23,16 @@ const morgan = require('morgan');
 const cors = require('cors');
 
 mongoose.Promise = require('bluebird');
+// mongoose.set('debug', true);
+
+const cachegoose = require('cachegoose');
+cachegoose(mongoose, {
+  engine: 'redis',    /* If you don't specify the redis engine,      */
+  port: 6379,         /* the query results will be cached in memory. */
+  host: config.redis.host,
+  password: config.redis.password,
+});
+
 // Connect to MongoDB
 mongoose.connect(config.mongo.uri, config.mongo.options);
 mongoose.connection.on('connected', () => {
@@ -32,6 +42,7 @@ mongoose.connection.on('error', (err) => {
   console.info(`MongoDB connection error: ${err}`);
   process.exit(-1); // eslint-disable-line no-process-exit
 });
+
 
 const app = express();
 app.use(cors());
@@ -61,7 +72,7 @@ app.use(
     return {
       schema,
       context: req.user,
-      tracing: true,
+      // tracing: true,
       cacheControl: true,
     };
   }),

@@ -2,6 +2,7 @@ import { getModel as TextbookModel } from './textbook.model';
 import { getModel as InstituteHierarchyModel} from '../instituteHierarchy/instituteHierarchy.model'
 import { getModel as SubjectModel } from '../subject/subject.model'
 import { getModel as StudentModel } from '../student/student.model'
+import { config } from '../../../config/environment';
 
 const crypto = require('crypto')
 
@@ -16,7 +17,7 @@ export async function getStudentData(context) {
       orientation: 1,
       active: true,
     }
-    return Student.findOne({ studentId }, project)
+    return Student.findOne({ studentId }, project).cache(config.cacheTimeOut.student)
   })
 }
 
@@ -41,7 +42,7 @@ export async function getTextbooks(args, context){
     // }
     const query = getTextbooksQuery(args)
     return TextbookModel(context).then( (Textbook) => {
-      return Textbook.find(query)
+      return Textbook.find(query).cache(config.cacheTimeOut.textbook)
     })
   })
 }

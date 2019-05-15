@@ -2,6 +2,7 @@ import { getModel as TextbookModel } from '../textbook/textbook.model';
 import { getModel as ConceptTaxonomyModel } from '../conceptTaxonomy/concpetTaxonomy.model';
 import { getModel as ContentMappingModel } from './contentMapping.model';
 import { getModel as InstituteHierarchyModel } from '../instituteHierarchy/instituteHierarchy.model';
+import { config } from '../../../config/environment';
 
 const xlsx = require('xlsx');
 const upath = require('upath');
@@ -400,8 +401,8 @@ export async function getContentMapping(args, context) {
     // }
     const skip = (args.pageNumber - 1) * args.limit;
     return ContentMappingModel(context).then(ContentMapping => Promise.all([
-      ContentMapping.find(query).skip(skip).limit(args.limit),
-      ContentMapping.count(query),
+      ContentMapping.find(query).skip(skip).limit(args.limit).cache(config.cacheTimeOut.contentMapping),
+      ContentMapping.count(query).cache(config.cacheTimeOut.contentMapping),
     ]).then(([data, count]) => ({
       data,
       count,

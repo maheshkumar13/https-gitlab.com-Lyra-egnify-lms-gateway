@@ -1,5 +1,6 @@
 import { getModel as ConcpetTaxonomyModel } from './concpetTaxonomy.model';
 import { getModel as TextbookModel} from '../textbook/textbook.model';
+import { config } from '../../../config/environment';
 
 const crypto = require('crypto')
 const xlsx = require('xlsx');
@@ -197,6 +198,6 @@ function getFetchNodesQuery(args){
 export async function fetchNodes(args, context){
 	const query = getFetchNodesQuery(args);
 	return ConcpetTaxonomyModel(context).then((ConceptTaxonomy) => {
-		return ConceptTaxonomy.find(query);
+		return ConceptTaxonomy.find(query).cache(config.cacheTimeOut.topic);
 	})
 }
