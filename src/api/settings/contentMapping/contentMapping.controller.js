@@ -619,7 +619,7 @@ export async function getCmsTopicLevelStats(args, context) {
   const textbookCode = args && args.input && args.input.textbookCode ?
     args.input.textbookCode : null;
   const category = args && args.input && args.input.category ?
-    args.input.category : null;
+    args.input.category : [];
   const query = {};
   const query1 = {};
   if (!classCode) {
@@ -655,8 +655,10 @@ export async function getCmsTopicLevelStats(args, context) {
       $in: textbookCodes,
     };
   }
-  if (category) {
-    query['content.category'] = category;
+  if (category && category.length > 0) {
+    query['content.category'] = {
+      $in: category,
+    };
   }
   return ContentMappingModel(context).then(async ContentMappings => ContentMappings.aggregate([
     { $match: query },

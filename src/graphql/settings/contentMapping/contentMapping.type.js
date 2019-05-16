@@ -154,7 +154,7 @@ export const CmsTopicLevelStatsInputType = new InputType({
     classCode: { type: StringType, description: 'Class code' },
     subjectCode: { type: StringType, description: 'subject code' },
     textbookCode: { type: StringType, description: 'Code of the textBook' },
-    category: { type: StringType, description: 'category' },
+    category: { type: new List(StringType), description: 'category' },
   },
 });
 
