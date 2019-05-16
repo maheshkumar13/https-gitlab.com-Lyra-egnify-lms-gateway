@@ -55,28 +55,6 @@ const all = {
     },
   },
 
-  cacheTimeOut: {
-    subject: _.toInteger(process.env.CACHE_TIMEOUT_SUBJECT) || 1,//86400,
-    textbook: _.toInteger(process.env.CACHE_TIMEOUT_TEXTBOOK) || 1, //86400,
-    topic: _.toInteger(process.env.CACHE_TIMEOUT_TOPIC) || 1, //86400,
-    contentMapping: _.toInteger(process.env.CACHE_TIMEOUT_CONTENTMAPPING) || 1, //86400,
-    question: _.toInteger(process.env.CACHE_TIMEOUT_QUESTION) || 1, //86400,
-    instituteHierarchy: _.toInteger(process.env.CACHE_TIMEOUT_INSTITUTEHIERARCHY) || 1, //86400,
-    student: _.toInteger(process.env.CACHE_TIMEOUT_STUDENT) || 1, //43200,
-  },
-
-  redis: {
-    auth: _.toInteger(process.env.REDIS_AUTH) || 1,
-    host: process.env.REDIS_HOST || '35.244.34.84',
-    password: process.env.REDIS_PASSWORD || 'rQsVPF2gbiHi',
-  },
-
-  // AWS
-  AWS_S3_KEY: process.env.AWS_S3_KEY || 'AKIA4XBZMKL5IIJGR4UK',
-  AWS_S3_SECRET: process.env.AWS_S3_SECRET || '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',
-	AWS_S3_REGION: process.env.AWS_S3_REGION || 'ap-south-1',
-  AWS_PUBLIC_BUCKET: process.env.AWS_PUBLIC_BUCKET || 'ekslmsprojectpublic',
-  AWS_PUBLIC_BUCKET_FOLDER: 'samplefiles',
 };
 
 // Export the config object based on the NODE_ENV

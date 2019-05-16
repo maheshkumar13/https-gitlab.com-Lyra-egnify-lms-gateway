@@ -17,21 +17,21 @@ module.exports = {
     sso: process.env.SVC_SSO || 'http://localhost:3002',
   },
   apolloEngineKey: process.env.APOLLO_ENGINE_KEY || 'XXXX',
-  
+
   cacheTimeOut: {
-    subject: process.env.CACHE_TIMEOUT_SUBJECT || 1,//86400,
-    textbook: process.env.CACHE_TIMEOUT_TEXTBOOK || 1, //86400,
-    topic: process.env.CACHE_TIMEOUT_TOPIC || 1, //86400,
-    contentMapping: process.env.CACHE_TIMEOUT_CONTENTMAPPING || 1, //86400,
-    question: process.env.CACHE_TIMEOUT_QUESTION || 1, //86400,
-    instituteHierarchy: process.env.CACHE_TIMEOUT_INSTITUTEHIERARCHY || 1, //86400,
-    student: process.env.CACHE_TIMEOUT_STUDENT || 1, //43200,
+    subject: 86400,
+    textbook: 86400,
+    topic: 86400,
+    contentMapping: 86400,
+    question: 86400,
+    instituteHierarchy: 86400,
+    student: 43200,
   },
 
   redis: {
-    auth: process.env.REDIS_AUTH || 1,
-    host: process.env.REDIS_HOST || '35.244.34.84',
-    password: process.env.REDIS_PASSWORD || 'rQsVPF2gbiHi',
+    auth: 1,
+    host: 'redis-ha-dev-master.development.svc.cluster.local',
+    password: 'lt38fu4bXX',
   },
 
   // AWS
