@@ -174,6 +174,7 @@ export async function getStudentDetailsById(args, context) { // eslint-disable-l
       hierarchyLevels: 1,
       avatarUrl: 1,
       subjects: 1,
+      hierarchy: 1,
     },
   ).cache(config.cacheTimeOut.student).then(student => student);
 }
@@ -197,7 +198,7 @@ export async function updateStudentAvatar(args, context) { // eslint-disable-lin
 export async function updateStudentSubjects(args, context) {
   if(!args.studentId || !args.subjectCodes || !args.subjectCodes.length) {
     throw new Error('Insufficient data')
-  } 
+  }
   return Promise.all([
     getModel(context),
     SubjectModel(context)
@@ -220,7 +221,7 @@ export async function updateStudentSubjects(args, context) {
          finalSubjects.push({
            subject: tempSubject.subject,
            code: tempSubject.code,
-         });      
+         });
       }
       const query = {
         studentId : args.studentId,
@@ -233,7 +234,7 @@ export async function updateStudentSubjects(args, context) {
       })
     })
   })
-  
+
 }
 export default{
   getStudents,
