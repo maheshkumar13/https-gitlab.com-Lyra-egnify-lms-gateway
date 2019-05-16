@@ -12,7 +12,7 @@ image:
 #project env
 projectEnv:
   nodeEnv: "production"
-  mongodbUri: "mongodb://lms:alphabetagamma@192.168.117.140:27017/tenantregistry-lms-dev"
+  mongodbUri: "mongodb://lms:alphabetagamma@13.234.242.201:27017/tenantregistry-lms-dev"
   jwtSecret: "KAJDK656kllksklfmFGDFGS765ujh765T6GHAJDSjjjkjiursrda"
   mailjetApiKey: "a1fb4988b5a359099061d2cb8aebc80d"
   apolloEngineKey: "service:hydra-jeet-dev:b9DCNb7tCkPO6TO5xHIdmw"
@@ -58,14 +58,14 @@ ingress:
       hosts:
         - api.dev.rankguru.com
 
-resources: {} 
+resources:  
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #  cpu: 100m
-  #  memory: 128Mi
-  # requests:
-  #  cpu: 512m
-  #  memory: 1024Mi
+  limits:
+   cpu: 256m
+   memory: 1024i
+  requests:
+   cpu: 256m
+   memory: 1024Mi
