@@ -1,19 +1,49 @@
 import { getModel as TextbookModel } from './textbook.model';
 import { getModel as InstituteHierarchyModel} from '../instituteHierarchy/instituteHierarchy.model'
 import { getModel as SubjectModel } from '../subject/subject.model'
+import { getModel as StudentModel } from '../student/student.model'
+import { config } from '../../../config/environment';
 
 const crypto = require('crypto')
+
+export async function getStudentData(context) {
+  const { studentId } = context;
+  return StudentModel(context).then((Student) => {
+    if(!studentId) return false;
+    const project = {
+      _id: 0,
+      subjects: 1,
+      hierarchy: 1,
+      orientation: 1,
+      active: true,
+    }
+    return Student.findOne({ studentId }, project).cache(config.cacheTimeOut.student)
+  })
+}
 
 function getTextbooksQuery(args){
   const query = { active: true }
   if (args.classCode) query['refs.class.code'] = args.classCode;
   if (args.subjectCode) query['refs.subject.code'] = args.subjectCode;
+  if (args.orientation) {
+    query['$or'] = [
+      { orientations: null },
+      { orientations: { $exists: false }},
+      { orientations: {$size: 0} },
+      { orientations: args.orientation }
+    ]
+  }
   return query
 }
 export async function getTextbooks(args, context){
-  const query = getTextbooksQuery(args)
-  return TextbookModel(context).then( (Textbook) => {
-    return Textbook.find(query)
+  return getStudentData(context).then((obj) => {
+    // if(obj && obj.orientation){
+    //   args.orientation = obj.orientation;
+    // }
+    const query = getTextbooksQuery(args)
+    return TextbookModel(context).then( (Textbook) => {
+      return Textbook.find(query).cache(config.cacheTimeOut.textbook)
+    })
   })
 }
 
@@ -63,7 +93,8 @@ export async function validateTextbook(args, context){
 }
 
 function validateUrl(value) {
-  return /^(?:(?:(?:https?|ftp):)?\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:[/?#]\S*)?$/i.test(value);
+  return true;
+  // return /^(?:(?:(?:https?|ftp):)?\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:[/?#]\S*)?$/i.test(value);
 }
 
 export async function createTextbook(args, context){
@@ -99,6 +130,7 @@ export async function createTextbook(args, context){
         code: `${Date.now()}${crypto.randomBytes(5).toString('hex')}`,
         imageUrl: args.imageUrl,
         publisher: args.publisher,
+        orientations: args.orientations,
         refs: {
           class: {
             name: classData.child,
@@ -148,7 +180,7 @@ export async function updateTextbook(args, context){
   args.publisher = args.publisher ? args.publisher.replace(/\s\s+/g, ' ').trim() : ''
   if (
       !args.code ||
-     (!args.name && !args.imageUrl && !args.publisher)
+     (!args.name && !args.imageUrl && !args.publisher && !args.orientations)
      ){
     throw new Error('Insufficient data')
   }
@@ -164,11 +196,9 @@ export async function updateTextbook(args, context){
     if(args.name) patch.name = args.name
     if(args.imageUrl) patch.imageUrl = args.imageUrl
     if(args.publisher) patch.publisher = args.publisher
-    return Textbook.findOneAndUpdate(matchQuery, patch).then((doc) => {
-      if(args.name) doc.name = args.name
-      if(args.imageUrl) doc.imageUrl = args.imageUrl
-      if(args.publisher) doc.publisher = args.publisher
-      return doc
+    if(args.orientations) patch.orientations = args.orientations;
+    return Textbook.updateOne(matchQuery, patch).then(() => {
+      return Textbook.findOne(matchQuery)
     })
   })
 }

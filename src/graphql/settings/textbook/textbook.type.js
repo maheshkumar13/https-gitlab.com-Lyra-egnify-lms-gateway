@@ -13,6 +13,8 @@ import {
   GraphQLInt as IntType,
 } from 'graphql';
 
+import GraphQLJSON from 'graphql-type-json';
+
 import { ConceptTaxonomyType } from '../conceptTaxonomy/conceptTaxonomy.type';
 const ConceptTaxonomyTypeController = require('../../../api/settings/conceptTaxonomy/concpetTaxonomy.controller');
 
@@ -42,6 +44,7 @@ export const TextbookType = new ObjectType({
     code: { type: StringType, description: 'Interal code of the subject' },
     imageUrl: { type: StringType, description: 'image url' },
     publisher:{ type: StringType, description: 'Publisher name' },
+    orientations: { type: GraphQLJSON, description: 'List of Orientations'},
     refs: { type: refsType, description: 'refs' },
     next: {
       type: new List(ConceptTaxonomyType),
@@ -62,6 +65,7 @@ export const TextbookInputType = new InputType({
     subjectCode: { type: new NonNull(StringType), description: 'Internal code of subject' },
     imageUrl: { type: StringType, description: 'image url' },
     publisher:{ type: StringType, description: 'Publisher name' },
+    orientations: { type: new List(StringType), description: 'List Of Orientations'}
   }
 })
 
@@ -72,6 +76,7 @@ export const updateTextbookInputType = new InputType({
     imageUrl: { type: StringType, description: 'image url' },
     publisher:{ type: StringType, description: 'Publisher name' },
     code: { type: new NonNull(StringType), description: 'Internal code of textbook' },
+    orientations: { type: new List(StringType), description: 'List Of Orientations'}
   }
 })
 

@@ -1,5 +1,7 @@
 import { getModel as SubjectModel } from './subject.model';
 import { getModel as InstituteHierarchyModel } from '../instituteHierarchy/instituteHierarchy.model';
+import { getModel as StudentModel } from '../student/student.model';
+import { config } from '../../../config/environment';
 
 const crypto = require('crypto');
 
@@ -8,14 +10,36 @@ function getSubjectsQuery(args) {
   if (args.classCode) query['refs.class.code'] = args.classCode;
   return query;
 }
+
+export async function getStudentData(context) {
+  const { studentId } = context;
+  return StudentModel(context).then((Student) => {
+    if(!studentId) return false;
+    const project = {
+      _id: 0,
+      subjects: 1,
+      hierarchy: 1,
+      active: true,
+    }
+    return Student.findOne({ studentId }, project).cache(config.cacheTimeOut.student)
+  })
+}
 export async function getSubjects(args, context) {
-  const { rawHierarchy } = context;
-  if (rawHierarchy && rawHierarchy.length) {
-    const classData = rawHierarchy.find(x => x.level === 2);
-    args.classCode = classData.childCode;
-  }
-  const query = getSubjectsQuery(args);
-  return SubjectModel(context).then(Subject => Subject.find(query));
+  return getStudentData(context).then((obj) => {
+    const query = getSubjectsQuery(args);
+    if(obj) {
+      const classData = obj.hierarchy.find(x => x.level === 2);
+      query['refs.class.code'] = classData.childCode;
+      if (obj.subjects && obj.subjects.length && args.all !== true) {
+        const codes = obj.subjects.map(x => x.code)
+        query['$or'] = [
+          { isMandatory: true },
+          { code: {$in: codes} }
+        ]
+      }
+    }
+    return SubjectModel(context).then(Subject => Subject.find(query).cache(config.cacheTimeOut.subject));
+  })
 }
 
 function getObjectCombinations(boards, classes) {

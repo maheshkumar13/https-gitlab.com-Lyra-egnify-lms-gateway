@@ -20,8 +20,11 @@ async function getUrl(params) {
 }
 
 export async function getPreSignedUrl(args, context) {
+  let bucketName = 'ekslmsproject';
+  const extname = args.key.split('.')[1].toLowerCase();
+  if (extname === 'html' || extname === 'htm' ) bucketName = 'ekslmsprojectpublic';
   const params = {
-    Bucket: 'ekslmsproject',
+    Bucket: bucketName,
     Key: args.key,
     Expires: 60 * 5   //5 minutes
 	};

@@ -5,6 +5,7 @@ import { uniqBy, filter } from 'lodash';
 import { getModel } from './student.model';
 import { getModel as SubjectModel } from '../subject/subject.model';
 import { getLastKLevels } from '../institute/institute.controller';
+import { config } from '../../../config/environment';
 
 function getMongoQuery(args) {
   const query = {};
@@ -164,7 +165,6 @@ export async function numberOfStudentsByLastNode(args, context) { // eslint-disa
 }
 
 export async function getStudentDetailsById(args, context) { // eslint-disable-line
-  // console.log('args', args);
   const Student = await getModel(context);
   return Student.findOne(
     { studentId: args.studentId },
@@ -174,8 +174,9 @@ export async function getStudentDetailsById(args, context) { // eslint-disable-l
       hierarchyLevels: 1,
       avatarUrl: 1,
       subjects: 1,
+      hierarchy: 1,
     },
-  ).then(student => student);
+  ).cache(config.cacheTimeOut.student).then(student => student);
 }
 
 export async function updateStudentAvatar(args, context) { // eslint-disable-line
@@ -197,7 +198,7 @@ export async function updateStudentAvatar(args, context) { // eslint-disable-lin
 export async function updateStudentSubjects(args, context) {
   if(!args.studentId || !args.subjectCodes || !args.subjectCodes.length) {
     throw new Error('Insufficient data')
-  } 
+  }
   return Promise.all([
     getModel(context),
     SubjectModel(context)
@@ -220,7 +221,7 @@ export async function updateStudentSubjects(args, context) {
          finalSubjects.push({
            subject: tempSubject.subject,
            code: tempSubject.code,
-         });      
+         });
       }
       const query = {
         studentId : args.studentId,
@@ -233,7 +234,7 @@ export async function updateStudentSubjects(args, context) {
       })
     })
   })
-  
+
 }
 export default{
   getStudents,
