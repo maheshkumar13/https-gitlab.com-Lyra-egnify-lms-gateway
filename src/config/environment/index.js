@@ -56,17 +56,17 @@ const all = {
   },
 
   cacheTimeOut: {
-    subject: process.env.CACHE_TIMEOUT_SUBJECT || 1,//86400,
-    textbook: process.env.CACHE_TIMEOUT_TEXTBOOK || 1, //86400,
-    topic: process.env.CACHE_TIMEOUT_TOPIC || 1, //86400,
-    contentMapping: process.env.CACHE_TIMEOUT_CONTENTMAPPING || 1, //86400,
-    question: process.env.CACHE_TIMEOUT_QUESTION || 1, //86400,
-    instituteHierarchy: process.env.CACHE_TIMEOUT_INSTITUTEHIERARCHY || 1, //86400,
-    student: process.env.CACHE_TIMEOUT_STUDENT || 1, //43200,
+    subject: _.toInteger(process.env.CACHE_TIMEOUT_SUBJECT) || 1,//86400,
+    textbook: _.toInteger(process.env.CACHE_TIMEOUT_TEXTBOOK) || 1, //86400,
+    topic: _.toInteger(process.env.CACHE_TIMEOUT_TOPIC) || 1, //86400,
+    contentMapping: _.toInteger(process.env.CACHE_TIMEOUT_CONTENTMAPPING) || 1, //86400,
+    question: _.toInteger(process.env.CACHE_TIMEOUT_QUESTION) || 1, //86400,
+    instituteHierarchy: _.toInteger(process.env.CACHE_TIMEOUT_INSTITUTEHIERARCHY) || 1, //86400,
+    student: _.toInteger(process.env.CACHE_TIMEOUT_STUDENT) || 1, //43200,
   },
 
   redis: {
-    auth: process.env.REDIS_AUTH || 1,
+    auth: _.toInteger(process.env.REDIS_AUTH) || 1,
     host: process.env.REDIS_HOST || '35.244.34.84',
     password: process.env.REDIS_PASSWORD || 'rQsVPF2gbiHi',
   },
