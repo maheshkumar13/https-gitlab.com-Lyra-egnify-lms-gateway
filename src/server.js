@@ -30,7 +30,7 @@ cachegoose(mongoose, {
   engine: 'redis',    /* If you don't specify the redis engine,      */
   port: 6379,         /* the query results will be cached in memory. */
   host: config.redis.host,
-  password: config.redis.password,
+  password: config.redis.auth ? config.redis.password: ''
 });
 
 // Connect to MongoDB
