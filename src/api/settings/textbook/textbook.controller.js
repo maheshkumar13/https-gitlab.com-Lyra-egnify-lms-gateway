@@ -100,6 +100,13 @@ function validateUrl(value) {
 export async function createTextbook(args, context){
   args.name = args.name ? args.name.replace(/\s\s+/g, ' ').trim() : ''
   args.publisher = args.publisher ? args.publisher.replace(/\s\s+/g, ' ').trim() : ''
+  if(args.orientations) {
+    const items = []
+    args.orientations.forEach(element => {
+      if(element) items.push(element)
+    });
+    args.orientations = items;
+  }
   if (
     !args.name ||
     !args.classCode ||
@@ -187,6 +194,15 @@ export async function updateTextbook(args, context){
   if (args.imageUrl && !validateUrl(args.imageUrl)){
     throw new Error('Invalid image url')
   }
+
+  if(args.orientations) {
+    const items = []
+    args.orientations.forEach(element => {
+      if(element) items.push(element)
+    });
+    args.orientations = items;
+  }
+  
   return validateTextbookForUpdate(args, context).then((Textbook) => { 
     const matchQuery ={
       active: true,
