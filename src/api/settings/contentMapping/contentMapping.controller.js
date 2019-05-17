@@ -146,7 +146,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
 
   const mandetoryFields = [
     'class', 'subject', 'textbook', 'chapter', 'orientation',
-    'publisher', 'publish year', 'content name', 'content category', 'content type',
+    'publisher', 'publish year', 'content name', 'content category',
     'file path', 'file size', 'media type',
   ];
   for (let i = 0; i < data.length; i += 1) {
