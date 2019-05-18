@@ -60,6 +60,7 @@ export const ContentMappingType = new ObjectType({
     orientation: { type: new List(StringType), description: 'Orientation' },
     publication: { type: publicationType, description: 'Publication details' },
     category: { type: StringType, description: 'Category' },
+    metaData: { type: GraphQLJSON, description: 'metadata' },
     coins: { type: IntType, description: 'Coins' },
   },
 });
