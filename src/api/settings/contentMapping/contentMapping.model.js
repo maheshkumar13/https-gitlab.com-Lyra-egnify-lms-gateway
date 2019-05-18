@@ -46,6 +46,7 @@ const contentMappingSchema = new mongoose.Schema({
   branches: { type: [String], default: null },
   active: { type: Boolean, default: true },
   coins: { type: Number, default: 0 },
+  metaData: {},
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 });
