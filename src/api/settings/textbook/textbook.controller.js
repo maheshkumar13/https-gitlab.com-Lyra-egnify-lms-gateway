@@ -109,6 +109,7 @@ export async function createTextbook(args, context){
       if(element) items.push(element)
     });
     if(items.length) args.orientations = items;
+    else args.orientations = null;
   }
   if (
     !args.name ||
@@ -204,6 +205,7 @@ export async function updateTextbook(args, context){
       if(element) items.push(element)
     });
     if(items.length) args.orientations = items;
+    else args.orientations = null;
   }
   
   return validateTextbookForUpdate(args, context).then((Textbook) => { 
