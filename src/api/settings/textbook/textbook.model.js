@@ -26,7 +26,8 @@ const TextbookSchema = new mongoose.Schema({
   refs: { type: refsSchema, description: 'References'},
   publisher: { type: String },
   active: { type: Boolean, default: true },
-  orientations:[String],
+  orientations:{ type: [String], default: null },
+  branches: { type: [String], default: null }
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 });

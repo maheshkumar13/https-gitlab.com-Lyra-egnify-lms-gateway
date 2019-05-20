@@ -26,11 +26,10 @@ function getTextbooksQuery(args){
   if (args.classCode) query['refs.class.code'] = args.classCode;
   if (args.subjectCode) query['refs.subject.code'] = args.subjectCode;
   if (args.orientation) {
-    query['$or'] = [
-      {orientations: {$exists: false}},
-      {orientations: {$size: 0}},
-      {orientations: {$in: [null, "", args.orientation]}} 
-    ]
+    query['orientations'] = {$in: [null, "", args.orientation]}
+  }
+  if (args.branch) {
+    query['branches'] = {$in: [null, "", args.branch]}
   }
   return query
 }
@@ -38,6 +37,11 @@ export async function getTextbooks(args, context){
   return getStudentData(context).then((obj) => {
     if(obj && obj.orientation){
       args.orientation = obj.orientation
+      const { hierarchy } = obj;
+      if (hierarchy && hierarchy.length) {
+        const branchData = hierarchy.find(x => x.level === 5);
+        if(branchData && branchData.child) args.branch = branchData.child;
+      }
     }
     const query = getTextbooksQuery(args)
     return TextbookModel(context).then( (Textbook) => {
@@ -104,7 +108,7 @@ export async function createTextbook(args, context){
     args.orientations.forEach(element => {
       if(element) items.push(element)
     });
-    args.orientations = items;
+    if(items.length) args.orientations = items;
   }
   if (
     !args.name ||
@@ -199,7 +203,7 @@ export async function updateTextbook(args, context){
     args.orientations.forEach(element => {
       if(element) items.push(element)
     });
-    args.orientations = items;
+    if(items.length) args.orientations = items;
   }
   
   return validateTextbookForUpdate(args, context).then((Textbook) => { 
