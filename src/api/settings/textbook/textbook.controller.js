@@ -27,19 +27,18 @@ function getTextbooksQuery(args){
   if (args.subjectCode) query['refs.subject.code'] = args.subjectCode;
   if (args.orientation) {
     query['$or'] = [
-      { orientations: null },
-      { orientations: { $exists: false }},
-      { orientations: {$size: 0} },
-      { orientations: args.orientation }
+      {orientations: {$exists: false}},
+      {orientations: {$size: 0}},
+      {orientations: {$in: [null, "", args.orientation]}} 
     ]
   }
   return query
 }
 export async function getTextbooks(args, context){
   return getStudentData(context).then((obj) => {
-    // if(obj && obj.orientation){
-    //   args.orientation = obj.orientation;
-    // }
+    if(obj && obj.orientation){
+      args.orientation = obj.orientation
+    }
     const query = getTextbooksQuery(args)
     return TextbookModel(context).then( (Textbook) => {
       return Textbook.find(query).cache(config.cacheTimeOut.textbook)
