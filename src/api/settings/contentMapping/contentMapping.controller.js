@@ -3,6 +3,7 @@ import { getModel as ConceptTaxonomyModel } from '../conceptTaxonomy/concpetTaxo
 import { getModel as ContentMappingModel } from './contentMapping.model';
 import { getModel as InstituteHierarchyModel } from '../instituteHierarchy/instituteHierarchy.model';
 import { config } from '../../../config/environment';
+import { getStudentData } from '../textbook/textbook.controller';
 
 const xlsx = require('xlsx');
 const upath = require('upath');
@@ -361,21 +362,22 @@ export async function uploadContentMapping(req, res) {
   });
 }
 
-export async function getBranchNameAndCategory(context) {
+export async function getBranchNameAndCategory(context, obj) {
   return InstituteHierarchyModel(context).then((InstituteHierarchy) => {
-    const { rawHierarchy } = context;
-    if (rawHierarchy && rawHierarchy.length) {
-      const branchData = rawHierarchy.find(x => x.level === 5);
+    if (!obj) return false;
+    const { hierarchy } = obj;
+    if (hierarchy && hierarchy.length) {
+      const branchData = hierarchy.find(x => x.level === 5);
       const project = {
         _id: 0, child: 1, childCode: 1, category: 1,
       };
-      return InstituteHierarchy.findOne({ childCode: branchData.childCode }, project);
+      return InstituteHierarchy.findOne({ childCode: branchData.childCode }, project).cache(config.cacheTimeOut.instituteHierarchy)
     }
     return false;
   });
 }
 
-function getMongoQueryForContentMapping(args, context) {
+function getMongoQueryForContentMapping(args) {
   const query = { active: true };
   if (args.textbookCode) query['refs.textbook.code'] = args.textbookCode;
   if (args.topicCode) query['refs.topic.code'] = args.topicCode;
@@ -385,23 +387,33 @@ function getMongoQueryForContentMapping(args, context) {
     args.resourceType = args.resourceType.map(x => x.toLowerCase());
     query['resource.type'] = { $in: args.resourceType };
   }
+  if (args.orientation) query.orientation = { $in: [ null, args.orientation ]};
+  if (args.branch) query.branches = { $in: [ null, args.branch ]};
+  if (args.category) query.category = { $in: [ null, args.category ]};
   return query;
 }
 
 export async function getContentMapping(args, context) {
   if (!args.textbookCode) throw new Error('textbookCode required');
-  const query = getMongoQueryForContentMapping(args, context);
-  return getBranchNameAndCategory(context).then(() => {
-    const skip = (args.pageNumber - 1) * args.limit;
-    return ContentMappingModel(context).then(ContentMapping => Promise.all([
-      ContentMapping.find(query).skip(skip).limit(args.limit)
-        .cache(config.cacheTimeOut.contentMapping),
-      ContentMapping.count(query).cache(config.cacheTimeOut.contentMapping),
-    ]).then(([data, count]) => ({
-      data,
-      count,
-    })));
-  });
+  return getStudentData(context).then((obj) => {
+      if(obj && obj.orientation) args.orientation = obj.orientation;
+      return getBranchNameAndCategory(context,obj).then((branchData) => {
+          if(branchData) {
+            if(branchData.child) args.branch = branchData.child;
+            if(branchData.category) args.category = branchData.category;
+          }
+          const query = getMongoQueryForContentMapping(args);
+          const skip = (args.pageNumber - 1) * args.limit;
+          return ContentMappingModel(context).then(ContentMapping => Promise.all([
+            ContentMapping.find(query).skip(skip).limit(args.limit)
+              .cache(config.cacheTimeOut.contentMapping),
+            ContentMapping.count(query).cache(config.cacheTimeOut.contentMapping),
+          ]).then(([data, count]) => ({
+            data,
+            count,
+          })));
+      });  
+  })
 }
 
 export async function getCMSCategoryStats(args, context) {
