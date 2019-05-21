@@ -2,6 +2,8 @@ import { getModel as TextbookModel } from '../textbook/textbook.model';
 import { getModel as ConceptTaxonomyModel } from '../conceptTaxonomy/concpetTaxonomy.model';
 import { getModel as ContentMappingModel } from './contentMapping.model';
 import { getModel as InstituteHierarchyModel } from '../instituteHierarchy/instituteHierarchy.model';
+import { getModel as studentInfoModel } from '../student/student.model';
+
 import { config } from '../../../config/environment';
 import { getStudentData } from '../textbook/textbook.controller';
 
@@ -417,11 +419,36 @@ export async function getContentMapping(args, context) {
 }
 
 export async function getCMSCategoryStats(args, context) {
-  const classCode = args && args.input && args.input.classCode ? args.input.classCode : null;
+  let classCode = args && args.input && args.input.classCode ? args.input.classCode : null;
   const subjectCode = args && args.input && args.input.subjectCode ? args.input.subjectCode : null;
   const textbookCode = args && args.input && args.input.textbookCode ?
     args.input.textbookCode : null;
   const chapterCode = args && args.input && args.input.chapterCode ? args.input.chapterCode : null;
+  const studentId = args && args.input && args.input.studentId ? args.input.studentId : null;
+  let orientation = null;
+  let branch = null;
+  if (studentId) {
+    await studentInfoModel(context).then(async (studentInfo) => {
+      await studentInfo.findOne(
+        { studentId },
+        { hierarchy: 1, orientation: 1 },
+      ).then((studentObj) => {
+        const classObj = studentObj.hierarchy.find(x => x.level === 2);
+        const branchObj = studentObj.hierarchy.find(x => x.level === 5);
+        if (classObj && classObj.childCode) {
+          classCode = classObj.classCode;
+        }
+        if (studentObj && studentObj.orientation) {
+          orientation = studentObj.orientation;
+        }
+        if (branchObj && branchObj.childCode) {
+          branch = branchObj.childCode;
+        }
+        console.info(studentId, studentObj);
+      });
+    });
+    // classCode =
+  }
   const query = {};
   const query1 = {};
   if (classCode) {
@@ -455,6 +482,14 @@ export async function getCMSCategoryStats(args, context) {
   } if (textbookCodes && textbookCodes.length) {
     query['refs.textbook.code'] = {
       $in: textbookCodes,
+    };
+  } if (orientation) {
+    query.orientation = {
+      $in: [orientation],
+    };
+  } if (branch) {
+    query.branches = {
+      $in: [branch, null],
     };
   }
   // console.log('query', query);
