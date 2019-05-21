@@ -68,6 +68,7 @@ export const ContentMappingType = new ObjectType({
 export const CmsCategoryStatsInputType = new InputType({
   name: 'CmsCategoryStatsInputType',
   fields: {
+    studentId: { type: StringType, description: 'StudentId' },
     classCode: { type: StringType, description: 'Code of the class' },
     subjectCode: { type: StringType, description: 'Code of the subject' },
     chapterCode: { type: StringType, description: 'Code of the chapter' },
