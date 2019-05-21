@@ -1,6 +1,9 @@
 import { getModel as SubjectModel } from './subject.model';
 import { getModel as InstituteHierarchyModel } from '../instituteHierarchy/instituteHierarchy.model';
 import { getModel as StudentModel } from '../student/student.model';
+import { getModel as TextbookModel } from '../textbook/textbook.model';
+import { getModel as ConceptTaxonomyModel } from '../conceptTaxonomy/concpetTaxonomy.model'
+
 import { config } from '../../../config/environment';
 
 const crypto = require('crypto');
@@ -137,3 +140,76 @@ export async function createSubject(args, context) {
     });
   })
 }
+
+export async function getSubjectTextbookTopic(args, context) {
+  return Promise.all([
+    SubjectModel(context),
+    TextbookModel(context),
+    ConceptTaxonomyModel(context),
+    getStudentData(context),
+  ]).then(([
+    Subject,
+    Textbook,
+    ConceptTaxonomy,
+    studentData
+  ]) => {
+    const subjectQuery = { active: true }  
+    if(studentData) {
+      const classData = studentData.hierarchy.find(x => x.level === 2);
+      subjectQuery['refs.class.code'] = classData.childCode;
+      if (studentData.subjects && studentData.subjects.length) {
+        const codes = studentData.subjects.map(x => x.code)
+        subjectQuery['$or'] = [
+          { isMandatory: true },
+          { code: {$in: codes} }
+        ]
+      }
+    }
+    return Subject.find(subjectQuery,{_id: 0, subject: 1, code: 1}).then((subjects) => {
+      const subjectcodes = subjects.map( x => x.code)
+      const textbookQuery = {
+        active: true,
+        'refs.subject.code': { $in: subjectcodes }
+      }
+      if(studentData) {
+        const { orientation, hierarchy } = studentData;
+        if (orientation) {
+          textbookQuery['orientations'] = {$in: [null, "", orientation]}
+        }
+        if (hierarchy && hierarchy.length) {
+          const branchData = hierarchy.find(x => x.level === 5);
+          if(branchData && branchData.child) {
+            textbookQuery['branches'] = {$in: [null, "", branchData.child]}
+          }
+        }
+      }
+      return Textbook.find(textbookQuery,{ _id: 0, name: 1, code: 1, 'refs.subject.code': 1}).then((textbooks) => {
+        const textbookCodes = textbooks.map(x => x.code);
+        const topicQuery = {
+          active: true,
+          levelName: 'topic',
+          'refs.textbook.code': textbookCodes,
+        }
+        return ConceptTaxonomy.find(topicQuery,{ _id: 0, child: 1, code: 1, childCode: 1, 'refs.textbook.code': 1}).lean().then((topics) => {
+          const data = [];
+          subjects.forEach( subject => {
+            const subjectData = { subject: subject.subject, code: subject.code, next: [] }
+            const textbooksData = textbooks.filter(x => x.refs.subject.code === subject.code)
+            if(textbooksData.length) {
+              textbooksData.forEach(textbook => {
+                const textbookData = { name: textbook.name, code: textbook.code, next: [] }
+                textbookData.next = topics.filter( x => x.refs.textbook.code === textbook.code)
+                subjectData.next.push(textbookData)
+              })
+              data.push(subjectData);
+            }
+          })
+          topics.forEach( x => {
+            delete x['refs']
+          })
+          return data;
+        })
+      })
+    })
+  })
+} 
