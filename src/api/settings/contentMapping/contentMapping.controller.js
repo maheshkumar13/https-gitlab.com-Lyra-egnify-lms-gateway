@@ -371,7 +371,7 @@ export async function getBranchNameAndCategory(context, obj) {
       const project = {
         _id: 0, child: 1, childCode: 1, category: 1,
       };
-      return InstituteHierarchy.findOne({ childCode: branchData.childCode }, project).cache(config.cacheTimeOut.instituteHierarchy)
+      return InstituteHierarchy.findOne({ childCode: branchData.childCode }, project).cache(config.cacheTimeOut.instituteHierarchy);
     }
     return false;
   });
@@ -387,40 +387,40 @@ function getMongoQueryForContentMapping(args) {
     args.resourceType = args.resourceType.map(x => x.toLowerCase());
     query['resource.type'] = { $in: args.resourceType };
   }
-  if (args.orientation) query.orientation = { $in: [ null, args.orientation ]};
-  if (args.branch) query.branches = { $in: [ null, args.branch ]};
-  if (args.category) query.category = { $in: [ null, args.category ]};
+  if (args.orientation) query.orientation = { $in: [null, args.orientation] };
+  if (args.branch) query.branches = { $in: [null, args.branch] };
+  if (args.category) query.category = { $in: [null, args.category] };
   return query;
 }
 
 export async function getContentMapping(args, context) {
   if (!args.textbookCode) throw new Error('textbookCode required');
   return getStudentData(context).then((obj) => {
-      if(obj && obj.orientation) args.orientation = obj.orientation;
-      return getBranchNameAndCategory(context,obj).then((branchData) => {
-          if(branchData) {
-            if(branchData.child) args.branch = branchData.child;
-            if(branchData.category) args.category = branchData.category;
-          }
-          const query = getMongoQueryForContentMapping(args);
-          const skip = (args.pageNumber - 1) * args.limit;
-          return ContentMappingModel(context).then(ContentMapping => Promise.all([
-            ContentMapping.find(query).skip(skip).limit(args.limit)
-              .cache(config.cacheTimeOut.contentMapping),
-            ContentMapping.count(query).cache(config.cacheTimeOut.contentMapping),
-          ]).then(([data, count]) => ({
-            data,
-            count,
-          })));
-      });  
-  })
+    if (obj && obj.orientation) args.orientation = obj.orientation;
+    return getBranchNameAndCategory(context, obj).then((branchData) => {
+      if (branchData) {
+        if (branchData.child) args.branch = branchData.child;
+        if (branchData.category) args.category = branchData.category;
+      }
+      const query = getMongoQueryForContentMapping(args);
+      const skip = (args.pageNumber - 1) * args.limit;
+      return ContentMappingModel(context).then(ContentMapping => Promise.all([
+        ContentMapping.find(query).skip(skip).limit(args.limit)
+          .cache(config.cacheTimeOut.contentMapping),
+        ContentMapping.count(query).cache(config.cacheTimeOut.contentMapping),
+      ]).then(([data, count]) => ({
+        data,
+        count,
+      })));
+    });
+  });
 }
 
 export async function getCMSCategoryStats(args, context) {
   const classCode = args && args.input && args.input.classCode ? args.input.classCode : null;
   const subjectCode = args && args.input && args.input.subjectCode ? args.input.subjectCode : null;
-  const textBookCode = args && args.input && args.input.textBookCode ?
-    args.input.textBookCode : null;
+  const textbookCode = args && args.input && args.input.textbookCode ?
+    args.input.textbookCode : null;
   const chapterCode = args && args.input && args.input.chapterCode ? args.input.chapterCode : null;
   const query = {};
   const query1 = {};
@@ -429,32 +429,32 @@ export async function getCMSCategoryStats(args, context) {
   } if (subjectCode) {
     query1['refs.subject.code'] = subjectCode;
   }
-  const textBookCodes = [];
-  if (textBookCode) {
-    textBookCodes.push(textBookCode);
+  const textbookCodes = [];
+  if (textbookCode) {
+    textbookCodes.push(textbookCode);
   }
-  if (textBookCodes.length === 0) {
+  if (textbookCodes.length === 0) {
     if (query1) {
       await TextbookModel(context).then(async (TextBook) => {
-        await TextBook.find(query1, { code: 1, _id: 0 }).then((textBookCodeObjs) => {
-          if (textBookCodeObjs && textBookCodeObjs.length) {
-            for (let t = 0; t < textBookCodeObjs.length; t += 1) {
-              textBookCodes.push(textBookCodeObjs[t].code);
-              // console.log('textBookCodes', textBookCodes);
+        await TextBook.find(query1, { code: 1, _id: 0 }).then((textbookCodeObjs) => {
+          if (textbookCodeObjs && textbookCodeObjs.length) {
+            for (let t = 0; t < textbookCodeObjs.length; t += 1) {
+              textbookCodes.push(textbookCodeObjs[t].code);
+              // console.log('textbookCodes', textbookCodes);
             }
           }
         });
       });
     }
   }
-  if (textBookCodes.length === 0) {
+  if (textbookCodes.length === 0) {
     return null;
   }
   if (chapterCode) {
     query['refs.topic.code'] = chapterCode;
-  } if (textBookCodes && textBookCodes.length) {
+  } if (textbookCodes && textbookCodes.length) {
     query['refs.textbook.code'] = {
-      $in: textBookCodes,
+      $in: textbookCodes,
     };
   }
   // console.log('query', query);
@@ -480,8 +480,8 @@ export async function getCMSCategoryStats(args, context) {
 export async function getCategoryWiseFilesPaginated(args, context) {
   const classCode = args && args.input && args.input.classCode ? args.input.classCode : null;
   const subjectCode = args && args.input && args.input.subjectCode ? args.input.subjectCode : null;
-  const textBookCode = args && args.input && args.input.textBookCode ?
-    args.input.textBookCode : null;
+  const textbookCode = args && args.input && args.input.textbookCode ?
+    args.input.textbookCode : null;
   const chapterCode = args && args.input && args.input.chapterCode ? args.input.chapterCode : null;
   const pageNumber = args && args.input && args.input.pageNumber ? args.input.pageNumber : 1;
   const limit = args && args.input && args.input.limit ? args.input.limit : 0;
@@ -496,32 +496,32 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   } if (subjectCode) {
     query1['refs.subject.code'] = subjectCode;
   }
-  const textBookCodes = [];
-  if (textBookCode) {
-    textBookCodes.push(textBookCode);
+  const textbookCodes = [];
+  if (textbookCode) {
+    textbookCodes.push(textbookCode);
   }
-  if (textBookCodes.length === 0) {
+  if (textbookCodes && textbookCodes.length === 0) {
     if (query1) {
       await TextbookModel(context).then(async (TextBook) => {
-        await TextBook.find(query1, { code: 1, _id: 0 }).then((textBookCodeObjs) => {
-          if (textBookCodeObjs && textBookCodeObjs.length) {
-            for (let t = 0; t < textBookCodeObjs.length; t += 1) {
-              textBookCodes.push(textBookCodeObjs[t].code);
-              // console.log('textBookCodes', textBookCodes);
+        await TextBook.find(query1, { code: 1, _id: 0 }).then((textbookCodeObjs) => {
+          if (textbookCodeObjs && textbookCodeObjs.length) {
+            for (let t = 0; t < textbookCodeObjs.length; t += 1) {
+              textbookCodes.push(textbookCodeObjs[t].code);
             }
           }
         });
       });
     }
   }
-  if (textBookCodes.length === 0) {
+  if (textbookCodes.length === 0) {
     return null;
   }
+
   if (chapterCode) {
     query['refs.topic.code'] = chapterCode;
-  } if (textBookCodes && textBookCodes.length) {
+  } if (textbookCodes && textbookCodes.length) {
     query['refs.textbook.code'] = {
-      $in: textBookCodes,
+      $in: textbookCodes,
     };
   }
   if (category) {
@@ -532,7 +532,9 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   const finalJson = {};
   await ContentMappingModel(context).then(async ContentMappings =>
     Promise.all([
-      ContentMappings.find(query, { 'content.category': 1, _id: 0, 'resource.key': 1 }).skip(skip).limit(limit),
+      ContentMappings.find(query, {
+        'content.category': 1, _id: 0, 'resource.key': 1, 'refs.textbook.code': 1,
+      }).skip(skip).limit(limit),
       ContentMappings.find(query).skip(skip).limit(limit).count(),
       ContentMappings.count(query),
     ]).then(([contentObjs, queryCount, count]) => {
@@ -540,6 +542,7 @@ export async function getCategoryWiseFilesPaginated(args, context) {
         const tempCategory = {
           category: contentObjs[c].content.category, //eslint-disable-line
           resource: contentObjs[c].resource.key,
+          textbookCode: contentObjs[c].refs.textbook.code,
         };
         categoryFiles.push(tempCategory);
       }
@@ -560,19 +563,19 @@ export async function getCategoryWiseFilesPaginated(args, context) {
 export async function getFileData(args, context) {
   const fileKey = args && args.input && args.input.fileKey ?
     args.input.fileKey : null;
-  const textBookCode = args && args.input && args.input.textBookCode ?
-    args.input.textBookCode : null;
+  const textbookCode = args && args.input && args.input.textbookCode ?
+    args.input.textbookCode : null;
   const query = {};
   const query1 = {};
   if (!fileKey) {
     throw new Error('Please select a fileKey');
   }
   query['resource.key'] = fileKey;
-  if (!textBookCode) {
-    throw new Error('Please provide textBookCode');
+  if (!textbookCode) {
+    throw new Error('Please provide textbookCode');
   }
-  query['refs.textbook.code'] = textBookCode;
-  query1.code = textBookCode;
+  query['refs.textbook.code'] = textbookCode;
+  query1.code = textbookCode;
   return Promise.all([TextbookModel(context), ContentMappingModel(context)])
     .then(([TextBook, ContentMapping]) => Promise.all([TextBook.findOne(query1, {
       code: 1, 'refs.class.name': 1, 'refs.subject.name': 1, name: 1,

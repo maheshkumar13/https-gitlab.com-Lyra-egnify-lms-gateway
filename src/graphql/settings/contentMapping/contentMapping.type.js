@@ -47,7 +47,7 @@ const refsType = new ObjectType({
   name: 'ContentMappingRefsType',
   fields: {
     textbook: { type: refCodesType, description: 'Textbook reference' },
-   	topic: { type: refCodesType, description: 'Topic reference' },
+    topic: { type: refCodesType, description: 'Topic reference' },
   },
 });
 
@@ -71,7 +71,7 @@ export const CmsCategoryStatsInputType = new InputType({
     classCode: { type: StringType, description: 'Code of the class' },
     subjectCode: { type: StringType, description: 'Code of the subject' },
     chapterCode: { type: StringType, description: 'Code of the chapter' },
-    textBookCode: { type: StringType, description: 'Code of the textBook' },
+    textbookCode: { type: StringType, description: 'Code of the textBook' },
   },
 });
 
@@ -89,7 +89,7 @@ export const CategoryWiseFilesInputType = new InputType({
     classCode: { type: StringType, description: 'Code of the class' },
     subjectCode: { type: StringType, description: 'Code of the subject' },
     chapterCode: { type: StringType, description: 'Code of the chapter' },
-    textBookCode: { type: StringType, description: 'Code of the textBook' },
+    textbookCode: { type: StringType, description: 'Code of the textBook' },
     category: { type: new NonNull(StringType), description: 'Name of the category' },
     pageNumber: { type: IntType, description: 'Page number' },
     limit: { type: IntType, description: 'Limit of the records to be fetched' },
@@ -113,6 +113,7 @@ const categoryListType = new ObjectType({
   fields: {
     category: { type: StringType, description: 'Name of the category' },
     resource: { type: StringType, description: 'Url of the file' },
+    textbookCode: { type: StringType, description: 'code of the textbook' },
   },
 });
 
@@ -128,7 +129,7 @@ export const FileDataInputType = new InputType({
   name: 'FileDataInputType',
   fields: {
     fileKey: { type: new NonNull(StringType), description: 'Key of the file' },
-    textBookCode: { type: new NonNull(StringType), description: 'code of textbook ' },
+    textbookCode: { type: new NonNull(StringType), description: 'code of textbook ' },
   },
 });
 
