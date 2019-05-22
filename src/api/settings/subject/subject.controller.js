@@ -165,7 +165,7 @@ export async function getSubjectTextbookTopic(args, context) {
         ]
       }
     }
-    return Subject.find(subjectQuery,{_id: 0, subject: 1, code: 1}).then((subjects) => {
+    return Subject.find(subjectQuery,{_id: 0, subject: 1, code: 1}).cache(config.cacheTimeOut.subject).then((subjects) => {
       const subjectcodes = subjects.map( x => x.code)
       const textbookQuery = {
         active: true,
@@ -183,14 +183,14 @@ export async function getSubjectTextbookTopic(args, context) {
           }
         }
       }
-      return Textbook.find(textbookQuery,{ _id: 0, name: 1, code: 1, 'refs.subject.code': 1}).then((textbooks) => {
+      return Textbook.find(textbookQuery,{ _id: 0, name: 1, code: 1, 'refs.subject.code': 1}).cache(config.cacheTimeOut.textbook).then((textbooks) => {
         const textbookCodes = textbooks.map(x => x.code);
         const topicQuery = {
           active: true,
           levelName: 'topic',
           'refs.textbook.code': textbookCodes,
         }
-        return ConceptTaxonomy.find(topicQuery,{ _id: 0, child: 1, code: 1, childCode: 1, 'refs.textbook.code': 1}).lean().then((topics) => {
+        return ConceptTaxonomy.find(topicQuery,{ _id: 0, child: 1, code: 1, childCode: 1, 'refs.textbook.code': 1}).cache(config.cacheTimeOut.topic).lean().then((topics) => {
           const data = [];
           subjects.forEach( subject => {
             const subjectData = { subject: subject.subject, code: subject.code, next: [] }
