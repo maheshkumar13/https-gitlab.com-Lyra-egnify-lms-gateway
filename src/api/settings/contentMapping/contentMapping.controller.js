@@ -568,15 +568,15 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   await ContentMappingModel(context).then(async ContentMappings =>
     Promise.all([
       ContentMappings.find(query, {
-        'content.category': 1, _id: 0, 'resource.key': 1, 'refs.textbook.code': 1,
+        content: 1, _id: 0, resource: 1, 'refs.textbook.code': 1,
       }).skip(skip).limit(limit),
       ContentMappings.find(query).skip(skip).limit(limit).count(),
       ContentMappings.count(query),
     ]).then(([contentObjs, queryCount, count]) => {
       for (let c = 0; c < contentObjs.length; c += 1) {
         const tempCategory = {
-          category: contentObjs[c].content.category, //eslint-disable-line
-          resource: contentObjs[c].resource.key,
+          content: contentObjs[c].content, //eslint-disable-line
+          resource: contentObjs[c].resource,
           textbookCode: contentObjs[c].refs.textbook.code,
         };
         categoryFiles.push(tempCategory);

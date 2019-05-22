@@ -112,8 +112,8 @@ const pageInfoType = new ObjectType({
 const categoryListType = new ObjectType({
   name: 'categoryListType',
   fields: {
-    category: { type: StringType, description: 'Name of the category' },
-    resource: { type: StringType, description: 'Url of the file' },
+    content: { type: contentType, description: 'content json' },
+    resource: { type: resourceType, description: 'resource of the file' },
     textbookCode: { type: StringType, description: 'code of the textbook' },
   },
 });
