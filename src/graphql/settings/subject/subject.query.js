@@ -12,6 +12,8 @@ import {
 
 } from 'graphql';
 
+import GraphQLJSON from 'graphql-type-json';
+
 import { SubjectType } from './subject.type';
 
 const controller = require('../../../api/settings/subject/subject.controller');
@@ -28,6 +30,14 @@ export const Subjects = {
   },
 };
 
+export const getSubjectTextbookTopic = {
+  type: GraphQLJSON,
+  async resolve(obj, args, context) {
+    return controller.getSubjectTextbookTopic(args, context);
+  }
+}
+
 export default{
   Subjects,
+  getSubjectTextbookTopic
 };
