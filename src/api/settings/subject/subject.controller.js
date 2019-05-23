@@ -193,7 +193,7 @@ export async function getSubjectTextbookTopic(args, context) {
         return ConceptTaxonomy.find(topicQuery,{ _id: 0, child: 1, code: 1, childCode: 1, 'refs.textbook.code': 1}).cache(config.cacheTimeOut.topic).lean().then((topics) => {
           const data = [];
           subjects.forEach( subject => {
-            const subjectData = { subject: subject.subject, code: subject.code, next: [] }
+            const subjectData = { subject: subject.subject, code: subject.code, next: [], isMandatory: subject.isMandatory }
             const textbooksData = textbooks.filter(x => x.refs.subject.code === subject.code)
             if(textbooksData.length) {
               textbooksData.forEach(textbook => {
