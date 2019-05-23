@@ -154,6 +154,7 @@ export const FileDataOutputType = new ObjectType({
 export const CmsTopicLevelStatsInputType = new InputType({
   name: 'CmsTopicLevelStatsInputType',
   fields: {
+    studentId: { type: StringType, description: 'StudentId' },
     classCode: { type: StringType, description: 'Class code' },
     subjectCode: { type: StringType, description: 'subject code' },
     textbookCode: { type: StringType, description: 'Code of the textBook' },

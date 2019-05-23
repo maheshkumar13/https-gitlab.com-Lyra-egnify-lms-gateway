@@ -655,7 +655,7 @@ export async function getFileData(args, context) {
 }
 
 export async function getCmsTopicLevelStats(args, context) {
-  const classCode = args && args.input && args.input.classCode ?
+  let classCode = args && args.input && args.input.classCode ?
     args.input.classCode : null;
   const subjectCode = args && args.input && args.input.subjectCode ?
     args.input.subjectCode : null;
@@ -663,6 +663,38 @@ export async function getCmsTopicLevelStats(args, context) {
     args.input.textbookCode : null;
   const category = args && args.input && args.input.category ?
     args.input.category : [];
+  const studentId = args && args.input && args.input.studentId ?
+    args.input.studentId : null;
+  console.log('studentId', studentId);
+  let orientation = null;
+  let branch = null;
+  if (studentId) {
+    await studentInfoModel(context).then(async (studentInfo) => {
+      await studentInfo.findOne(
+        { studentId },
+        { hierarchy: 1, orientation: 1 },
+
+      ).then((studentObj) => {
+        const hierarchy = Array.from(studentObj.hierarchy);
+        // console.log('studentObj.hierarchy', hierarchy);
+        const classObj = hierarchy.find(x => x.level === 2);
+        // console.log('classObj', classObj);
+        const branchObj = hierarchy.find(x => x.level === 5);
+        if (classObj && classObj.childCode) {
+          classCode = classObj.childCode;
+        }
+        if (studentObj && studentObj.orientation) {
+          orientation = studentObj.orientation;
+        }
+        if (branchObj && branchObj.childCode) {
+          branch = branchObj.childCode;
+        }
+        // console.info(studentId, studentObj);
+      });
+    });
+    // console.log('classCode', classCode);
+    // classCode =
+  }
   const query = {};
   const query1 = {};
   if (!classCode) {
@@ -701,6 +733,15 @@ export async function getCmsTopicLevelStats(args, context) {
   if (category && category.length > 0) {
     query['content.category'] = {
       $in: category,
+    };
+  }
+  if (orientation) {
+    query.orientation = {
+      $in: [orientation],
+    };
+  } if (branch) {
+    query.branches = {
+      $in: [branch, null],
     };
   }
   return ContentMappingModel(context).then(async ContentMappings => ContentMappings.aggregate([
