@@ -183,7 +183,7 @@ export async function getSubjectTextbookTopic(args, context) {
           }
         }
       }
-      return Textbook.find(textbookQuery,{ _id: 0, name: 1, code: 1, 'refs.subject.code': 1}).cache(config.cacheTimeOut.textbook).then((textbooks) => {
+      return Textbook.find(textbookQuery,{ _id: 0, name: 1, code: 1, 'refs.subject.code': 1, imageUrl: 1}).cache(config.cacheTimeOut.textbook).then((textbooks) => {
         const textbookCodes = textbooks.map(x => x.code);
         const topicQuery = {
           active: true,
@@ -197,7 +197,7 @@ export async function getSubjectTextbookTopic(args, context) {
             const textbooksData = textbooks.filter(x => x.refs.subject.code === subject.code)
             if(textbooksData.length) {
               textbooksData.forEach(textbook => {
-                const textbookData = { name: textbook.name, code: textbook.code, next: [] }
+                const textbookData = { name: textbook.name, code: textbook.code, next: [], imageUrl: textbook.imageUrl }
                 textbookData.next = topics.filter( x => x.refs.textbook.code === textbook.code)
                 subjectData.next.push(textbookData)
               })
