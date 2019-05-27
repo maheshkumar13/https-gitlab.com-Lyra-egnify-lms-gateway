@@ -9,7 +9,7 @@ exports.config = {
   /**
    * Array of application names.
    */
-  app_name: ['RankGuru Learning App'],
+  app_name: ['API RankGuru Learning App'],
   /**
    * Your New Relic license key.
    */
