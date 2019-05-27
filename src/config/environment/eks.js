@@ -19,19 +19,19 @@ module.exports = {
   apolloEngineKey: process.env.APOLLO_ENGINE_KEY || 'XXXX',
 
   cacheTimeOut: {
-    subject: 86400,
-    textbook: 86400,
-    topic: 86400,
-    contentMapping: 86400,
-    question: 86400,
-    instituteHierarchy: 86400,
-    student: 43200,
+    subject: 1,
+    textbook: 1,
+    topic: 1,
+    contentMapping: 1,
+    question: 1,
+    instituteHierarchy: 1,
+    student: 1,
   },
 
   redis: {
     auth: 1,
-    host: 'redis-ha-dev-master.development.svc.cluster.local',
-    password: 'lt38fu4bXX',
+    host: 'redis-master.development.svc.cluster.local',
+    password: 'CwADcltNY0',
   },
 
   // AWS
