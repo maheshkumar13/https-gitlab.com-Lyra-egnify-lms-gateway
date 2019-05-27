@@ -30,8 +30,8 @@ module.exports = {
 
   redis: {
     auth: 1,
-    host: 'redis-ha-dev-master.development.svc.cluster.local',
-    password: 'lt38fu4bXX',
+    host: 'redis-master.development.svc.cluster.local',
+    password: 'CwADcltNY0',
   },
 
   // AWS
