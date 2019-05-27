@@ -27,10 +27,7 @@ async function createUserForStudent(context, obj) {
     if (response.status >= 400) {
       return new Error(response.statusText);
     }
-    return response.json().then((json) => {
-      console.info('json', json);
-      return json.status;
-    });
+    return response.json().then(json => json.status);
   });
 }
 
@@ -142,8 +139,8 @@ export function student(req, res) {
         hierarchyLevels,
         hierarchy,
         egnifyId: `${hierarchyObj.childCode}_${args.admission_no}`,
+        phone: args.masked_contact,
       };
-      // return res.send(tempObj);
       return Promise.all([
         insertStudent(req.user_cxt, tempObj),
         createUserForStudent(req.user_cxt, tempObj),
