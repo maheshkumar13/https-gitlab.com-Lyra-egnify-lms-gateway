@@ -223,6 +223,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
       result.message = `Invalid CATEGORY at row ${row}`;
       // return result;
       errors.push(result.message);
+      // eslint-disable-next-line no-continue
       continue;
     }
 
@@ -243,10 +244,11 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
       const finalBranchNames = [];
       for (let j = 0; j < branchNames.length; j += 1) {
         const branch = branchNames[j];
+        // eslint-disable-next-line no-continue
         if (!branch) continue;
-        if (!uniqueBranches.includes(branch)) {
-          invalidBranches.add(branch);
-        }
+        // if (!uniqueBranches.includes(branch)) {
+        //   invalidBranches.add(branch);
+        // }
         finalBranchNames.push(branch);
       }
       obj.branches = finalBranchNames;
