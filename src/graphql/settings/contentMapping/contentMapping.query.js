@@ -112,6 +112,13 @@ export const ContentMapping = {
   },
 };
 
+export const ContentMappingStats = {
+  type: GraphQLJSON,
+  async resolve(obj, args, context) {
+    return controller.getContentMappingStats(args, context);
+  }
+}
+
 export const CmsCategoryStats = {
   args: {
     input: { type: CmsCategoryStatsInputType },
@@ -157,5 +164,5 @@ export const CmsTopicLevelStats = {
 };
 
 export default {
-  ContentMapping, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats,
+  ContentMapping, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats, ContentMappingStats,
 };

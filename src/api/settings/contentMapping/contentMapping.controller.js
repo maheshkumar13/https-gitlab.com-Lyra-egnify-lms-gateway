@@ -1,3 +1,5 @@
+/* eslint-disable */
+import { getModel as SubjectModel } from '../subject/subject.model';
 import { getModel as TextbookModel } from '../textbook/textbook.model';
 import { getModel as ConceptTaxonomyModel } from '../conceptTaxonomy/concpetTaxonomy.model';
 import { getModel as ContentMappingModel } from './contentMapping.model';
@@ -416,6 +418,130 @@ export async function getContentMapping(args, context) {
         data,
         count,
       })));
+    });
+  });
+}
+
+export async function getContentMappingStats(args, context) {
+  return Promise.all([
+    SubjectModel(context),
+    TextbookModel(context),
+    ContentMappingModel(context),
+    getStudentData(context),
+  ]).then(([
+    Subject,
+    Textbook,
+    ContentMapping,
+    studentData,
+  ]) => {
+    const subjectQuery = { active: true };
+    if (studentData) {
+      const classData = studentData.hierarchy.find(x => x.level === 2);
+      subjectQuery['refs.class.code'] = classData.childCode;
+      if (studentData.subjects && studentData.subjects.length) {
+        const codes = studentData.subjects.map(x => x.code)
+        subjectQuery['$or'] = [
+          { isMandatory: true },
+          { code: {$in: codes} }
+        ]
+      }
+    }
+    return Subject.find(subjectQuery, {_id: 0, subject: 1, code: 1, isMandatory: 1}).cache(config.cacheTimeOut.subject).then((subjects) => {
+      const subjectcodes = subjects.map(x => x.code)
+      const textbookQuery = {
+        active: true,
+        'refs.subject.code': { $in: subjectcodes }
+      }
+      let studentOrientation = ''
+      let studentBranch = ''
+
+      if (studentData) {
+        const { orientation, hierarchy } = studentData;
+        if (orientation) {
+          textbookQuery.orientations = { $in: [null, '', orientation]}
+          studentOrientation = orientation
+        }
+        if (hierarchy && hierarchy.length) {
+          const branchData = hierarchy.find(x => x.level === 5);
+          if (branchData && branchData.child) {
+            textbookQuery.branches = { $in: [null, '', branchData.child]}
+            studentBranch = branchData.child
+          }
+        }
+      }
+      return Textbook.find(textbookQuery, { _id: 0, name: 1, code: 1, 'refs.subject.code': 1, imageUrl: 1 }).cache(config.cacheTimeOut.textbook).then((textbooks) => {
+        const textbookCodes = textbooks.map(x => x.code);
+        const mappingQuery = {
+          active: true,
+          'refs.textbook.code': { $in: textbookCodes },
+        };
+        if (studentOrientation) mappingQuery['orientation'] = { $in: [null, '', studentOrientation]}
+        if (studentBranch) mappingQuery['branches'] = { $in: [null, '', studentBranch]}
+        const aggregateQuery = [
+          {
+            $match: mappingQuery
+          },
+          {   $group: { 
+                  _id: {
+                      textbookCode: '$refs.textbook.code',
+                      topicCode: '$refs.topic.code',
+                      category: '$content.category',
+                      'type': '$resource.type'
+                  }, 
+                  count: 
+                      { 
+                          $sum: 1
+                      }
+              }
+          },
+          {   $group: { 
+                  _id: { 
+                      textbookCode: '$_id.textbookCode', 
+                      topicCode: '$_id.topicCode', 
+                      category: '$_id.category'
+                  }, 
+                  data: 
+                      { 
+                      $push: { type: '$_id.type', count: '$count'}
+                  }
+              }
+          },
+          {
+              $project: {
+                  textbookCode: '$_id.textbookCode',
+                  topicCode: '$_id.topicCode',
+                  category: '$_id.category',
+                  data: 1
+              }
+          },
+          {
+              $project: {
+                  _id: 0
+              }
+          }
+        ]
+        return ContentMapping.aggregate(aggregateQuery).allowDiskUse(true).cache(config.cacheTimeOut.contentMapping).then((data) => {
+          const finalData = {}
+          data.forEach((obj) => {
+            const textbookCode = obj.textbookCode;
+            const topicCode = obj.topicCode;
+            const category = obj.category;
+            if (!finalData[textbookCode]) finalData[textbookCode] = { stats: {}, next: {}}
+            if (!finalData[textbookCode].stats[category]) finalData[textbookCode].stats[category] = {}
+
+            if (!finalData[textbookCode].next[topicCode]) finalData[textbookCode].next[topicCode] = { stats: {}};
+            if (!finalData[textbookCode].next[topicCode].stats[category]) finalData[textbookCode].next[topicCode].stats[category] = {}
+            obj.data.forEach((assetObj) =>{
+              if(!finalData[textbookCode].stats[category][assetObj.type]) finalData[textbookCode].stats[category][assetObj.type] = assetObj.count;
+              else finalData[textbookCode].stats[category][assetObj.type] += assetObj.count;
+              
+              if(!finalData[textbookCode].next[topicCode].stats[category][assetObj.type]) finalData[textbookCode].next[topicCode].stats[category][assetObj.type] = assetObj.count;
+              else finalData[textbookCode].next[topicCode].stats[category][assetObj.type] += assetObj.count;
+            });
+          })
+          return finalData;
+        })
+      });
     });
   });
 }
