@@ -12,7 +12,7 @@ export async function getMasterResults(args, context) {
   }
   const resultsObj = {};
   return MasterResultModel(context).then(MasterResult => MasterResult.find(query, {
-    studentId: 1, obtainedMarks: 1, questionPaperId: 1, cwuAnalysis: 1,
+    studentId: 1, obtainedMarks: 1, questionPaperId: 1, cwuAnalysis: 1, responseData: 1,
   }).then((objs) => {
     if (objs && objs.length) {
       resultsObj.studentId = objs[0].studentId;
@@ -24,6 +24,7 @@ export async function getMasterResults(args, context) {
           C: obj.cwuAnalysis.C,
           W: obj.cwuAnalysis.W,
           U: obj.cwuAnalysis.U,
+          responseData: obj.responseData,
         });
       });
       resultsObj.results = results;
