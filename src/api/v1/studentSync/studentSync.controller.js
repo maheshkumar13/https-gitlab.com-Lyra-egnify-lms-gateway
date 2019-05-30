@@ -146,7 +146,7 @@ export function student(req, res) {
         createUserForStudent(req.user_cxt, tempObj),
       ]).then(([insertion, userCreation]) => {
         if (insertion === true && userCreation === true) {
-          return res.send('Student inserted/updated successfully!');
+          return res.send(tempObj);
         }
         res.statusMessage = `Student creation ${insertion}, User creation ${userCreation}`;
         return res.status(404).end();
