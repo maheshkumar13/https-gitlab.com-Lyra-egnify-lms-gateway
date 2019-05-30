@@ -25,16 +25,16 @@ projectEnv:
   AWS_S3_KEY: "AKIA4XBZMKL5IIJGR4UK"
   AWS_S3_SECRET: "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"
   AWS_S3_REGION: "ap-south-1"
-  REDIS_AUTH: "1"
-  REDIS_HOST: 'redis-ha-dev-master.development.svc.cluster.local'
-  REDIS_PASSWORD: 'lt38fu4bXX'
-  CACHE_TIMEOUT_SUBJECT: "86400"
-  CACHE_TIMEOUT_TEXTBOOK: "86400"
-  CACHE_TIMEOUT_TOPIC: "86400"
-  CACHE_TIMEOUT_CONTENTMAPPING: "86400"
-  CACHE_TIMEOUT_QUESTION: "86400"
-  CACHE_TIMEOUT_INSTITUTEHIERARCHY: "86400"
-  CACHE_TIMEOUT_STUDENT: "43200"
+  REDIS_AUTH: "A"
+  REDIS_HOST: 'redis-master.development.svc.cluster.local'
+  REDIS_PASSWORD: 'CwADcltNY0'
+  CACHE_TIMEOUT_SUBJECT: "A"
+  CACHE_TIMEOUT_TEXTBOOK: "A"
+  CACHE_TIMEOUT_TOPIC: "A"
+  CACHE_TIMEOUT_CONTENTMAPPING: "A"
+  CACHE_TIMEOUT_QUESTION: "A"
+  CACHE_TIMEOUT_INSTITUTEHIERARCHY: "A"
+  CACHE_TIMEOUT_STUDENT: "A"
 
 service:
   name: lms-gateway
@@ -64,8 +64,8 @@ resources:
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   limits:
-   cpu: 256m
+   cpu: 1000m
    memory: 1024Mi
   requests:
-   cpu: 256m
+   cpu: 1000m
    memory: 1024Mi
