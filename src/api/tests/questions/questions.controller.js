@@ -130,7 +130,7 @@ export async function getQuestionLevelEvaluatedData(args, context) {
     };
   }
   return QuestionModel(context).then(Question => Question.find(query, {
-    key: 1, qno: 1, questionPaperId: 1, _id: 0,
+    key: 1, qno: 1, questionPaperId: 1, solution: 1, hint: 1, _id: 0,
   }).then((res) => {
     // console.info('res', res);
     const finalObj = { questionPaperId: res[0].questionPaperId };
@@ -139,8 +139,8 @@ export async function getQuestionLevelEvaluatedData(args, context) {
       tempArray.push({
         questionNo: quesObj.qno,
         key: quesObj.key,
-        hint: null,
-        solution: null,
+        hint: quesObj.hint,
+        solution: quesObj.solution,
       });
     });
     finalObj.evaluatedData = tempArray;
