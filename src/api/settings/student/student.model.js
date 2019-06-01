@@ -23,7 +23,7 @@ const studentSchema = new mongoose.Schema(
     fatherName: { type: String },
     password: { type: Number },
     orientation: { type: String },
-    dob: { type: Date },
+    dob: { type: String },
     gender: { type: String },
     category: { type: String },
     hierarchy: { type: [hierarchySchema], required: true },
