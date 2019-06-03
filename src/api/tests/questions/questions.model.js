@@ -34,9 +34,13 @@ const QuestionSchema = new mongoose.Schema({
   difficulty: { type: String },
   revised_blooms_taxonomy: { type: String },
   questionTypeMetaData: {},
+  hint: { type: String },
+  skill: { type: String },
+  solution: { type: String }
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 });
+
 
 export async function getModel(userCxt) {
   const { instituteId } = userCxt;

@@ -1,5 +1,6 @@
 import { getModel } from './instituteHierarchy.model';
 import InstituteModel from '../institute/institute.model';
+import { config } from '../../../config/environment';
 
 const Excel = require('exceljs');
 const xlsx = require('xlsx');
@@ -93,7 +94,7 @@ async function filterNodes(fltrs, context) {
     ];
   }
   return new Promise((resolve, reject) => {
-    InstituteHierarchy.find(query)
+    InstituteHierarchy.find(query).cache(config.cacheTimeOut.instituteHierarchy)
       .then((docs) => {
         resolve(docs);
       })

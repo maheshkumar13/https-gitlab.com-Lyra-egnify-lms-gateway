@@ -1,5 +1,6 @@
 import { getModel as QuestionModel } from './questions.model';
 import { getModel as MasterResultModel } from '../masterResults/masterResults.model';
+import { config } from '../../../config/environment';
 
 function getQuery(args) {
   const query = {};
@@ -10,7 +11,7 @@ function getQuery(args) {
 export async function getQuestions(args, context) {
   if (!args.questionPaperId) throw new Error('questionPaperId required');
   const query = getQuery(args);
-  return QuestionModel(context).then(Question => Question.find(query));
+  return QuestionModel(context).then(Question => Question.find(query).cache(config.cacheTimeOut.question));
 }
 
 async function prepareDataForMasterResults(args, resultStats, evaluation, context) {
@@ -129,7 +130,7 @@ export async function getQuestionLevelEvaluatedData(args, context) {
     };
   }
   return QuestionModel(context).then(Question => Question.find(query, {
-    key: 1, qno: 1, questionPaperId: 1, _id: 0,
+    key: 1, qno: 1, questionPaperId: 1, solution: 1, hint: 1, _id: 0,
   }).then((res) => {
     // console.info('res', res);
     const finalObj = { questionPaperId: res[0].questionPaperId };
@@ -138,8 +139,8 @@ export async function getQuestionLevelEvaluatedData(args, context) {
       tempArray.push({
         questionNo: quesObj.qno,
         key: quesObj.key,
-        hint: null,
-        solution: null,
+        hint: quesObj.hint,
+        solution: quesObj.solution,
       });
     });
     finalObj.evaluatedData = tempArray;

@@ -60,6 +60,7 @@ export const ContentMappingType = new ObjectType({
     orientation: { type: new List(StringType), description: 'Orientation' },
     publication: { type: publicationType, description: 'Publication details' },
     category: { type: StringType, description: 'Category' },
+    metaData: { type: GraphQLJSON, description: 'metadata' },
     coins: { type: IntType, description: 'Coins' },
   },
 });
@@ -67,10 +68,11 @@ export const ContentMappingType = new ObjectType({
 export const CmsCategoryStatsInputType = new InputType({
   name: 'CmsCategoryStatsInputType',
   fields: {
+    studentId: { type: StringType, description: 'StudentId' },
     classCode: { type: StringType, description: 'Code of the class' },
     subjectCode: { type: StringType, description: 'Code of the subject' },
     chapterCode: { type: StringType, description: 'Code of the chapter' },
-    textBookCode: { type: StringType, description: 'Code of the textBook' },
+    textbookCode: { type: StringType, description: 'Code of the textBook' },
   },
 });
 
@@ -88,7 +90,7 @@ export const CategoryWiseFilesInputType = new InputType({
     classCode: { type: StringType, description: 'Code of the class' },
     subjectCode: { type: StringType, description: 'Code of the subject' },
     chapterCode: { type: StringType, description: 'Code of the chapter' },
-    textBookCode: { type: StringType, description: 'Code of the textBook' },
+    textbookCode: { type: StringType, description: 'Code of the textBook' },
     category: { type: new NonNull(StringType), description: 'Name of the category' },
     pageNumber: { type: IntType, description: 'Page number' },
     limit: { type: IntType, description: 'Limit of the records to be fetched' },
@@ -110,8 +112,9 @@ const pageInfoType = new ObjectType({
 const categoryListType = new ObjectType({
   name: 'categoryListType',
   fields: {
-    category: { type: StringType, description: 'Name of the category' },
-    resource: { type: StringType, description: 'Url of the file' },
+    content: { type: contentType, description: 'content json' },
+    resource: { type: resourceType, description: 'resource of the file' },
+    textbookCode: { type: StringType, description: 'code of the textbook' },
   },
 });
 
@@ -127,7 +130,7 @@ export const FileDataInputType = new InputType({
   name: 'FileDataInputType',
   fields: {
     fileKey: { type: new NonNull(StringType), description: 'Key of the file' },
-    textBookCode: { type: new NonNull(StringType), description: 'code of textbook ' },
+    textbookCode: { type: new NonNull(StringType), description: 'code of textbook ' },
   },
 });
 
@@ -169,6 +172,17 @@ export const ContentMappingInsertionInputType = new InputType({
   },
 });
 
+export const CmsTopicLevelStatsInputType = new InputType({
+  name: 'CmsTopicLevelStatsInputType',
+  fields: {
+    studentId: { type: StringType, description: 'StudentId' },
+    classCode: { type: StringType, description: 'Class code' },
+    subjectCode: { type: StringType, description: 'subject code' },
+    textbookCode: { type: StringType, description: 'Code of the textBook' },
+    category: { type: new List(StringType), description: 'category' },
+  },
+});
+
 export default {
   ContentMappingType,
   CmsCategoryStatsOutputType,
@@ -176,4 +190,5 @@ export default {
   FileDataOutputType,
   FileDataInputType,
   ContentMappingInsertionInputType,
+  CmsTopicLevelStatsInputType,
 };

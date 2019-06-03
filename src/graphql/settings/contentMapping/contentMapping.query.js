@@ -15,6 +15,8 @@ import {
   GraphQLNonNull as NonNull,
 } from 'graphql';
 
+import GraphQLJSON from 'graphql-type-json';
+
 import {
   ContentMappingType,
   CmsCategoryStatsOutputType,
@@ -23,6 +25,7 @@ import {
   CategoryWiseFilesInputType,
   FileDataInputType,
   FileDataOutputType,
+  CmsTopicLevelStatsInputType,
 } from './contentMapping.type';
 
 const controller = require('../../../api/settings/contentMapping/contentMapping.controller');
@@ -109,6 +112,13 @@ export const ContentMapping = {
   },
 };
 
+export const ContentMappingStats = {
+  type: GraphQLJSON,
+  async resolve(obj, args, context) {
+    return controller.getContentMappingStats(args, context);
+  }
+}
+
 export const CmsCategoryStats = {
   args: {
     input: { type: CmsCategoryStatsInputType },
@@ -141,6 +151,18 @@ export const FileData = {
       .then(async json => json);
   },
 };
+
+export const CmsTopicLevelStats = {
+  args: {
+    input: { type: CmsTopicLevelStatsInputType },
+  },
+  type: GraphQLJSON,
+  async resolve(obj, args, context) {
+    return controller.getCmsTopicLevelStats(args, context)
+      .then(async json => json);
+  },
+};
+
 export default {
-  ContentMapping, CmsCategoryStats, CategoryWiseFiles, FileData,
+  ContentMapping, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats, ContentMappingStats,
 };

@@ -2,6 +2,7 @@ import { getModel as TextbookModel } from './textbook.model';
 import { getModel as InstituteHierarchyModel} from '../instituteHierarchy/instituteHierarchy.model'
 import { getModel as SubjectModel } from '../subject/subject.model'
 import { getModel as StudentModel } from '../student/student.model'
+import { config } from '../../../config/environment';
 
 const crypto = require('crypto')
 
@@ -16,7 +17,7 @@ export async function getStudentData(context) {
       orientation: 1,
       active: true,
     }
-    return Student.findOne({ studentId }, project)
+    return Student.findOne({ studentId }, project).cache(config.cacheTimeOut.student)
   })
 }
 
@@ -25,23 +26,26 @@ function getTextbooksQuery(args){
   if (args.classCode) query['refs.class.code'] = args.classCode;
   if (args.subjectCode) query['refs.subject.code'] = args.subjectCode;
   if (args.orientation) {
-    query['$or'] = [
-      { orientations: null },
-      { orientations: { $exists: false }},
-      { orientations: {$size: 0} },
-      { orientations: args.orientation }
-    ]
+    query['orientations'] = {$in: [null, "", args.orientation]}
+  }
+  if (args.branch) {
+    query['branches'] = {$in: [null, "", args.branch]}
   }
   return query
 }
 export async function getTextbooks(args, context){
   return getStudentData(context).then((obj) => {
     if(obj && obj.orientation){
-      args.orientation = obj.orientation;
+      args.orientation = obj.orientation
+      const { hierarchy } = obj;
+      if (hierarchy && hierarchy.length) {
+        const branchData = hierarchy.find(x => x.level === 5);
+        if(branchData && branchData.child) args.branch = branchData.child;
+      }
     }
     const query = getTextbooksQuery(args)
     return TextbookModel(context).then( (Textbook) => {
-      return Textbook.find(query)
+      return Textbook.find(query).cache(config.cacheTimeOut.textbook)
     })
   })
 }
@@ -92,12 +96,21 @@ export async function validateTextbook(args, context){
 }
 
 function validateUrl(value) {
-  return /^(?:(?:(?:https?|ftp):)?\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:[/?#]\S*)?$/i.test(value);
+  return true;
+  // return /^(?:(?:(?:https?|ftp):)?\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:[/?#]\S*)?$/i.test(value);
 }
 
 export async function createTextbook(args, context){
   args.name = args.name ? args.name.replace(/\s\s+/g, ' ').trim() : ''
   args.publisher = args.publisher ? args.publisher.replace(/\s\s+/g, ' ').trim() : ''
+  if(args.orientations) {
+    const items = []
+    args.orientations.forEach(element => {
+      if(element) items.push(element)
+    });
+    if(items.length) args.orientations = items;
+    else args.orientations = null;
+  }
   if (
     !args.name ||
     !args.classCode ||
@@ -185,6 +198,16 @@ export async function updateTextbook(args, context){
   if (args.imageUrl && !validateUrl(args.imageUrl)){
     throw new Error('Invalid image url')
   }
+
+  if(args.orientations) {
+    const items = []
+    args.orientations.forEach(element => {
+      if(element) items.push(element)
+    });
+    if(items.length) args.orientations = items;
+    else args.orientations = null;
+  }
+  
   return validateTextbookForUpdate(args, context).then((Textbook) => { 
     const matchQuery ={
       active: true,

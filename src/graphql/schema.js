@@ -9,7 +9,7 @@ import {
   GraphQLObjectType as ObjectType,
 } from 'graphql';
 
-import { Subjects } from './settings/subject/subject.query';
+import { Subjects, getSubjectTextbookTopic } from './settings/subject/subject.query';
 import { InstituteHierarchy, InstituteHierarchyPaginated } from './settings/instituteHierarchy/instituteHierarchy.query';
 import { Institute } from './settings/institute/institute.query';
 import { InstituteHierarchyGrid } from './settings/instituteHierarchy/instituteHierarchyGrid.query';
@@ -21,7 +21,7 @@ import { createTextbook, updateTextbook, deleteTextbook } from './settings/textb
 import { Students, StudentUniqueValues, StudentsByLastNode, StudentById } from './settings/student/student.query';
 import { updateStudentAvatar, updateStudentSubjects } from './settings/student/student.mutation';
 import { ConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.query';
-import { ContentMapping, CmsCategoryStats, CategoryWiseFiles, FileData } from './settings/contentMapping/contentMapping.query';
+import { ContentMapping, ContentMappingStats, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats } from './settings/contentMapping/contentMapping.query';
 import { LaunchRequest } from './launcher/launchRequest/launchRequest.query';
 import { Questions, Results, QuestionEvaluation } from './tests/questions/questions.query';
 import { MasterResults } from './tests/masterResults/masterResults.query';
@@ -52,6 +52,9 @@ const schema = new Schema({
       CategoryWiseFiles,
       FileData,
       QuestionEvaluation,
+      CmsTopicLevelStats,
+      getSubjectTextbookTopic,
+      ContentMappingStats,
     },
   }),
   mutation: new ObjectType({

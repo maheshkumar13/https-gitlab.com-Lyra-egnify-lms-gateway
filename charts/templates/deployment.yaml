@@ -49,7 +49,27 @@ spec:
             - name: AWS_S3_SECRET
               value: {{ .Values.projectEnv.AWS_S3_SECRET }}        
             - name: AWS_S3_REGION
-              value: {{ .Values.projectEnv.AWS_S3_REGION }}        
+              value: {{ .Values.projectEnv.AWS_S3_REGION }}
+            - name: REDIS_HOST
+              value: {{ .Values.projectEnv.REDIS_HOST }}        
+            - name: REDIS_AUTH
+              value: {{ .Values.projectEnv.REDIS_AUTH }}  
+            - name: REDIS_PASSWORD
+              value: {{ .Values.projectEnv.REDIS_PASSWORD }}        
+            - name: CACHE_TIMEOUT_SUBJECT
+              value: {{ .Values.projectEnv.CACHE_TIMEOUT_SUBJECT }}  
+            - name: CACHE_TIMEOUT_TEXTBOOK
+              value: {{ .Values.projectEnv.CACHE_TIMEOUT_TEXTBOOK }}        
+            - name: CACHE_TIMEOUT_TOPIC
+              value: {{ .Values.projectEnv.CACHE_TIMEOUT_TOPIC }}  
+            - name: CACHE_TIMEOUT_CONTENTMAPPING
+              value: {{ .Values.projectEnv.CACHE_TIMEOUT_CONTENTMAPPING }}        
+            - name: CACHE_TIMEOUT_QUESTION
+              value: {{ .Values.projectEnv.CACHE_TIMEOUT_QUESTION }}  
+            - name: CACHE_TIMEOUT_INSTITUTEHIERARCHY
+              value: {{ .Values.projectEnv.CACHE_TIMEOUT_INSTITUTEHIERARCHY }}        
+            - name: CACHE_TIMEOUT_STUDENT
+              value: {{ .Values.projectEnv.CACHE_TIMEOUT_STUDENT }}          
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.service.internalPort }}
@@ -66,7 +86,7 @@ spec:
               port: {{ .Values.service.internalPort }}
             initialDelaySeconds: 5
             timeoutSeconds: 1
-            periodSeconds: 15
+            periodSeconds: 3
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- if .Values.nodeSelector }}
