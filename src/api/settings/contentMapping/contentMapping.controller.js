@@ -842,7 +842,6 @@ export async function insertContent(args, context) {
   return ContentMappingModel(context).then(ContentMapping =>
     ContentMapping.updateOne(whereObj, { $set: dataToInsert }, { upsert: true }).then(() => 'Inserted Successfully').catch(err => err));
 }
-
 export async function getCmsTopicLevelStats(args, context) {
   let classCode = args && args.input && args.input.classCode ?
     args.input.classCode : null;
