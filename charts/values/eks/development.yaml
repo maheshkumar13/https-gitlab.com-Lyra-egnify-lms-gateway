@@ -9,6 +9,9 @@ image:
   pullPolicy: Always
   pullSecrets: gitlab-registry-pull-secret
 
+# redis
+# helm install --name redis --set password=CwADcltNY0 stable/redis
+
 #project env
 projectEnv:
   nodeEnv: "eks"
