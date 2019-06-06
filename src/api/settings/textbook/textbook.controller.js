@@ -43,7 +43,7 @@ export async function getTextbooks(args, context){
         if(branchData && branchData.child) args.branch = branchData.child;
       }
     }
-    const query = await getTextbooksQuery(args)
+    const query = getTextbooksQuery(args)
     console.log(query);
     return TextbookModel(context).then( (Textbook) => {
       return Textbook.find(query).cache(config.cacheTimeOut.textbook)
