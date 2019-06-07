@@ -18,7 +18,7 @@ async function copy() {
           engines: pkg.engines,
           dependencies: pkg.dependencies,
           scripts: {
-            start: 'node server.js',
+            start: 'node --require newrelic server.js',
           },
         },
         null,
