@@ -6,7 +6,7 @@
    @version 1.0.0
 */
 
-require('newrelic');
+// require('newrelic');
 
 // import path from 'path';
 import express from 'express';

@@ -43,6 +43,7 @@ build:
   only:
     - development
     - qa
+    - lt
     - master
 
 release:
@@ -64,6 +65,7 @@ release:
   only:
     - development
     - qa
+    - lt
     - master
 
     # - /^f-.*$/
