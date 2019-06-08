@@ -44,6 +44,7 @@ export async function getTextbooks(args, context){
       }
     }
     const query = getTextbooksQuery(args)
+    console.log(query);
     return TextbookModel(context).then( (Textbook) => {
       return Textbook.find(query).cache(config.cacheTimeOut.textbook)
     })

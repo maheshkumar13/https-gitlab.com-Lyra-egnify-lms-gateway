@@ -19,13 +19,13 @@ module.exports = {
   apolloEngineKey: process.env.APOLLO_ENGINE_KEY || 'XXXX',
 
   cacheTimeOut: {
-    subject: 100000,
-    textbook: 100000,
-    topic: 100000,
-    contentMapping: 100000,
-    question: 100000,
-    instituteHierarchy: 100000,
-    student: 100000,
+    subject: 1,
+    textbook: 1,
+    topic: 1,
+    contentMapping: 1,
+    question: 1,
+    instituteHierarchy: 1,
+    student: 1,
   },
 
   redis: {
