@@ -360,10 +360,17 @@ export async function uploadContentMapping(req, res) {
         category: temp.category,
         orientation: { $in: temp.orientation },
       };
+      if(temp.branches && temp.branches.length) {
+        findQuery.branches = { $size : temp.branches.length }
+      }
       bulk.find(findQuery).upsert().updateOne(obj);
     }
-    return bulk.execute().then(() => res.send('Data inserted/updated successfully')).catch((err) => {
-      console.log(JSON.stringify(err));
+    return bulk.execute().then(() => {
+      console.info(req.file.originalname, 'Uploaded successfully....')
+      return res.send('Data inserted/updated successfully')
+    }).catch((err) => {
+      console.error(JSON.stringify(err));
+      return res.status(400).end('Error occured');
     });
   });
 }
