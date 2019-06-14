@@ -29,7 +29,7 @@ module.exports = {
   },
 
   redis: {
-    auth: 0,
+    auth: 1,
     host: 'redis-prod-master.production.svc.cluster.local',
     password: 'dew007',
   },
