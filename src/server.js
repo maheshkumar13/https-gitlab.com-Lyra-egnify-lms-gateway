@@ -6,7 +6,7 @@
    @version 1.0.0
 */
 
-require('newrelic');
+// require('newrelic');
 
 // import path from 'path';
 import express from 'express';
@@ -25,6 +25,16 @@ const morgan = require('morgan');
 const cors = require('cors');
 
 mongoose.Promise = require('bluebird');
+// mongoose.set('debug', true);
+
+const cachegoose = require('cachegoose');
+cachegoose(mongoose, {
+  engine: 'redis',    /* If you don't specify the redis engine,      */
+  port: 6379,         /* the query results will be cached in memory. */
+  host: config.redis.host,
+  password: config.redis.auth ? config.redis.password: ''
+});
+
 // Connect to MongoDB
 mongoose.connect(config.mongo.uri, config.mongo.options);
 mongoose.connection.on('connected', () => {
@@ -34,6 +44,7 @@ mongoose.connection.on('error', (err) => {
   console.info(`MongoDB connection error: ${err}`);
   process.exit(-1); // eslint-disable-line no-process-exit
 });
+
 
 const app = express();
 app.use(cors());
@@ -62,35 +73,35 @@ app.use(
     console.info('Yay!! GraphQL Initilized');
     return {
       schema,
-      context: { user: req.user },
-      tracing: true,
+      context: req.user,
+      // tracing: true,
       cacheControl: true,
     };
   }),
 );
 
-
-require('./api/v1').default(app);
+app.use('/api', auth.isAuthenticated())
+require('./api').default(app);
 
 app.get('/', (req, res) => res.send('Oh!! Yeah.'));
 
 // seedDatabaseIfNeeded();
 
-// app.listen(config.port, () => {
-//   console.info(`The server is running at http://localhost:${config.port}/`);
-// });
+app.listen(config.port, () => {
+  console.info(`The server is running at http://localhost:${config.port}/`);
+});
 
 // Initialize engine with your API key. Alternatively,
 // set the ENGINE_API_KEY environment variable when you
 // run your program.
-const engine = new ApolloEngine({
-  apiKey: config.apolloEngineKey,
-});
+// const engine = new ApolloEngine({
+//   apiKey: config.apolloEngineKey,
+// });
 
 // Call engine.listen instead of app.listen(port)
-engine.listen({
-  port: config.port,
-  expressApp: app,
-});
+// engine.listen({
+//   port: config.port,
+//   expressApp: app,
+// });
 
 console.info('RESTful API server started on: ');

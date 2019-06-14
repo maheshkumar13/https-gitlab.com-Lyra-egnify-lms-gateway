@@ -1,39 +1,33 @@
 import {
+  GraphQLList as List,
   GraphQLObjectType as ObjectType,
   GraphQLString as StringType,
-  // GraphQLNonNull as NonNull,
-  GraphQLInputObjectType as InputType,
-  // GraphQLInt as IntType,
-  GraphQLList as List,
-  // GraphQLBoolean as BooleanType,
+  GraphQLBoolean as BooleanType,
+  GraphQLNonNull as NonNull,
+  GraphQLInt as IntType,
 } from 'graphql';
 
-// import GraphQLJSON from 'graphql-type-json';
+const controller = require('../../../api/settings/conceptTaxonomy/concpetTaxonomy.controller');
 
-export const TaxonomyDataType = new ObjectType({
-  name: 'TaxonomyDataType',
+export const ConceptTaxonomyType = new ObjectType({
+  name: 'ConceptTaxonomyType',
   fields: () => ({
-    level: { type: StringType },
-    nextLevel: { type: StringType },
-    code: { type: StringType },
-    parent: { type: StringType },
-    parentCode: { type: StringType },
     child: { type: StringType },
     childCode: { type: StringType },
-    taxonomyTag: { type: StringType },
-    next: { type: new List(TaxonomyDataType) },
+    parentCode: { type: StringType },
+    levelName: { type: StringType },
+    code: { type: StringType },
+    next: {
+      type: new List(ConceptTaxonomyType),
+      async resolve(obj, args, context) {
+        args.parentCode = obj.childCode;
+        return controller.fetchNodes(args, context);
+      },
+    },
   }),
 });
 
-export const SubjectTaxonomyInputType = new InputType({
-  name: 'SubjectTaxonomyInputType',
-  fields: {
-    code: { type: StringType },
-    parent: { type: StringType },
-    child: { type: StringType },
-    subCode: { type: StringType },
-    parentCode: { type: StringType },
-  },
-});
 
-export default { TaxonomyDataType, SubjectTaxonomyInputType };
+export default {
+  ConceptTaxonomyType
+}

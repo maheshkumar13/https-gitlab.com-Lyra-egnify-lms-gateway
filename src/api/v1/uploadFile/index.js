@@ -17,4 +17,10 @@ router.post(
   controller.index,
 );
 
+router.post(
+  '/public/aws',
+  fileUpload.multer.single('file'),
+  fileUpload.AWSPublicFileUpload,
+);
+
 module.exports = router;

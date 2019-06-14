@@ -7,28 +7,16 @@
 import { GraphQLList as List } from 'graphql';
 
 import { InstituteType } from './institute.type';
-import { config } from '../../../config/environment';
-import fetch from '../../../utils/fetch';
 
+const controller = require('../../../api/settings/institute/institute.controller');
 
-const Institute = {
-  // args: {
-  //   testId: { type: StringType },
-  // },
+export const Institute = {
   type: new List(InstituteType),
   async resolve(obj, args, context) {
-    const url = `${config.services.settings}/api/institute/getInstituteDetails`;
-    return fetch(url, { method: 'POST' }, context)
-      .then(async (response) => {
-        if (response.status >= 400) {
-          return new Error(response.statusText);
-        }
-        return response.json();
-      })
-      .catch((err) => {
-        console.error(err);
-      });
+    // const url = `${config.services.settings}/api/institute/getInstituteDetails`;
+    return controller.getInstituteDetails(args, context)
+      .then(instituteDetails => instituteDetails).catch(err => err);
   },
 };
 
-export default Institute;
+export default { Institute };

@@ -15,7 +15,9 @@ export function isAuthenticated() {
         },
       };
       request.post(options, (err, response, body) => {
-        const { statusCode, statusMessage } = response;
+        if (!response) response = {}
+        let { statusCode, statusMessage } = response;
+        if (!statusCode) statusCode = 401;
         if (statusCode !== 200) {
           res.statusMessage = statusMessage;
           res.status(statusCode).end();
@@ -32,6 +34,7 @@ export function isAuthenticated() {
               authorization: req.headers.authorization,
               accesscontroltoken: req.headers.accesscontroltoken,
             };
+            req.user_cxt = req.user
             next();
           }
         } catch (e) {

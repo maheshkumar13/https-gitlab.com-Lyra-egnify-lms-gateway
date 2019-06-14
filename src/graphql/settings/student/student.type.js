@@ -8,29 +8,45 @@ import {
   GraphQLObjectType as ObjectType,
   GraphQLString as StringType,
   GraphQLBoolean as BooleanType,
+  GraphQLInt as IntType,
 
   // GraphQLNonNull as NonNull,
-  // GraphQLInt as IntType,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 
 // const GraphQLDate = require('graphql-date');
 
-const StudentType = new ObjectType({
+export const StudentType = new ObjectType({
   name: 'StudentType',
   fields: {
     egnifyId: { type: StringType },
     studentId: { type: StringType },
     studentName: { type: StringType },
     fatherName: { type: StringType },
-    phone: { type: StringType },
-    email: { type: StringType },
     gender: { type: StringType },
     dob: { type: StringType },
     category: { type: StringType },
     hierarchy: { type: GraphQLJSON },
     userCreated: { type: BooleanType },
+    password: { type: IntType },
+    hierarchyLevels: { type: GraphQLJSON },
+    orientation: { type: StringType },
   },
 });
 
-export default StudentType;
+export const StudentDetailsOutputType = new ObjectType({
+  name: 'StudentDetailsOutputType',
+  fields: {
+    studentId: { type: StringType },
+    studentName: { type: StringType },
+    hierarchyLevels: { type: GraphQLJSON },
+    avatarUrl: { type: StringType },
+    subjects: { type: GraphQLJSON },
+    hierarchy: { type: GraphQLJSON },
+  },
+});
+
+export default {
+  StudentType,
+  StudentDetailsOutputType,
+};

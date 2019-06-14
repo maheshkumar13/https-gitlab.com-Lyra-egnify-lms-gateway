@@ -1,6 +1,6 @@
 /**
-   @author Aslam Shaik
-   @date    02/03/2018
+   @author Aakash Parsi
+   @date    22/04/2019
    @version 1.0.0
 */
 
@@ -13,16 +13,8 @@ import {
   GraphQLBoolean as BooleanType,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
-import fetch from '../../../utils/fetch';
-import { config } from '../../../config/environment';
-import StudentType from './student.type';
-
-const sampleStudentType = new ObjectType({
-  name: 'downloadStudentSampleType',
-  fields: {
-    csvString: { type: StringType },
-  },
-});
+import controller from '../../../api/settings/student/student.controller';
+import { StudentType, StudentDetailsOutputType } from './student.type';
 
 const pageInfoType = new ObjectType({
   name: 'StudentpageInfo',
@@ -65,77 +57,13 @@ const studentDetailsType = new ObjectType({
 });
 
 
-export const StudentsForStudentProfile = {
-  type: studentDetailsType,
-  async resolve(obj, args, context) {
-    if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
-    // if (!args.limit) args.limit = 100; // eslint-disable-line
-    if (args.pageNumber < 1) {
-      return new Error('Page Number must be positive');
-    }
-    if (args.regex !== undefined) {
-      args.regex = args.regex.replace(/\s\s+/g, ' ').trim(); //eslint-disable-line
-      if (args.regex === '') {
-        args.regex = undefined; //eslint-disable-line
-      }
-    }
-    if (args.filters !== undefined) {
-      args.filters = JSON.stringify(args.filters); // eslint-disable-line
-    }
-
-    const url = `${config.services.settings}/api/student/students/forStudentProile`;
-    return fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(args),
-	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    }, context)
-      .then((response) => {
-        if (response.status >= 400) {
-          return new Error(response.statusText);
-        }
-        return response.json().then((json) => {
-          const data = {};
-          data.page = json.students;
-
-          data.hierarchy = json.hierarchy;
-
-          const pageInfo = {};
-          pageInfo.prevPage = true;
-          pageInfo.nextPage = true;
-          pageInfo.pageNumber = args.pageNumber;
-          pageInfo.totalPages = Math.ceil(json.count / args.limit)
-            ? Math.ceil(json.count / args.limit)
-            : 1;
-          pageInfo.totalEntries = json.count;
-
-          if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
-            return new Error('Page Number is invalid');
-          }
-
-          if (args.pageNumber === pageInfo.totalPages) {
-            pageInfo.nextPage = false;
-          }
-          if (args.pageNumber === 1) {
-            pageInfo.prevPage = false;
-          }
-          data.pageInfo = pageInfo;
-          return data;
-        });
-      })
-      .catch((err) => {
-        console.error(err);
-        return new Error(err.message);
-      });
-  },
-};
-
 export const Students = {
   args: {
     egnifyId: { type: StringType },
     sortby: { type: StringType },
     order: { type: IntType },
-    pageNumber: { type: IntType },
-    limit: { type: IntType },
+    pageNumber: { type: NonNull(IntType) },
+    limit: { type: NonNull(IntType) },
     regex: { type: StringType },
     childCode: { type: StringType },
     filters: { type: GraphQLJSON },
@@ -157,66 +85,36 @@ export const Students = {
     if (args.filters !== undefined) {
       args.filters = JSON.stringify(args.filters); // eslint-disable-line
     }
+    return controller.getStudents(args, context) //eslint-disable-line
+      .then((json) => {
+        const data = {};
+        data.page = json.students;
+        data.hierarchy = json.hierarchy;
 
-    const url = `${config.services.settings}/api/student/students`;
-    return fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(args),
-	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    }, context)
-      .then((response) => {
-        if (response.status >= 400) {
-          return new Error(response.statusText);
+        const pageInfo = {};
+        pageInfo.prevPage = true;
+        pageInfo.nextPage = true;
+        pageInfo.pageNumber = args.pageNumber;
+        pageInfo.totalPages = Math.ceil(json.count / args.limit)
+          ? Math.ceil(json.count / args.limit)
+          : 1;
+        pageInfo.totalEntries = json.count;
+
+        if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+          return new Error('Page Number is invalid');
         }
-        return response.json().then((json) => {
-          const data = {};
-          data.page = json.students;
 
-          data.hierarchy = json.hierarchy;
-
-          const pageInfo = {};
-          pageInfo.prevPage = true;
-          pageInfo.nextPage = true;
-          pageInfo.pageNumber = args.pageNumber;
-          pageInfo.totalPages = Math.ceil(json.count / args.limit)
-            ? Math.ceil(json.count / args.limit)
-            : 1;
-          pageInfo.totalEntries = json.count;
-
-          if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
-            return new Error('Page Number is invalid');
-          }
-
-          if (args.pageNumber === pageInfo.totalPages) {
-            pageInfo.nextPage = false;
-          }
-          if (args.pageNumber === 1) {
-            pageInfo.prevPage = false;
-          }
-          data.pageInfo = pageInfo;
-          return data;
-        });
-      })
-      .catch((err) => {
+        if (args.pageNumber === pageInfo.totalPages) {
+          pageInfo.nextPage = false;
+        }
+        if (args.pageNumber === 1) {
+          pageInfo.prevPage = false;
+        }
+        data.pageInfo = pageInfo;
+        return data;
+      }).catch((err) => {
         console.error(err);
         return new Error(err.message);
-      });
-  },
-};
-export const downloadStudentSample = {
-
-  type: sampleStudentType,
-  async resolve(obj, args, context) { // eslint-disable-line
-
-    const url = `${config.services.settings}/api/student/downloadStudentSample`;
-    return fetch(url, {
-      method: 'POST',
-	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    }, context)
-      .then(response => response.json())
-      .then(json => json)
-      .catch((err) => {
-        console.error(err);
       });
   },
 };
@@ -229,13 +127,7 @@ export const StudentUniqueValues = {
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) { // eslint-disable-line
-
-    const url = `${config.services.settings}/api/student/getUniqueValues`;
-    return fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(args),
-	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    }, context)
+    return controller.getUniqueValues(args, context) //eslint-disable-line
       .then(response => response.json())
       .then(json => json)
       .catch((err) => {
@@ -252,12 +144,7 @@ export const StudentsByLastNode = {
   async resolve(obj, args, context) { // eslint-disable-line
 
     args.list = JSON.stringify(args.list) // eslint-disable-line
-    const url = `${config.services.settings}/api/student/numberOfStudentsByLastNode`;
-    return fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(args),
-	    headers: { 'Content-Type': 'application/json' },//eslint-disable-line
-    }, context)
+    return controller.numberOfStudentsByLastNode(args, context) //eslint-disable-line
       .then((response) => {
         if (response.status >= 400) {
           return new Error(response.statusText);
@@ -269,9 +156,22 @@ export const StudentsByLastNode = {
   },
 };
 
+export const StudentById = {
+  args: {
+    studentId: { type: new NonNull(StringType) },
+  },
+  type: StudentDetailsOutputType,
+  async resolve(obj, args, context) { // eslint-disable-line
+    // args.list = JSON.stringify(args.list) // eslint-disable-line
+    return controller.getStudentDetailsById(args, context) //eslint-disable-line
+      .then(response => response)
+      .catch(err => err);
+  },
+};
+
 export default{
-  downloadStudentSample,
   StudentUniqueValues,
   Students,
   StudentsByLastNode,
+  StudentById,
 };
