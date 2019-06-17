@@ -143,7 +143,9 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     for (let i = 0; i < keys.length; i += 1) {
       const key = keys[i];
       const lowerKey = key.toLowerCase();
-      if (lowerKey === 'branches') obj[lowerKey] = obj[key];
+      if (lowerKey === 'branches' || lowerKey === 'file path'){
+         obj[lowerKey] = obj[key];
+      }   
       else obj[lowerKey] = obj[key].toString().replace(/\s\s+/g, ' ').trim();
       if (key !== lowerKey) delete obj[key];
     }
