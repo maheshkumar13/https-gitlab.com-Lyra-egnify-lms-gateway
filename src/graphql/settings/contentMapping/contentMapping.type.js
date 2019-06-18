@@ -151,6 +151,27 @@ export const FileDataOutputType = new ObjectType({
   },
 });
 
+export const ContentMappingInsertionInputType = new InputType({
+  name: 'ContentMappingInsertionInputType',
+  fields: {
+    contentCategory: { type: new NonNull(StringType), description: 'Category of content' }, // content data
+    contentName: { type: new NonNull(StringType), description: 'name of the content' }, // content data
+    contentType: { type: StringType, description: 'type of the content' }, // content data
+    fileKey: { type: new NonNull(StringType), description: 'Key of the uploaded file' }, // Resource data
+    fileSize: { type: IntType, description: 'Size of the file uploaded' }, // Resource data
+    fileType: { type: new NonNull(StringType), description: 'file type' }, // Resource data
+    publisher: { type: StringType, description: 'publisher of the content' }, // publisher data
+    publishedYear: { type: StringType, description: 'published year' }, // publisher data
+    orientation: { type: new NonNull(new List(StringType)), description: 'Orientations to which the content belongs to' },
+    textBookCode: { type: new NonNull(StringType), description: 'Code of the textbook' }, // refs data
+    topicCode: { type: new NonNull(StringType), description: 'Code of the textbook' }, // refs data
+    branches: { type: new List(StringType), description: 'branches to which the content belongs to ' },
+    category: { type: StringType, description: 'Category to which the content belongs to' },
+    coins: { type: IntType, description: 'No. of Coins we get once student completes the content' },
+    audioFiles: { type: new List(StringType), description: 'Array of Audio files Keys' },
+  },
+});
+
 export const CmsTopicLevelStatsInputType = new InputType({
   name: 'CmsTopicLevelStatsInputType',
   fields: {
@@ -168,5 +189,6 @@ export default {
   CmsCategoryStatsInputType,
   FileDataOutputType,
   FileDataInputType,
+  ContentMappingInsertionInputType,
   CmsTopicLevelStatsInputType,
 };

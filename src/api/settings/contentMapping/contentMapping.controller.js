@@ -490,27 +490,27 @@ export async function getContentMappingStats(args, context) {
           {
             $match: mappingQuery
           },
-          {   $group: { 
+          {   $group: {
                   _id: {
                       textbookCode: '$refs.textbook.code',
                       topicCode: '$refs.topic.code',
                       category: '$content.category',
                       'type': '$resource.type'
-                  }, 
-                  count: 
-                      { 
+                  },
+                  count:
+                      {
                           $sum: 1
                       }
               }
           },
-          {   $group: { 
-                  _id: { 
-                      textbookCode: '$_id.textbookCode', 
-                      topicCode: '$_id.topicCode', 
+          {   $group: {
+                  _id: {
+                      textbookCode: '$_id.textbookCode',
+                      topicCode: '$_id.topicCode',
                       category: '$_id.category'
-                  }, 
-                  data: 
-                      { 
+                  },
+                  data:
+                      {
                       $push: { type: '$_id.type', count: '$count'}
                   }
               }
@@ -543,7 +543,7 @@ export async function getContentMappingStats(args, context) {
             obj.data.forEach((assetObj) =>{
               if(!finalData[textbookCode].stats[category][assetObj.type]) finalData[textbookCode].stats[category][assetObj.type] = assetObj.count;
               else finalData[textbookCode].stats[category][assetObj.type] += assetObj.count;
-              
+
               if(!finalData[textbookCode].next[topicCode].stats[category][assetObj.type]) finalData[textbookCode].next[topicCode].stats[category][assetObj.type] = assetObj.count;
               else finalData[textbookCode].next[topicCode].stats[category][assetObj.type] += assetObj.count;
             });
@@ -791,6 +791,66 @@ export async function getFileData(args, context) {
       }))));
 }
 
+export async function insertContent(args, context) {
+  if (!args.textBookCode) {
+    throw new Error('please send textBookCode');
+  }
+  if (!args.topicCode) {
+    throw new Error('Please send topicCode');
+  }
+  if (!args.contentCategory) {
+    throw new Error('Please send category of the content');
+  }
+  if (!args.fileKey) {
+    throw new Error('Please send the key of the file by uploading it to AWS');
+  }
+  if (!args.contentName) {
+    throw new Error('Please send the name of the content');
+  }
+  const dataToInsert = {
+    content: {
+      category: args && args.contentCategory ? args.contentCategory : null,
+      name: args && args.contentName ? args.contentName : null,
+      type: args && args.contentType ? args.contentType : null, // not mandatory
+    },
+    refs: {
+      topic: {
+        code: args && args.topicCode ? args.topicCode : null,
+      },
+      textbook: {
+        code: args && args.textBookCode ? args.textBookCode : null,
+      },
+    },
+    resource: {
+      key: args && args.fileKey ? args.fileKey : null,
+      size: args && args.fileSize ? (args.fileSize / (1024 * 1024)) : null,
+      type: args && args.fileType ? args.fileType : null,
+    },
+    publication: {
+      publisher: args && args.publisher ? args.publisher : null,
+      publishedYear: args && args.publishedYear ? args.publishedYear : null,
+    },
+    orientation: args && args.orientation ? args.orientation : [],
+    branches: args && args.branches ? args.branches : [],
+    category: args && args.category ? args.category : null,
+    coins: args && args.coins ? args.coins : 0,
+    active: true,
+    metaData: {
+      audioFiles: args && args.audioFiles ? args.audioFiles : [],
+    },
+  };
+  const whereObj = {
+    category: dataToInsert.category,
+    branches: dataToInsert.branches,
+    'refs.topic.code': dataToInsert.refs.topic.code,
+    'refs.textbook.code': dataToInsert.refs.textbook.code,
+    'content.name': dataToInsert.content.name,
+    'content.category': dataToInsert.content.category,
+    'content.type': dataToInsert.content.type,
+  };
+  return ContentMappingModel(context).then(ContentMapping =>
+    ContentMapping.updateOne(whereObj, { $set: dataToInsert }, { upsert: true }).then(() => 'Inserted Successfully').catch(err => err));
+}
 export async function getCmsTopicLevelStats(args, context) {
   let classCode = args && args.input && args.input.classCode ?
     args.input.classCode : null;
