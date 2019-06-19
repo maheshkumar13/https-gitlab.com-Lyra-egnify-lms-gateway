@@ -47,7 +47,8 @@ function validateSheet(req) {
 
 	// validate mandetory fields
 	const codes = {}
-	const mandetoryFields = ['code', 'chapter']
+	const orderNumbers = {}
+	const mandetoryFields = ['code', 'chapter', 'view order']
 	for (let j = 0; j < data.length; j += 1) {
 		const obj = data[j]
 		for(let i=0; i<mandetoryFields.length; i+=1){
@@ -63,7 +64,13 @@ function validateSheet(req) {
 			result.message = `Duplicate code found at row ${j+1}`;
 			return result
 		}
+		if(orderNumbers[obj.viewOrder]) {
+			result.success = false;
+			result.message = `Duplicate order number found at row ${j+1}`;
+			return result
+		}
 		codes[obj.code] = true;
+		orderNumbers[obj.viewOrder] = true;
 	}
 
 	if(!data.length) {
@@ -84,7 +91,8 @@ function buildDataTree(data){
 		const code = data[i].code;
 		const topic = data[i].chapter;
 		const subtopic = data[i].subchapter;
-		if(!dataTree[topic]) dataTree[topic] = { code }
+		const viewOrder = data[i].viewOrder;
+		if(!dataTree[topic]) dataTree[topic] = { code, viewOrder }
 		// if(!dataTree[topic][subtopic]) dataTree[topic][subtopic] = { code }
 	}
 	return dataTree
@@ -113,6 +121,7 @@ function buildConcpetTaxonomyTree(dataTree, textbook) {
 			child: topic,
 			childCode: `${Date.now()}${crypto.randomBytes(5).toString('hex')}`,
 			code: dataTree[topic].code,
+			viewOrder: dataTree[topic].viewOrder,
 			levelName: 'topic',
 			parentCode: subjectData.childCode,
 			refs,
@@ -123,6 +132,7 @@ function buildConcpetTaxonomyTree(dataTree, textbook) {
 		// 		child: subtopic,
 		// 		childCode: `${Date.now()}${crypto.randomBytes(5).toString('hex')}`,
 		// 		code: dataTree[topic][subtopic].code,
+		//		viewOrder: dataTree[topic].viewOrder,
 		// 		levelName: 'subtopic',
 		// 		parentCode: topicData.childCode,
 		// 		refs,
@@ -174,8 +184,9 @@ export async function downloadSample(req, res){
 	worksheet.columns = [
 		{ header: 'code', key: 'code', width: 10 },
 		{ header: 'chapter', key: 'chapter', width: 25 },
+		{ header: 'view-order', key: 'viewOrder', width: 10},
 		// { header: 'subchapter', key: 'subchapter', width: 42 }
-];
+	];
 	var fileName = 'sample.xlsx';
 	
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
