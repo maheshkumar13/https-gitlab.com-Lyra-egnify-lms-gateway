@@ -187,7 +187,7 @@ export async function downloadSample(req, res){
 		{ header: 'view-order', key: 'viewOrder', width: 10},
 		// { header: 'subchapter', key: 'subchapter', width: 42 }
 	];
-	var fileName = 'sample.xlsx';
+	var fileName = 'sample1.xlsx';
 	
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader("Content-Disposition", "attachment; filename=" + fileName);
