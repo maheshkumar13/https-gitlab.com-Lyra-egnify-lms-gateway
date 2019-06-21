@@ -26,6 +26,8 @@ import { LaunchRequest } from './launcher/launchRequest/launchRequest.query';
 import { Questions, Results, QuestionEvaluation } from './tests/questions/questions.query';
 import { MasterResults } from './tests/masterResults/masterResults.query';
 import { InsertContent } from './settings/contentMapping/contentMapping.mutation';
+import { createTestType,deleteTestType,updateTestType} from  './settings/testType/testType.mutation';
+import { TestType} from './settings/testType/testType.query';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -55,6 +57,7 @@ const schema = new Schema({
       CmsTopicLevelStats,
       getSubjectTextbookTopic,
       ContentMappingStats,
+      TestType,
     },
   }),
   mutation: new ObjectType({
@@ -68,6 +71,9 @@ const schema = new Schema({
       updateStudentAvatar,
       updateStudentSubjects,
       InsertContent,
+      createTestType,
+      deleteTestType,
+      updateTestType,
     },
   }),
 });
