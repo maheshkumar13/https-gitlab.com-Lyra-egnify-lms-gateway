@@ -8,6 +8,7 @@ import { getModel as studentInfoModel } from '../student/student.model';
 
 import { config } from '../../../config/environment';
 import { getStudentData } from '../textbook/textbook.controller';
+import { set } from 'mongoose';
 
 
 const xlsx = require('xlsx');
@@ -987,4 +988,59 @@ export async function getCmsTopicLevelStats(args, context) {
     }
     return finalObj;
   }));
+}
+
+
+export async function updateContent(args,context){
+  if(!args.input.id){
+    throw new Error('Enter the File to be edited');
+  }
+  if(Object.keys(args.input).length < 2){
+    throw new Error('Select atleast one of the fields to edit');
+  }
+  let mongoDbIdString = args.input.id.toString();
+  var mongoDbId;
+  try{ mongoDbId = mongoose.Types.ObjectId(mongoDbIdString)}
+  catch(err){
+    throw new Error('Invalid ID');
+  };
+  var whereObj = {};
+  whereObj['_id'] = mongoDbId ;
+  var setObj = {};
+
+  if(args && args.input && args.input.textbookCode && args.input.topicCode){
+    setObj['refs.topic.code'] = args.input.topicCode
+    setObj['refs.textbook.code'] = args.input.textbookCode
+  }
+  if(args && args.input && args.input.coins){
+    setObj['coins'] = args.input.coins ;
+  }
+  if(args && args.input && args.input.contentCategory){
+    setObj['content.category'] = args.input.contentCategory;
+  }
+  if(args && args.input && args.input.contentName){
+    setObj['content.name'] = args.input.contentName;
+  }
+  if(args && args.input && args.input.contentType){
+    setObj['content.type'] = args.input.contentType;
+  }
+  if(args && args.input && args.input.thumbnailKey){
+    setObj['metaData.thumbnailKey'] = args.input.thumbnailKey
+  }
+  return ContentMappingModel(context).then((contentMapping)=>{
+    return contentMapping.updateOne(whereObj,{ $set: setObj }).then((res,err) => {
+      if (err) {
+        return err;
+      }
+      if(res.nModified > 0) {
+        return {status: 200, message: "Successfully Updated"}
+      } else {
+        return {status: 400, message: "No Document was found with the provided Id"}
+      }
+    });
+  });
+}
+
+export default{
+  updateContent
 }

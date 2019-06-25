@@ -186,6 +186,27 @@ export const CmsTopicLevelStatsInputType = new InputType({
   },
 });
 
+export const UpdateContentInputType = new InputType({
+  name: 'UpdateContentInputType',
+  fields :{
+    id :{type :new NonNull(StringType) , description : 'ID of the file to be edited'},
+    contentName :{type : StringType , description :'name of the asset'},
+    contentType :{type :StringType, description:'type of the content'},
+    contentCategory : {type: StringType,description:'category of the content'},
+    coins :{type : IntType , description: 'number of coins'},
+    thumbnailKey:{type: StringType ,description : 'url of the thumbnail'},
+    topicCode:{type: StringType, description:'code for chapter'},
+    textbookCode:{type: StringType, description:'textbook'},
+  }
+})
+
+export const UpdateContentOutputType = new ObjectType({
+  name:'UpdateContentOutputType',
+  fields:{
+    id:{type:StringType,description:'description of the filetype'},
+  }
+})
+
 export default {
   ContentMappingType,
   CmsCategoryStatsOutputType,
@@ -194,4 +215,6 @@ export default {
   FileDataInputType,
   ContentMappingInsertionInputType,
   CmsTopicLevelStatsInputType,
+  UpdateContentOutputType,
+  UpdateContentInputType,
 };
