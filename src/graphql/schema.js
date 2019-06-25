@@ -26,6 +26,11 @@ import { LaunchRequest } from './launcher/launchRequest/launchRequest.query';
 import { Questions, Results, QuestionEvaluation } from './tests/questions/questions.query';
 import { MasterResults } from './tests/masterResults/masterResults.query';
 import { InsertContent } from './settings/contentMapping/contentMapping.mutation';
+// import { Testpattern , FindOrientations , FindBranches} from './tests/tests/tests.query';
+// import { createTest } from './tests/tests/tests.mutation';
+import {TestPatterns} from './settings/testPattern/testPattern.query'
+import {createTestPattern , updateTestPattern , deleteTestPattern} from './settings/testPattern/testPattern.mutation'
+
 
 const schema = new Schema({
   query: new ObjectType({
@@ -55,6 +60,10 @@ const schema = new Schema({
       CmsTopicLevelStats,
       getSubjectTextbookTopic,
       ContentMappingStats,
+      Testpattern,
+      FindOrientations,
+      FindBranches,
+      TestPatterns,
     },
   }),
   mutation: new ObjectType({
@@ -68,6 +77,9 @@ const schema = new Schema({
       updateStudentAvatar,
       updateStudentSubjects,
       InsertContent,
+      createTestPattern,
+      updateTestPattern,
+      deleteTestPattern
     },
   }),
 });
