@@ -8,7 +8,6 @@ import { getModel as studentInfoModel } from '../student/student.model';
 
 import { config } from '../../../config/environment';
 import { getStudentData } from '../textbook/textbook.controller';
-import db from '../../../db';
 
 
 const xlsx = require('xlsx');
