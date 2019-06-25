@@ -27,6 +27,7 @@ import { Questions, Results, QuestionEvaluation } from './tests/questions/questi
 import { MasterResults } from './tests/masterResults/masterResults.query';
 import { InsertContent } from './settings/contentMapping/contentMapping.mutation';
 import { CreatePackage } from './settings/package/package.mutation';
+import {packageList} from './settings/package/package.query';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -56,6 +57,7 @@ const schema = new Schema({
       CmsTopicLevelStats,
       getSubjectTextbookTopic,
       ContentMappingStats,
+      packageList,
     },
   }),
   mutation: new ObjectType({

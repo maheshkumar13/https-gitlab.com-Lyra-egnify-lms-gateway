@@ -3,7 +3,7 @@ import { getDB } from '../../../db';
 const mongoose = require('mongoose');
 
 const subjectSchema = new mongoose.Schema({
-  name: { type: String },
+  subjectCode: { type: String },
   textbookCodes: { type: [String] },
 });
 
@@ -12,7 +12,7 @@ const PackageSchema = new mongoose.Schema({
   packageId: { type: String },
   academicYear: { type: String },
   classCode: { type: String },
-  subjects: { type: subjectSchema },
+  subjects: { type: [subjectSchema] },
   orientations: { type: [String] },
   branches: { type: [String] },
   studentIds: { type: [String], default: null },
