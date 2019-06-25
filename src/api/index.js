@@ -13,7 +13,6 @@ const user = require('./v1/user');
 const auth = require('../auth').default;
 const authValidation = require('./v1/authValidation');
 const converter = require('./v1/converter');
-const parser = require('./v1/parser');
 const studentSync = require('./v1/studentSync');
 
 export default function (app) {
@@ -28,6 +27,5 @@ export default function (app) {
   app.use('/api/v1/downloadReports', downloadReports);
   app.use('/auth', auth);
   app.use('/api/v1/authValidation', authValidation);
-  app.use('/api/v1/parser', parser);
   app.use('/api/v1/studentSync', studentSync);
 }

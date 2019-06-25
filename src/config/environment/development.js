@@ -11,9 +11,9 @@ module.exports = {
   seedDB: false,
   services: {
     // sso: 'http://localhost:3002',
-    sso: 'https://accounts.dev.lms.egnify.io',
+    sso: 'https://accounts.dev.rankguru.com',
     // egnifyAccountsURL: process.env.SVC_SSO || 'http://localhost:3002',
-    egnifyAccountsURL: process.env.SVC_SSO || 'https://accounts.dev.lms.egnify.io',
+    egnifyAccountsURL: process.env.SVC_SSO || 'https://accounts.dev.rankguru.com',
   },
   apolloEngineKey: 'service:egnify-jeet-dev:-aBvwR1LrRIp5ym1C6gVPQ',
   cacheTimeOut: {
