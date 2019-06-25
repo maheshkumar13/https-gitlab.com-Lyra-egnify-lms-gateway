@@ -755,6 +755,7 @@ export async function getFileData(args, context) {
                return( ConceptTaxonomy.findOne({code : contentMappingObj.refs.topic.code, levelName :"topic"})).then((topicObj)=>
               {
             const finalObj = {
+            id: contentMappingObj._id,
             content: contentMappingObj && contentMappingObj.content ?
               contentMappingObj.content : null,
             resource: contentMappingObj && contentMappingObj.resource ?

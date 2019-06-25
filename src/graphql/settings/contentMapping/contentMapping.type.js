@@ -139,6 +139,7 @@ export const FileDataInputType = new InputType({
 export const FileDataOutputType = new ObjectType({
   name: 'FileDataOutputType',
   fields: {
+    id :{type : new NonNull(StringType) ,description :'mongodb id of file'},
     content: { type: contentType, description: 'content of the file' },
     resource: { type: resourceType, description: 'resource of the file' },
     publication: { type: publicationType, description: 'publisher of the file' },
