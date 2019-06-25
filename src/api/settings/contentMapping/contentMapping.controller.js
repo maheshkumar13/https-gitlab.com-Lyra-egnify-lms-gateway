@@ -1024,8 +1024,12 @@ export async function updateContent(args,context){
   if(args && args.input && args.input.contentType){
     setObj['content.type'] = args.input.contentType;
   }
-  if(args && args.input && args.input.thumbnailKey){
-    setObj['metaData.thumbnailKey'] = args.input.thumbnailKey
+  if(args && args.input && args.input.metaData){
+    var metaDatakeys = Object.keys(args.input.metaData) ;
+    // setObj['metaData.thumbnailKey'] = args.input.thumbnailKey
+    for(var i = 0 ;i <metaDatakeys.length ;i++){
+      setObj[`metaData.${metaDatakeys[i]}`] = args.input.metaData[metaDatakeys[i]] 
+    }
   }
   return ContentMappingModel(context).then((contentMapping)=>{
     return contentMapping.updateOne(whereObj,{ $set: setObj }).then((res,err) => {

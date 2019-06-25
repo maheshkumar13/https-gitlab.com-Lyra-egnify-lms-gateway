@@ -194,7 +194,8 @@ export const UpdateContentInputType = new InputType({
     contentType :{type :StringType, description:'type of the content'},
     contentCategory : {type: StringType,description:'category of the content'},
     coins :{type : IntType , description: 'number of coins'},
-    thumbnailKey:{type: StringType ,description : 'url of the thumbnail'},
+    metaData: { type: GraphQLJSON, description: 'eg: thumbnailKey: "String", audioFiles: [{key :"String",name:"String"}], questionpaperId: "String"'},
+    // thumbnailKey:{type: StringType ,description : 'url of the thumbnail'},
     topicCode:{type: StringType, description:'code for chapter'},
     textbookCode:{type: StringType, description:'textbook'},
   }
