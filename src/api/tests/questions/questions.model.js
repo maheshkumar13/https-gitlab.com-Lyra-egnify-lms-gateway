@@ -36,7 +36,8 @@ const QuestionSchema = new mongoose.Schema({
   questionTypeMetaData: {},
   hint: { type: String },
   skill: { type: String },
-  solution: { type: String }
+  solution: { type: String },
+  xml_id: { type: Number },
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 });

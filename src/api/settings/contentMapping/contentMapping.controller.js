@@ -9,10 +9,12 @@ import { getModel as studentInfoModel } from '../student/student.model';
 import { config } from '../../../config/environment';
 import { getStudentData } from '../textbook/textbook.controller';
 
+
 const xlsx = require('xlsx');
 const upath = require('upath');
 const crypto = require('crypto');
 const util = require('util');
+const mongoose = require('mongoose');
 
 export async function getTextbookWiseTopicCodes(context) {
   return ConceptTaxonomyModel(context).then((ConceptTaxonomy) => {
@@ -143,7 +145,9 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     for (let i = 0; i < keys.length; i += 1) {
       const key = keys[i];
       const lowerKey = key.toLowerCase();
-      if (lowerKey === 'branches') obj[lowerKey] = obj[key];
+      if (lowerKey === 'branches' || lowerKey === 'file path'){
+         obj[lowerKey] = obj[key];
+      }   
       else obj[lowerKey] = obj[key].toString().replace(/\s\s+/g, ' ').trim();
       if (key !== lowerKey) delete obj[key];
     }
@@ -488,27 +492,27 @@ export async function getContentMappingStats(args, context) {
           {
             $match: mappingQuery
           },
-          {   $group: { 
+          {   $group: {
                   _id: {
                       textbookCode: '$refs.textbook.code',
                       topicCode: '$refs.topic.code',
                       category: '$content.category',
                       'type': '$resource.type'
-                  }, 
-                  count: 
-                      { 
+                  },
+                  count:
+                      {
                           $sum: 1
                       }
               }
           },
-          {   $group: { 
-                  _id: { 
-                      textbookCode: '$_id.textbookCode', 
-                      topicCode: '$_id.topicCode', 
+          {   $group: {
+                  _id: {
+                      textbookCode: '$_id.textbookCode',
+                      topicCode: '$_id.topicCode',
                       category: '$_id.category'
-                  }, 
-                  data: 
-                      { 
+                  },
+                  data:
+                      {
                       $push: { type: '$_id.type', count: '$count'}
                   }
               }
@@ -541,7 +545,7 @@ export async function getContentMappingStats(args, context) {
             obj.data.forEach((assetObj) =>{
               if(!finalData[textbookCode].stats[category][assetObj.type]) finalData[textbookCode].stats[category][assetObj.type] = assetObj.count;
               else finalData[textbookCode].stats[category][assetObj.type] += assetObj.count;
-              
+
               if(!finalData[textbookCode].next[topicCode].stats[category][assetObj.type]) finalData[textbookCode].next[topicCode].stats[category][assetObj.type] = assetObj.count;
               else finalData[textbookCode].next[topicCode].stats[category][assetObj.type] += assetObj.count;
             });
@@ -703,13 +707,14 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   await ContentMappingModel(context).then(async ContentMappings =>
     Promise.all([
       ContentMappings.find(query, {
-        content: 1, _id: 0, resource: 1, 'refs.textbook.code': 1,
+        content: 1, _id: 1, resource: 1, 'refs.textbook.code': 1,
       }).skip(skip).limit(limit),
       ContentMappings.find(query).skip(skip).limit(limit).count(),
       ContentMappings.count(query),
     ]).then(([contentObjs, queryCount, count]) => {
       for (let c = 0; c < contentObjs.length; c += 1) {
         const tempCategory = {
+          id: contentObjs[c]._id,
           content: contentObjs[c].content, //eslint-disable-line
           resource: contentObjs[c].resource,
           textbookCode: contentObjs[c].refs.textbook.code,
@@ -731,64 +736,123 @@ export async function getCategoryWiseFilesPaginated(args, context) {
 }
 
 export async function getFileData(args, context) {
-  const fileKey = args && args.input && args.input.fileKey ?
-    args.input.fileKey : null;
-  const textbookCode = args && args.input && args.input.textbookCode ?
-    args.input.textbookCode : null;
-  const query = {};
-  const query1 = {};
-  if (!fileKey) {
-    throw new Error('Please select a fileKey');
+  const fileExists = args && args.input && args.input.id 
+  if(!fileExists){
+    throw new Error("Please enter a id");
   }
-  query['resource.key'] = fileKey;
-  if (!textbookCode) {
-    throw new Error('Please provide textbookCode');
-  }
-  query['refs.textbook.code'] = textbookCode;
-  query1.code = textbookCode;
-  return Promise.all([TextbookModel(context), ContentMappingModel(context)])
-    .then(([TextBook, ContentMapping]) => Promise.all([TextBook.findOne(query1, {
-      code: 1, 'refs.class.name': 1, 'refs.subject.name': 1, name: 1,
-    }), ContentMapping.findOne(query)]).then(async ([textBookRefs, contentMappingObjs]) =>
-      // const topicName = null;
-      ConceptTaxonomyModel(context).then(ConceptTaxonomy => ConceptTaxonomy.findOne(
-        {
-          code: contentMappingObjs.refs.topic.code,
-          'refs.textbook.code': contentMappingObjs.refs.textbook.code,
-        },
-        { child: 1 },
-      ).then((topicObj) => {
-        const finalObj = {
-          content: contentMappingObjs && contentMappingObjs.content ?
-            contentMappingObjs.content : null,
-          resource: contentMappingObjs && contentMappingObjs.resource ?
-            contentMappingObjs.resource : null,
-          publication: contentMappingObjs && contentMappingObjs.publication ?
-            contentMappingObjs.publication : null,
-          orientation: contentMappingObjs && contentMappingObjs.orientation ?
-            contentMappingObjs.orientation : null,
-          refs: contentMappingObjs && contentMappingObjs.refs ?
-            contentMappingObjs.refs : null,
-          branches: contentMappingObjs && contentMappingObjs.branches ?
-            contentMappingObjs.branches : null,
-          class: textBookRefs &&
-          textBookRefs.refs &&
-          textBookRefs.refs.class &&
-          textBookRefs.refs.class.name ?
-            textBookRefs.refs.class.name : null,
-          subject: textBookRefs &&
-          textBookRefs.refs &&
-          textBookRefs.refs.subject &&
-          textBookRefs.refs.subject.name ?
+  /* to query using object id : convert id into an object type */
+  let mongoDbIdString = args.input.id.toString();
+  const mongoDbId = mongoose.Types.ObjectId(mongoDbIdString);
+  const query = { _id: mongoDbId};
+ 
+  const ContentMapping = ContentMappingModel(context);
+  return ContentMappingModel(context).then((ContentMapping) =>{ 
+    return (ContentMapping.findOne(query)).then((contentMappingObj) =>
+      {  
+         return TextbookModel(context).then((Textbook)  =>
+         {
+          return (Textbook.findOne({ code: contentMappingObj.refs.textbook.code })).then((textBookRefs) =>
+          {
+            return (ConceptTaxonomyModel(context)).then((ConceptTaxonomy)=>{
+               return( ConceptTaxonomy.findOne({code : contentMappingObj.refs.topic.code, levelName :"topic"})).then((topicObj)=>
+              {
+            const finalObj = {
+            id: contentMappingObj._id,
+            content: contentMappingObj && contentMappingObj.content ?
+              contentMappingObj.content : null,
+            resource: contentMappingObj && contentMappingObj.resource ?
+              contentMappingObj.resource : null,
+            publication: contentMappingObj && contentMappingObj.publication ?
+              contentMappingObj.publication : null,
+            orientation: contentMappingObj && contentMappingObj.orientation ?
+              contentMappingObj.orientation : null,
+            refs: contentMappingObj && contentMappingObj.refs ?
+              contentMappingObj.refs : null,
+            branches: contentMappingObj && contentMappingObj.branches ?
+              contentMappingObj.branches : null,
+            class: textBookRefs &&
+              textBookRefs.refs &&
+              textBookRefs.refs.class &&
+              textBookRefs.refs.class.name ?
+              textBookRefs.refs.class.name : null,
+            subject:
+            textBookRefs &&
+            textBookRefs.refs &&
+            textBookRefs.refs.subject &&
+            textBookRefs.refs.subject.name ?
             textBookRefs.refs.subject.name : null,
-          category: contentMappingObjs.category,
-          textBookName: textBookRefs && textBookRefs.name ? textBookRefs.name : null,
-          topicName: topicObj.child,
+            category: contentMappingObj.category,
+            textBookName: textBookRefs && textBookRefs.name ? textBookRefs.name : null,
+            topicName: topicObj.child,
         };
         return finalObj;
-      }))));
+           });
+          });
+        });
+      });
+    });
+  });
+};
+export async function insertContent(args, context) {
+  if (!args.textBookCode) {
+    throw new Error('please send textBookCode');
+  }
+  if (!args.topicCode) {
+    throw new Error('Please send topicCode');
+  }
+  if (!args.contentCategory) {
+    throw new Error('Please send category of the content');
+  }
+  if (!args.fileKey) {
+    throw new Error('Please send the key of the file by uploading it to AWS');
+  }
+  if (!args.contentName) {
+    throw new Error('Please send the name of the content');
+  }
+  const dataToInsert = {
+    content: {
+      category: args && args.contentCategory ? args.contentCategory : null,
+      name: args && args.contentName ? args.contentName : null,
+      type: args && args.contentType ? args.contentType : null, // not mandatory
+    },
+    refs: {
+      topic: {
+        code: args && args.topicCode ? args.topicCode : null,
+      },
+      textbook: {
+        code: args && args.textBookCode ? args.textBookCode : null,
+      },
+    },
+    resource: {
+      key: args && args.fileKey ? args.fileKey : null,
+      size: args && args.fileSize ? (args.fileSize / (1024 * 1024)) : null,
+      type: args && args.fileType ? args.fileType : null,
+    },
+    publication: {
+      publisher: args && args.publisher ? args.publisher : null,
+      publishedYear: args && args.publishedYear ? args.publishedYear : null,
+    },
+    orientation: args && args.orientation ? args.orientation : [],
+    branches: args && args.branches ? args.branches : [],
+    category: args && args.category ? args.category : null,
+    coins: args && args.coins ? args.coins : 0,
+    active: true,
+    metaData: {
+      audioFiles: args && args.audioFiles ? args.audioFiles : [],
+    },
+  };
+  const whereObj = {
+    category: dataToInsert.category,
+    branches: dataToInsert.branches,
+    'refs.topic.code': dataToInsert.refs.topic.code,
+    'refs.textbook.code': dataToInsert.refs.textbook.code,
+    'content.name': dataToInsert.content.name,
+    'content.category': dataToInsert.content.category,
+    'content.type': dataToInsert.content.type,
+  };
+  return ContentMappingModel(context).then(ContentMapping =>
+    ContentMapping.updateOne(whereObj, { $set: dataToInsert }, { upsert: true }).then(() => 'Inserted Successfully').catch(err => err));
 }
-
 export async function getCmsTopicLevelStats(args, context) {
   let classCode = args && args.input && args.input.classCode ?
     args.input.classCode : null;
@@ -830,7 +894,7 @@ export async function getCmsTopicLevelStats(args, context) {
     // console.log('classCode', classCode);
     // classCode =
   }
-  const query = {};
+  const query  = {};
   const query1 = {};
   if (!classCode) {
     throw new Error('Please select a classCode');

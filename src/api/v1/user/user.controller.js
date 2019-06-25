@@ -4,8 +4,6 @@ import { config } from '../../../config/environment';
 
 const bcrypt = require('bcrypt');
 
-const emailCtrl = require('../emailTransporter/emailTransporter.controller');
-
 function validationError(res, statusCode) {
   statusCode = statusCode || 422;
   return function (err) {
@@ -18,23 +16,6 @@ function handleError(res, statusCode) {
   return function (err) {
     return res.status(statusCode).send(err);
   };
-}
-
-// function to send emails for reset links
-function sendEmail(usrDetails, hashValue, baseUrl) {
-  const url = `${baseUrl}/resetPassword?token=${hashValue}`;
-  const from = 'support@egnify.com'; // From address
-  const to = usrDetails.email; // To address
-  const subject = 'Egnify Password Reset'; // Subject
-  const html = `Hi ${usrDetails.username},<br /> <br />
-  You have recently asked for a password reset for your account with Egnify.<br />
-  To update your password, please click on the button below:
-  <br />
-  <button style="margin-top:20px;height:50px; width:160px;border-radius:25px;border: 0;background-color:#cf6387"><a href=${url} style="color:black;text-decoration: none;color:white;font-size: 14px;"
-  >RESET PASSWORD</a></button>
-  <br /> <br />Best,<br />
-  Team Egnify`;
-  emailCtrl.sendEmail(from, to, subject, html);
 }
 
 // function to reset password using forgethashtoken and new password
@@ -89,56 +70,6 @@ export async function validateForgotPassSecureHash(req, res) {
 
   return res.status(403).json({ msg: 'Invalid Arguments', isValid: false });
 }
-
-
-// function to send reset link for the password
-export async function sendResetLink(req, res) {
-  const Email = req.body.email;
-  const baseUrl = req.body.hostname;
-  if (!Email || !baseUrl) {
-    return res.status(403).send('Invalid Arguments');
-  }
-  const saltRounds = 10;
-
-  // Find if the given User email exists in the database.
-  const usrDetails = await User.find({ email: Email });
-  // If No users have been found with give email.
-  if (usrDetails.length === 0) {
-    res.json({
-      usersFound: false,
-      hash: null,
-    });
-  } else {
-    // If a valid user exists with the given email.
-    const payload = {
-      usrDetails,
-      iat: Date.now(),
-      exp: Date.now() + (1000 * 60 * 60 * 24), // time in ms
-    };
-    // Generate a secure hash to give user access to reset his password.
-    bcrypt.hash(JSON.stringify(payload), saltRounds, (err, hash) => {
-      User.update(
-        {
-          email: usrDetails[0].email,
-        },
-        {
-          $set: {
-            forgotPassSecureHash: hash,
-            forgotPassSecureHashExp: payload.exp,
-          },
-        },
-        (err1, docs) => {
-          if (docs) {
-            sendEmail(usrDetails[0], hash, baseUrl);
-            res.json({ usersFound: true, hash });
-          }
-          if (err1) console.error(err1);
-        },
-      );
-    });
-  }
-}
-
 
 /**
  * Get list of users

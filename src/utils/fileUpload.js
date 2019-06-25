@@ -17,6 +17,7 @@ const storage = Storage({
 });
 const bucket = storage.bucket(CLOUD_BUCKET);
 
+// const getPreSignedUrl = '../../launcher/launchRequest.controller';
 // Returns the public, anonymously accessable URL to a given Cloud Storage
 // object.
 // The object's ACL has to be set to public read.
@@ -74,6 +75,15 @@ const multer = Multer({
     fileSize: 50 * 1024 * 1024, // no larger than 5mb
   },
 });
+const multerNameAsPath = Multer({ // in this function the file name is
+  // stored as the absolute path of the file
+  storage: Multer.MemoryStorage,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // no larger than 50mb
+  },
+  preservePath: 1,
+});
+
 // [END multer]
 
 function uploadToGCS(inputFile) {
@@ -110,6 +120,9 @@ function uploadToGCS(inputFile) {
 }
 
 const AWSPublicFileUpload = (req, res) => {
+  if (!(req && req.file)) {
+    res.status(404).send('Please upload a file');
+  }
   AWS.config.update({
     accessKeyId: config.AWS_S3_KEY,
     secretAccessKey: config.AWS_S3_SECRET,
@@ -118,12 +131,16 @@ const AWSPublicFileUpload = (req, res) => {
   const folderName = config.AWS_PUBLIC_BUCKET_FOLDER;
   const s3 = new AWS.S3();
   const date = new Date();
-  const originalname = `${date}_${req.file.originalname}`;
+  let originalname = '';
+  if (req && req.file && req.file.originalname) {
+    originalname = `${date}_${req.file.originalname}`;
+  }
   const Key = `${folderName}/${originalname}`; // upload to s3 folder "id" with filename === fn
   const params = {
     Key,
     Bucket: buketName, // set somewhere
     Body: req.file.buffer, // req is a stream
+    ContentType: req.file.mimetype,
     ACL: 'public-read', // making the file public
   };
   // console.log(req.file.buffer.byteLength);
@@ -134,18 +151,109 @@ const AWSPublicFileUpload = (req, res) => {
       res.send(`Error Uploading Data: ${JSON.stringify(err)}\n${JSON.stringify(err.stack)}`);
     }
     if (data) {
-      res.send(data.Location);
+      res.send({ fileUrl: data.Location });
     // console.log("Uploaded in:", data.Location);
     }
   });
 };
-//   s3.upload(params, (err, data) => {
-//     if (err) {
-//       res.send(`Error Uploading Data: ${JSON.stringify(err)}\n${JSON.stringify(err.stack)}`);
-//     } else {
-//       res.send(data.Location);
-//     }
-//   });
+
+const AWSPrivateFileUpload = (req, res) => {
+  if (!(req && req.files)) {
+    res.status(404).send('Please upload files');
+  }
+  AWS.config.update({
+    accessKeyId: config.AWS_S3_KEY,
+    secretAccessKey: config.AWS_S3_SECRET,
+  });
+  const folderName = config.AWS_PRIVATE_BUCKET_FOLDER;
+  const buketName = config.AWS_PRIVATE_BUCKET;
+  const date = new Date();
+
+  // console.log('req', req.files);
+  const s3 = new AWS.S3();
+  const { files } = req;
+  const ResponseData = [];
+  files.forEach((file) => {
+    const originalname = `${date}_${file.originalname}`;
+    const fileSize = file.buffer.byteLength;
+    const Key = `${folderName}/${originalname}`; // upload to s3 folder "id" with filename === fn
+    const params = {
+      Key,
+      Bucket: buketName,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+    };
+    s3.upload(params).on('httpUploadProgress', (progress) => {
+      console.info('Uploaded Percentage', `${Math.floor((progress.loaded * 100) / progress.total)}%`);
+    }).send((err, data) => {
+      if (err) {
+        res.send(`Error Uploading Data: ${JSON.stringify(err)}\n${JSON.stringify(err.stack)}`);
+      }
+      if (data) {
+        const tempData = {
+          key: data.key,
+          fileSize,
+          fileType: file.mimetype,
+        };
+        ResponseData.push(tempData);
+        if (ResponseData.length === files.length) {
+          res.json({ error: false, Message: 'File Uploaded    SuceesFully', Data: ResponseData });
+        }
+      }
+    });
+  });
+};
+
+const AWSHTMLUpload = (req, res) => {
+  if (!(req && req.files)) {
+    res.status(404).send('Please upload files');
+  }
+  let dataCount = 0;
+  AWS.config.update({
+    accessKeyId: config.AWS_S3_KEY,
+    secretAccessKey: config.AWS_S3_SECRET,
+  });
+  const buketName = config.AWS_PUBLIC_BUCKET;
+
+  // console.log('req', req.files);
+  const s3 = new AWS.S3();
+  const { files } = req;
+  const ResponseData = [];
+  files.forEach((file) => {
+    const fileSize = file.buffer.byteLength;
+    const originalnameArray = file.originalname.split('/');
+    const Key = `htmlContentSamples/${file.originalname}`; // upload to s3 folder "id" with filename === Key
+    const params = {
+      Key,
+      Bucket: buketName,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+      ACL: 'public-read',
+    };
+    s3.upload(params).on('httpUploadProgress', (progress) => {
+      console.info('Uploaded Percentage', `${Math.floor((progress.loaded * 100) / progress.total)}%`);
+    }).send((err, data) => {
+      if (err) {
+        res.send(`Error Uploading Data: ${JSON.stringify(err)}\n${JSON.stringify(err.stack)}`);
+      }
+      if (data) {
+        dataCount += 1;
+        if (data.key === `${originalnameArray[0]}/index.html`) {
+          const tempData = {
+            key: data.key, // since it is a public file location is stored in our db
+            fileSize,
+            fileType: file.mimetype,
+          };
+          ResponseData.push(tempData);
+        }
+        if (dataCount === files.length) {
+          console.info('ResponseData', ResponseData);
+          res.json({ error: false, Message: 'File Uploaded SuceesFully', Data: ResponseData });
+        }
+      }
+    });
+  });
+};
 
 module.exports = {
   getPublicUrl,
@@ -153,4 +261,7 @@ module.exports = {
   uploadToGCS,
   multer,
   AWSPublicFileUpload,
+  AWSPrivateFileUpload,
+  AWSHTMLUpload,
+  multerNameAsPath,
 };

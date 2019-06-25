@@ -112,6 +112,7 @@ const pageInfoType = new ObjectType({
 const categoryListType = new ObjectType({
   name: 'categoryListType',
   fields: {
+    id :{type: StringType ,description :'mongodb id'},
     content: { type: contentType, description: 'content json' },
     resource: { type: resourceType, description: 'resource of the file' },
     textbookCode: { type: StringType, description: 'code of the textbook' },
@@ -129,14 +130,16 @@ export const CategoryWiseFilesOutputType = new ObjectType({
 export const FileDataInputType = new InputType({
   name: 'FileDataInputType',
   fields: {
-    fileKey: { type: new NonNull(StringType), description: 'Key of the file' },
-    textbookCode: { type: new NonNull(StringType), description: 'code of textbook ' },
+    // fileKey: { type: new NonNull(StringType), description: 'Key of the file' },
+    // textbookCode: { type: new NonNull(StringType), description: 'code of textbook ' },
+    id :{ type: new NonNull(StringType), description : 'mongodb id'}
   },
 });
 
 export const FileDataOutputType = new ObjectType({
   name: 'FileDataOutputType',
   fields: {
+    id :{type : new NonNull(StringType) ,description :'mongodb id of file'},
     content: { type: contentType, description: 'content of the file' },
     resource: { type: resourceType, description: 'resource of the file' },
     publication: { type: publicationType, description: 'publisher of the file' },
@@ -148,6 +151,27 @@ export const FileDataOutputType = new ObjectType({
     subject: { type: StringType, description: 'subject to which the file belongs to' },
     textBookName: { type: StringType, description: 'Name of the textBook' },
     topicName: { type: StringType, description: 'Name of the topic' },
+  },
+});
+
+export const ContentMappingInsertionInputType = new InputType({
+  name: 'ContentMappingInsertionInputType',
+  fields: {
+    contentCategory: { type: new NonNull(StringType), description: 'Category of content' }, // content data
+    contentName: { type: new NonNull(StringType), description: 'name of the content' }, // content data
+    contentType: { type: StringType, description: 'type of the content' }, // content data
+    fileKey: { type: new NonNull(StringType), description: 'Key of the uploaded file' }, // Resource data
+    fileSize: { type: IntType, description: 'Size of the file uploaded' }, // Resource data
+    fileType: { type: new NonNull(StringType), description: 'file type' }, // Resource data
+    publisher: { type: StringType, description: 'publisher of the content' }, // publisher data
+    publishedYear: { type: StringType, description: 'published year' }, // publisher data
+    orientation: { type: new NonNull(new List(StringType)), description: 'Orientations to which the content belongs to' },
+    textBookCode: { type: new NonNull(StringType), description: 'Code of the textbook' }, // refs data
+    topicCode: { type: new NonNull(StringType), description: 'Code of the textbook' }, // refs data
+    branches: { type: new List(StringType), description: 'branches to which the content belongs to ' },
+    category: { type: StringType, description: 'Category to which the content belongs to' },
+    coins: { type: IntType, description: 'No. of Coins we get once student completes the content' },
+    audioFiles: { type: new List(StringType), description: 'Array of Audio files Keys' },
   },
 });
 
@@ -168,5 +192,6 @@ export default {
   CmsCategoryStatsInputType,
   FileDataOutputType,
   FileDataInputType,
+  ContentMappingInsertionInputType,
   CmsTopicLevelStatsInputType,
 };

@@ -23,7 +23,7 @@ const all = {
   env: process.env.NODE_ENV || 'development',
 
   // APP_ENGINE
-  app_enigne: process.env.APP_ENGINE || false,
+  // app_enigne: process.env.APP_ENGINE || false,
 
   // Server port
   port: process.env.PORT || 3000,
@@ -38,10 +38,11 @@ const all = {
   secrets: {
     session: 'vega-secret',
   },
-  emailAuth: {
-    user: process.env.MAILJET_API_KEY || 'a1fb4988b5a359099061d2cb8aebc80d',
-    pass: process.env.MAILJET_API_SECRETKEY || '2fc962b7e3aae82acee17b355fb9de2d',
-  },
+  
+  // emailAuth: {
+  //   user: process.env.MAILJET_API_KEY || 'a1fb4988b5a359099061d2cb8aebc80d',
+  //   pass: process.env.MAILJET_API_SECRETKEY || '2fc962b7e3aae82acee17b355fb9de2d',
+  // },
 
 
 
@@ -55,6 +56,14 @@ const all = {
     },
   },
 
+  // AWS
+  AWS_S3_KEY: process.env.AWS_S3_KEY || 'AKIA4XBZMKL5IIJGR4UK',
+  AWS_S3_SECRET: process.env.AWS_S3_SECRET || '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',
+	AWS_S3_REGION: process.env.AWS_S3_REGION || 'ap-south-1',
+  AWS_PUBLIC_BUCKET: process.env.AWS_PUBLIC_BUCKET || 'ekslmsprojectpublic',
+  AWS_PRIVATE_BUCKET: process.env.AWS_PRIVATE_BUCKET || 'ekslmsproject',
+  AWS_PUBLIC_BUCKET_FOLDER: 'samplefiles',
+  AWS_PRIVATE_BUCKET_FOLDER: 'contentSampleFiles',
 };
 
 // Export the config object based on the NODE_ENV
