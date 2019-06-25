@@ -8,6 +8,7 @@ import { getModel as studentInfoModel } from '../student/student.model';
 
 import { config } from '../../../config/environment';
 import { getStudentData } from '../textbook/textbook.controller';
+import db from '../../../db';
 
 
 const xlsx = require('xlsx');
@@ -987,4 +988,20 @@ export async function getCmsTopicLevelStats(args, context) {
     }
     return finalObj;
   }));
+}
+
+export async function getTextbookBasedListOfQuizzes(args, context) {
+  //const Quizzes = [];
+  return ContentMappingModel(context).then(async ContentMapping => {
+    const query = {
+      "content.category": "Take Quiz",
+      "refs.textbook.code": args.input.textbookCode,
+    };
+    const projection = {
+      "quizName": "$content.name",
+      "questionpaperId": "$resource.key",
+    };
+    return ContentMapping.aggregate([{$match: query}, {$project: projection}]).allowDiskUse(true);
+  });
+  
 }
