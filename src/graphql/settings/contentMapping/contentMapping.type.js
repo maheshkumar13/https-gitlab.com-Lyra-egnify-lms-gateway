@@ -112,6 +112,7 @@ const pageInfoType = new ObjectType({
 const categoryListType = new ObjectType({
   name: 'categoryListType',
   fields: {
+    id :{type: StringType ,description :'mongodb id'},
     content: { type: contentType, description: 'content json' },
     resource: { type: resourceType, description: 'resource of the file' },
     textbookCode: { type: StringType, description: 'code of the textbook' },
@@ -129,14 +130,16 @@ export const CategoryWiseFilesOutputType = new ObjectType({
 export const FileDataInputType = new InputType({
   name: 'FileDataInputType',
   fields: {
-    fileKey: { type: new NonNull(StringType), description: 'Key of the file' },
-    textbookCode: { type: new NonNull(StringType), description: 'code of textbook ' },
+    // fileKey: { type: new NonNull(StringType), description: 'Key of the file' },
+    // textbookCode: { type: new NonNull(StringType), description: 'code of textbook ' },
+    id :{ type: new NonNull(StringType), description : 'mongodb id'}
   },
 });
 
 export const FileDataOutputType = new ObjectType({
   name: 'FileDataOutputType',
   fields: {
+    id :{type : new NonNull(StringType) ,description :'mongodb id of file'},
     content: { type: contentType, description: 'content of the file' },
     resource: { type: resourceType, description: 'resource of the file' },
     publication: { type: publicationType, description: 'publisher of the file' },
