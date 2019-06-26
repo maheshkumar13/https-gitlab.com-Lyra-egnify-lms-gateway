@@ -26,6 +26,7 @@ import { LaunchRequest } from './launcher/launchRequest/launchRequest.query';
 import { Questions, Results, QuestionEvaluation } from './tests/questions/questions.query';
 import { MasterResults } from './tests/masterResults/masterResults.query';
 import { InsertContent } from './settings/contentMapping/contentMapping.mutation';
+import {FindOrientations , FindBranches} from './tests/tests/tests.query';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -55,6 +56,8 @@ const schema = new Schema({
       CmsTopicLevelStats,
       getSubjectTextbookTopic,
       ContentMappingStats,
+      FindOrientations,
+      FindBranches,
     },
   }),
   mutation: new ObjectType({
