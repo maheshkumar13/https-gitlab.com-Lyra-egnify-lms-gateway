@@ -186,6 +186,14 @@ export const CmsTopicLevelStatsInputType = new InputType({
   },
 });
 
+export const UpdateMetaDataInputType = new InputType({
+  name: 'UpdateMetaDataInputType',
+  fields: {
+    id: { type: new NonNull(StringType), description: 'mongodb _id of the animation' },
+    questionpaperId: { type: new NonNull(StringType), description: 'question paper id of the quiz' },
+  },
+});
+
 export default {
   ContentMappingType,
   CmsCategoryStatsOutputType,
@@ -194,4 +202,5 @@ export default {
   FileDataInputType,
   ContentMappingInsertionInputType,
   CmsTopicLevelStatsInputType,
+  UpdateMetaDataInputType,
 };

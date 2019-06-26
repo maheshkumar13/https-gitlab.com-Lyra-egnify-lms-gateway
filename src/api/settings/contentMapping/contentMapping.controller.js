@@ -988,3 +988,23 @@ export async function getCmsTopicLevelStats(args, context) {
     return finalObj;
   }));
 }
+
+export async function updateAnimationMetaData(args, context) {
+  if(!args.id) {
+    throw new Error('Please send mongodb _id of the animation');
+  }
+  if(!args.questionpaperId) {
+    throw new Error('Please send questionpaperId');
+  }
+  const whereObj = {
+    _id: args.id,
+  };
+  const dataToUpdate = {
+    metaData: {
+      questionpaperId: args.questionpaperId,
+    },
+  };
+  return ContentMappingModel(context).then(ContentMapping =>
+    ContentMapping.updateOne(whereObj, { $set: dataToUpdate }, { upsert: true }).then(() => 'Inserted Successfully').catch(err => err));
+}
+
