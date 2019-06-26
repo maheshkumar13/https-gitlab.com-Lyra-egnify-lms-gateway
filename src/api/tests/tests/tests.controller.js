@@ -8,15 +8,6 @@ import { config } from '../../../config/environment';
 const crypto = require('crypto');
 const controller1 = require('../../settings/testPattern/testPattern.controller');
 
-// async function getTestPatternData(schemaName , context){
-//     return TestPatternModel(context).then((TestPattern) => {
-//       const query = {
-//         active: true,
-//         testName : schemaName
-//         }
-//       return TestPattern.find(query)
-//     })
-//   }
   
   async function getStudentData(className , context){
     const query = {
