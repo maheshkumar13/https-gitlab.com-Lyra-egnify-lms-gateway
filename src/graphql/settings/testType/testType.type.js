@@ -32,16 +32,26 @@ export const CreateTestTypeInputType = new InputType({
     name: { type: new NonNull(StringType), description: 'Name of the test type' },
     classCode: { type: new NonNull(StringType), description: 'childCode of class' },
     educationType: { type: new NonNull(EduType), description: 'education type' },
+    subjects :{type : new List(StringType), description :'list of subject codes' }
   }
 });
+export const namecodeType = new ObjectType({
+  name: 'namecodeType',
+  fields:{
+    name:{type: StringType},
+    code:{type:StringType}
+  }
+})
 
 export const OutputTestType = new ObjectType({
   name: 'OutputTestType',
   fields: {
     name: { type: StringType, description: 'Name of the test type created' },
     code: { type: StringType, description: 'Internal code of the test type' },
-    classCode:{type : StringType},
+    class:{ type : namecodeType},
     educationType:{type:StringType},
+    subjects:{type:new List(namecodeType)}
+    // subjects :{ type: new List(namecodeType)},
   },
 });
   
@@ -51,6 +61,7 @@ export const updateTestTypeInputType = new InputType({
     name: { type: StringType, description: 'Name of the test type' },
     educationType:{type: EduType},
     code: { type: new NonNull(StringType), description: 'Internal code of testtype' },
+    subjects:{type : new List(StringType), description :'list of subject codes' }
   }
 });
 

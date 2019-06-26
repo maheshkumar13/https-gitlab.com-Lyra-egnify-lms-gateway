@@ -8,6 +8,7 @@ const TestTypeSchema = new mongoose.Schema({
     code: { type: String, required: true, index: true, description: 'Internal code for the testtype' },
     classCode: { type: String, description: 'classcode'},
     educationType :{type : String },
+    subjects :{type: [String], description:'subject codes'},
     active: { type: Boolean, default: true },
     },{
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },

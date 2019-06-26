@@ -7,6 +7,8 @@ import { getModel as TestTypeModel } from './testType.model';
 import { config } from '../../../config/environment';
 import { getModel as InstituteHierarchyModel} from '../instituteHierarchy/instituteHierarchy.model'
 import { getModel as CounterModel} from '../Counter/counter.model';
+import {getModel as SubjectModel} from '../subject/subject.model'
+import { valueFromAST } from 'graphql';
 
 async function getHierarchyData(context, hierarchyCodes){
   return InstituteHierarchyModel(context).then((InstituteHierarchy) => {
@@ -58,7 +60,9 @@ export async function createTestType(args, context){
   if (
       !args.name ||
       !args.classCode ||
-      !args.educationType
+      !args.educationType||
+      !args.subjects||
+      (args.subjects).length <1
   ){
     throw new Error('Insufficient data');
   }
@@ -88,8 +92,9 @@ export async function createTestType(args, context){
         name: args.name,
         code: 'T' + ('000' + String(next)).substr(-3),
         classCode : args.classCode,
-        educationType : args.educationType
-         }
+        educationType : args.educationType,
+        subjects : args.subjects
+        }
     return TestType.create(obj)
       }); 
     });
@@ -112,8 +117,53 @@ export async function getTestType(args, context){
        code: 1,
        classCode :1,
        educationType:1,
+       subjects:1
      }
-     return TestType.find(query,project);
+     return TestType.find(query,project).then((testList)=>{
+      return InstituteHierarchyModel(context).then((InstituteHierarchy)=>{
+        var subs = []
+        for(var value in testList){
+          subs = subs.concat(testList[value]['subjects']) 
+        }
+        return SubjectModel(context).then((subjects) =>{
+          var query ={
+            code : {$in:subs}
+          }
+          return subjects.find(query,{subject:1,code:1, _id:0}).then((subjectList)=>{
+          return InstituteHierarchy.find({levelName:"Class"},{childCode:1,child:1}).then((classList)=>{
+            var resObj = [] ;
+            for(var i = 0 ; i < testList.length; i++){
+              const tempTestType = testList[i];
+            var obj = {};
+            var tempClassObj = classList.find(x=>x.childCode === tempTestType.classCode);
+            obj['name']  = tempTestType.name;
+            obj['code']  = tempTestType.code;
+            obj['educationType']= tempTestType.educationType;
+            obj['class'] = {
+            name : (tempClassObj && tempClassObj.child) ? tempClassObj.child : null,
+            code :  tempTestType.classCode
+            }
+            obj['subjects'] = []
+            for(var j in tempTestType['subjects']){
+              var sub ={};
+              var tempSubType = tempTestType['subjects'][j]
+              var tempSubObj = subjectList.find(x=>x['code'] === tempSubType);
+              if(tempSubObj)
+              {
+                sub['name'] = tempSubObj.subject
+                sub['code'] = tempSubType
+              }
+              obj['subjects'][j] = sub
+            }
+
+            resObj[i] = obj
+            }
+            return resObj ;
+          })
+         })
+       })
+      })
+     });
    });
  }
 
@@ -146,9 +196,19 @@ export async function validateTestTypeForUpdate(args, context){
       if(args.educationType){
         obj.educationType  = args.educationType
       }
-      return validateTestType(obj,context).then((isTestTypeExist)=>{
-        if(isTestTypeExist) throw new Error('TestType already exists')
-        return  TestType 
+      if(args.subjects){
+        obj.subjects = args.subjects
+      }
+      // return validateTestType(obj,context).then((isTestTypeExist)=>{
+      //   if(isTestTypeExist) throw new Error('TestType already exists')
+      //   return  TestType 
+    // });
+    console.log(obj)
+    return TestTypeModel(context).then((validTestType) => {
+      return validTestType.findOne(obj).then((exists) => {
+        if (exists) throw new Error('Already exists, no edits made')
+        return TestType
+      });
     });
   });
 });
@@ -175,6 +235,9 @@ export async function updateTestType(args, context){
     }
     if(args.educationType){
       patch.educationType = args.educationType
+    }
+    if(args.subjects){
+      patch.subjects = args.subjects
     }
     return TestType.updateOne(matchQuery, patch).then(() => {
       return TestType.findOne(matchQuery)
