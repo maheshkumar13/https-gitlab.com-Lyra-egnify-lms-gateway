@@ -35,7 +35,7 @@ const SubjectSchema = new mongoose.Schema({
 });
 
 
-const TestPatternSchema = new mongoose.Schema({
+export const TestPatternSchema = new mongoose.Schema({
   testName: { type: String, required: true },
   totalQuestions: { type: String, required: true },
   subjects: [SubjectSchema],
@@ -57,5 +57,6 @@ export async function getModel(userCxt) {
 
 export default {
   getModel,
+  TestPatternSchema
 };
 // export default mongoose.model('TestPattern', TestPatternSchema);

@@ -12,7 +12,7 @@ import {
   
   } from 'graphql';
   
-  import { TestPatternInputType, TestPatternType , UpdateTestPatternInputType} from './testPattern.type';
+  import { TestPatternInputType, TestPatternType} from './testPattern.type';
   const controller = require('../../../api/settings/testPattern/testPattern.controller');
   
   export const createTestPattern = {

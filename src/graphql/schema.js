@@ -28,7 +28,7 @@ import { MasterResults } from './tests/masterResults/masterResults.query';
 import { InsertContent } from './settings/contentMapping/contentMapping.mutation';
 import {TestPatterns} from './settings/testPattern/testPattern.query'
 import {createTestPattern , updateTestPattern , deleteTestPattern} from './settings/testPattern/testPattern.mutation'
-
+import {createTest} from './tests/tests/tests.mutation'
 
 const schema = new Schema({
   query: new ObjectType({
@@ -74,7 +74,8 @@ const schema = new Schema({
       InsertContent,
       createTestPattern,
       updateTestPattern,
-      deleteTestPattern
+      deleteTestPattern,
+      createTest
     },
   }),
 });

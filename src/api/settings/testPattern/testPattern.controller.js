@@ -250,6 +250,42 @@ export async function deleteTestPattern(args, context) {
   })
 }
 
+
+export async function validateSchema(args , context) {
+  if (!args.testName || args.testName === '') {
+    throw new Error('Specify a name for the test!');
+  }
+  if (!args.testType || args.testType === '') {
+    throw new Error('Specify a type for the test!'); // need an array from which to search for
+  }
+  if (!args.markingSchemaType || args.markingSchemaType === '') {
+    throw new Error('Specify a schema for the test!'); // need an array from which to search for
+  }
+  const query = checkTestName(args.testName);
+  return TestPatternModel(context).then((TestPattern) => {
+    return TestPattern.findOne(query).then((doc) => {
+      if (!doc) {
+        throw new Error('Schema does not exist!');
+      }
+      const getTestData = validateSubjectFields(args);
+      if (!getTestData) {
+        throw new Error('Check Subject Details!');
+      }
+
+      args.subjects = addStartAndEndInSubjects(args.subjects);
+      const obj = {
+        testName: args.testName,
+        totalQuestions: getTestData.totalQuestions,
+        subjects: args.subjects,
+        totalMarks: getTestData.totalMarks,
+        testType: args.testType,
+        markingSchemaType : args.markingSchemaType,
+        active : true,
+      }
+      return obj;
+    });
+  });
+}
 // export async function updateTestPattern(args, context){
 //   if(!args.testName){
 //     throw new Error('Specify a test Name to update!');
