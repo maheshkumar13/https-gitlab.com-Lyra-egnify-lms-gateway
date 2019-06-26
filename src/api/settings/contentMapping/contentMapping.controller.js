@@ -8,8 +8,9 @@ import { getModel as studentInfoModel } from '../student/student.model';
 
 import { config } from '../../../config/environment';
 import { getStudentData } from '../textbook/textbook.controller';
+import { defaultFieldResolver } from 'graphql';
 
-
+const Excel = require('exceljs');
 const xlsx = require('xlsx');
 const upath = require('upath');
 const crypto = require('crypto');
@@ -987,4 +988,56 @@ export async function getCmsTopicLevelStats(args, context) {
     }
     return finalObj;
   }));
+}
+
+
+export async function downloadContentDetails(req, res){
+  const args = req.body;
+  var workbook = new Excel.Workbook();
+	const worksheet = workbook.addWorksheet('My Sheet');
+	worksheet.columns = [
+		{ header: 'Orientation', key: 'code', width: 10 },
+    { header: 'Class', key: 'chapter', width: 10 },
+    { header: 'Category', key: 'code', width: 10 },
+    { header: 'Branches', key: 'code', width: 10 },
+    { header: 'Publisher', key: 'code', width: 10 },
+    { header: 'Subject', key: 'code', width: 10 },
+    { header: 'Textbook', key: 'code', width: 10 },
+    { header: 'Chapter', key: 'code', width: 10 },
+    { header: 'ContentType', key: 'code', width: 10 },
+    { header: 'Content Category', key: 'code', width: 10 },
+    { header: 'Content Name', key: 'code', width: 10 },
+    { header: 'Media Type',key: 'code', width: 10 },
+    { header: 'Publish Year',key: 'code', width: 10 },
+    { header: 'File Path',key: 'code', width: 10 },
+    { header: 'File Size',key: 'code', width: 10 },
+    { header: 'Coins',key: 'code', width: 10 },
+  ];
+	var fileName = 'sample.xlsx';
+	
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+
+  workbook.xlsx.write(res).then(function(){
+        res.end();
+  });
+
+      return res.send("Hello")
+}
+
+
+export async function getContentDetails(context,filters={}){
+  return ContentMappingModel(context).then((ContentMapping) => {
+    const aggregateQuery = []
+    const findQuery = {
+      active: true,
+    }
+    if(filters.textbookCode){
+      findQuery['$and'] = [
+        { 'refs.topic.code': {$in: [null, '', filters.topicCode]}},
+        { 'refs.textbook.code': { $in: [null, '', filters.textbookCode]}},
+      ];
+    }
+    return ContentMapping.find(findQuery)
+  })
 }
