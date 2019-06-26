@@ -1000,11 +1000,9 @@ export async function updateAnimationMetaData(args, context) {
     _id: args.id,
   };
   const dataToUpdate = {
-    metaData: {
-      questionpaperId: args.questionpaperId,
-    },
+      "metaData.questionpaperId": args.questionpaperId,
   };
   return ContentMappingModel(context).then(ContentMapping =>
-    ContentMapping.updateOne(whereObj, { $set: dataToUpdate }, { upsert: true }).then(() => 'Inserted Successfully').catch(err => err));
+    ContentMapping.updateOne(whereObj, {$set: dataToUpdate }).then(() => 'Updated Successfully').catch(err => err));
 }
 
