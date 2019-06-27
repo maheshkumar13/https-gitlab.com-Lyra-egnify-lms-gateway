@@ -1,8 +1,8 @@
 /**
-   @description GraphQl queries for Institute Hierarchy.
+   @description GraphQl mutationss for Packages.
 
    @author Aakash Parsi
-   @date   18/04/2019
+   @date   27/06/2019
    @version 1.0.0
 */
 import {

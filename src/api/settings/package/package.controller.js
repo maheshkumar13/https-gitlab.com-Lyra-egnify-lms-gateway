@@ -3,8 +3,6 @@ import InstituteModel from '../institute/institute.model';
 import { packageList } from '../../../graphql/settings/package/package.query';
 
 export async function createNewPackage(args, context) {
-  // console.info('args', args);
-  console.log("context:",context);
   const prep={
      packageName :args.packageName,
      packageId : (Date.now()+Math.random().toString()).substring(0,10),
@@ -35,11 +33,6 @@ export async function createNewPackage(args, context) {
 }
 
 export async function listOfPackages(args,context) {
-  // console.log("context:",context);
-  console.log("args",args);
-  // // console.log("2",args.academicYear);
-  // // console.log("3",args.subjects);
-  // // console.log("4",context.email);
   let classCode = args && args.classCode ? args.classCode : null;
   let academicYear = args && args.academicYear ? args.academicYear : null
   let subjectCode = args && args.subjectCode ? args.subjectCode : null
@@ -62,13 +55,7 @@ export async function listOfPackages(args,context) {
   query.active = true;
   console.log("query:",query);
     return packageModel(context).then((reqModel) => {
-      return reqModel.find(query).then((final) => {
-        //find({childCode: {$in: arrayCollection}}, {child:1, level:1,_id:0});
-        // if(!final)
-        // {
-        //   return res.status(400).end("error message");
-        // }
-        console.log("json :",final);
+      return reqModel.find(query).then((final) => {       
         var finalArray=[]
         console.log(final.length);
         for(var x=0;x<final.length;x+=1)
@@ -90,16 +77,13 @@ export async function listOfPackages(args,context) {
   }
 
 export async function updatePackage(args,context){
-  console.log("args:",args);
-  console.log("context",context);
   const prep={
     packageName :args.packageName,
-    academicYear:args.academicYear,//
-    subjects:args.subjects,//
+    academicYear:args.academicYear,
+    subjects:args.subjects,
     orientation : args.orientations,
     branches : args.branches,
     studentIds : args.studentIDs,
-    // feedback: args.feedback,
  };
  return packageModel(context).then((reqModel) => {
   return reqModel.updateOne({packageId : args.packageId , active : true},{$set:prep}).then((res, err) => {
@@ -119,9 +103,7 @@ export async function updatePackage(args,context){
 }
 
 export async function feedbackValidate(args,context){
-  console.log("context:",context);
-  console.log("args :",args);
-  let whereObj = {packageId: args.packageId, active: true};
+  let whereObj = {packageId: args.packageId, active: true ,reviewedBy : context.email};
   let setObj = {};
   if(args && args.feedback && args.status === 'underFeedback') {
     setObj = {
@@ -160,4 +142,6 @@ return packageModel(context).then((reqModel) => {
 // export default {
 //   createNewPackage,
 //   listOfPackages,
+//   updatePackage,
+//   feedbackValidate
 // }
