@@ -5,8 +5,14 @@
    @date   18/04/2019
    @version 1.0.0
 */
-
-import { CreatePackageInputType, CreatePackageOutputType } from './package.type';
+import {
+  GraphQLString as StringType,
+  GraphQLInputObjectType as InputType,
+  GraphQLObjectType as ObjectType,
+  GraphQLInt as IntType,
+  GraphQLList as List,
+} from 'graphql';
+import { CreatePackageInputType, CreatePackageOutputType,UpdatePackageInputType , PackageFeedbackInputType } from './package.type';
 
 const controller = require('../../../api/settings/package/package.controller');
 
@@ -20,5 +26,24 @@ export const CreatePackage = {
   },
 };
 
+export const UpdatePackage = {
+  args: {
+    input: { type: UpdatePackageInputType },
+  },
+  type: StringType,
+  async resolve(obj, args, context) {
+    return controller.updatePackage(args.input, context);
+  },
+};
 
-export default { CreatePackage };
+export const FeedbackPackage = {
+  args: {
+    input: { type: PackageFeedbackInputType },
+  },
+  type: StringType,
+  async resolve(obj, args, context) {
+    return controller.feedbackValidate(args.input, context);
+  },
+};
+
+export default { CreatePackage,UpdatePackage,FeedbackPackage };

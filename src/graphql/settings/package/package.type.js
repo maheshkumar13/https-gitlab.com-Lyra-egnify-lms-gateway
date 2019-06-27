@@ -2,7 +2,7 @@ import {
   GraphQLList as List,
   GraphQLObjectType as ObjectType,
   GraphQLString as StringType,
-  // GraphQLBoolean as BooleanType,
+  GraphQLBoolean as BooleanType,
   GraphQLNonNull as NonNull,
   // GraphQLInt as IntType,
   GraphQLInputObjectType as InputType,
@@ -39,8 +39,8 @@ export const CreatePackageInputType = new InputType({
   }),
 });
 
-export const packageListOutputType = new ObjectType({
-  name: 'packageListOutputType',
+export const PackageListOutputType = new ObjectType({
+  name: 'PackageListOutputType',
   fields: () => ({
     packageName: { type: new NonNull(StringType) },
     academicYear: { type: new NonNull(StringType) },
@@ -50,8 +50,9 @@ export const packageListOutputType = new ObjectType({
     branches: { type: new List(StringType) },
     students: { type: new List(StringType) },
     reviewedBy: { type: StringType },
+    authoredBy: {type:StringType},
     date:{type:StringType},
-    time:{type:StringType}
+    time:{type:StringType},
   }),
 });
 
@@ -65,8 +66,45 @@ export const CreatePackageOutputType = new ObjectType({
 });
 
 
+export const PackageListInputType = new InputType({
+  name: 'PackageListInputType',
+  fields: () => ({
+    classCode : {type : StringType},
+    subjectCode: { type: StringType },
+    // textbookCode : {type:StringType},
+    academicYear : {type: StringType},
+    isAuthor : { type : BooleanType, defaultValue: false }, 
+  }),
+});
+
+export const UpdatePackageInputType = new InputType({
+  name: 'UpdatePackageInputType',
+  fields: () => ({
+    packageId : {type : StringType},
+    packageName: { type: (StringType) },
+    academicYear: { type: (StringType) },
+    //classCode: { type: new NonNull(StringType) },
+    subjects: { type: (new List(PackageSubjectType)) },
+    orientations: { type: new List(StringType) },
+    branches: { type: new List(StringType) },
+    students: { type: new List(StringType) },
+    //reviewedBy: { type: StringType },
+  }),
+});
+export const PackageFeedbackInputType = new InputType({
+  name: 'PackageFeedbackInputType',
+  fields: () => ({
+    // packageName: { type: (StringType) },
+    packageId : {type :new NonNull (StringType)},
+    feedback : {type : StringType},
+    status : {type : new NonNull (StringType)},
+  }),
+});
+
 export default {
   CreatePackageInputType,
   CreatePackageOutputType,
-  packageListOutputType,
+  PackageListOutputType,
+  PackageListInputType,
+  UpdatePackageInputType,
 };

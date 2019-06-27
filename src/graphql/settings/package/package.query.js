@@ -6,19 +6,19 @@
    @version 1.0.0
 */
 
-import {packageListOutputType } from './package.type';
+import {PackageListInputType, PackageListOutputType } from './package.type';
 
 const controller = require('../../../api/settings/package/package.controller');
 
-export const packageList = {
-//   args: {
-//     input: { type: CreatePackageInputType },
-//   },
-  type: packageListOutputType,
-  async resolve(obj, context) {
-    return controller.listOfPackages(context);
+export const PackageList = {
+  args: {
+    input: { type: PackageListInputType },
+  },
+  type: PackageListOutputType,
+  async resolve(obj,args, context) {
+    return controller.listOfPackages(args.input,context);
   },
 };
 
 
-export default { packageList };
+export default { PackageList };
