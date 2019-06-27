@@ -5,7 +5,7 @@ import { packageList } from '../../../graphql/settings/package/package.query';
 export async function createNewPackage(args, context) {
   const prep={
      packageName :args.packageName,
-     packageId : (Date.now()+Math.random().toString()).substring(0,10),
+     packageId : (Date.now().toString()+Math.floor(Math.random() * 1000).toString()),
      academicYear:args.academicYear,//
      classCode:args.classCode,//
      subjects:args.subjects,//
