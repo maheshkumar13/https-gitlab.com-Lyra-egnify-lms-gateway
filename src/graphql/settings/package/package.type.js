@@ -25,6 +25,23 @@ const PackageSubjectType1 = new ObjectType({
   },
 });
 
+const PackageTextbookType = new ObjectType({
+  name: 'PackageTextbookType',
+  fields: {
+    textbookCode: { type: StringType },
+    textbookName: { type: StringType },
+  },
+});
+
+const SubjectDetailsType = new ObjectType({
+  name: 'SubjectDetailsOutputType',
+  fields: {
+    subjectName: { type: StringType },
+    subjectCode: { type: StringType },
+    textBooks: { type: new List(PackageTextbookType) },
+  },
+});
+
 export const CreatePackageInputType = new InputType({
   name: 'CreatePackageInputType',
   fields: () => ({
@@ -64,9 +81,19 @@ export const CreatePackageOutputType = new ObjectType({
   }),
 });
 
+export const PackageDetailsOutputType = new ObjectType({
+  name: 'PackageDetailsOutputType',
+  fields: {
+    subjects: { type: new List(SubjectDetailsType) },
+    orientations: { type: new List(StringType)},
+    branches: { type: new List(StringType) },
+    students: { type: new List(StringType) },
+  }
+});
 
 export default {
   CreatePackageInputType,
-  CreatePackageOutputType,
+  CreatePackageOutputType,  
   packageListOutputType,
+  PackageDetailsOutputType,
 };
