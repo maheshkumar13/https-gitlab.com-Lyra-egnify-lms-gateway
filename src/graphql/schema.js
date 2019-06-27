@@ -16,7 +16,7 @@ import { InstituteHierarchyGrid } from './settings/instituteHierarchy/instituteH
 import { updateCategory } from './settings/instituteHierarchy/instituteHierarchy.mutaion';
 import { createSubject } from './settings/subject/subject.mutation';
 import { Programs } from './settings/programs/programs.query';
-import { Textbooks } from './settings/textbook/textbook.query';
+import { Textbooks , findTextbookWithCode , TextbookWithCode} from './settings/textbook/textbook.query';
 import { createTextbook, updateTextbook, deleteTextbook } from './settings/textbook/textbook.mutation';
 import { Students, StudentUniqueValues, StudentsByLastNode, StudentById } from './settings/student/student.query';
 import { updateStudentAvatar, updateStudentSubjects } from './settings/student/student.mutation';
@@ -55,6 +55,8 @@ const schema = new Schema({
       CmsTopicLevelStats,
       getSubjectTextbookTopic,
       ContentMappingStats,
+      findTextbookWithCode,
+      TextbookWithCode
     },
   }),
   mutation: new ObjectType({

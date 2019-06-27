@@ -11,7 +11,9 @@ import {
 
 } from 'graphql';
 
-import { TextbookType } from './textbook.type';
+import GraphQLJSON from 'graphql-type-json';
+
+import { TextbookType , textbookCode } from './textbook.type';
 const controller = require('../../../api/settings/textbook/textbook.controller');
 
 export const Textbooks = {
@@ -26,6 +28,23 @@ export const Textbooks = {
   },
 };
 
+export const findTextbookWithCode = {
+  type : GraphQLJSON,
+  async resolve(obj , args , context){
+    return controller.getTextbooksWithCode(context);
+  }
+}
+
+export const TextbookWithCode = {
+  type : GraphQLJSON,
+  async resolve(obj , args , context){
+    return controller.codeAndTextbooks(context);
+  }
+}
+
+
 export default{
   Textbooks,
+  findTextbookWithCode,
+  TextbookWithCode
 };
