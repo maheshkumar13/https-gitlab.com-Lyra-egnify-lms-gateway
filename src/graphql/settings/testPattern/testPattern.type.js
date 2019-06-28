@@ -15,10 +15,6 @@ import {
     GraphQLBoolean as BooleanType,
   } from 'graphql';
   
-  import GraphQLJSON from 'graphql-type-json';
-
-import mongoose from 'mongoose';
-import { getDB } from '../../../db';
 
 export const MarksInputType = new InputType({
   name : 'MarksInputType',
@@ -55,10 +51,10 @@ export const SubjectInput = new InputType({
 export const TestPatternInputType = new InputType({
   name: 'TestPatternInputType',
   fields: {
-    testName: { type: StringType, description: 'Name of the textbook' },
-     subjects : { type: new List(SubjectInput), description: 'childCode of class' },
-    testType: { type: StringType, description: 'Name of the textbook' },
-    markingSchemaType: { type: StringType, description: 'Name of the textbook' },
+    testName: { type: StringType, description: 'Name of the test pattern' },
+     subjects : { type: new List(SubjectInput), description: 'List of subjects and their question distribution' },
+    testType: { type: StringType, description: 'Type of test pattern' },
+    markingSchemaType: { type: StringType, description: 'Marking Schema Type' },
   }
 });
 

@@ -17,11 +17,11 @@ import {
   
   export const TestPatterns = {
     args: {
-        testName: { type: StringType, description: 'Name of the textbook' },
-        totalQuestions: { type: IntType, description: 'Name of the textbook' },
-        totalMarks: { type: IntType, description: 'Name of the textbook' },
-        testType: { type: StringType, description: 'Name of the textbook' },
-        markingSchemaType: { type: StringType, description: 'Name of the textbook' },
+        testName: { type: StringType, description: 'Name of the test pattern' },
+        totalQuestions: { type: IntType, description: 'Total Questions' },
+        totalMarks: { type: IntType, description: 'Total Marks' },
+        testType: { type: StringType, description: 'TYpe of test pattern' },
+        markingSchemaType: { type: StringType, description: 'Marking Schema Type' },
     },
     type: new List(TestPatternType),
     async resolve(obj, args, context) {

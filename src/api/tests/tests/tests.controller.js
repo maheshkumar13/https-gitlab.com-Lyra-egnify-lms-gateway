@@ -54,9 +54,7 @@ const controller1 = require('../../settings/testPattern/testPattern.controller')
           Test,
           Counter
         ]) => {
-          // console.log('StudentData' , StudentData)
           const classCode = StudentData.hierarchy[1].childCode;
-          // console.log(classCode);
           const obj1 = TestPattern;
           console.log('obj1' ,obj1);
 
@@ -70,7 +68,6 @@ const controller1 = require('../../settings/testPattern/testPattern.controller')
             testId:  'T' + ('000' + String(next)).substr(-3),
             class : args.class,
             classCode : classCode,
-            // time : args.time,
             questionPaperId : args.questionPaperId,
             Type : args.Type,
             avgPaperTime : args.avgPaperTime,
@@ -84,7 +81,6 @@ const controller1 = require('../../settings/testPattern/testPattern.controller')
           let startTimeDate = new Date(args.date);
           startTimeDate.setHours(hours);
           startTimeDate.setMinutes(minutes);
-          // obj.startTime = startTimeDate;
           obj.startTime = startTimeDate;
 
           return Test.create(obj);

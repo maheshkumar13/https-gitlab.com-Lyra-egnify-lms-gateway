@@ -46,11 +46,11 @@ import {
   export const TestType = new ObjectType({
     name : 'TestType',
     fields : {
-      name: { type: new NonNull(StringType), description: 'Name of the textbook' },
+      name: { type: new NonNull(StringType), description: 'Name of the test' },
       testId : {type : new NonNull(StringType) , description : 'testCode'},
       class: {type : new NonNull(StringType) , description : 'Name of the class'},
       classCode: { type: new NonNull(StringType), description: 'classCode of class' },
-      startTime: { type: GraphQLDate, description: 'Internal code of subject' },
+      startTime: { type: GraphQLDate, description: 'Start time of test' },
       Type: { type: StringType, description: 'Based on length of test' },
       avgPaperTime:{ type: StringType, description: 'avgtime on type of data' },
       date: { type: StringType, description: 'Date of test'},
@@ -64,7 +64,7 @@ import {
   export const TestInputType = new InputType({
     name: 'TestInputType',
     fields: {
-      name: { type: new NonNull(StringType), description: 'Name of the textbook' },
+      name: { type: new NonNull(StringType), description: 'Name of the test' },
       class: { type: new NonNull(StringType), description: 'name of the class' },
       time: { type: StringType, description: 'Start time of the test' },
       Type: { type: StringType, description: 'Based on length of test' },

@@ -37,7 +37,7 @@ import {
 
   export const deleteTestPattern = {
     args: {
-      testName: { type: StringType, description: 'Internal code for text book' },
+      testName: { type: StringType, description: 'Name of the test pattern to be deleted' },
     },
     type: TestPatternType,
     async resolve(obj, args, context) {
