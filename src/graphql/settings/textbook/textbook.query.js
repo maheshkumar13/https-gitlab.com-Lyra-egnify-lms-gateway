@@ -28,14 +28,7 @@ export const Textbooks = {
   },
 };
 
-export const findTextbookWithCode = {
-  type : GraphQLJSON,
-  async resolve(obj , args , context){
-    return controller.getTextbooksWithCode(context);
-  }
-}
-
-export const TextbookWithCode = {
+export const TextbooksInfo= {
   type : GraphQLJSON,
   async resolve(obj , args , context){
     return controller.codeAndTextbooks(context);
@@ -45,6 +38,5 @@ export const TextbookWithCode = {
 
 export default{
   Textbooks,
-  findTextbookWithCode,
-  TextbookWithCode
+  TextbooksInfo
 };

@@ -237,40 +237,23 @@ export async function deleteTextbook(args, context) {
   })
 }
 
-export async function getTextbooksWithCode(context){
-  return TextbookModel(context).then((Textbook) => {
-    const query = {active : true};
-    
-    // return Textbook.aggregate([{$group : {_id : {"code" : "$code"} }}]).then((doc) => {
-    return Textbook.find(query).then((doc) => {
-    var ans = {};
-    console.log('length ' , doc.length)
-    for(let i = 0 ; i < doc.length ; i++){
-      const json = {
-        name : doc[i].name,
-        subject : doc[i].refs.subject.name,
-        class : doc[i].refs.class.name,
-        orientations : doc[i].orientations,
-        branches : doc[i].branches,
-      }
-      ans[doc[i].code] = json;
-    }
-    return ans;
-    })
-    
-  })
-}
-
 export async function codeAndTextbooks(context){
   return TextbookModel(context).then((Textbook) => {
     const query = {active : true};
-    return Textbook.aggregate([ {$match : {'active' : true}} ,  {"$group" : {"_id" : "$code"  , "data" : {"$push" : {"subject" : "$refs.subject.name" , "class" : "$refs.class.name", "name" : "$name" , "branches" : "$branches" , "orientations" : "$orientations"}} }} , {"$group" :{"_id" : null , "data" : {"$push" : {"k" : "$_id" , "v" : "$data"}} } } , { "$replaceRoot": {"newRoot": { "$arrayToObject": "$data" }}} ])
+
+    const aggregateQuery = [{
+      $match : {'active' : true}} ,  
+      {"$group" : {"_id" : {"code" : "$code"  , "data" :  {"subject" : "$refs.subject.name" , "class" : "$refs.class.name", "name" : "$name" , "branches" : "$branches" , "orientations" : "$orientations"}} }} ,
+      {"$group" :{"_id" : null , "data" : {"$push" : {"k" : "$_id.code" , "v" : "$_id.data"}} } } , { "$replaceRoot": {"newRoot": { "$arrayToObject": "$data" }}} , 
+    ]
+
+  return Textbook.aggregate(aggregateQuery).cache(config.cacheTimeOut.textbook).then((docs) => {
+    if(!docs || docs.length < 1){
+      return {};
+    }
+    return docs
+  })
   
-    // return Textbook.aggregate([ {$match : {'active' : true}} ,  {$group : {_id : "$code"   ,  "details": { "$push": {"subject" : "$refs.subject.name" , "class" : "$refs.class.name", "name" : "$name" , "branches" : "$branches" , "orientations" : "$orientations"} }}} , { $project: {  _id: 0,textbookCode: "$_id",details : 1}} ])
-    // return Textbook.find(query , {_id : 0 , code : 1 , name : 1 , orientations : 1 , branches : 1 , 'refs.class.name' : 1 , 'refs.subject.name' : 1}).then((doc) => {
-    //   var ans = {};
-    //   ans[doc.code] = doc;
-    //   return ans;
-    //   })
   })
 }
+

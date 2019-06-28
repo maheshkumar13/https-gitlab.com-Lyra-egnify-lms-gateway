@@ -81,17 +81,8 @@ export const updateTextbookInputType = new InputType({
   }
 })
 
-// export const textbookCode = new ObjectType({
-//   name : 'textbookCode',
-//   fields: {
-//     code : {type : StringType},
-//     data : {type : GraphQLJSON},
-//   }
-// })
-
 export default {
   TextbookType,
   TextbookInputType,
   updateTextbookInputType,
-  // textbookCode
 };
