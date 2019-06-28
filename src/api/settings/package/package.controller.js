@@ -9,7 +9,7 @@ export async function createNewPackage(args, context) {
      academicYear:args.academicYear,//
      classCode:args.classCode,//
      subjects:args.subjects,//
-     orientation : args.orientations,
+     orientations : args.orientations,
      branches : args.branches,
      studentIds : args.studentIDs,
      reviewedBy: args.reviewedBy.toLowerCase(),//convert to lower
