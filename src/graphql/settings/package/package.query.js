@@ -34,7 +34,8 @@ export const PackageDetails = {
   type: PackageDetailsOutputType,
   async resolve(obj, args, context) {
     return controller.getPackageDetails(args, context)
-      .then(async json => json);
+      .then(async json => json)
+      .catch(err => err);
   },
 };
 

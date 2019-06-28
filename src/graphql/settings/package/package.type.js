@@ -42,6 +42,14 @@ const SubjectDetailsType = new ObjectType({
   },
 });
 
+const ClassType = new ObjectType({
+  name: 'ClassType',
+  fields: {
+    name: { type: StringType },
+    code: { type: StringType },
+  },
+});
+
 export const CreatePackageInputType = new InputType({
   name: 'CreatePackageInputType',
   fields: () => ({
@@ -84,11 +92,16 @@ export const CreatePackageOutputType = new ObjectType({
 export const PackageDetailsOutputType = new ObjectType({
   name: 'PackageDetailsOutputType',
   fields: {
+    packageName: { type: StringType },
+    academicYear: { type: StringType },
+    class: { type: ClassType }, 
     subjects: { type: new List(SubjectDetailsType) },
     orientations: { type: new List(StringType)},
     branches: { type: new List(StringType) },
     students: { type: new List(StringType) },
-  }
+    reviewedBy: { type: StringType },
+    authoredBy: { type: StringType },
+  },
 });
 
 export default {

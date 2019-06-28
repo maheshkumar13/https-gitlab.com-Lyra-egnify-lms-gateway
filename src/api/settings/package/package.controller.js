@@ -1,10 +1,9 @@
 import { getModel as packageModel } from './package.model';
-import textbookModel, { getModel as texbookModel } from '../textbook/textbook.model';
+import { getModel as textbookModel } from '../textbook/textbook.model';
 import InstituteModel from '../institute/institute.model';
 import { packageList } from '../../../graphql/settings/package/package.query';
 
 export async function createNewPackage(args, context) {
-   console.info('args', args); console.log("context:",context);
   const prep={
      packageName :args.packageName,
      packageId : Date.now()+Math.random().toString(),
@@ -35,7 +34,6 @@ export async function createNewPackage(args, context) {
 }
 
 export async function listOfPackages(context) {
-  console.log("context:",context);
   return packageModel(context).then((reqModel) => {
     return reqModel.find().then((json) => {
       
@@ -49,6 +47,11 @@ export async function getPackageDetails(args, context) {
     packageId: args.input,
   };
   const projection1 = {
+    packageName: 1,
+    academicYear: 1,
+    reviewedBy: 1,
+    authoredBy: 1,
+    classCode: 1,
     orientations: 1,
     branches: 1,  
     studentIds: 1,
@@ -56,10 +59,19 @@ export async function getPackageDetails(args, context) {
   };
   return packageModel(context).then(Package => {
     return (Package.findOne(query1, projection1)).then((packageObj) => {
+      if(!packageObj) {
+        throw new Error("Package not found");
+      }
       const finalResult = {};
+      finalResult.packageName = packageObj.packageName;
+      finalResult.academicYear = packageObj.academicYear;
+      finalResult.reviewedBy = packageObj.reviewedBy;
+      finalResult.authoredBy = packageObj.authoredBy;  
+      finalResult.class = {};
+      finalResult.class.code = packageObj.classCode;                        
       finalResult.orientations = packageObj.orientations;
       finalResult.branches = packageObj.branches;
-      finalResult.studentIds = packageObj.studentIds;
+      finalResult.students = packageObj.studentIds;
       finalResult.subjects = [];
       const subjArray = packageObj.subjects;
       const textbookCodesArray = [];
@@ -68,7 +80,6 @@ export async function getPackageDetails(args, context) {
           textbookCodesArray.push(subjArray[i].textbookCodes[j]);
         }
       }
-      console.log("\nTextbook Codes : \n", textbookCodesArray);
       const query2 = {
         code: { $in : textbookCodesArray},
       };
@@ -77,16 +88,43 @@ export async function getPackageDetails(args, context) {
         "code": 1,
         "refs.subject.name": 1,
         "refs.subject.code": 1,
+        "refs.class.name": 1,
+        "refs.class.code": 1,
       };
-      return textbookModel(context).then(Textbook => {
+      const group2 = {
+        _id: {
+          subject: {
+            name: "$refs.subject.name",
+            code: "$refs.subject.code",
+          },
+          class: {
+            name: "$refs.class.name",
+          },
+        },
+        textBooks: {
+          $addToSet: {
+            "textbookCode": "$code",
+            "textbookName": "$name",
+          }
+        }
+      }
+       return textbookModel(context).then(Textbook => {
         return (Textbook.aggregate([
           { $match: query2 },
           { $project: projection2 },
-          { $group: { _id: $refs.subject.code } }        
+          { $group: group2 }        
         ]).allowDiskUse(true)).then(result1 => {
-          console.log("\n*******\n******\n", JSON.stringify(result1), "\n********\n");
+          finalResult.class.name = result1[0]._id.class.name;
+          for (let i=0; i<result1.length; i++) {
+            const obj = {};
+            obj.subjectName = result1[i]._id.subject.name;
+            obj.subjectCode = result1[i]._id.subject.code;
+            obj.textBooks = result1[i].textBooks;
+            finalResult.subjects.push(obj);
+          }
+          return finalResult;
         });
       });
-    });
+    }).catch(err => err);
   });
 }
