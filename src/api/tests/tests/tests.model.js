@@ -25,6 +25,7 @@ const tests = new mongoose.Schema(
       duration: { type: String},
       testPattern : {type : TestPatternSchema},
       active : {type : Boolean , default : true},
+      questionPaperId : {type : String}
     },
     {
       collection: 'tests',

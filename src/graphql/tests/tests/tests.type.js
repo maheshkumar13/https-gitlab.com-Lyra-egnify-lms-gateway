@@ -56,7 +56,8 @@ import {
       date: { type: StringType, description: 'Date of test'},
       duration: { type: StringType, description: 'Duration of test'},
       testPattern : {type : TestPatternType , description : 'Marking Schema'},
-      active : {type : BooleanType}
+      active : {type : BooleanType},
+      questionPaperId : {type : StringType}
     }
   })
 
@@ -70,7 +71,8 @@ import {
       avgPaperTime:{ type: new NonNull(PaperEnumType) },
       date: { type: StringType, description: 'Date of test'},
       duration: { type: (StringType), description: 'Duration of test'},
-      testPattern : {type : TestPatternInputType , description : 'Marking Schema'}
+      testPattern : {type : TestPatternInputType , description : 'Marking Schema'},
+      questionPaperId : {type : StringType}
     }
   })
   
