@@ -236,3 +236,24 @@ export async function deleteTextbook(args, context) {
     })
   })
 }
+
+export async function codeAndTextbooks(context){
+  return TextbookModel(context).then((Textbook) => {
+    const query = {active : true};
+
+    const aggregateQuery = [{
+      $match : {'active' : true}} ,  
+      {"$group" : {"_id" : {"code" : "$code"  , "data" :  {"subject" : "$refs.subject.name" , "class" : "$refs.class.name", "name" : "$name" , "branches" : "$branches" , "orientations" : "$orientations"}} }} ,
+      {"$group" :{"_id" : null , "data" : {"$push" : {"k" : "$_id.code" , "v" : "$_id.data"}} } } , { "$replaceRoot": {"newRoot": { "$arrayToObject": "$data" }}} , 
+    ]
+
+  return Textbook.aggregate(aggregateQuery).cache(config.cacheTimeOut.textbook).then((docs) => {
+    if(!docs || docs.length < 1){
+      return {};
+    }
+    return docs
+  })
+  
+  })
+}
+
