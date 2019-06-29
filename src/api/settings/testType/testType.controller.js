@@ -161,7 +161,6 @@ export async function validateTestTypeForUpdate(args, context){
   }
   return TestTypeModel(context).then((testType) => {
     return testType.findOne(query,{_id:0,active:1,name:1,classCode:1,subjects:1,educationType:1}).then((obj) => {
-      console.log("----------------\n",obj)
       if (!obj) throw new Error('TestType not found with given code')
       obj.active = true
       if(args) {
@@ -178,10 +177,8 @@ export async function validateTestTypeForUpdate(args, context){
           obj.subjects = args.subjects
         }
       }
-      console.log("obj", obj);
     return testType.findOne(obj,{code:1}).then((doc) => {
       if(doc){
-        console.log("duplicate--------------------\n",doc)
         throw new Error(`Test Already Exists With Code ${doc.code}`)
       }
       return testType
