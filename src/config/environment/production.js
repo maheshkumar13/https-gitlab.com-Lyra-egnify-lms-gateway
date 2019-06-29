@@ -37,7 +37,6 @@ module.exports = {
   // AWS
   AWS_S3_KEY: process.env.AWS_S3_KEY || 'AKIA4XBZMKL5IIJGR4UK',
   AWS_S3_SECRET: process.env.AWS_S3_SECRET || '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',
-	AWS_S3_REGION: process.env.AWS_S3_REGION || 'ap-south-1',
-  AWS_PUBLIC_BUCKET: process.env.AWS_PUBLIC_BUCKET || 'ekslmsprojectpublic',
+  AWS_S3_REGION: process.env.AWS_S3_REGION || 'ap-south-1',
   AWS_PUBLIC_BUCKET_FOLDER: 'samplefiles',
 };
