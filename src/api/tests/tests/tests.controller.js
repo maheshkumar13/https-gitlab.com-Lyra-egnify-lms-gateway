@@ -44,7 +44,6 @@ const controller1 = require('../../settings/testPattern/testPattern.controller')
         if(TestExists) throw new Error('Test name already taken');
         return Promise.all([
           getStudentData(args.class , context),
-          // getTestPatternData(args.testPattern , context),
           controller1.validateSchema(args.testPattern , context),
           TestModel(context),
           CounterModel(context)
@@ -76,8 +75,8 @@ const controller1 = require('../../settings/testPattern/testPattern.controller')
             testPattern : obj1
           }
 
-          const hours = parseInt(args.time.split(':')[0]);  //eslint-disable-line
-          const minutes = parseInt(args.time.split(':')[1]);//eslint-disable-line
+          const hours = parseInt(args.time.split(':')[0]);  
+          const minutes = parseInt(args.time.split(':')[1]);
           let startTimeDate = new Date(args.date);
           startTimeDate.setHours(hours);
           startTimeDate.setMinutes(minutes);

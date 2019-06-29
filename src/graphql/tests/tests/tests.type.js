@@ -50,14 +50,14 @@ import {
       testId : {type : new NonNull(StringType) , description : 'testCode'},
       class: {type : new NonNull(StringType) , description : 'Name of the class'},
       classCode: { type: new NonNull(StringType), description: 'classCode of class' },
-      startTime: { type: GraphQLDate, description: 'Start time of test' },
+      startTime: { type: new NonNull(GraphQLDate), description: 'Start time of test' },
       Type: { type: StringType, description: 'Based on length of test' },
       avgPaperTime:{ type: StringType, description: 'avgtime on type of data' },
-      date: { type: StringType, description: 'Date of test'},
-      duration: { type: StringType, description: 'Duration of test'},
-      testPattern : {type : TestPatternType , description : 'Marking Schema'},
+      date: { type: new NonNull(StringType), description: 'Date of test'},
+      duration: { type: new NonNull(StringType), description: 'Duration of test'},
+      testPattern : {type : new NonNull(TestPatternType) , description : 'Marking Schema'},
       active : {type : BooleanType},
-      questionPaperId : {type : StringType}
+      questionPaperId : {type : new NonNull(StringType)}
     }
   })
 
@@ -66,13 +66,13 @@ import {
     fields: {
       name: { type: new NonNull(StringType), description: 'Name of the test' },
       class: { type: new NonNull(StringType), description: 'name of the class' },
-      time: { type: StringType, description: 'Start time of the test' },
+      time: { type: new NonNull(StringType), description: 'Start time of the test' },
       Type: { type: StringType, description: 'Based on length of test' },
-      avgPaperTime:{ type: new NonNull(PaperEnumType) },
-      date: { type: StringType, description: 'Date of test'},
-      duration: { type: (StringType), description: 'Duration of test'},
-      testPattern : {type : TestPatternInputType , description : 'Marking Schema'},
-      questionPaperId : {type : StringType}
+      avgPaperTime:{ type: PaperEnumType },
+      date: { type: new NonNull(StringType), description: 'Date of test'},
+      duration: { type: new NonNull(StringType), description: 'Duration of test'},
+      testPattern : {type : new NonNull(TestPatternInputType) , description : 'Marking Schema'},
+      questionPaperId : {type : new NonNull(StringType)}
     }
   })
   

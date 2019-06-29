@@ -26,9 +26,9 @@ function validateMarksSection(section, subject = 'Subject') {
   if (U === '' || U > 0 || U < W) {
     throw new Error('Invalid Unattempted Marks.');
   }
-  // if (ADD < 0) {
-  // throw new Error('Invalid Additional Marks.');
-  // }
+  if (ADD < 0) {
+  throw new Error('Invalid Additional Marks.');
+  }
   if (P === '' || P > C || P < 0) {
     throw new Error('Invalid Partial Marks.');
   }
@@ -51,7 +51,7 @@ function validateSubject(subject) {
     ){
       throw new Error('Insufficient subject details');
   }
-  const { marks } = subject; // eslint-disable-line
+  const { marks } = subject; 
   if (marks.length === 0) {
     throw new Error('Atleast one section required');
   }
@@ -136,10 +136,10 @@ export async function createTestPattern(args , context) {
     throw new Error('Specify a name for the test!');
   }
   if (!args.testType || args.testType === '') {
-    throw new Error('Specify a type for the test!'); // need an array from which to search for
+    throw new Error('Specify a type for the test!'); 
   }
   if (!args.markingSchemaType || args.markingSchemaType === '') {
-    throw new Error('Specify a schema for the test!'); // need an array from which to search for
+    throw new Error('Specify a schema for the test!'); 
   }
   const query = checkTestName(args.testName);
   return TestPatternModel(context).then((TestPattern) => {
@@ -221,10 +221,10 @@ export async function validateSchema(args , context) {
     throw new Error('Specify a name for the test!');
   }
   if (!args.testType || args.testType === '') {
-    throw new Error('Specify a type for the test!'); // need an array from which to search for
+    throw new Error('Specify a type for the test!'); 
   }
   if (!args.markingSchemaType || args.markingSchemaType === '') {
-    throw new Error('Specify a schema for the test!'); // need an array from which to search for
+    throw new Error('Specify a schema for the test!'); 
   }
   const query = checkTestName(args.testName);
   return TestPatternModel(context).then((TestPattern) => {

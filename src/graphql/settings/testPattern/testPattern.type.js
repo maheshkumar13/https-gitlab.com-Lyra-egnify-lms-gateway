@@ -30,6 +30,7 @@ export const MarksInputType = new InputType({
     P: { type: IntType},
     W: { type: IntType},
     U: { type: IntType},
+    ADD : {type : IntType},
   },
   
 });
@@ -52,7 +53,7 @@ export const TestPatternInputType = new InputType({
   name: 'TestPatternInputType',
   fields: {
     testName: { type: StringType, description: 'Name of the test pattern' },
-     subjects : { type: new List(SubjectInput), description: 'List of subjects and their question distribution' },
+    subjects : { type: new List(SubjectInput), description: 'List of subjects and their question distribution' },
     testType: { type: StringType, description: 'Type of test pattern' },
     markingSchemaType: { type: StringType, description: 'Marking Schema Type' },
   }
@@ -73,6 +74,7 @@ export const MarksType = new ObjectType({
     P: { type: IntType},
     W: { type: IntType},
     U: { type: IntType},
+    ADD : {type : IntType},
   },
   
 });

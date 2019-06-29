@@ -5,15 +5,16 @@ const MarksSchema = new mongoose.Schema({
   section: { type: Number, required: true },
   questionType: { type: String, required: true },
   noOfOptions: { type: Number, default: 4 },
-  numberOfQuestions: { type: Number, required: true },
+  numberOfQuestions: { type: Number, required: true , default : 0},
   numberOfSubQuestions: { type: Number, default : 0},
-  totalMarks: { type: Number, required: true },
+  totalMarks: { type: Number, required: true , default : 0},
   start: { type: Number, required: true },
   end: { type: Number, required: true },
   C: { type: Number, required: true, default: 0 },
   P: { type: Number, default: 0, default: 0 },
   W: { type: Number, required: true, default: 0 },
   U: { type: Number, required: true, default: 0 },
+  ADD : {type : Number , required : true , default : 0},
 });
 
 const SubjectSchema = new mongoose.Schema({
