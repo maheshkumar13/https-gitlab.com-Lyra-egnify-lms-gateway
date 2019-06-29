@@ -86,4 +86,5 @@ export default {
   TextbookType,
   TextbookInputType,
   updateTextbookInputType,
+  nameCodeType,
 };

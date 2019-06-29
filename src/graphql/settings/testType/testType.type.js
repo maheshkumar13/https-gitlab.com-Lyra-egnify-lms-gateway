@@ -11,7 +11,7 @@ import {
     
   } from 'graphql';
 
-import GraphQLJSON from 'graphql-type-json';
+import {nameCodeType} from '../textbook/textbook.type'
 const eduData = ['School/College','Competitive'];
 
 export const EduType = new EnumType({
@@ -35,33 +35,26 @@ export const CreateTestTypeInputType = new InputType({
     subjects :{type : new List(StringType), description :'list of subject codes' }
   }
 });
-export const namecodeType = new ObjectType({
-  name: 'namecodeType',
-  fields:{
-    name:{type: StringType},
-    code:{type:StringType}
-  }
-})
 
 export const OutputTestType = new ObjectType({
   name: 'OutputTestType',
   fields: {
     name: { type: StringType, description: 'Name of the test type created' },
     code: { type: StringType, description: 'Internal code of the test type' },
-    class:{ type : namecodeType},
+    class:{ type : nameCodeType},
     educationType:{type:StringType},
-    subjects:{type:new List(namecodeType)}
-    // subjects :{ type: new List(namecodeType)},
+    subjects:{type:new List(nameCodeType)}
   },
 });
   
-export const updateTestTypeInputType = new InputType({
-  name: 'updateTestTypeInputType',
+export const UpdateTestTypeInputType = new InputType({
+  name: 'UpdateTestTypeInputType',
   fields: {
     name: { type: StringType, description: 'Name of the test type' },
     educationType:{type: EduType},
     code: { type: new NonNull(StringType), description: 'Internal code of testtype' },
-    subjects:{type : new List(StringType), description :'list of subject codes' }
+    subjects:{type : new List(StringType), description :'list of subject codes' },
+    classCode :{type: StringType, description: 'to update class, class code of new class'}
   }
 });
 
@@ -69,5 +62,5 @@ export const updateTestTypeInputType = new InputType({
 export default {
   CreateTestTypeInputType, 
   OutputTestType, 
-  updateTestTypeInputType,
+  UpdateTestTypeInputType,
 };

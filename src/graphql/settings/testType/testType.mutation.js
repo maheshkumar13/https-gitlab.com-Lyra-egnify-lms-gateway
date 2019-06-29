@@ -11,12 +11,12 @@ import {
 
 } from 'graphql';
 
-import { CreateTestTypeInputType, OutputTestType,updateTestTypeInputType} from './testType.type';
+import { CreateTestTypeInputType, OutputTestType,UpdateTestTypeInputType} from './testType.type';
 const controller = require('../../../api/settings/testType/testType.controller');
 
 
 
-export const createTestType = {
+export const CreateTestType = {
   args: {
     input: { type: CreateTestTypeInputType, description: 'TestType input type' },
   },
@@ -26,10 +26,9 @@ export const createTestType = {
   },
 };
 
-
-export const deleteTestType = {
+export const DeleteTestType = {
   args: {
-    code: { type: StringType, description: 'Internal code for test type' },
+    code: { type:new NonNull(StringType), description: 'Internal code for test type' },
   },
   type: OutputTestType,
   async resolve(obj, args, context) {
@@ -37,21 +36,18 @@ export const deleteTestType = {
   },
 };
 
-
-
-
-export const updateTestType = {
+export const UpdateTestType = {
   args: {
-    input: { type: updateTestTypeInputType, description: 'TestType input type for update' },
+    input: { type: UpdateTestTypeInputType, description: 'TestType input type for update' },
   },
-  type: OutputTestType,
+  type: StringType,
   async resolve(obj, args, context) {
     return controller.updateTestType(args.input, context);
   },
 };
 
 export default{
-  createTestType,
-  deleteTestType,
-  updateTestType,
+  CreateTestType,
+  DeleteTestType,
+  UpdateTestType,
 };
