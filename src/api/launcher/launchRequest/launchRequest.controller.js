@@ -20,10 +20,10 @@ async function getUrl(params) {
 }
 
 export async function getPreSignedUrl(args, context) {
-  let bucketName = 'ekslmsproject';
+  let bucketName = config.AWS_PRIVATE_BUCKET;
   const extnameArray = args.key.split('.');
   const extname = extnameArray[extnameArray.length-1].toLowerCase();
-  if (extname === 'html' || extname === 'htm' ) bucketName = 'ekslmsprojectpublic';
+  if (extname === 'html' || extname === 'htm' ) bucketName = config.AWS_PUBLIC_BUCKET;
   const params = {
     Bucket: bucketName,
     Key: args.key,
