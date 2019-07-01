@@ -51,7 +51,7 @@ export async function getTextbooks(args, context){
   })
 }
 
-async function getHierarchyData(context, hierarchyCodes){
+export async function getHierarchyData(context, hierarchyCodes){
   return InstituteHierarchyModel(context).then((InstituteHierarchy) => {
     const query = {
       active: true,
@@ -70,7 +70,7 @@ async function getHierarchyData(context, hierarchyCodes){
   })
 }
 
-async function getSubjectData(context, args){
+export async function getSubjectData(context, args){
   const findQuery = {
     code: args.subjectCode,
     'refs.class.code': args.classCode,
@@ -257,3 +257,6 @@ export async function codeAndTextbooks(context){
   })
 }
 
+export default{
+  getHierarchyData
+}
