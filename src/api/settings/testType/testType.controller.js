@@ -61,7 +61,7 @@ export async function createTestType(args, context){
         next = 'T' + ('000' + String(next)).substr(-3)
       }
       else{
-        next = String(next)
+        next = 'T'+ String(next)
       }
       const obj = {
         name: args.name,
