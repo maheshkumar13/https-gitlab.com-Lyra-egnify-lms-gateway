@@ -26,6 +26,8 @@ import { LaunchRequest } from './launcher/launchRequest/launchRequest.query';
 import { Questions, Results, QuestionEvaluation } from './tests/questions/questions.query';
 import { MasterResults } from './tests/masterResults/masterResults.query';
 import { InsertContent } from './settings/contentMapping/contentMapping.mutation';
+import { CreateTestType,DeleteTestType,UpdateTestType} from  './settings/testType/testType.mutation';
+import { TestType} from './settings/testType/testType.query';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -70,6 +72,9 @@ const schema = new Schema({
       updateStudentAvatar,
       updateStudentSubjects,
       InsertContent,
+      CreateTestType,
+      DeleteTestType,
+      UpdateTestType,
     },
   }),
 });

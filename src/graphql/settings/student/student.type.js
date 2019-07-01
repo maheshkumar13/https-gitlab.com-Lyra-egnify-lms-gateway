@@ -43,6 +43,7 @@ export const StudentDetailsOutputType = new ObjectType({
     avatarUrl: { type: StringType },
     subjects: { type: GraphQLJSON },
     hierarchy: { type: GraphQLJSON },
+    orientation: { type: StringType },
   },
 });
 
