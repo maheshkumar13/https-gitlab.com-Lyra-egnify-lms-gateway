@@ -20,7 +20,7 @@ export const CreateTestType = {
   args: {
     input: { type: CreateTestTypeInputType, description: 'TestType input type' },
   },
-  type: OutputTestType,
+  type: StringType,
   async resolve(obj, args, context) {
     return controller.createTestType(args.input, context);
   },
@@ -30,7 +30,7 @@ export const DeleteTestType = {
   args: {
     code: { type:new NonNull(StringType), description: 'Internal code for test type' },
   },
-  type: OutputTestType,
+  type: StringType,
   async resolve(obj, args, context) {
     return controller.deleteTestType(args, context);
   },

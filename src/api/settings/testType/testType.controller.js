@@ -70,7 +70,9 @@ export async function createTestType(args, context){
         educationType : args.educationType,
         subjects : args.subjects
         }
-    return TestType.create(obj)
+    return (TestType.create(obj)).then((obj)=>{
+      return "created successfully"
+    })
       }); 
     });
   });
@@ -150,7 +152,7 @@ export async function deleteTestType(args, context) {
     const patch = { active: false}
     return testType.findOneAndUpdate(query,patch).then((doc) => {
       if(!doc) throw new Error('TestType not found with given code')
-      return doc ;
+      return "sucessfully deleted" ;
     });
   });
 }
