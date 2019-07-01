@@ -32,6 +32,16 @@ export async function createNewPackage(args, context) {
 });
 }
 
+function tConv24(time24) {
+  var ts = time24;
+  var H = +ts.substr(0, 2);
+  var h = (H % 12) || 12;
+  h = (h < 10)?("0"+h):h;  
+  var ampm = H < 12 ? " AM" : " PM";
+  ts = h + ts.substr(2, 3) + ampm;
+  return ts;
+};
+
 export async function listOfPackages(args,context) {
   let classCode = args && args.classCode ? args.classCode : null;
   let academicYear = args && args.academicYear ? args.academicYear : null
@@ -65,7 +75,7 @@ export async function listOfPackages(args,context) {
             reviewedBy : final[x].reviewedBy,
             authoredBy : final[x].authoredBy,
             date : final[x].created_at.toString().substring(4,15),
-            time : final[x].created_at.toString().substring(16,21)
+            time : tConv24(final[x].created_at.toString().substring(16,21))
           };//store dictionary
           finalArray.push(l);
 
