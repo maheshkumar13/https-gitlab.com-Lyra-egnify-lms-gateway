@@ -11,9 +11,9 @@ module.exports = {
   seedDB: false,
   services: {
     // sso: 'http://localhost:3002',
-    sso: 'https://accounts.dev.rankguru.com',
+    sso: 'https://accounts.dev.lms.egnify.io',
     // egnifyAccountsURL: process.env.SVC_SSO || 'http://localhost:3002',
-    egnifyAccountsURL: process.env.SVC_SSO || 'https://accounts.dev.rankguru.com',
+    egnifyAccountsURL: process.env.SVC_SSO || 'https://accounts.dev.lms.egnify.io',
   },
   apolloEngineKey: 'service:egnify-jeet-dev:-aBvwR1LrRIp5ym1C6gVPQ',
   cacheTimeOut: {
@@ -26,9 +26,9 @@ module.exports = {
     student: process.env.CACHE_TIMEOUT_STUDENT || 1, //43200,
   },
 
-  // redis: {
-  //   auth: process.env.REDIS_AUTH || 1,
-  //   host: process.env.REDIS_HOST || '35.244.34.84',
-  //   password: process.env.REDIS_PASSWORD || 'rQsVPF2gbiHi',
-  // },
+  redis: {
+    auth: process.env.REDIS_AUTH || 1,
+    host: process.env.REDIS_HOST || '35.244.34.84',
+    password: process.env.REDIS_PASSWORD || 'rQsVPF2gbiHi',
+  },
 };

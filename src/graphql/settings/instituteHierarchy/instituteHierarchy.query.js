@@ -100,17 +100,17 @@ export const InstituteHierarchyPaginated = {
   args: {
     pageNumber: { type: IntType },
     limit: { type: IntType },
-    childCodeList: { type: new List(StringType)},
-    parentCodeList: { type: new List(StringType)},
-    ancestorCodeList: { type: new List(StringType)},
-    levelName: { type: new List(StringType)},
+    childCodeList: { type: new List(StringType) },
+    parentCodeList: { type: new List(StringType) },
+    ancestorCodeList: { type: new List(StringType) },
+    levelName: { type: new List(StringType) },
     level: { type: IntType },
-    category: { type:  CategoryEnumType}
+    category: { type: CategoryEnumType },
   },
   type: InstituteHierarchyPaginatedType,
   async resolve(obj, args, context) {
-    if(!args.pageNumber) args.pageNumber = 1
-    if(!args.limit) args.limit = 0
+    if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
+    if (!args.limit) args.limit = 0; // eslint-disable-line
     return controller.getInstituteHierarchyPaginated(args, context)
       .then(async (json) => {
         if (json && json.data) {
@@ -136,9 +136,8 @@ export const InstituteHierarchyPaginated = {
           return resp;
         }
         return json;
-      })
+      });
   },
 };
-
 
 export default { InstituteHierarchy, InstituteHierarchyPaginated };

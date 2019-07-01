@@ -4,22 +4,22 @@
 
 replicaCount: 1
 image:
-  repository: registry.gitlab.com/lyra-egnify/lms-gateway/qa
+  repository: registry.gitlab.com/lyra-egnify/lms-gateway/master
   tag: latest
   pullPolicy: Always
   pullSecrets: gitlab-registry-pull-secret
 
 #project env
 projectEnv:
-  nodeEnv: "qa"
-  mongodbUri: "mongodb://lms:alphabetagamma@192.168.73.42:27017/tenantregistry-lms-qa"
+  nodeEnv: "production"
+  mongodbUri: "mongodb://lms:alphabetagamma@35.154.37.69:27017/tenantregistry-lms-prod"
   jwtSecret: "KAJDK656kllksklfmFGDFGS765ujh765T6GHAJDSjjjkjiursrda"
   mailjetApiKey: "a1fb4988b5a359099061d2cb8aebc80d"
   apolloEngineKey: "service:hydra-jeet-dev:b9DCNb7tCkPO6TO5xHIdmw"
-  svcSettings: "http://settings-qa-lms.qa.svc.cluster.local"
-  svcTest: "http://test-management-qa-lms.qa.svc.cluster.local"
-  svcSSO: "http://sso-qa-lms.qa.svc.cluster.local"
-  parserQueueNs : 'lms-parser-qa-mq'
+  svcSettings: "http://settings-production-lms.production.svc.cluster.local"
+  svcTest: "http://test-management-production-lms.production.svc.cluster.local"
+  svcSSO: "http://sso-production-lms.production.svc.cluster.local"
+  parserQueueNs : 'lms-parser-production-mq'
   celeryBrokerUrl: "redis://:vvqfBAUfPI@redis-master.dev.svc.cluster.local:6379/0"
   celeryResultBackend: "redis://:vvqfBAUfPI@redis-master.dev.svc.cluster.local:6379/0"
   AWS_S3_KEY: "AKIA4XBZMKL5IIJGR4UK"
@@ -47,16 +47,16 @@ ingress:
   enabled: true
   # Used to create an Ingress record.
   hosts:
-    - api.qa.rankguru.com
+    - api.rankguru.com
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "40M"
     kubernetes.io/ingress.class: nginx
     kubernetes.io/tls-acme: "true"
   tls:
     # Secrets must be manually created in the namespace.
-    - secretName: lms-gateway-tls-qa
+    - secretName: lms-gateway-tls-production
       hosts:
-        - api.qa.rankguru.com
+        - api.rankguru.com
 
 resources:  
   # We usually recommend not to specify default resources and to leave this as a conscious
