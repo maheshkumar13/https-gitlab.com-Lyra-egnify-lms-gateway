@@ -9,7 +9,7 @@ import {
   GraphQLObjectType as ObjectType,
 } from 'graphql';
 
-import { Subjects, getSubjectTextbookTopic } from './settings/subject/subject.query';
+import { Subjects, getSubjectTextbookTopic, TextbooksForEachSubject, } from './settings/subject/subject.query';
 import { InstituteHierarchy, InstituteHierarchyPaginated } from './settings/instituteHierarchy/instituteHierarchy.query';
 import { Institute } from './settings/institute/institute.query';
 import { InstituteHierarchyGrid } from './settings/instituteHierarchy/instituteHierarchyGrid.query';
@@ -59,6 +59,7 @@ const schema = new Schema({
       ContentMappingStats,
       packageList,
       PackageDetails,
+      TextbooksForEachSubject,
     },
   }),
   mutation: new ObjectType({

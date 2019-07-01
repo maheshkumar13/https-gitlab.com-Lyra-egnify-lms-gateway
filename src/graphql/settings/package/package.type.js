@@ -33,20 +33,20 @@ const PackageTextbookType = new ObjectType({
   },
 });
 
-const SubjectDetailsType = new ObjectType({
-  name: 'SubjectDetailsOutputType',
-  fields: {
-    subjectName: { type: StringType },
-    subjectCode: { type: StringType },
-    textBooks: { type: new List(PackageTextbookType) },
-  },
-});
-
 const ClassType = new ObjectType({
   name: 'ClassType',
   fields: {
     name: { type: StringType },
     code: { type: StringType },
+  },
+});
+
+export const SubjectDetailsType = new ObjectType({
+  name: 'SubjectDetailsOutputType',
+  fields: {
+    subjectName: { type: StringType },
+    subjectCode: { type: StringType },
+    textBooks: { type: new List(PackageTextbookType) },
   },
 });
 
@@ -109,4 +109,5 @@ export default {
   CreatePackageOutputType,  
   packageListOutputType,
   PackageDetailsOutputType,
+  SubjectDetailsType,
 };

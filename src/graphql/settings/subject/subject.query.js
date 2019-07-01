@@ -14,6 +14,7 @@ import {
 
 import GraphQLJSON from 'graphql-type-json';
 
+import { SubjectDetailsType } from '../package/package.type';
 import { SubjectType } from './subject.type';
 
 const controller = require('../../../api/settings/subject/subject.controller');
@@ -37,7 +38,20 @@ export const getSubjectTextbookTopic = {
   }
 }
 
+export const TextbooksForEachSubject = {
+  args: {
+    input: { type: new List(StringType), description: 'List of subjectIds' },
+  },
+  type: new List(SubjectDetailsType),
+  async resolve(obj, args, context) {
+    return controller.getTextbooksForEachSubject(args, context)
+      .then(async json => json)
+      .catch(err => err);
+  }
+}
+
 export default{
   Subjects,
-  getSubjectTextbookTopic
+  getSubjectTextbookTopic,
+  TextbooksForEachSubject,
 };
