@@ -32,7 +32,7 @@ export const CreateTestTypeInputType = new InputType({
     name: { type: new NonNull(StringType), description: 'Name of the test type' },
     classCode: { type: new NonNull(StringType), description: 'childCode of class' },
     educationType: { type: new NonNull(EduType), description: 'education type' },
-    subjects :{type : new List(StringType), description :'list of subject codes' }
+    subjects :{type : new NonNull(new List(StringType)), description :'list of subject codes' }
   }
 });
 
