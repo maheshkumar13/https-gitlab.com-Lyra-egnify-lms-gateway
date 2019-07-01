@@ -736,7 +736,7 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   return finalJson;
 }
 
-export async function getFileData(args, context) {
+export async function getFileData(args, context){
   const fileExists = args && args.input && args.input.id 
   if(!fileExists){
     throw new Error("Please enter a id");
@@ -746,60 +746,61 @@ export async function getFileData(args, context) {
   const query ={
     _id : {$in : mongoDbId}
   }
-  const ContentMapping = ContentMappingModel(context);   
-  return ContentMappingModel(context).then((ContentMapping) =>{ 
-    return (ContentMapping.find(query)).then((contentMappingObj) =>
-      {  return TextbookModel(context).then((Textbook)  =>
-         {
-          const textbookQuery = contentMappingObj.map(value => value.refs.textbook.code)
-          return (Textbook.find({ code: {$in:textbookQuery}})).then((textBookRefs) =>
-          {
-            return (ConceptTaxonomyModel(context)).then((ConceptTaxonomy)=>{
-              const conceptQuery = contentMappingObj.map(value => value.refs.topic.code)
-               return( ConceptTaxonomy.find({code : {$in:conceptQuery}, levelName :"topic"})).then((topicObj)=>
-              {
-                const finalObj = []  
-                let singleFile  = {};
-                for(var i = 0 ; i < contentMappingObj.length ; i++){
-                  var finalObjElement = contentMappingObj[i] ;
-                  var tbookRefsElement = textBookRefs.find(x=>x.code === finalObjElement.refs.textbook.code);
-                  const topicObjElement = topicObj.find(x=>x.code === finalObjElement.refs.topic.code);
-                singleFile  = {
-                id: finalObjElement._id,
-                content: finalObjElement && finalObjElement.content ?
-                  finalObjElement.content : null,
-                resource: finalObjElement && finalObjElement.resource ?
-                  finalObjElement.resource : null,
-                publication: finalObjElement && finalObjElement.publication ?
-                  finalObjElement.publication : null,
-                orientation: finalObjElement && finalObjElement.orientation ?
-                  finalObjElement.orientation : null,
-                refs: finalObjElement && finalObjElement.refs ?
-                  finalObjElement.refs : null,
-                branches: finalObjElement && finalObjElement.branches ? finalObjElement.branches : null,
-                class: tbookRefsElement && tbookRefsElement.refs &&
-                  tbookRefsElement.refs.class &&
-                  tbookRefsElement.refs.class.name ?
-                  tbookRefsElement.refs.class.name : null,
-                subject:
+  return ContentMappingModel(context).then((contentMapping) =>{ 
+    return (contentMapping.find(query)).then((contentMappingObj) =>{
+      const textbookQuery = contentMappingObj.map(value => value.refs.textbook.code)
+      const conceptQuery = contentMappingObj.map(value => value.refs.topic.code)
+      return Promise.all([
+        TextbookModel(context),
+        ConceptTaxonomyModel(context)
+      ]).then(([textbook,conceptTaxonomy])=>{
+        return Promise.all([
+          textbook.find({ code: {$in:textbookQuery}}),
+          conceptTaxonomy.find({code : {$in:conceptQuery}, levelName :"topic"})
+        ]).then(([
+          textBookRefs,
+          topicObj
+        ])=>{
+          const finalObj = []  
+          let singleFile  = {};
+          for(var i = 0 ; i < contentMappingObj.length ; i++){
+              var finalObjElement = contentMappingObj[i] ;
+              var tbookRefsElement = textBookRefs.find(x=>x.code === finalObjElement.refs.textbook.code);
+              const topicObjElement = topicObj.find(x=>x.code === finalObjElement.refs.topic.code);
+              singleFile  = {
+              id: finalObjElement._id,
+              content: finalObjElement && finalObjElement.content ?
+                finalObjElement.content : null,
+              resource: finalObjElement && finalObjElement.resource ?
+                finalObjElement.resource : null,
+              publication: finalObjElement && finalObjElement.publication ?
+                finalObjElement.publication : null,
+              orientation: finalObjElement && finalObjElement.orientation ?
+                finalObjElement.orientation : null,
+              refs: finalObjElement && finalObjElement.refs ?
+                finalObjElement.refs : null,
+              branches: finalObjElement && finalObjElement.branches ? finalObjElement.branches : null,
+              class: tbookRefsElement && tbookRefsElement.refs &&
+                tbookRefsElement.refs.class &&
+                tbookRefsElement.refs.class.name ?
+                tbookRefsElement.refs.class.name : null,
+              subject:
                 tbookRefsElement &&
                 tbookRefsElement.refs &&
                 tbookRefsElement.refs.subject &&
                 tbookRefsElement.refs.subject.name ?
                 tbookRefsElement.refs.subject.name : null,
-                category:finalObjElement.category,
-                textBookName: tbookRefsElement && tbookRefsElement.name ? tbookRefsElement.name : null,
-                topicName: topicObjElement.child,
-                coins: finalObjElement.coins,
-                filePath: finalObjElement.resource.key,
-                fileSize: finalObjElement.resource.size,
-                mediaType:finalObjElement.resource.type,
-                }
-                finalObj[i]= singleFile
-            };
-        return finalObj;
-           });
-          });
+              category:finalObjElement.category,
+              textBookName: tbookRefsElement && tbookRefsElement.name ? tbookRefsElement.name : null,
+              topicName: topicObjElement.child,
+              coins: finalObjElement.coins,
+              filePath: finalObjElement.resource.key,
+              fileSize: finalObjElement.resource.size,
+              mediaType:finalObjElement.resource.type,
+            }
+            finalObj[i]= singleFile
+          };
+          return finalObj;
         });
       });
     });
@@ -1014,11 +1015,6 @@ export async function getCmsTopicLevelStats(args, context) {
 }*/
 export async function downloadContentDetails(req, res){
   const args = req.body;
-  // console.log(req.body)
-  // var workbook = new Excel.Workbook();
-	// const worksheet = workbook.addWorksheet('My Sheet');
-	// worksheet.columns = [
-  // ];
   if(!args.filters){
     throw new Error('Please input filters')
   }
@@ -1030,33 +1026,34 @@ export async function downloadContentDetails(req, res){
     res.send(response)
   }))
 }
+
 async function makeJSONforCSV(filedata){
   var final = []
-              for(var j =0 ; j < filedata.length ;j++){
-                const singleData = filedata[j]
-                const finalELe = {
-                  Orientation : singleData.orientation ,
-                  Class :singleData.class,
-                  Category : singleData.category,
-                  Branches : singleData.branches,
-                  Publisher :singleData.publication.publisher,
-                  Subject: singleData.subject,
-                  Textbook:singleData.textBookName,
-                  Chapter: singleData.topicName,
-                  ContentType:singleData.content.type,
-                  ContentCategory:singleData.content.category,
-                  ContentName: singleData.content.type,
-                  MediaType: singleData.mediaType,
-                  PublishYear:singleData.publication.year,
-                  FilePath :singleData.filePath,
-                  FileSize:singleData.fileSize,
-                  Coins:singleData.coins,
-                }
-                final[j] = finalELe
-              }
-              return final
-
+  for(var j =0 ; j < filedata.length ;j++){
+    const singleData = filedata[j]
+    const finalELe = {
+      Orientation : singleData.orientation ,
+      Class :singleData.class,
+      Category : singleData.category,
+      Branches : singleData.branches,
+      Publisher :singleData.publication.publisher,
+      Subject: singleData.subject,
+      Textbook:singleData.textBookName,
+      Chapter: singleData.topicName,
+      ContentType:singleData.content.type,
+      ContentCategory:singleData.content.category,
+      ContentName: singleData.content.type,
+      MediaType: singleData.mediaType,
+      PublishYear:singleData.publication.year,
+      FilePath :singleData.filePath,
+      FileSize:singleData.fileSize,
+      Coins:singleData.coins,
+    }
+    final[j] = finalELe
+  }
+  return final
 }
+
 export async function getContentDetails(context,filters={}){
     if(!filters.category){
       throw new Error('Select A category')
@@ -1073,7 +1070,7 @@ export async function getContentDetails(context,filters={}){
       findQuery['refs.topic.code'] = {$in: [null, '', filters.topicCode]}
     }
     
-    return ContentMappingModel(context).then((ContentMapping) => {
+    return ContentMappingModel(context).then((contentMapping) => {
     if(!filters.textbookCode && (filters.subjectCode || filters.classCode)){
       const findtextbookQuery = {
         active: true
@@ -1088,7 +1085,7 @@ export async function getContentDetails(context,filters={}){
         return textbook.find(findtextbookQuery,{_id:0, code : 1}).then((textbookList=>{
            textbookList = textbookList.map(value => value.code)
            findQuery['refs.textbook.code'] = {$in :textbookList}
-           return ContentMapping.find(findQuery,{_id: 1}).then((idList)=>{
+           return contentMapping.find(findQuery,{_id: 1}).then((idList)=>{
             idList = idList.map(value => value._id)
             return getFileData({input:{id:idList}},context).then((filedata)=>{
               return makeJSONforCSV(filedata);
@@ -1097,11 +1094,11 @@ export async function getContentDetails(context,filters={}){
         }))
       }))
     }
-    return ContentMapping.find(findQuery,{_id:1}).then((idList)=>{
+    return contentMapping.find(findQuery,{_id:1}).then((idList)=>{
       idList = idList.map(value => value._id)
       return getFileData({input:{id:idList}},context).then((filedata)=>{
           return makeJSONforCSV(filedata);
-       })
-    })
-  })
+       });
+    });
+  });
 }
