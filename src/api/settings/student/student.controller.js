@@ -98,6 +98,11 @@ function getQuery(args) {
     else{
       throw new Error('No such level exists!')
     }
+
+    if (args.orientation) {
+      query['orientation'] = {$in: args.orientation}
+    }
+
   }
     if (args.orientation !== undefined && args.orientation !== '') {
       query.orientation = args.orientation;

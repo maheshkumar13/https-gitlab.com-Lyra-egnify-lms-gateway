@@ -14,7 +14,7 @@ import {
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import controller from '../../../api/settings/student/student.controller';
-import { StudentType, StudentDetailsOutputType , StudentDetailsByLevel  , studentIdType} from './student.type';
+import { StudentType, StudentDetailsOutputType} from './student.type';
 import { graphQLResultHasError } from 'apollo-utilities';
 
 const pageInfoType = new ObjectType({
@@ -62,7 +62,7 @@ const studentByLevelDetails = new ObjectType({
   fields() {
     return {
       page: {
-        type: new List(studentIdType),
+        type: new List(StudentType),
       },
       pageInfo: {
         type: pageInfoType,
@@ -188,7 +188,7 @@ export const StudentsByLevels = {
   args: {
     level : {type : IntType},
     levelName : {type : new List(StringType)},
-    orientation : {type : StringType},
+    orientation : {type : new List(StringType)},
     pageNumber: { type: IntType },
     limit: { type: IntType },
     
