@@ -81,7 +81,6 @@ export const updateTextbookInputType = new InputType({
   }
 })
 
-
 export default {
   TextbookType,
   TextbookInputType,
