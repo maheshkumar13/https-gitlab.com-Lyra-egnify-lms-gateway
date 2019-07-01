@@ -6,6 +6,7 @@ import { getModel } from './student.model';
 import { getModel as SubjectModel } from '../subject/subject.model';
 import { getLastKLevels } from '../institute/institute.controller';
 import { config } from '../../../config/environment';
+import {getModel as StudentModel} from './student.model';
 
 function getMongoQuery(args) {
   const query = {};
@@ -65,6 +66,43 @@ function getMongoQuery(args) {
     }
     query.$or = orArray;
   }
+  return query;
+}
+
+function getQuery(args) {
+  const query = {};
+  query.active = true;
+  
+    if (args.level !== undefined && args.level !== '') {
+        query['hierarchy.level'] = args.level;
+    }
+    if (args.levelName) {
+      if(args.level == 1){
+      query['hierarchyLevels.L_1'] = {$in: args.levelName}
+    }
+    else if(args.level == 2){
+      query['hierarchyLevels.L_2'] = {$in: args.levelName}
+    }
+    else if(args.level == 3){
+      query['hierarchyLevels.L_3'] = {$in: args.levelName}
+    }
+    else if(args.level == 4){
+      query['hierarchyLevels.L_4'] = {$in: args.levelName}
+    }
+    else if(args.level == 5){
+      query['hierarchyLevels.L_5'] = {$in: args.levelName}
+    }
+    else if(args.level == 6){
+      query['hierarchyLevels.L_6'] = {$in: args.levelName}
+    }
+    else{
+      throw new Error('No such level exists!')
+    }
+  }
+    if (args.orientation !== undefined && args.orientation !== '') {
+      query.orientation = args.orientation;
+    }
+   
   return query;
 }
 
@@ -232,6 +270,35 @@ export async function updateStudentSubjects(args, context) {
     return Student.update(query, patch).then(() => 'Subjects updated successfully');
   }));
 }
+
+
+export async function getStudentsByLevels(args, context) { // eslint-disable-line
+  const Student = await getModel(context);
+  console.info('args', args);
+  const query = getQuery(args);
+  if (query === false) {
+    return false;
+  }
+  
+  return Student.find(query)    
+    .skip((args.pageNumber - 1) * args.limit)
+    .limit(args.limit)
+    .then(async result => Student.count(query).then(async (count) => {
+      
+      const modResults = JSON.parse(JSON.stringify(result));
+      
+      const data = {
+        count : count,
+        students : modResults,
+      }
+      
+      return data;
+    }))
+    .catch(err => err);
+
+}
+
+
 export default{
   getStudents,
   getUniqueValues,
@@ -239,4 +306,7 @@ export default{
   getStudentDetailsById,
   updateStudentAvatar,
   updateStudentSubjects,
+  getStudentsByLevels
 };
+
+

@@ -14,7 +14,8 @@ import {
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import controller from '../../../api/settings/student/student.controller';
-import { StudentType, StudentDetailsOutputType } from './student.type';
+import { StudentType, StudentDetailsOutputType , StudentDetailsByLevel  , studentIdType} from './student.type';
+import { graphQLResultHasError } from 'apollo-utilities';
 
 const pageInfoType = new ObjectType({
   name: 'StudentpageInfo',
@@ -48,6 +49,20 @@ const studentDetailsType = new ObjectType({
       },
       hierarchy: {
         type: GraphQLJSON,
+      },
+      pageInfo: {
+        type: pageInfoType,
+      },
+    };
+  },
+});
+
+const studentByLevelDetails = new ObjectType({
+  name: 'studentByLevelDetails',
+  fields() {
+    return {
+      page: {
+        type: new List(studentIdType),
       },
       pageInfo: {
         type: pageInfoType,
@@ -169,9 +184,61 @@ export const StudentById = {
   },
 };
 
+export const StudentsByLevels = {
+  args: {
+    level : {type : IntType},
+    levelName : {type : new List(StringType)},
+    orientation : {type : StringType},
+    pageNumber: { type: IntType },
+    limit: { type: IntType },
+    
+  },
+  type: studentByLevelDetails,
+  async resolve(obj, args, context) {
+    if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
+    if (!args.limit) args.limit = 20; // eslint-disable-line
+    if (args.pageNumber < 1) {
+      return new Error('Page Number must be positive');
+    }
+    return controller.getStudentsByLevels(args, context) //eslint-disable-line
+    .then((json) => {
+      const data = {};
+      data.page = json.students;
+
+      console.log('json' , json)
+      const pageInfo = {};
+      pageInfo.prevPage = true;
+      pageInfo.nextPage = true;
+      pageInfo.pageNumber = args.pageNumber;
+      pageInfo.totalPages = Math.ceil(json.count / args.limit)
+        ? Math.ceil(json.count / args.limit)
+        : 1;
+      pageInfo.totalEntries = json.count;
+
+      if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+        return new Error('Page Number is invalid');
+      }
+
+      if (args.pageNumber === pageInfo.totalPages) {
+        pageInfo.nextPage = false;
+      }
+      if (args.pageNumber === 1) {
+        pageInfo.prevPage = false;
+      }
+      data.pageInfo = pageInfo;
+      return data;
+    }).catch((err) => {
+      console.error(err);
+      return new Error(err.message);
+    });
+  },
+};
+
+
 export default{
   StudentUniqueValues,
   Students,
   StudentsByLastNode,
   StudentById,
+  StudentsByLevels,
 };

@@ -18,7 +18,7 @@ import { createSubject } from './settings/subject/subject.mutation';
 import { Programs } from './settings/programs/programs.query';
 import { Textbooks , TextbooksInfo} from './settings/textbook/textbook.query';
 import { createTextbook, updateTextbook, deleteTextbook } from './settings/textbook/textbook.mutation';
-import { Students, StudentUniqueValues, StudentsByLastNode, StudentById } from './settings/student/student.query';
+import { Students, StudentUniqueValues, StudentsByLastNode, StudentById , StudentsByLevels} from './settings/student/student.query';
 import { updateStudentAvatar, updateStudentSubjects } from './settings/student/student.mutation';
 import { ConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.query';
 import { ContentMapping, ContentMappingStats, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats } from './settings/contentMapping/contentMapping.query';
@@ -55,7 +55,8 @@ const schema = new Schema({
       CmsTopicLevelStats,
       getSubjectTextbookTopic,
       ContentMappingStats,
-      TextbooksInfo
+      TextbooksInfo,
+      StudentsByLevels,
     },
   }),
   mutation: new ObjectType({

@@ -46,7 +46,16 @@ export const StudentDetailsOutputType = new ObjectType({
   },
 });
 
+export const studentIdType = new ObjectType({
+  name: 'studentIdType',
+  fields : {
+    studentId : {type : StringType},
+  }
+})
+
+
 export default {
   StudentType,
   StudentDetailsOutputType,
+  studentIdType
 };
