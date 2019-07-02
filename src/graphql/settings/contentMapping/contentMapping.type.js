@@ -13,9 +13,9 @@ import GraphQLJSON from 'graphql-type-json';
 const contentType = new ObjectType({
   name: 'ContentMappingContentType',
   fields: {
-    name: { type: StringType, description: 'Conent name' },
+    name: { type: StringType, description: 'Content name' },
     category: { type: StringType, description: 'Content category' },
-    type: { type: StringType, description: 'Conent type' },
+    type: { type: StringType, description: 'Content type' },
   },
 });
 
@@ -192,6 +192,19 @@ export const UpdateMetaDataInputType = new InputType({
     id: { type: new NonNull(StringType), description: 'mongodb _id of the animation' },
     questionpaperId: { type: new NonNull(StringType), description: 'question paper id of the quiz' },
   },
+export const TextbookBasedQuizInputType = new InputType({
+  name: 'TextbookBasedQuizInputType',
+  fields: {
+    textbookCode: { type: StringType, description: 'Code of the textbook' },
+  }
+});
+
+export const TextbookBasedQuizOutputType = new ObjectType({
+  name: 'TextbookBasedQuizOutputType',
+  fields: {
+    quizName: { type: StringType, description: 'Name of the quiz' },
+    questionpaperId: { type: StringType, description: 'ID of the question paper'},
+  }
 });
 
 export default {
@@ -203,4 +216,7 @@ export default {
   ContentMappingInsertionInputType,
   CmsTopicLevelStatsInputType,
   UpdateMetaDataInputType,
+  TextbookBasedQuizInputType,
+  TextbookBasedQuizOutputType
 };
+
