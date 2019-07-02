@@ -217,7 +217,6 @@ export default {
   FileDataInputType,
   ContentMappingInsertionInputType,
   CmsTopicLevelStatsInputType,
-  UpdateMetaDataInputType,
   TextbookBasedQuizInputType,
   TextbookBasedQuizOutputType
 };
