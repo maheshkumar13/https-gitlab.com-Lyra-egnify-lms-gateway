@@ -17,6 +17,7 @@ export const ConceptTaxonomyType = new ObjectType({
     parentCode: { type: StringType },
     levelName: { type: StringType },
     code: { type: StringType },
+    viewOrder:{type: IntType},
     next: {
       type: new List(ConceptTaxonomyType),
       async resolve(obj, args, context) {
