@@ -41,6 +41,7 @@ export async function getPackageDetails(args, context) {
       finalResult.orientations = packageObj.orientations;
       finalResult.branches = packageObj.branches;
       finalResult.students = packageObj.studentIds;
+      console.log("\n\n**Context.email  = ", context.email, "\n\n");
       if(context.email === packageObj.authoredBy) {
         finalResult.feedback = packageObj.feedback;
       }
@@ -78,8 +79,8 @@ export async function getPackageDetails(args, context) {
         },
         textBooks: {
           $addToSet: {
-            "textbookCode": "$code",
-            "textbookName": "$name",
+            "code": "$code",
+            "name": "$name",
           }
         }
       }

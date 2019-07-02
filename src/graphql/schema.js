@@ -71,7 +71,6 @@ const schema = new Schema({
       updateStudentAvatar,
       updateStudentSubjects,
       InsertContent,
-      CreatePackage,
     },
   }),
 });

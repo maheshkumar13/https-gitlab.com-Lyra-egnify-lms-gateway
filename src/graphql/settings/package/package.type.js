@@ -28,8 +28,8 @@ const PackageSubjectType1 = new ObjectType({
 const PackageTextbookType = new ObjectType({
   name: 'PackageTextbookType',
   fields: {
-    textbookCode: { type: StringType },
-    textbookName: { type: StringType },
+    code: { type: StringType },
+    name: { type: StringType },
   },
 });
 
