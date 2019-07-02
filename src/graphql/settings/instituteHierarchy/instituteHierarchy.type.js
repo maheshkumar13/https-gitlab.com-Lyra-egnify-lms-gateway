@@ -7,7 +7,6 @@ import {
   GraphQLInt as IntType,
   GraphQLEnumType as EnumType,
 } from 'graphql';
-import { CostExplorer } from 'aws-sdk';
 
 const controller = require('../../../api/settings/instituteHierarchy/instituteHierarchy.controller');
 

@@ -444,4 +444,5 @@ export async function getChildDataFromParent(args, context){
 }
 export default {
   fetchNodes,
+  getChildDataFromParent,
 };
