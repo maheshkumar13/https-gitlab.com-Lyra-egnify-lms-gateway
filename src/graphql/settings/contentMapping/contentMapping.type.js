@@ -192,6 +192,8 @@ export const UpdateMetaDataInputType = new InputType({
     id: { type: new NonNull(StringType), description: 'mongodb _id of the animation' },
     questionpaperId: { type: new NonNull(StringType), description: 'question paper id of the quiz' },
   },
+});
+
 export const TextbookBasedQuizInputType = new InputType({
   name: 'TextbookBasedQuizInputType',
   fields: {
