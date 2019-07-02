@@ -42,7 +42,7 @@ const ClassType = new ObjectType({
 });
 
 export const SubjectDetailsType = new ObjectType({
-  name: 'SubjectDetailsOutputType',
+  name: 'SubjectDetailsType',
   fields: {
     subjectName: { type: StringType },
     subjectCode: { type: StringType },
