@@ -28,6 +28,8 @@ import { MasterResults } from './tests/masterResults/masterResults.query';
 import { InsertContent } from './settings/contentMapping/contentMapping.mutation';
 import { CreateTestType,DeleteTestType,UpdateTestType} from  './settings/testType/testType.mutation';
 import { TestType} from './settings/testType/testType.query';
+import {TestPatterns} from './settings/testPattern/testPattern.query'
+import {createTestPattern,updateTestPattern,deleteTestPattern} from './settings/testPattern/testPattern.mutation'
 
 const schema = new Schema({
   query: new ObjectType({
@@ -60,7 +62,8 @@ const schema = new Schema({
       ContentMappingStats,
       ChildDataFromParent,
       TestType,
-      TextbooksInfo
+      TextbooksInfo,
+      TestPatterns
     },
   }),
   mutation: new ObjectType({
@@ -77,6 +80,9 @@ const schema = new Schema({
       CreateTestType,
       DeleteTestType,
       UpdateTestType,
+      createTestPattern,
+      updateTestPattern,
+      deleteTestPattern
     },
   }),
 });
