@@ -7,6 +7,7 @@
 */
 
 import {
+  GraphQLNonNull as NonNull,
   GraphQLList as List,
   GraphQLString as StringType,
   GraphQLInt as IntType,
@@ -16,7 +17,7 @@ import {
   GraphQLEnumType as EnumType,
 } from 'graphql';
 
-import InstituteHierarchyType from './instituteHierarchy.type';
+import { InstituteHierarchyType,ChildListType ,childLevelEnum,parentLevelEnum} from './instituteHierarchy.type';
 import { LIST } from 'graphql/language/kinds';
 
 const controller = require('../../../api/settings/instituteHierarchy/instituteHierarchy.controller');
@@ -140,5 +141,17 @@ export const InstituteHierarchyPaginated = {
   },
 };
 
+export const ChildDataFromParent= {
+  args: {
+    parentLevelName: {type : new NonNull(parentLevelEnum)},
+    childLevelName : {type : new NonNull(childLevelEnum)},
+    parentCode : {type: new List(StringType)},
+  },
+  type: new List(ChildListType),
+  async resolve(obj, args , context) {
+    return controller.getChildDataFromParent(args, context)    
+  }
+  
+};
 
-export default { InstituteHierarchy, InstituteHierarchyPaginated };
+export default { InstituteHierarchy, InstituteHierarchyPaginated ,ChildDataFromParent};
