@@ -8,8 +8,6 @@ import { getModel as studentInfoModel } from '../student/student.model';
 
 import { config } from '../../../config/environment';
 import { getStudentData } from '../textbook/textbook.controller';
-import { set } from 'mongoose';
-
 
 const xlsx = require('xlsx');
 const upath = require('upath');
