@@ -992,7 +992,7 @@ export async function getCmsTopicLevelStats(args, context) {
 
 
 export async function updateContent(args,context){
-  if(!args.input.id){
+  if(!args || !args.input || !args.input.id){
     throw new Error('Enter the File to be edited');
   }
   if(Object.keys(args.input).length < 2){
@@ -1006,29 +1006,34 @@ export async function updateContent(args,context){
   };
   var whereObj = {};
   whereObj['_id'] = mongoDbId ;
+  
   var setObj = {};
-
-  if(args && args.input && args.input.textbookCode && args.input.topicCode){
-    setObj['refs.topic.code'] = args.input.topicCode
-    setObj['refs.textbook.code'] = args.input.textbookCode
-  }
-  if(args && args.input && args.input.coins){
-    setObj['coins'] = args.input.coins ;
-  }
-  if(args && args.input && args.input.contentCategory){
-    setObj['content.category'] = args.input.contentCategory;
-  }
-  if(args && args.input && args.input.contentName){
-    setObj['content.name'] = args.input.contentName;
-  }
-  if(args && args.input && args.input.contentType){
-    setObj['content.type'] = args.input.contentType;
-  }
-  if(args && args.input && args.input.metaData){
-    var metaDatakeys = Object.keys(args.input.metaData) ;
-    // setObj['metaData.thumbnailKey'] = args.input.thumbnailKey
-    for(var i = 0 ;i <metaDatakeys.length ;i++){
-      setObj[`metaData.${metaDatakeys[i]}`] = args.input.metaData[metaDatakeys[i]] 
+  if(args && args.input ){
+    if(args.input.textbookCode && args.input.topicCode){
+      setObj['refs.topic.code'] = args.input.topicCode
+      setObj['refs.textbook.code'] = args.input.textbookCode
+    }
+    if(args.input.textbookCode && !args.input.topicCode){
+      throw new Error('Input topic code for corresponding textbook')
+    }
+    if(args.input.coins){
+      setObj['coins'] = args.input.coins ;
+    }
+    if(args.input.contentCategory){
+      setObj['content.category'] = args.input.contentCategory;
+    }
+    if(args.input.contentName){
+      setObj['content.name'] = args.input.contentName;
+    }
+    if(args.input.contentType){
+      setObj['content.type'] = args.input.contentType;
+    }
+    if(args.input.metaData){
+      var metaDatakeys = Object.keys(args.input.metaData) ;
+      // setObj['metaData.thumbnailKey'] = args.input.thumbnailKey
+      for(var i = 0 ;i <metaDatakeys.length ;i++){
+        setObj[`metaData.${metaDatakeys[i]}`] = args.input.metaData[metaDatakeys[i]] 
+      }
     }
   }
   return ContentMappingModel(context).then((contentMapping)=>{
