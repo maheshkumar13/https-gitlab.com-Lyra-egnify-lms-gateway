@@ -25,7 +25,7 @@ import { ContentMapping, ContentMappingStats, CmsCategoryStats, CategoryWiseFile
 import { LaunchRequest } from './launcher/launchRequest/launchRequest.query';
 import { Questions, Results, QuestionEvaluation } from './tests/questions/questions.query';
 import { MasterResults } from './tests/masterResults/masterResults.query';
-import { InsertContent,UpdateContent} from './settings/contentMapping/contentMapping.mutation';
+import { InsertContent,UpdateContent, updateMetaData } from './settings/contentMapping/contentMapping.mutation';
 import { CreateTestType,DeleteTestType,UpdateTestType} from  './settings/testType/testType.mutation';
 import { TestType} from './settings/testType/testType.query';
 
@@ -76,6 +76,7 @@ const schema = new Schema({
       updateStudentSubjects,
       InsertContent,
       UpdateContent,
+      updateMetaData,
       CreateTestType,
       DeleteTestType,
       UpdateTestType,
