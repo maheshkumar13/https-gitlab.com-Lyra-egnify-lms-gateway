@@ -28,6 +28,9 @@ import { MasterResults } from './tests/masterResults/masterResults.query';
 import { InsertContent } from './settings/contentMapping/contentMapping.mutation';
 import { CreateTestType,DeleteTestType,UpdateTestType} from  './settings/testType/testType.mutation';
 import { TestType} from './settings/testType/testType.query';
+import { CreatePackage } from './settings/package/package.mutation';
+import {PackageList} from './settings/package/package.query';
+import {UpdatePackage,FeedbackPackage} from './settings/package/package.mutation';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -60,7 +63,8 @@ const schema = new Schema({
       ContentMappingStats,
       ChildDataFromParent,
       TestType,
-      TextbooksInfo
+      TextbooksInfo,
+      PackageList,
     },
   }),
   mutation: new ObjectType({
@@ -76,7 +80,9 @@ const schema = new Schema({
       InsertContent,
       CreateTestType,
       DeleteTestType,
-      UpdateTestType,
+      CreatePackage,
+      UpdatePackage,
+      FeedbackPackage,
     },
   }),
 });
