@@ -418,20 +418,18 @@ export async function uploadCategory(req, res){
 
 
 export async function getChildDataFromParent(args, context){
+  var query = {}
   if(!args.parentLevelName){       
     throw new Error('Missing parent LevelName');
   }
   if(!args.childLevelName ){
     throw new Error('Missing child LevelName');
   }
-  if(!args.parentCode){
-    throw new Error('Missing parent code');
+  if(args.parentCode && args.parentCode.length >= 1 ){
+    query["anscetors.childCode"]  = {$in : args.parentCode }
   }
-  var query = {
-    'levelName' : args.childLevelName,
-    "anscetors.childCode"  : args.parentCode,
-    "anscetors.levelName" : args.parentLevelName,
-  };
+  query['levelName'] = args.childLevelName
+  query["anscetors.levelName"] = args.parentLevelName
 
   const project = {
     childCode: 1,child: 1

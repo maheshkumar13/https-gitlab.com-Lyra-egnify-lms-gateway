@@ -145,7 +145,7 @@ export const ChildDataFromParent= {
   args: {
     parentLevelName: {type : new NonNull(parentLevelEnum)},
     childLevelName : {type : new NonNull(childLevelEnum)},
-    parentCode : {type: new NonNull(StringType)},
+    parentCode : {type: new List(StringType)},
   },
   type: new List(ChildListType),
   async resolve(obj, args , context) {
