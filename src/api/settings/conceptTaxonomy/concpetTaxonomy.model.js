@@ -26,6 +26,7 @@ const ConceptTaxonomySchema = new mongoose.Schema({
   parentCode: { type: String, required: true },
   refs: { type: refsSchema, description: 'References'},
   active: { type: Boolean, default: true },
+  viewOrder: { type: Number },
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 });

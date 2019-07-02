@@ -1050,6 +1050,39 @@ export async function updateContent(args,context){
   });
 }
 
+export async function updateAnimationMetaData(args, context) {
+  if(!args.id) {
+    throw new Error('Please send mongodb _id of the animation');
+  }
+  if(!args.questionpaperId) {
+    throw new Error('Please send questionpaperId');
+  }
+  const whereObj = {
+    _id: args.id,
+  };
+  const dataToUpdate = {
+      "metaData.questionpaperId": args.questionpaperId,
+  };
+  return ContentMappingModel(context).then(ContentMapping =>
+    ContentMapping.updateOne(whereObj, {$set: dataToUpdate }).then(() => 'Updated Successfully').catch(err => err));
+}
+
+export async function getTextbookBasedListOfQuizzes(args, context) {
+  //const Quizzes = [];
+  return ContentMappingModel(context).then(async ContentMapping => {
+    const query = {
+      "content.category": "Take Quiz",
+      "refs.textbook.code": args.input.textbookCode,
+    };
+    const projection = {
+      "quizName": "$content.name",
+      "questionpaperId": "$resource.key",
+    };
+    return ContentMapping.aggregate([{$match: query}, {$project: projection}]).allowDiskUse(true);
+  });
+  
+}
+
 export default{
   updateContent
 }

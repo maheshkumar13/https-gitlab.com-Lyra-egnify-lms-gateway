@@ -10,22 +10,25 @@ import {
 } from 'graphql';
 
 import { Subjects, getSubjectTextbookTopic } from './settings/subject/subject.query';
-import { InstituteHierarchy, InstituteHierarchyPaginated } from './settings/instituteHierarchy/instituteHierarchy.query';
+import { InstituteHierarchy, InstituteHierarchyPaginated,ChildDataFromParent } from './settings/instituteHierarchy/instituteHierarchy.query';
 import { Institute } from './settings/institute/institute.query';
 import { InstituteHierarchyGrid } from './settings/instituteHierarchy/instituteHierarchyGrid.query';
 import { updateCategory } from './settings/instituteHierarchy/instituteHierarchy.mutaion';
 import { createSubject } from './settings/subject/subject.mutation';
 import { Programs } from './settings/programs/programs.query';
-import { Textbooks } from './settings/textbook/textbook.query';
+import { Textbooks , TextbooksInfo} from './settings/textbook/textbook.query';
 import { createTextbook, updateTextbook, deleteTextbook } from './settings/textbook/textbook.mutation';
 import { Students, StudentUniqueValues, StudentsByLastNode, StudentById } from './settings/student/student.query';
 import { updateStudentAvatar, updateStudentSubjects } from './settings/student/student.mutation';
 import { ConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.query';
-import { ContentMapping, ContentMappingStats, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats } from './settings/contentMapping/contentMapping.query';
+import { ContentMapping, ContentMappingStats, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats, TextbookBasedQuiz } from './settings/contentMapping/contentMapping.query';
 import { LaunchRequest } from './launcher/launchRequest/launchRequest.query';
 import { Questions, Results, QuestionEvaluation } from './tests/questions/questions.query';
 import { MasterResults } from './tests/masterResults/masterResults.query';
 import { InsertContent,UpdateContent} from './settings/contentMapping/contentMapping.mutation';
+import { InsertContent } from './settings/contentMapping/contentMapping.mutation';
+import { CreateTestType,DeleteTestType,UpdateTestType} from  './settings/testType/testType.mutation';
+import { TestType} from './settings/testType/testType.query';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -53,8 +56,12 @@ const schema = new Schema({
       FileData,
       QuestionEvaluation,
       CmsTopicLevelStats,
+      TextbookBasedQuiz,
       getSubjectTextbookTopic,
       ContentMappingStats,
+      ChildDataFromParent,
+      TestType,
+      TextbooksInfo
     },
   }),
   mutation: new ObjectType({
@@ -69,6 +76,9 @@ const schema = new Schema({
       updateStudentSubjects,
       InsertContent,
       UpdateContent,
+      CreateTestType,
+      DeleteTestType,
+      UpdateTestType,
     },
   }),
 });

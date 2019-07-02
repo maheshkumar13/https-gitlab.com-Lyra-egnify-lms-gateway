@@ -11,7 +11,7 @@ import {
   GraphQLNonNull as NonNull,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
-import { ContentMappingInsertionInputType,UpdateContentOutputType,UpdateContentInputType } from './contentMapping.type';
+import { ContentMappingInsertionInputType,UpdateContentOutputType,UpdateContentInputType,UpdateMetaDataInputType } from './contentMapping.type';
 
 const controller = require('../../../api/settings/contentMapping/contentMapping.controller');
 
@@ -35,7 +35,18 @@ export const UpdateContent ={
   }
 }
 
+export const updateMetaData = {
+  args: {
+    input: { type: new NonNull(UpdateMetaDataInputType)},
+  },
+  type: StringType,
+  async resolve(obj, args, context) {
+    return controller.updateAnimationMetaData(args.input, context);
+  }
+};
+
 export default { 
   InsertContent,
   UpdateContent,
+  updateMetaData,
 };
