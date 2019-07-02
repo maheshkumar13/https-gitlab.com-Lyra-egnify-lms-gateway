@@ -224,3 +224,58 @@ export async function getSubjectTextbookTopic(args, context) {
     });
   });
 }
+
+
+
+/**
+ * @description This function takes an array of subjectIds (args.input), and returns an 
+ *              array of JSONs; each JSON contains: subjectName, subjectCode and an 
+ *              array of textBooks (containing textbookName, textbookCode)
+ * @author Shreyas
+ * @date 01/07/2019
+ */
+
+export async function getTextbooksForEachSubject(args, context) {
+  const subjectsArray = args.input;
+  const query = {
+    "refs.subject.code": { $in : subjectsArray },
+  };
+  const projection = {
+    "name": 1,
+    "code": 1,
+    "refs.subject.name": 1,
+    "refs.subject.code": 1,
+  };
+  const group = {
+    _id: {
+      subject: {
+        name: "$refs.subject.name",
+        code: "$refs.subject.code",
+      },
+    },
+    textBooks: {
+      $addToSet: {
+        "textbookCode": "$code",
+        "textbookName": "$name",
+      }
+    }
+  }
+  return TextbookModel(context).then(Textbook => {
+    return (Textbook.aggregate([
+      { $match: query },
+      { $project: projection },
+      { $group: group },
+    ]).allowDiskUse(true)).then(result => {
+      const finalResult = [];
+      for (let i=0; i<result.length; i+=1) {
+        const subject = {};
+        subject.subjectName = result[i]._id.subject.name;
+        subject.subjectCode = result[i]._id.subject.code;
+        subject.textBooks = result[i].textBooks;
+        finalResult.push(subject);
+      }
+      return finalResult;
+    });
+  }).catch(err => err);
+}
+

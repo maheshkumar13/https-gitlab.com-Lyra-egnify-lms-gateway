@@ -25,7 +25,7 @@ export async function createNewPackage(args, context) {
         status: 500,
       };
     }
-    return "successfully created!"
+    return `${prep.packageId} successfully created!`;
   });
 });
 }
@@ -80,6 +80,7 @@ export async function listOfPackages(args,context) {
     query.reviewedBy = context.email;
   }
   query.active = true;
+  console.log(query)
     return packageModel(context).then((reqModel) => {
       return reqModel.find(query).then((final) => {       
         var finalArray=[]
@@ -92,10 +93,10 @@ export async function listOfPackages(args,context) {
             reviewedBy : tempObj && tempObj.reviewedBy ? tempObj.reviewedBy : null,
             authoredBy : tempObj && tempObj.authoredBy ? tempObj.authoredBy : null,
             subjects: tempObj && tempObj.subjects ? tempObj.subjects : null,
-            orientations: tempObj && tempObj.subjects ? tempObj.subjects : null,
+            orientations: tempObj && tempObj.orientations ? tempObj.orientations : null,
             branches: tempObj && tempObj.branches ? tempObj.branches : null,
             students: tempObj && tempObj.students ? tempObj.students : null,
-            class: classObj ? classObj : null,
+            class: classObj ? classObj.find(x=>x.childCode === classCode) : null,
             date: tempObj && tempObj.created_at ? tempObj.created_at.toString().substring(4,15) : null,
             time: tempObj && tempObj.created_at ? tConv24(tempObj.created_at.toString().substring(16,21)) : null,
           };//store dictionary

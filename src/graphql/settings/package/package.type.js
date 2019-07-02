@@ -1,13 +1,3 @@
-/**
-   @description I/O types for Packages.
-
-   @author Sairam
-   @date   XX/XX/XXXX
-   @version 1.0.0
-*/
-
-
-
 import {
   GraphQLList as List,
   GraphQLObjectType as ObjectType,
@@ -34,6 +24,14 @@ const PackageSubjectType1 = new ObjectType({
     textbookCodes: { type: new List(StringType) },
   },
 });
+
+const PackageTextbookType = new ObjectType({
+  name: 'PackageTextbookType',
+  fields: {
+    textbookCode: { type: StringType },
+    textbookName: { type: StringType },
+  },
+});  
 
 export const CreatePackageInputType = new InputType({
   name: 'CreatePackageInputType',
@@ -101,6 +99,7 @@ export const UpdatePackageInputType = new InputType({
     //reviewedBy: { type: StringType },
   }),
 });
+
 export const PackageFeedbackInputType = new InputType({
   name: 'PackageFeedbackInputType',
   fields: () => ({
@@ -111,10 +110,20 @@ export const PackageFeedbackInputType = new InputType({
   }),
 });
 
+export const SubjectDetailsType = new ObjectType({
+  name: 'SubjectDetailsType',
+  fields: {
+    subjectName: { type: StringType },
+    subjectCode: { type: StringType },
+    textBooks: { type: new List(PackageTextbookType) },
+  },
+});
+
 export default {
   CreatePackageInputType,
-  // CreatePackageOutputType,
+  CreatePackageOutputType,
   PackageListOutputType,
   PackageListInputType,
   UpdatePackageInputType,
+  SubjectDetailsType,
 };

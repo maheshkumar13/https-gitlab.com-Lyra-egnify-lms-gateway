@@ -9,7 +9,7 @@ import {
   GraphQLObjectType as ObjectType,
 } from 'graphql';
 
-import { Subjects, getSubjectTextbookTopic } from './settings/subject/subject.query';
+import { Subjects, getSubjectTextbookTopic, TextbooksForEachSubject, } from './settings/subject/subject.query';
 import { InstituteHierarchy, InstituteHierarchyPaginated,ChildDataFromParent } from './settings/instituteHierarchy/instituteHierarchy.query';
 import { Institute } from './settings/institute/institute.query';
 import { InstituteHierarchyGrid } from './settings/instituteHierarchy/instituteHierarchyGrid.query';
@@ -25,7 +25,7 @@ import { ContentMapping, ContentMappingStats, CmsCategoryStats, CategoryWiseFile
 import { LaunchRequest } from './launcher/launchRequest/launchRequest.query';
 import { Questions, Results, QuestionEvaluation } from './tests/questions/questions.query';
 import { MasterResults } from './tests/masterResults/masterResults.query';
-import { InsertContent } from './settings/contentMapping/contentMapping.mutation';
+import { InsertContent,UpdateContent, updateMetaData } from './settings/contentMapping/contentMapping.mutation';
 import { CreateTestType,DeleteTestType,UpdateTestType} from  './settings/testType/testType.mutation';
 import { TestType} from './settings/testType/testType.query';
 import { CreatePackage } from './settings/package/package.mutation';
@@ -65,6 +65,7 @@ const schema = new Schema({
       TestType,
       TextbooksInfo,
       PackageList,
+      TextbooksForEachSubject,
     },
   }),
   mutation: new ObjectType({
@@ -78,6 +79,8 @@ const schema = new Schema({
       updateStudentAvatar,
       updateStudentSubjects,
       InsertContent,
+      UpdateContent,
+      updateMetaData,
       CreateTestType,
       DeleteTestType,
       CreatePackage,
