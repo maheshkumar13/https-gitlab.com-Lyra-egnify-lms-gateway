@@ -7,6 +7,7 @@
 */
 import {
   GraphQLString as StringType,
+  GraphQLList as List,
 } from 'graphql';
 
 import {
@@ -31,7 +32,6 @@ export const PackageDetails = {
       .catch(err => err);
   }
 }
-
 
 export const PackageList = {
   args: {

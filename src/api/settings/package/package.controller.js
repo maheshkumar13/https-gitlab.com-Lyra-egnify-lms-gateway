@@ -43,7 +43,6 @@ export async function getPackageDetails(args, context) {
       finalResult.orientations = packageObj.orientations;
       finalResult.branches = packageObj.branches;
       finalResult.students = packageObj.studentIds;
-      console.log("\n\n**Context.email  = ", context.email, "\n\n");
       if(context.email === packageObj.authoredBy) {
         finalResult.feedback = packageObj.feedback;
       }
@@ -278,7 +277,7 @@ return packageModel(context).then((reqModel) => {
             status: 500,
           };
         }
-        return `feedback sent successfully for packageId:${prep.packageId}`
+        return `feedback sent successfully for packageId:${args.packageId}`
       });
     });
 
