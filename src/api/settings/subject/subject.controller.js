@@ -255,8 +255,8 @@ export async function getTextbooksForEachSubject(args, context) {
     },
     textBooks: {
       $addToSet: {
-        "textbookCode": "$code",
-        "textbookName": "$name",
+        "code": "$code",
+        "name": "$name",
       }
     }
   }
