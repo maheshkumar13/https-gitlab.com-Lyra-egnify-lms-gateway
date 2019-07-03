@@ -106,6 +106,13 @@ export async function getPackageDetails(args, context) {
   });
 }
 
+/**
+@description This function creates a new package 
+
+@author Sairam
+@date   23/03/2018
+*/
+
 export async function createNewPackage(args, context) {
   const prep={
      packageName :args.packageName,
@@ -123,10 +130,11 @@ export async function createNewPackage(args, context) {
     return Package.create(prep).then((res, err) => {
     if (err) {
       console.error(err);
-      return {
+      console.error({
         message: 'Error has been encountered while inserting data',
         status: 500,
-      };
+      });
+      return 'Error has been encountered while inserting data'
     }
     return `${prep.packageId} successfully created!`;
   });
@@ -160,6 +168,13 @@ function tConv24(time24) {
   ts = h + ts.substr(2, 3) + ampm;
   return ts;
 };
+
+/**
+@description This function displays all existing packages considering filter inputs
+
+@author Sairam
+@date   23/03/2018
+*/
 
 export async function listOfPackages(args,context) {
   let classCode = args && args.classCode ? args.classCode : null;
@@ -209,6 +224,13 @@ export async function listOfPackages(args,context) {
     })
   }
 
+/**
+@description This function updates packages based on what the user wants to updatee
+
+@author Sairam
+@date   23/03/2018
+*/
+
 export async function updatePackage(args,context){
   let packageName = args && args.packageName ? args.packageName : null
   let academicYear=args && args.academicYear ? args.academicYear : null
@@ -242,15 +264,23 @@ if(packageName) {
   return reqModel.updateOne({packageId : args.packageId , active : true},{$set:query}).then((res, err) => {
     if (err) {
       console.error(err);
-      return {
+      console.error({
         message: 'Error has been encountered while updating data',
         status: 500,
-      };
+      });
+      return 'Error has been encountered while updating data'
     }
     return `${packageId} successfully updated.`
   });
 });
 }
+
+/**
+@description This function stores feeddback from reviewers(only)
+
+@author Sairam
+@date   23/03/2018
+*/
 
 export async function feedbackValidate(args,context){
   let whereObj = {packageId: args.packageId, active: true ,reviewedBy : context.email};
@@ -270,12 +300,23 @@ export async function feedbackValidate(args,context){
   }
 return packageModel(context).then((reqModel) => {
       return reqModel.updateOne(whereObj,{$set: setObj}).then((res, err) => {
+        console.log(res)
+        if(!res.nModified)
+        {
+          console.error({
+            message: `${context.email} is not a reviewer.`,
+            status: 400,
+          });
+          return `${context.email} is not a reviewer.`
+
+        }
         if (err) {
           console.error(err);
-          return {
+          console.error({
             message: 'Error has been encountered while sending feedback',
             status: 500,
-          };
+          });
+          return 'Error has been encountered while sending feedback'
         }
         return `feedback sent successfully for packageId:${args.packageId}`
       });
