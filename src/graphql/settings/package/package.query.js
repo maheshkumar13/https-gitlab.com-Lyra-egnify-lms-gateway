@@ -11,21 +11,14 @@ import {
 
 import {
   CreatePackageInputType,
-  packageListOutputType,
+  PackageListInputType,
+  PackageListOutputType,
   PackageDetailsOutputType,
 } from './package.type';
 
-const controller = require('../../../api/settings/package/package.controller');
+import { graphql } from 'graphql';
 
-export const packageList = {
-  args: {
-    input: { type: CreatePackageInputType },
-  },
-  type: packageListOutputType,
-  async resolve(obj, context) {
-    return controller.listOfPackages(context);
-  },
-};
+const controller = require('../../../api/settings/package/package.controller');
 
 export const PackageDetails = {
   args: {
@@ -36,8 +29,19 @@ export const PackageDetails = {
     return controller.getPackageDetails(args, context)
       .then(async json => json)
       .catch(err => err);
+  }
+}
+
+
+export const PackageList = {
+  args: {
+    input: { type: PackageListInputType },
+  },
+  type: new List(PackageListOutputType),
+  async resolve(obj,args, context) {
+    return controller.listOfPackages(args.input,context);
   },
 };
 
 
-export default { packageList, PackageDetails };
+export default { PackageList, PackageDetails };

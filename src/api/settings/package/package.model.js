@@ -17,10 +17,10 @@ const PackageSchema = new mongoose.Schema({
   branches: { type: [String] },
   studentIds: { type: [String], default: null },
   active: { type: Boolean, default: true },
-  status: { type: String, enum: ['underReview', 'underFeedback', 'approved'], default: 'underReview' },
+  status: { type: String, enum: ['underReview', 'underFeedback', 'approved','published'], default: 'underReview' },
   reviewedBy: { type: String },
   authoredBy: { type: String },
-  feedback: { type: String },
+  feedback: { type:String },
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 });
