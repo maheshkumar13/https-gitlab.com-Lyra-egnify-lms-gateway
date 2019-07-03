@@ -16,7 +16,7 @@ import { InstituteHierarchyGrid } from './settings/instituteHierarchy/instituteH
 import { updateCategory } from './settings/instituteHierarchy/instituteHierarchy.mutaion';
 import { createSubject } from './settings/subject/subject.mutation';
 import { Programs } from './settings/programs/programs.query';
-import { Textbooks , TextbooksInfo} from './settings/textbook/textbook.query';
+import { Textbooks, TextbooksInfo, } from './settings/textbook/textbook.query';
 import { createTextbook, updateTextbook, deleteTextbook } from './settings/textbook/textbook.mutation';
 import { Students, StudentUniqueValues, StudentsByLastNode, StudentById } from './settings/student/student.query';
 import { updateStudentAvatar, updateStudentSubjects } from './settings/student/student.mutation';
@@ -29,10 +29,10 @@ import { InsertContent,UpdateContent, updateMetaData } from './settings/contentM
 import { CreateTestType,DeleteTestType,UpdateTestType} from  './settings/testType/testType.mutation';
 import { TestType} from './settings/testType/testType.query';
 import { CreatePackage } from './settings/package/package.mutation';
-import {PackageList} from './settings/package/package.query';
+import {PackageList, PackageDetails} from './settings/package/package.query';
 import {UpdatePackage,FeedbackPackage} from './settings/package/package.mutation';
 
-const schema = new Schema({
+const schema = new Schema({ 
   query: new ObjectType({
     name: 'Query',
     fields: {
@@ -61,6 +61,8 @@ const schema = new Schema({
       TextbookBasedQuiz,
       getSubjectTextbookTopic,
       ContentMappingStats,
+      PackageList,
+      PackageDetails,
       ChildDataFromParent,
       TestType,
       TextbooksInfo,
