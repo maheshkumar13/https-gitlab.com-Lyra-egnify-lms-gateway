@@ -6,15 +6,15 @@ import instituteHierarchyQuery from '../../../graphql/settings/instituteHierarch
 export async function createNewPackage(args, context) {
   const prep={
      packageName :args.packageName,
-     packageId : (Date.now().toString()+Math.floor(Math.random() * 1000).toString()),
-     academicYear:args.academicYear,//
-     classCode:args.classCode,//
-     subjects:args.subjects,//
+     packageId : `PKG${Date.now().toString()}${Math.floor(Math.random() * 1000).toString()}`,
+     academicYear:args.academicYear,
+     classCode:args.classCode,
+     subjects:args.subjects,
      orientations : args.orientations,
      branches : args.branches,
      studentIds : args.studentIDs,
-     reviewedBy: args.reviewedBy.toLowerCase(),//convert to lower
-     authoredBy: context.email.toLowerCase()// ""
+     reviewedBy: args.reviewedBy.toLowerCase(),
+     authoredBy: context.email.toLowerCase()
   };
   return packageModel(context).then(Package => {
     return Package.create(prep).then((res, err) => {
@@ -75,14 +75,13 @@ export async function listOfPackages(args,context) {
     query["subjects.subjectCode"] = subjectCode;
   }
   if(isAuthor) {
-    query.authoredBy = context.email;
+    query.authoredBy = context.email.toLowerCase();
   } else {
-    query.reviewedBy = context.email;
+    query.reviewedBy = context.email.toLowerCase();
   }
   query.active = true;
-  console.log(query)
-    return packageModel(context).then((reqModel) => {
-      return reqModel.find(query).then((final) => {       
+    return packageModel(context).then((pkgModel) => {
+      return pkgModel.find(query).then((final) => {       
         var finalArray=[]
         for(var x=0;x<final.length;x+=1)
         {
@@ -114,9 +113,16 @@ export async function updatePackage(args,context){
   let orientation = args && args.orientation ? args.orientation : null
   let branches = args && args.branches ? args.branches : null
   let studentIds = args && args.students ? args.students : null
+  let packageId = args && args.packageId ? args.packageId : null
 
  let query = {}
- if(packageName) {
+if(!packageId) {
+  return {
+    message: 'packageId is mandatory.',
+    status: 500,
+  };
+}
+if(packageName) {
   query.packageName = packageName;
 }if(academicYear) {
   query.academicYear = academicYear;
@@ -138,7 +144,7 @@ export async function updatePackage(args,context){
         status: 500,
       };
     }
-    return "updated successfully!"
+    return `${packageId} successfully updated.`
   });
 });
 }
@@ -168,7 +174,7 @@ return packageModel(context).then((reqModel) => {
             status: 500,
           };
         }
-        return "feedback sent successfully!"
+        return `feedback sent successfully for packageId:${prep.packageId}`
       });
     });
 

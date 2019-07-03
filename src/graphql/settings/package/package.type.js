@@ -8,8 +8,8 @@ import {
   GraphQLInputObjectType as InputType,
 } from 'graphql';
 
-const PackageSubjectType = new InputType({
-  name: 'PackageSubjectType',
+const PackageSubjectInputType = new InputType({
+  name: 'PackageSubjectInputType',
   fields: {
     subjectCode: { type: StringType },
     textbookCodes: { type: new List(StringType) },
@@ -17,8 +17,8 @@ const PackageSubjectType = new InputType({
 });
 
 
-const PackageSubjectType1 = new ObjectType({
-  name: 'PackageSubjectType1',
+const PackageSubjectOutputType = new ObjectType({
+  name: 'PackageSubjectOutputType',
   fields: {
     subjectCode: { type: StringType },
     textbookCodes: { type: new List(StringType) },
@@ -39,11 +39,11 @@ export const CreatePackageInputType = new InputType({
     packageName: { type: new NonNull(StringType) },
     academicYear: { type: new NonNull(StringType) },
     classCode: { type: new NonNull(StringType) },
-    subjects: { type: new NonNull(new List(PackageSubjectType)) },
+    subjects: { type: new NonNull(new List(PackageSubjectInputType)) },
     orientations: { type: new List(StringType) },
     branches: { type: new List(StringType) },
     students: { type: new List(StringType) },
-    reviewedBy: { type: StringType },
+    reviewedBy: { type:new NonNull(StringType)},
   }),
 });
 
@@ -53,7 +53,7 @@ export const PackageListOutputType = new ObjectType({
     packageName: { type: new NonNull(StringType) },
     academicYear: { type: new NonNull(StringType) },
     classCode: { type: new NonNull(StringType) },
-    subjects: { type: new NonNull(new List(PackageSubjectType1)) },
+    subjects: { type: new NonNull(new List(PackageSubjectOutputType)) },
     orientations: { type: new List(StringType) },
     branches: { type: new List(StringType) },
     students: { type: new List(StringType) },
@@ -63,16 +63,6 @@ export const PackageListOutputType = new ObjectType({
     time:{type:StringType},
   }),
 });
-
-
-export const CreatePackageOutputType = new ObjectType({
-  name: 'CreatePackageOutputType',
-  fields: () => ({
-    packageName: { type: StringType },
-    packageId: { type: StringType },
-  }),
-});
-
 
 export const PackageListInputType = new InputType({
   name: 'PackageListInputType',
@@ -88,22 +78,19 @@ export const PackageListInputType = new InputType({
 export const UpdatePackageInputType = new InputType({
   name: 'UpdatePackageInputType',
   fields: () => ({
-    packageId : {type : StringType},
+    packageId : {type : new NonNull(StringType)},
     packageName: { type: (StringType) },
     academicYear: { type: (StringType) },
-    //classCode: { type: new NonNull(StringType) },
-    subjects: { type: (new List(PackageSubjectType)) },
+    subjects: { type: (new List(PackageSubjectInputType)) },
     orientations: { type: new List(StringType) },
     branches: { type: new List(StringType) },
     students: { type: new List(StringType) },
-    //reviewedBy: { type: StringType },
   }),
 });
 
 export const PackageFeedbackInputType = new InputType({
   name: 'PackageFeedbackInputType',
   fields: () => ({
-    // packageName: { type: (StringType) },
     packageId : {type :new NonNull (StringType)},
     feedback : {type : StringType},
     status : {type : new NonNull (StringType)},
@@ -121,7 +108,6 @@ export const SubjectDetailsType = new ObjectType({
 
 export default {
   CreatePackageInputType,
-  CreatePackageOutputType,
   PackageListOutputType,
   PackageListInputType,
   UpdatePackageInputType,
