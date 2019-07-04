@@ -112,8 +112,15 @@ const pageInfoType = new ObjectType({
 const TextBookType = new ObjectType({
   name: "TextBookType",
   fields:{
-    textbookCode :{type: StringType},
-    textbookName :{type :StringType}
+    code :{type: StringType},
+    name :{type :StringType}
+  }
+})
+const Count = new ObjectType({
+  name :'Count',
+  fields:{
+    orientation:{type :IntType},
+    branches:{type:IntType}
   }
 })
 const categoryListType = new ObjectType({
@@ -123,8 +130,12 @@ const categoryListType = new ObjectType({
     content: { type: contentType, description: 'content json' },
     resource: { type: resourceType, description: 'resource of the file' },
     textbook :{type: TextBookType},
+    topic:{type:TextBookType},
     className :{type :StringType},
-    subject :{type:StringType}
+    subject :{type:StringType},
+    count :{type:Count},
+    orientation:{type:new List(StringType)},
+    branches : {type: new List(StringType)}
   },
 });
 
