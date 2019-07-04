@@ -109,13 +109,22 @@ const pageInfoType = new ObjectType({
   },
 });
 
+const TextBookType = new ObjectType({
+  name: "TextBookType",
+  fields:{
+    textbookCode :{type: StringType},
+    textbookName :{type :StringType}
+  }
+})
 const categoryListType = new ObjectType({
   name: 'categoryListType',
   fields: {
     id :{type: StringType ,description :'mongodb id'},
     content: { type: contentType, description: 'content json' },
     resource: { type: resourceType, description: 'resource of the file' },
-    textbookCode: { type: StringType, description: 'code of the textbook' },
+    textbook :{type: TextBookType},
+    className :{type :StringType},
+    subject :{type:StringType}
   },
 });
 

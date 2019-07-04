@@ -676,7 +676,7 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   if (textbookCodes && textbookCodes.length === 0) {
     if (query1) {
       await TextbookModel(context).then(async (TextBook) => {
-        await TextBook.find(query1, { code: 1, _id: 0 }).then((textbookCodeObjs) => {
+        await TextBook.find(query1, { code: 1, _id: 0,name:1}).then((textbookCodeObjs) => {
           if (textbookCodeObjs && textbookCodeObjs.length) {
             for (let t = 0; t < textbookCodeObjs.length; t += 1) {
               textbookCodes.push(textbookCodeObjs[t].code);
@@ -710,13 +710,26 @@ export async function getCategoryWiseFilesPaginated(args, context) {
       }).skip(skip).limit(limit),
       ContentMappings.find(query).skip(skip).limit(limit).count(),
       ContentMappings.count(query),
-    ]).then(([contentObjs, queryCount, count]) => {
+    ]).then(([contentObjs, queryCount, count]) =>{
+      const tlist = contentObjs.map(x => x.refs.textbook.code)
+    
+       return TextbookModel(context).then((textBook)=>{
+         return textBook.find({code:{$in:tlist}},{name:1,
+          code:1,
+          "refs.class.name":1,"refs.subject.name":1}).then((subjclassObjs)=>{
+
+       console.log(subjclassObjs)
       for (let c = 0; c < contentObjs.length; c += 1) {
         const tempCategory = {
           id: contentObjs[c]._id,
           content: contentObjs[c].content, //eslint-disable-line
           resource: contentObjs[c].resource,
-          textbookCode: contentObjs[c].refs.textbook.code,
+          textbook:{
+            textbookCode: contentObjs[c].refs.textbook.code,
+            textbookName :(subjclassObjs.find(x =>x.code ==contentObjs[c].refs.textbook.code)).name,
+          },
+          className :(subjclassObjs.find(x =>x.code ==contentObjs[c].refs.textbook.code)).refs.class.name,
+          subject :(subjclassObjs.find(x =>x.code ==contentObjs[c].refs.textbook.code)).refs.subject.name
         };
         categoryFiles.push(tempCategory);
       }
@@ -730,8 +743,11 @@ export async function getCategoryWiseFilesPaginated(args, context) {
       };
       finalJson.page = categoryFiles;
       finalJson.pageInfo = pageInfo;
-    }));
+    })
+  });
+  }))
   return finalJson;
+
 }
 
 export async function getFileData(args, context) {
