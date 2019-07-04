@@ -11,6 +11,7 @@ import {
   GraphQLString as StringType,
   GraphQLObjectType as ObjectType,
   GraphQLBoolean as BooleanType,
+  GraphQLEnumType as EnumType,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import controller from '../../../api/settings/student/student.controller';
@@ -184,10 +185,10 @@ export const StudentById = {
   },
 };
 
+
 export const StudentsByLevels = {
   args: {
-    level : {type : IntType},
-    levelName : {type : new List(StringType)},
+    childCode : {type : new List(StringType)},
     orientation : {type : new List(StringType)},
     pageNumber: { type: IntType },
     limit: { type: IntType },
@@ -204,8 +205,6 @@ export const StudentsByLevels = {
     .then((json) => {
       const data = {};
       data.page = json.students;
-
-      console.log('json' , json)
       const pageInfo = {};
       pageInfo.prevPage = true;
       pageInfo.nextPage = true;

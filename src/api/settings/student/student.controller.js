@@ -72,42 +72,14 @@ function getMongoQuery(args) {
 function getQuery(args) {
   const query = {};
   query.active = true;
-  
-    if (args.level !== undefined && args.level !== '') {
-        query['hierarchy.level'] = args.level;
+    if (args.childCode) {
+      query['hierarchy.childCode'] = {$in: args.childCode}
     }
-    if (args.levelName) {
-      if(args.level == 1){
-      query['hierarchyLevels.L_1'] = {$in: args.levelName}
-    }
-    else if(args.level == 2){
-      query['hierarchyLevels.L_2'] = {$in: args.levelName}
-    }
-    else if(args.level == 3){
-      query['hierarchyLevels.L_3'] = {$in: args.levelName}
-    }
-    else if(args.level == 4){
-      query['hierarchyLevels.L_4'] = {$in: args.levelName}
-    }
-    else if(args.level == 5){
-      query['hierarchyLevels.L_5'] = {$in: args.levelName}
-    }
-    else if(args.level == 6){
-      query['hierarchyLevels.L_6'] = {$in: args.levelName}
-    }
-    else{
-      throw new Error('No such level exists!')
-    }
-
+    
     if (args.orientation) {
       query['orientation'] = {$in: args.orientation}
     }
-
-  }
-    if (args.orientation !== undefined && args.orientation !== '') {
-      query.orientation = args.orientation;
-    }
-   
+    console.log('query ' , query)
   return query;
 }
 
