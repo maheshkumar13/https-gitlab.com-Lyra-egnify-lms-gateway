@@ -218,6 +218,7 @@ export async function getStudentDetailsById(args, context) { // eslint-disable-l
       avatarUrl: 1,
       subjects: 1,
       hierarchy: 1,
+      orientation: 1,
     },
   ).cache(config.cacheTimeOut.student).then(student => student);
 }
