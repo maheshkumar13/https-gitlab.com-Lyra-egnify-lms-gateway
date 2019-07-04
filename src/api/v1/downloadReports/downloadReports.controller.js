@@ -273,13 +273,15 @@ export function validateUploadedContentMapping(req){
 		else break;
   }
   let subjectList = []
-  subjectList = data.map(x=>{
-    console.log(x)
-    subjectList.concat(x['Subject'].split(","))
+  let textbookList = []
+  data.map(x=>{
+    x['Subject'] = x['Subject'].split('/')
+    x['Textbook'] = x['Textbook'].split('/')
+    subjectList = subjectList.concat(x['Subject'])
+    textbookList = textbookList.concat( x['Textbook'])
   })
-  console.log(subjectList)
-  // array1.concat(array2).unique()
-  const textbookList = data.map(x=>x['Textbook'])
+  textbookList  = [...new Set(textbookList)]
+  subjectList   = [...new Set(subjectList)]
   let coinCheck = data.map(x=>parseInt(x["Coins"]))
 
   //validating coins column.
@@ -288,7 +290,6 @@ export function validateUploadedContentMapping(req){
     throw Error(`Coins can not be less than 1 at row number ${coinCheck+1}`)
   }
   
-  console.log("------------------\n",textbookList)
   return Promise.all([
     SubjectModel(req.user_cxt),
     TextbookModel(req.user_cxt)
@@ -299,8 +300,6 @@ export function validateUploadedContentMapping(req){
    ]).then(([subList,tbookList])=>{
     subList = subList.map(x=>x['subject'])
     tbookList = tbookList.map(x=>x['name']) 
-    console.log(subList)
-    console.log(tbookList)
     let difference = subjectList.filter(x => !subList.includes(x));
     if(difference.length >=1){
       throw new Error('Invalid Subject:',difference[0])
@@ -308,6 +307,33 @@ export function validateUploadedContentMapping(req){
     difference = textbookList.filter(x => !tbookList.includes(x))
     if(difference.length >=1){
       throw new Error('Invalid Textbook:',difference[0])
+    }
+    const  subtextQuery = { }
+    subtextQuery['$or'] = [] 
+    var j = 0;
+    // checking for subject-textbook combinations
+    for(var i = 0 ; i< data.length; i ++){
+      let tempObj = data[i];
+      if(tempObj.Subject.length > tempObj.Textbook.length){
+        throw new Error(`Missing TextBook at row number ${i+1}`)
+      }
+      if(tempObj.Subject.length < tempObj.Textbook.length){
+        throw new Error(`Missing Subject at row number ${i+1}`)
+      }
+      // if(tempObj.Subject.length != tempObj.Chapter.length){
+      //   throw new Error(`Number of chapters inconsistent at row number ${i+1}`)
+      // }
+      for(var k = 0 ; k< tempObj.Subject.length; k++){
+        subtextQuery['$or'][j++] ={
+          "refs.subject.name" : tempObj.Subject[k],
+          name : tempObj.Textbook[k]
+        }
+      }
+      console.log(subtextQuery)
+      return (textbooks.find(subtextQuery,{_id:0,"name":1,"refs.subbject.name":1})).then(
+        (subtextList)=>{
+          console.log(subtextList)
+        })
     }
    });
   });
