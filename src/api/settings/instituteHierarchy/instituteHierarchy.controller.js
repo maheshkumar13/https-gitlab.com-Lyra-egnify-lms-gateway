@@ -108,7 +108,7 @@ export async function getFiltersOnLevel(body, context) {
   const InstituteHierarchy = await getModel(context);
   const { level } = body;
   if (!level) {
-    throw new Error('Invalid level');
+    throw new Errocsvr('Invalid level');
   } else {
     InstituteHierarchy.distinct('child', { level }).then((doc) => {
       const data = doc;
@@ -406,6 +406,7 @@ function validateSheetAndGetData(req) {
 
 export async function uploadCategory(req, res){
   if (!req.file) return res.status(400).end('File required');
+  console.log(Object.keys(req))
   const validateResult = validateSheetAndGetData(req);
   if(!validateResult.success) return res.status(400).end(validateResult.message)
   const args = { data: req.data }
