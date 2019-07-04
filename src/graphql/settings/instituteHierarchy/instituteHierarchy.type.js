@@ -5,6 +5,7 @@ import {
   GraphQLBoolean as BooleanType,
   GraphQLNonNull as NonNull,
   GraphQLInt as IntType,
+  GraphQLEnumType as EnumType,
 } from 'graphql';
 
 const controller = require('../../../api/settings/instituteHierarchy/instituteHierarchy.controller');
@@ -22,7 +23,7 @@ const anscetors = new ObjectType({
   },
 });
 
-const InstituteHierarchyType = new ObjectType({
+export const InstituteHierarchyType = new ObjectType({
   name: 'InstituteHierarchyTree',
   fields: () => ({
     child: { type: new NonNull(StringType) },
@@ -46,5 +47,59 @@ const InstituteHierarchyType = new ObjectType({
   }),
 });
 
+export const parentLevelEnum = new EnumType({
+  name : "parentLevelEnum",
+  values:{
+    Country:{
+      value: "Country"
+    },
+    Class:{
+      value : "Class"
+    },
+    State:{
+      value: "State"
+    },
+    City:{
+      value: "City"
+    },
+    Branch:{
+      value: "Branch"
+    }
+  }
+} );
 
-export default InstituteHierarchyType;
+export const childLevelEnum = new EnumType({
+  name : "childLevelEnum",
+  values:{
+    Section:{
+      value: "Section"
+    },
+    Class:{
+      value : "Class"
+    },
+    State:{
+      value: "State"
+    },
+    City:{
+      value: "City"
+    },
+    Branch:{
+      value: "Branch"
+    }
+  }
+} );
+export const ChildListType = new ObjectType({
+  name: "ChildListType",
+  fields :{
+    childCode: {type:StringType , description :'code of the child'},
+    child: {type:StringType , description: 'name of the child'}
+  }
+
+});
+
+export default {
+  InstituteHierarchyType,
+  ChildListType,
+  parentLevelEnum,
+  childLevelEnum,
+};
