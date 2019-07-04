@@ -717,9 +717,9 @@ export async function getCategoryWiseFilesPaginated(args, context) {
     ]).then(([contentObjs, queryCount, count]) =>{
       const tlist = contentObjs.map(x => x.refs.textbook.code)
       const topicList = contentObjs.map(x=>x.refs.topic.code)
-     return ConceptTaxonomyModel(context).then((contentTaxonomy)=>{
-      return contentTaxonomy.find({levelName:"topic",code:{
-        $in:topicList}}).then((topicObj)=>{
+     return ConceptTaxonomyModel(context).then((conceptTaxonomy)=>{
+      return conceptTaxonomy.find({levelName:"topic",code:{
+        $in:topicList}},{_id:0,code:1,child:1}).then((topicObj)=>{
       for (let c = 0; c < contentObjs.length; c += 1) {
         const tempCategory = {
           id: contentObjs[c]._id,
