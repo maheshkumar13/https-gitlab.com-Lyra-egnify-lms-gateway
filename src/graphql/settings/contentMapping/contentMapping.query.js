@@ -26,6 +26,8 @@ import {
   FileDataInputType,
   FileDataOutputType,
   CmsTopicLevelStatsInputType,
+  TextbookBasedQuizInputType,
+  TextbookBasedQuizOutputType
 } from './contentMapping.type';
 
 const controller = require('../../../api/settings/contentMapping/contentMapping.controller');
@@ -163,6 +165,17 @@ export const CmsTopicLevelStats = {
   },
 };
 
+export const TextbookBasedQuiz = {
+  args: {
+    input: { type: TextbookBasedQuizInputType },
+  },
+  type: new List(TextbookBasedQuizOutputType),
+  async resolve(obj, args, context) {
+    return controller.getTextbookBasedListOfQuizzes(args, context)
+      .then(async json => json);
+  },
+};
+
 export default {
-  ContentMapping, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats, ContentMappingStats,
+  ContentMapping, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats, ContentMappingStats, TextbookBasedQuiz,
 };

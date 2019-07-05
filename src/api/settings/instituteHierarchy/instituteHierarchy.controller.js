@@ -416,6 +416,31 @@ export async function uploadCategory(req, res){
   })
 }
 
+
+export async function getChildDataFromParent(args, context){
+  var query = {}
+  if(!args.parentLevelName){       
+    throw new Error('Missing parent LevelName');
+  }
+  if(!args.childLevelName ){
+    throw new Error('Missing child LevelName');
+  }
+  if(args.parentCode && args.parentCode.length >= 1 ){
+    query["anscetors.childCode"]  = {$in : args.parentCode }
+  }
+  query['levelName'] = args.childLevelName
+  query["anscetors.levelName"] = args.parentLevelName
+
+  const project = {
+    childCode: 1,child: 1
+  };
+  return (getModel(context)).then((InstituteHierarchy)=>{
+    return (InstituteHierarchy.find(query,project)).then((ChildList)=>{
+      return ChildList;
+      });
+    });
+}
 export default {
   fetchNodes,
+  getChildDataFromParent,
 };
