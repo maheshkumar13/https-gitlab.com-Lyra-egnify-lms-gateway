@@ -672,20 +672,24 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   const textbookCodes = [];
   if (textbookCode) {
     textbookCodes.push(textbookCode);
+    query1['code'] = textbookCode
   }
-  if (textbookCodes && textbookCodes.length === 0) {
-    if (query1) {
-      await TextbookModel(context).then(async (TextBook) => {
-        await TextBook.find(query1, { code: 1, _id: 0 }).then((textbookCodeObjs) => {
-          if (textbookCodeObjs && textbookCodeObjs.length) {
-            for (let t = 0; t < textbookCodeObjs.length; t += 1) {
-              textbookCodes.push(textbookCodeObjs[t].code);
-            }
-          }
-        });
-      });
-    }
-  }
+  let textbookCodeObj=[];
+  
+  await TextbookModel(context).then(async (TextBook) => {
+    await TextBook.find(query1, { code: 1, _id: 0,name:1 ,
+      "refs.class.name":1,"refs.subject.name":1,}).then((textbookCodeObjs) => {
+      //console.log("-------------------\n",textbookCodeObjs)
+      textbookCodeObj = textbookCodeObjs
+      if (textbookCodeObjs && textbookCodeObjs.length) {
+        for (let t = 0; t < textbookCodeObjs.length; t += 1) {
+          textbookCodes.push(textbookCodeObjs[t].code);
+        }
+      }
+    });
+  });
+
+  
   if (textbookCodes.length === 0) {
     return null;
   }
@@ -706,17 +710,38 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   await ContentMappingModel(context).then(async ContentMappings =>
     Promise.all([
       ContentMappings.find(query, {
-        content: 1, _id: 1, resource: 1, 'refs.textbook.code': 1,
+        content: 1, _id: 1, resource: 1, 'refs.textbook.code': 1,'refs.topic.code': 1,branches:1,
+        orientation :1
       }).skip(skip).limit(limit),
       ContentMappings.find(query).skip(skip).limit(limit).count(),
       ContentMappings.count(query),
-    ]).then(([contentObjs, queryCount, count]) => {
+    ]).then(([contentObjs, queryCount, count]) =>{
+      const tlist = contentObjs.map(x => x.refs.textbook.code)
+      const topicList = contentObjs.map(x=>x.refs.topic.code)
+     return ConceptTaxonomyModel(context).then((conceptTaxonomy)=>{
+      return conceptTaxonomy.find({levelName:"topic",code:{
+        $in:topicList}},{_id:0,code:1,child:1}).then((topicObj)=>{
       for (let c = 0; c < contentObjs.length; c += 1) {
         const tempCategory = {
           id: contentObjs[c]._id,
           content: contentObjs[c].content, //eslint-disable-line
           resource: contentObjs[c].resource,
-          textbookCode: contentObjs[c].refs.textbook.code,
+          textbook:{
+            code: contentObjs[c].refs.textbook.code,
+            name :(textbookCodeObj.find(x =>x.code ==contentObjs[c].refs.textbook.code)).name,
+          },
+          className :(textbookCodeObj.find(x =>x.code ==contentObjs[c].refs.textbook.code)).refs.class.name,
+          subject :(textbookCodeObj.find(x =>x.code ==contentObjs[c].refs.textbook.code)).refs.subject.name,
+          topic:{
+            code : contentObjs[c].refs.topic.code,
+            name : (topicObj.find(x =>x.code ==contentObjs[c].refs.topic.code)).child
+          },
+          count:{
+            orientation: contentObjs[c].orientation.length,
+            branches: contentObjs[c].branches.length,
+          },
+          orientation: contentObjs[c].orientation,
+          branches: contentObjs[c].branches,
         };
         categoryFiles.push(tempCategory);
       }
@@ -730,8 +755,11 @@ export async function getCategoryWiseFilesPaginated(args, context) {
       };
       finalJson.page = categoryFiles;
       finalJson.pageInfo = pageInfo;
-    }));
+    })
+  })
+  }))
   return finalJson;
+
 }
 
 export async function getFileData(args, context) {
