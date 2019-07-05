@@ -230,7 +230,7 @@ export function downloadContentMappingSample(req,res){
     throw new Error("Need atleast one entry")
   }
   const result = []
-  var headers  = ["Name","Subject","Textbook","Chapter","Coins","Class"] 
+  var headers  = ["Name","Subject","Textbook","Chapter","Coins","Class","Size","Type"] 
   for(var i = 0 ; i < args.uploadList.length; i++){
     var row = {}
     const obj = args.uploadList[i];
@@ -271,12 +271,37 @@ export function validateUploadedContentMapping(req){
 		if (vals.every(x => x === '')) data.pop();
 		else break;
   }
+
+  for(var i = 0 ; i <data.length ;i++){
+    const temp = data[i]
+    const err1 =[]
+    // console.log(temp)
+    if(temp['Name'] == null || temp['Name']== ''){
+      err1.push('Name')
+    }
+    if(temp['Subject'] == null || temp['Subject']== ''){
+      err1.push('Subject')
+    }
+    if(temp['Textbook'] == null || temp['Textbook']==''){
+      err1.push('Textbook')
+    }
+    if(temp['Chapter'] == null || temp['Chapter']==''){
+      err1.push('Chapter')
+    }
+    if(temp['Coins'] == null || temp['Coins']==''){
+      err1.push('Coins')
+    }
+    // console.log(err1)
+    if(err1.length >0){
+      throw new Error(`Missing information at row :${i+2} , columns : [ ${err1} ]`)
+    }
+  }
   let subjectList = []
   let textbookList = []
   data.map(x=>{
     x['Subject'] = x['Subject'].split('/')
     x['Textbook'] = x['Textbook'].split('/')
-    // x['Chapter'] = x['Chapter'].split('/')
+    x['Chapter'] = x['Chapter'].split('/')
     subjectList = subjectList.concat(x['Subject'])
     textbookList = textbookList.concat( x['Textbook'])
   })
@@ -289,14 +314,14 @@ export function validateUploadedContentMapping(req){
   if(coinCheck > -1){
     throw Error(`Coins can not be less than 1 at row number ${coinCheck+1}`)
   }
-  
+
   return Promise.all([
     SubjectModel(req.user_cxt),
     TextbookModel(req.user_cxt)
   ]).then(([subjects,textbooks])=>{
    return Promise.all([
     subjects.find({subject :{$in : subjectList}},{_id:0,subject:1}),
-    textbooks.find({name :{$in : textbookList}},{_id:0,name:1})
+    textbooks.find({name :{$in : textbookList}},{_id:0,name:1,code:1,orientations:1,branches:1})
    ]).then(([subList,tbookList])=>{
     subList = subList.map(x=>x['subject'])
     tbookList = tbookList.map(x=>x['name']) 
@@ -306,15 +331,20 @@ export function validateUploadedContentMapping(req){
     }
     difference = textbookList.filter(x => !tbookList.includes(x))
     if(difference.length >=1){
-      throw new Error('Invalid Textbook:',difference[0])
+      throw new Error(`Invalid Textbook: ${difference[0]}`)
     }
     const  subtextQuery = {}
     subtextQuery['$or'] = [] 
 
-    // const chaptextQuery = {}
-    // chaptextQuery['$or'] = []
-    // chaptextQuery['levelName'] = 'topic'
+    const chaptextQuery = {}
+    chaptextQuery['$or'] = []
+    chaptextQuery['levelName'] = 'topic'
     var j = 0;
+
+    //checking for null values
+
+
+
     // checking for subject-textbook combinations
     for(var i = 0 ; i< data.length; i ++){
       let tempObj = data[i];
@@ -329,42 +359,75 @@ export function validateUploadedContentMapping(req){
       }
       
       for(var k = 0 ; k< tempObj.Subject.length; k++){
-        subtextQuery['$or'][j++] ={
+        subtextQuery['$or'][j] ={
           "refs.subject.name" : tempObj.Subject[k],
           name : tempObj.Textbook[k]
         }
-        // chaptextQuery['$or'][j++]={
-        //   "refs.textbook.name" : tempObj.Textbook[k],
-        //   child : tempObj.Chapter[k]
-        // }
-
+        chaptextQuery['$or'][j++]={
+          "refs.textbook.name" : tempObj.Textbook[k],
+          child : tempObj.Chapter[k]
+        }
       }
     } 
     return (textbooks.find(subtextQuery,{_id:0,"name":1,"refs.subject.name":1})).then(
       (subtextList)=>{
-        console.log("------result-------\n",subtextList)
+        // console.log("------result-------\n",subtextList)
         let subtextMismatch = []
         for(var i = 0 ; i< data.length ; i++){
           let temp = data[i];
           for(var j = 0 ; j <temp.Subject.length;j++){
           var check = subtextList.find(x=>x.refs.subject.name === temp.Subject[j] && x.name === temp.Textbook[j])
-          console.log(subtextList.find(x=>x.refs.subject.name === temp.Subject[j] && x.name === temp.Textbook[j]))
+          // console.log(subtextList.find(x=>x.refs.subject.name === temp.Subject[j] && x.name === temp.Textbook[j]))
           if(check == undefined){
             subtextMismatch.push({ row:(i+2),subject:temp.Subject[j],textbook:temp.Textbook[j]})
           }
           }
-         
         }
         if(subtextMismatch.length > 0 ){
-          throw new Error(`invalid subject-textbook combination at following rows${subtextMismatch.map(x=>x.row)}`)
+          throw new Error(`invalid subject-textbook combination at following rows :[${subtextMismatch.map(x=>x.row)}]`)
         }
         
-        // return ConceptTaxonomyModel(req.user_cxt).then((conceptTaxonomy)=>{
-        //   return conceptTaxonomy.find(chaptextQuery).then((topicObj)=>{
-        //     console.log(topicObj)
-        //   })
-        // })
+      return ConceptTaxonomyModel(req.user_cxt).then((conceptTaxonomy)=>{
+        // console.log('chaper-text---------\n',chaptextQuery)
+        return conceptTaxonomy.find(chaptextQuery,{_id:0,"child":1,"refs.textbook.name":1,"childCode":1}).then((topicList)=>{
+          console.log(topicList)
+          let chaptextMismatch = []
+          for(var i = 0 ; i< data.length ; i++){
+            let temp = data[i];
+            for(var j = 0 ; j <temp.Subject.length;j++){
+            var check = topicList.find(x=>x.refs.textbook.name === temp.Textbook[j] && x.child === temp.Chapter[j])
+            // console.log(subtextList.find(x=>x.refs.subject.name === temp.Subject[j] && x.name === temp.Textbook[j]))
+            if(check == undefined){
+              chaptextMismatch.push({ row:(i+2),chapter:temp.Chapter[j],textbook:temp.Textbook[j]})
+            }
+            }
+          }
+          if(chaptextMismatch.length > 0 ){
+            throw new Error(`invalid chapter-textbook-subject combination at following rows :[${chaptextMismatch.map(x=>x.row)}]`)
+          }
+
+          //preparing documents for insertion
+          for(var i = 0 ; i <data.length;i++){
+            let temp = data[i]
+            let obj = {}
+            obj['content.type'] = null
+            obj['content.name'] = temp['Name']
+            obj['content.category'] = null
+            obj['resource.key'] = temp["Size"]
+            obj['resource.size'] = temp["Type"]
+            obj['resource.type']= temp["Key"]
+            obj['publication'] = {}
+            obj['publication.publisher'] = null
+            obj['publication.year'] = null
+            obj['coins'] = temp['Coins']
+            obj['active'] = true
+            obj['category'] = null
+            obj['refs.topic.code'] = 
+           
+          }
+        })
       })
+    })
    });
   });
 }
