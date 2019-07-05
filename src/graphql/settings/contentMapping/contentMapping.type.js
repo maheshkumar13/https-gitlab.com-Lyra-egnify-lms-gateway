@@ -152,7 +152,7 @@ export const FileDataInputType = new InputType({
   fields: {
     // fileKey: { type: new NonNull(StringType), description: 'Key of the file' },
     // textbookCode: { type: new NonNull(StringType), description: 'code of textbook ' },
-    id :{ type: new NonNull(StringType), description : 'mongodb id'}
+    id :{ type: new NonNull(new List(StringType)), description : 'mongodb id'}
   },
 });
 
@@ -171,6 +171,10 @@ export const FileDataOutputType = new ObjectType({
     subject: { type: StringType, description: 'subject to which the file belongs to' },
     textBookName: { type: StringType, description: 'Name of the textBook' },
     topicName: { type: StringType, description: 'Name of the topic' },
+    coins:{type:StringType},
+    filePath :{type:StringType, description:'path of the file'},
+    fileSize: {type:StringType,description: 'size of the file'},
+    mediaType: {type: StringType, description:'type of the file'}
   },
 });
 
