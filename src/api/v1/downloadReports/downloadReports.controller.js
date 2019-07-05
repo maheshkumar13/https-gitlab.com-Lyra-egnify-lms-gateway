@@ -3,6 +3,7 @@ import _ from 'lodash';
 import { config } from '../../../config/environment';
 import  {getModel as SubjectModel} from '../../settings/subject/subject.model'
 import {getModel as TextbookModel} from '../../settings/textbook/textbook.model'
+import {getModel as ConceptTaxonomyModel} from '../../settings/conceptTaxonomy/concpetTaxonomy.model'
 const request = require('request');
 
 // function to download testResultsReport
@@ -261,10 +262,8 @@ export function validateUploadedContentMapping(req){
   const workbook = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true });
   // converting the sheet data to csv
   const csvdata = xlsx.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]]);
-  console.log(csvdata)
   // converting csvdata to array of json objects
   const data = csvjson.toObject(csvdata);
-  console.log(data)
 	// deleting all trailing empty rows
 	for (let i = data.length - 1; i >= 0; i -= 1) {
 		const values = Object.values(data[i]);
@@ -277,6 +276,7 @@ export function validateUploadedContentMapping(req){
   data.map(x=>{
     x['Subject'] = x['Subject'].split('/')
     x['Textbook'] = x['Textbook'].split('/')
+    // x['Chapter'] = x['Chapter'].split('/')
     subjectList = subjectList.concat(x['Subject'])
     textbookList = textbookList.concat( x['Textbook'])
   })
@@ -308,33 +308,63 @@ export function validateUploadedContentMapping(req){
     if(difference.length >=1){
       throw new Error('Invalid Textbook:',difference[0])
     }
-    const  subtextQuery = { }
+    const  subtextQuery = {}
     subtextQuery['$or'] = [] 
+
+    // const chaptextQuery = {}
+    // chaptextQuery['$or'] = []
+    // chaptextQuery['levelName'] = 'topic'
     var j = 0;
     // checking for subject-textbook combinations
     for(var i = 0 ; i< data.length; i ++){
       let tempObj = data[i];
       if(tempObj.Subject.length > tempObj.Textbook.length){
-        throw new Error(`Missing TextBook at row number ${i+1}`)
+        throw new Error(`Missing TextBook at row number ${i+2}`)
       }
       if(tempObj.Subject.length < tempObj.Textbook.length){
-        throw new Error(`Missing Subject at row number ${i+1}`)
+        throw new Error(`Missing Subject at row number ${i+2}`)
       }
-      // if(tempObj.Subject.length != tempObj.Chapter.length){
-      //   throw new Error(`Number of chapters inconsistent at row number ${i+1}`)
-      // }
+      if(tempObj.Subject.length != tempObj.Chapter.length){
+        throw new Error(`Number of chapters inconsistent at row number ${i+1}`)
+      }
+      
       for(var k = 0 ; k< tempObj.Subject.length; k++){
         subtextQuery['$or'][j++] ={
           "refs.subject.name" : tempObj.Subject[k],
           name : tempObj.Textbook[k]
         }
+        // chaptextQuery['$or'][j++]={
+        //   "refs.textbook.name" : tempObj.Textbook[k],
+        //   child : tempObj.Chapter[k]
+        // }
+
       }
-      console.log(subtextQuery)
-      return (textbooks.find(subtextQuery,{_id:0,"name":1,"refs.subbject.name":1})).then(
-        (subtextList)=>{
-          console.log(subtextList)
-        })
-    }
+    } 
+    return (textbooks.find(subtextQuery,{_id:0,"name":1,"refs.subject.name":1})).then(
+      (subtextList)=>{
+        console.log("------result-------\n",subtextList)
+        let subtextMismatch = []
+        for(var i = 0 ; i< data.length ; i++){
+          let temp = data[i];
+          for(var j = 0 ; j <temp.Subject.length;j++){
+          var check = subtextList.find(x=>x.refs.subject.name === temp.Subject[j] && x.name === temp.Textbook[j])
+          console.log(subtextList.find(x=>x.refs.subject.name === temp.Subject[j] && x.name === temp.Textbook[j]))
+          if(check == undefined){
+            subtextMismatch.push({ row:(i+2),subject:temp.Subject[j],textbook:temp.Textbook[j]})
+          }
+          }
+         
+        }
+        if(subtextMismatch.length > 0 ){
+          throw new Error(`invalid subject-textbook combination at following rows${subtextMismatch.map(x=>x.row)}`)
+        }
+        
+        // return ConceptTaxonomyModel(req.user_cxt).then((conceptTaxonomy)=>{
+        //   return conceptTaxonomy.find(chaptextQuery).then((topicObj)=>{
+        //     console.log(topicObj)
+        //   })
+        // })
+      })
    });
   });
 }
