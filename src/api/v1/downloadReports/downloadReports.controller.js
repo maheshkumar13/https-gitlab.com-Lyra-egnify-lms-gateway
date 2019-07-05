@@ -228,6 +228,7 @@ export function downloadContentMappingSample(req,res){
   const args = req.body ;
   if(!args.uploadList){
     throw new Error("Need atleast one entry")
+
   }
   const result = []
   var headers  = ["Name","Subject","Textbook","Chapter","Coins","Class","Size","Type"] 
@@ -369,7 +370,7 @@ export function validateUploadedContentMapping(req){
         }
       }
     } 
-    return (textbooks.find(subtextQuery,{_id:0,"name":1,"refs.subject.name":1})).then(
+    return (textbooks.find(subtextQuery,{_id:0,"name":1,"refs.subject.name":1,code:1})).then(
       (subtextList)=>{
         // console.log("------result-------\n",subtextList)
         let subtextMismatch = []
@@ -409,21 +410,28 @@ export function validateUploadedContentMapping(req){
           //preparing documents for insertion
           for(var i = 0 ; i <data.length;i++){
             let temp = data[i]
+            for(var j = 0 ; j <temp.Subject.length;j++){
             let obj = {}
-            obj['content.type'] = null
+            obj['content'] = {
+              name: temp['Name'],
+              category: null,
+              type : null
+            }
             obj['content.name'] = temp['Name']
             obj['content.category'] = null
             obj['resource.key'] = temp["Size"]
             obj['resource.size'] = temp["Type"]
             obj['resource.type']= temp["Key"]
-            obj['publication'] = {}
-            obj['publication.publisher'] = null
-            obj['publication.year'] = null
+            obj["publication"] = {}
+            obj["publication.publisher"] = null
+            obj["publication.year"] = null
             obj['coins'] = temp['Coins']
             obj['active'] = true
             obj['category'] = null
-            obj['refs.topic.code'] = 
-           
+            obj["refs.topic.code"] = topicList.find(x=>x.refs.textbook.name === temp.Textbook[j] && x.child === temp.Chapter[j]).childCode
+            obj["refs.textbook.code"] =  subtextList.find(x=>x.refs.subject.name === temp.Subject[j] && x.name === temp.Textbook[j]).code
+            console.log(obj)
+            }
           }
         })
       })
