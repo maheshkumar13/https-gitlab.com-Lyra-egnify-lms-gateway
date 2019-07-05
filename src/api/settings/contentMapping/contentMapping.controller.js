@@ -672,9 +672,10 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   const textbookCodes = [];
   if (textbookCode) {
     textbookCodes.push(textbookCode);
+    query1['code'] = textbookCode
   }
   let textbookCodeObj=[];
-
+  
   await TextbookModel(context).then(async (TextBook) => {
     await TextBook.find(query1, { code: 1, _id: 0,name:1 ,
       "refs.class.name":1,"refs.subject.name":1,}).then((textbookCodeObjs) => {
