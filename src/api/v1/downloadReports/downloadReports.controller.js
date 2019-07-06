@@ -6,6 +6,9 @@ import {getModel as TextbookModel} from '../../settings/textbook/textbook.model'
 import {getModel as ConceptTaxonomyModel} from '../../settings/conceptTaxonomy/concpetTaxonomy.model'
 import {getModel as ContentMappingModel} from '../../settings/contentMapping/contentMapping.model'
 const request = require('request');
+const xlsx = require('xlsx');
+const csvjson = require('csvjson');
+
 
 // function to download testResultsReport
 export function testResultsReport(req, res) {
@@ -232,7 +235,8 @@ export function downloadContentMappingSample(req,res){
 
   }
   const result = []
-  var headers  = ["Name","Subject","Textbook","Chapter","Coins","Class","Size","Type"] 
+  var headers  = ["Name","Subject","Textbook","Chapter","Content Type","Coins"]
+  // "Class","Size","Type","Content Category","Resource Key",] 
   for(var i = 0 ; i < args.uploadList.length; i++){
     var row = {}
     const obj = args.uploadList[i];
@@ -245,16 +249,10 @@ export function downloadContentMappingSample(req,res){
 }
 
 
-const fs = require('fs');
-const xlsx = require('xlsx');
-const csvjson = require('csvjson');
-
-
 export function validateUploadedContentMapping(req){
-  if(!req.file){
-    throw new Error('File required')
-  }
-  console.log("-------------Inside validation\n");
+  let uploadList = req.body.uploadList
+  uploadList =JSON.parse( uploadList );
+  const classCode = req.body.classCode 
   //vaidating file type
   const name = req.file.originalname.split('.');
   const extname = name[name.length - 1];
@@ -265,15 +263,14 @@ export function validateUploadedContentMapping(req){
   // Reading  workbook
   const workbook = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true });
   // converting the sheet data to csv
-  const csvdata = xlsx.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]]);
-  // converting csvdata to array of json objects
-  const data = csvjson.toObject(csvdata);
+  const data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
 	// deleting all trailing empty rows
-	for (let i = data.length - 1; i >= 0; i -= 1) {
-		const values = Object.values(data[i]);
-		const vals = values.map(x => x.trim());
-		if (vals.every(x => x === '')) data.pop();
-		else break;
+  for (let i = data.length - 1; i >= 0; i -= 1) {
+    let values = Object.values(data[i]);
+    values = values.map(x => x.toString());
+    // const vals = values.map(x => x.trim());
+    if (values.every(x => x === '')) data.pop();
+    else break;
   }
   
   //checking for null values
@@ -295,16 +292,21 @@ export function validateUploadedContentMapping(req){
     if(temp['Coins'] == null || temp['Coins']==''){
       err1.push('Coins')
     }
+    if(temp['Content Type'] == null || temp['Content Type']==''){
+      err1.push('Content Type')
+    }
     if(err1.length >0){
       throw new Error(`Missing information at row :${i+2} , columns : [ ${err1} ]`)
     }
   }
   let subjectList = []
   let textbookList = []
+
+  //splitting individual columns 
   data.map(x=>{
-    x['Subject'] = x['Subject'].split('/')
-    x['Textbook'] = x['Textbook'].split('/')
-    x['Chapter'] = x['Chapter'].split('/')
+    x['Subject'] = x['Subject'].split(',')
+    x['Textbook'] = x['Textbook'].split(',')
+    x['Chapter'] = x['Chapter'].split(',')
     subjectList = subjectList.concat(x['Subject'])
     textbookList = textbookList.concat( x['Textbook'])
   })
@@ -324,7 +326,7 @@ export function validateUploadedContentMapping(req){
   ]).then(([subjects,textbooks])=>{
    return Promise.all([
     subjects.find({subject :{$in : subjectList}},{_id:0,subject:1}),
-    textbooks.find({name :{$in : textbookList}},{_id:0,name:1,code:1,orientations:1,branches:1,publisher:1})
+    textbooks.find({name :{$in : textbookList},"refs.class.code":classCode},{_id:0,name:1,code:1,orientations:1,branches:1,publisher:1})
    ]).then(([subList,tbookList])=>{
     subList = subList.map(x=>x['subject'])
     tbookList = tbookList.map(x=>x['name']) 
@@ -334,7 +336,7 @@ export function validateUploadedContentMapping(req){
     }
     difference = textbookList.filter(x => !tbookList.includes(x))
     if(difference.length >=1){
-      throw new Error(`Invalid Textbook: ${difference[0]}`)
+      throw new Error(`Invalid Textbook: ${difference[0]} for the given class`)
     }
     const  subtextQuery = {}
     subtextQuery['$or'] = [] 
@@ -371,13 +373,11 @@ export function validateUploadedContentMapping(req){
     return (textbooks.find(subtextQuery,{_id:0,"name":1,"refs.subject.name":1,"code":1,"publisher":1,
     "orientations":1,"branches":1})).then(
       (subtextList)=>{
-        // console.log("------result-------\n",subtextList)
         let subtextMismatch = []
         for(var i = 0 ; i< data.length ; i++){
           let temp = data[i];
           for(var j = 0 ; j <temp.Subject.length;j++){
           var check = subtextList.find(x=>x.refs.subject.name === temp.Subject[j] && x.name === temp.Textbook[j])
-          // console.log(subtextList.find(x=>x.refs.subject.name === temp.Subject[j] && x.name === temp.Textbook[j]))
           if(check == undefined){
             subtextMismatch.push({ row:(i+2),subject:temp.Subject[j],textbook:temp.Textbook[j]})
           }
@@ -388,15 +388,12 @@ export function validateUploadedContentMapping(req){
         }
         
       return ConceptTaxonomyModel(req.user_cxt).then((conceptTaxonomy)=>{
-        // console.log('chaper-text---------\n',chaptextQuery)
         return conceptTaxonomy.find(chaptextQuery,{_id:0,"child":1,"refs.textbook.name":1,"childCode":1}).then((topicList)=>{
-          console.log(topicList)
           let chaptextMismatch = []
           for(var i = 0 ; i< data.length ; i++){
             let temp = data[i];
             for(var j = 0 ; j <temp.Subject.length;j++){
             var check = topicList.find(x=>x.refs.textbook.name === temp.Textbook[j] && x.child === temp.Chapter[j])
-            // console.log(subtextList.find(x=>x.refs.subject.name === temp.Subject[j] && x.name === temp.Textbook[j]))
             if(check == undefined){
               chaptextMismatch.push({ row:(i+2),chapter:temp.Chapter[j],textbook:temp.Textbook[j]})
             }
@@ -407,7 +404,6 @@ export function validateUploadedContentMapping(req){
           }
 
           //preparing documents for insertion
-          // const bulk = ContentMapping.collection.initializeUnorderedBulkOp();
           const finalObj = []
           var k =0;
           for(var i = 0 ; i <data.length;i++){
@@ -417,23 +413,25 @@ export function validateUploadedContentMapping(req){
                x.child === temp.Chapter[j])
             let s = subtextList.find(x=>x.refs.subject.name === temp.Subject[j] && 
               x.name === temp.Textbook[j])
-            console.log(s)
+            let u = uploadList.find(x=>x['Name'] == temp['Name'])
+            if(u == undefined || null){
+              throw new Error(`Name mismatch at row number ${ i + 2}`)
+            }
             let obj = {}
             obj['content'] = {
               name: temp['Name'],
-              category: null,
-              type : null
+              category: req.body.contentCategory,
+              type : temp['Content Type']
             }
             obj['resource'] ={
-              key : temp['Key'],
-              size: temp['Size'],
-              type : temp['Type']
+              key : u['Key'],
+              size: u['Size'],
+              type : u['Type']
             }
             obj["publication.publisher"] = s.publisher
             obj["publication.year"] = null
             obj['coins'] = temp['Coins']
             obj['active'] = true
-            obj['category'] = 'A'
             obj['refs']={
               topic:{
                 code:t.childCode
@@ -442,6 +440,7 @@ export function validateUploadedContentMapping(req){
                 code:s.code
               }
             }
+            obj['category'] = ''
             obj['orientations'] = s.orientations
             obj['branches'] = s.branches
             finalObj[k++] = obj
@@ -451,8 +450,6 @@ export function validateUploadedContentMapping(req){
           return ContentMappingModel(req.user_cxt).then((content)=>{
             content.insertMany(finalObj)
           })
-          // console.log(finalObj)
-          // return finalObj
         })
       })
     })
@@ -461,9 +458,23 @@ export function validateUploadedContentMapping(req){
 }
 
 export async function uploadedContentMapping(req,res){
-  const r = validateUploadedContentMapping(req)
-  console.log(r)
-  res.send(r)
+  if(!req.file){
+    throw new Error('File required')
+  }
+  if(!req.body||!req.body.contentCategory){
+    throw new Error('content category required')
+  }
+  if(!req.body||!req.body.classCode){
+    throw new Error('Class required')
+  }
+  if(!req.body||!req.body.uploadList){
+    throw new Error('list required')
+  }
+  return validateUploadedContentMapping(req).then((done)=>{
+    if(done){
+      res.send("Inserted Successfully")
+    }
+  })
 }
 
 export default {
