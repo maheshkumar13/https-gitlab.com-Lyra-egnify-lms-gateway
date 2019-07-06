@@ -4,6 +4,7 @@ import { config } from '../../../config/environment';
 import  {getModel as SubjectModel} from '../../settings/subject/subject.model'
 import {getModel as TextbookModel} from '../../settings/textbook/textbook.model'
 import {getModel as ConceptTaxonomyModel} from '../../settings/conceptTaxonomy/concpetTaxonomy.model'
+import {getModel as ContentMappingModel} from '../../settings/contentMapping/contentMapping.model'
 const request = require('request');
 
 // function to download testResultsReport
@@ -254,11 +255,13 @@ export function validateUploadedContentMapping(req){
     throw new Error('File required')
   }
   console.log("-------------Inside validation\n");
+  //vaidating file type
   const name = req.file.originalname.split('.');
   const extname = name[name.length - 1];
 	if ( extname !== 'xlsx') {
 		throw new Error('Invalid FileType')
   }
+  
   // Reading  workbook
   const workbook = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true });
   // converting the sheet data to csv
@@ -272,11 +275,11 @@ export function validateUploadedContentMapping(req){
 		if (vals.every(x => x === '')) data.pop();
 		else break;
   }
-
-  for(var i = 0 ; i <data.length ;i++){
+  
+  //checking for null values
+  for(var i = 0 ; i < data.length ;i++){
     const temp = data[i]
     const err1 =[]
-    // console.log(temp)
     if(temp['Name'] == null || temp['Name']== ''){
       err1.push('Name')
     }
@@ -292,7 +295,6 @@ export function validateUploadedContentMapping(req){
     if(temp['Coins'] == null || temp['Coins']==''){
       err1.push('Coins')
     }
-    // console.log(err1)
     if(err1.length >0){
       throw new Error(`Missing information at row :${i+2} , columns : [ ${err1} ]`)
     }
@@ -322,7 +324,7 @@ export function validateUploadedContentMapping(req){
   ]).then(([subjects,textbooks])=>{
    return Promise.all([
     subjects.find({subject :{$in : subjectList}},{_id:0,subject:1}),
-    textbooks.find({name :{$in : textbookList}},{_id:0,name:1,code:1,orientations:1,branches:1})
+    textbooks.find({name :{$in : textbookList}},{_id:0,name:1,code:1,orientations:1,branches:1,publisher:1})
    ]).then(([subList,tbookList])=>{
     subList = subList.map(x=>x['subject'])
     tbookList = tbookList.map(x=>x['name']) 
@@ -341,10 +343,6 @@ export function validateUploadedContentMapping(req){
     chaptextQuery['$or'] = []
     chaptextQuery['levelName'] = 'topic'
     var j = 0;
-
-    //checking for null values
-
-
 
     // checking for subject-textbook combinations
     for(var i = 0 ; i< data.length; i ++){
@@ -370,7 +368,8 @@ export function validateUploadedContentMapping(req){
         }
       }
     } 
-    return (textbooks.find(subtextQuery,{_id:0,"name":1,"refs.subject.name":1,code:1})).then(
+    return (textbooks.find(subtextQuery,{_id:0,"name":1,"refs.subject.name":1,"code":1,"publisher":1,
+    "orientations":1,"branches":1})).then(
       (subtextList)=>{
         // console.log("------result-------\n",subtextList)
         let subtextMismatch = []
@@ -408,31 +407,52 @@ export function validateUploadedContentMapping(req){
           }
 
           //preparing documents for insertion
+          // const bulk = ContentMapping.collection.initializeUnorderedBulkOp();
+          const finalObj = []
+          var k =0;
           for(var i = 0 ; i <data.length;i++){
             let temp = data[i]
             for(var j = 0 ; j <temp.Subject.length;j++){
+            let t =topicList.find(x=>x.refs.textbook.name === temp.Textbook[j] &&
+               x.child === temp.Chapter[j])
+            let s = subtextList.find(x=>x.refs.subject.name === temp.Subject[j] && 
+              x.name === temp.Textbook[j])
+            console.log(s)
             let obj = {}
             obj['content'] = {
               name: temp['Name'],
               category: null,
               type : null
             }
-            obj['content.name'] = temp['Name']
-            obj['content.category'] = null
-            obj['resource.key'] = temp["Size"]
-            obj['resource.size'] = temp["Type"]
-            obj['resource.type']= temp["Key"]
-            obj["publication"] = {}
-            obj["publication.publisher"] = null
+            obj['resource'] ={
+              key : temp['Key'],
+              size: temp['Size'],
+              type : temp['Type']
+            }
+            obj["publication.publisher"] = s.publisher
             obj["publication.year"] = null
             obj['coins'] = temp['Coins']
             obj['active'] = true
-            obj['category'] = null
-            obj["refs.topic.code"] = topicList.find(x=>x.refs.textbook.name === temp.Textbook[j] && x.child === temp.Chapter[j]).childCode
-            obj["refs.textbook.code"] =  subtextList.find(x=>x.refs.subject.name === temp.Subject[j] && x.name === temp.Textbook[j]).code
-            console.log(obj)
+            obj['category'] = 'A'
+            obj['refs']={
+              topic:{
+                code:t.childCode
+              },
+              textbook:{
+                code:s.code
+              }
+            }
+            obj['orientations'] = s.orientations
+            obj['branches'] = s.branches
+            finalObj[k++] = obj
+            
             }
           }
+          return ContentMappingModel(req.user_cxt).then((content)=>{
+            content.insertMany(finalObj)
+          })
+          // console.log(finalObj)
+          // return finalObj
         })
       })
     })
@@ -441,7 +461,9 @@ export function validateUploadedContentMapping(req){
 }
 
 export async function uploadedContentMapping(req,res){
-  validateUploadedContentMapping(req)
+  const r = validateUploadedContentMapping(req)
+  console.log(r)
+  res.send(r)
 }
 
 export default {
