@@ -1031,7 +1031,7 @@ export async function getCmsTopicLevelStats(args, context) {
 /* req.body should caontain filters key of the format ---
  
 	"filters":{
-    "category" :"A",  //compulsory input
+    "contentCategory" :"Reading Material etc.",  //compulsory input
     "textbookCode":"155695623436235d2fe4581",//optional
     "classCode" : "String", //optional
     "subjectCode" : "String",  //optional
@@ -1044,7 +1044,7 @@ export async function downloadContentDetails(req, res){
   if(!args.filters){
     throw new Error('Please input filters')
   }
-  if(!args.filters.category){
+  if(!args.filters.contentCategory){
     throw new Error('Please select a category')
   }
   const filters = args.filters
@@ -1081,12 +1081,12 @@ async function makeJSONforCSV(filedata){
 }
 
 export async function getContentDetails(context,filters={}){
-    if(!filters.category){
+    if(!filters.contentCategory){
       throw new Error('Select A category')
     }
     const findQuery = {
       active: true,
-      category : filters.category
+      "content.category" : filters.contentCategory
     }
     if(filters.textbookCode){
       findQuery['refs.textbook.code'] = filters.textbookCode
