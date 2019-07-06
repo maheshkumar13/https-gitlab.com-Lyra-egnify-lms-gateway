@@ -25,7 +25,7 @@ module.exports = {
     contentMapping: 600000,
     question: 600000,
     instituteHierarchy: 600000,
-    student: 600000,
+    student: 1,
   },
 
   redis: {
