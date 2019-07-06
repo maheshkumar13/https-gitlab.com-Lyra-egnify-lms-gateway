@@ -5,6 +5,7 @@
 const concpetTaxonomy = require('./settings/conceptTaxonomy');
 const instituteHierarchy = require('./settings/instituteHierarchy');
 const contentMapping = require('./settings/contentMapping');
+const textbook = require('./settings/textbook');
 
 // Util modules
 const uploadFile = require('./v1/uploadFile');
@@ -28,4 +29,5 @@ export default function (app) {
   app.use('/auth', auth);
   app.use('/api/v1/authValidation', authValidation);
   app.use('/api/v1/studentSync', studentSync);
+  app.use('/api/textbook', textbook);
 }

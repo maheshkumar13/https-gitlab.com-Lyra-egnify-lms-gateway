@@ -4,6 +4,10 @@ import { getModel as SubjectModel } from '../subject/subject.model'
 import { getModel as StudentModel } from '../student/student.model'
 import { config } from '../../../config/environment';
 
+const xlsx = require('xlsx');
+const csvjson = require('csvjson');
+
+
 const crypto = require('crypto')
 
 export async function getStudentData(context) {
@@ -44,7 +48,7 @@ export async function getTextbooks(args, context){
       }
     }
     const query = getTextbooksQuery(args)
-    console.log(query);
+    // console.log(query);
     return TextbookModel(context).then( (Textbook) => {
       return Textbook.find(query).cache(config.cacheTimeOut.textbook)
     })
@@ -82,6 +86,7 @@ export async function getSubjectData(context, args){
 }
 
 export async function validateTextbook(args, context){
+
   const query = {
     active: true,
     name: args.name,
@@ -254,6 +259,43 @@ export async function codeAndTextbooks(context){
     return docs
   })
   
+  })
+}
+
+export async function uploadTextbook(req)
+{
+  const workbook = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true });
+
+  const data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+
+
+  const tbclassdata = JSON.parse(req.body.class)
+  const tbsubdata = JSON.parse(req.body.subject)
+
+  let textbookList =[]
+  for (var x=0;x<data.length;x+=1)
+  {
+    let tempObj = data[x]
+    const prepObj = {
+      name: tempObj && tempObj.name ? tempObj.name : null ,
+      orientations : tempObj && tempObj.orientation ? tempObj.orientation.split(",") :null,
+      branches : tempObj && tempObj.branches ? tempObj.branches.split(",") : null,
+      publisher : tempObj && tempObj.publisher ? tempObj.publisher : null,
+      year : tempObj && tempObj.year ? tempObj.year :null,
+      active: true,
+      refs : {"class" : {"name" : tbclassdata.name , "code" : tbclassdata.code } , "subject" : {"name" : tbsubdata.name , "code" : tbsubdata.code}},
+      code: `${Date.now()}${crypto.randomBytes(5).toString('hex')}`
+    };
+    if (!prepObj.orientations || !prepObj.branches)
+    {
+      throw new Error("orientations and branches are mandatory fields.")
+    }
+    textbookList.push(prepObj)
+  }
+  return TextbookModel(req.user_cxt).then((Textbook) => {
+    return Textbook.insertMany(textbookList).then(obj => {
+      return obj
+    })
   })
 }
 
