@@ -29,9 +29,9 @@ module.exports = {
   },
 
   redis: {
-    auth: 1,
-    host: 'redis-master.development.svc.cluster.local',
-    password: 'CwADcltNY0',
+    auth: 0,
+    host: 'clustercfg.rankguru-redis.3odpbz.aps1.cache.amazonaws.com',
+    password: '',
   },
 
   // AWS

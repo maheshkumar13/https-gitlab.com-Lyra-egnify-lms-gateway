@@ -23,6 +23,9 @@ import seedDatabaseIfNeeded from './config/seed';
 const { ApolloEngine } = require('apollo-engine');
 const morgan = require('morgan');
 const cors = require('cors');
+const Sentry = require('@sentry/node');
+
+Sentry.init({ dsn: 'https://7d87b44860e44027996d3a8343063435@sentry.io/1494857' });
 
 mongoose.Promise = require('bluebird');
 // mongoose.set('debug', true);
@@ -47,6 +50,7 @@ mongoose.connection.on('error', (err) => {
 
 
 const app = express();
+app.use(Sentry.Handlers.requestHandler());
 app.use(cors());
 app.use(morgan('short'));
 app.use(cookieParser());
@@ -54,7 +58,9 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '32mb' }));
 app.use(bodyParser.json({ limit: '32mb' }));
 
 app.use('/', express.static(`${__dirname}/public`));
-
+app.get('/debug-sentry', function mainHandler(req, res) {
+  throw new Error('My first Sentry error!');
+});
 /* eslint no-unused-vars: 0 */
 // The GraphQL endpoint
 // app.use('/graphql', bodyParser.json(), graphqlExpress({ schema }));
