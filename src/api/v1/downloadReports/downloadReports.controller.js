@@ -448,7 +448,9 @@ export function validateUploadedContentMapping(req){
             }
           }
           return ContentMappingModel(req.user_cxt).then((content)=>{
-            content.insertMany(finalObj)
+            return content.insertMany(finalObj).then((obj)=>{
+              return "Inserted Successfully"
+            })
           })
         })
       })
@@ -472,7 +474,7 @@ export async function uploadedContentMapping(req,res){
   }
   return validateUploadedContentMapping(req).then((done)=>{
     if(done){
-      res.send("Inserted Successfully")
+      res.send(done)
     }
   })
 }
