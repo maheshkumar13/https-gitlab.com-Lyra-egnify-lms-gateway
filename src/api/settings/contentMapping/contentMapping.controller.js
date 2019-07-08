@@ -1221,6 +1221,39 @@ export async function getTextbookBasedListOfQuizzes(args, context) {
   
 }
 
+/**
+ * @author Shreyas
+ * @description This function implements a search on Name or Id of the asset and returns all matching results
+ * @returns  Array of jsons
+ */
+
+export async function getAssetDetails(args, context) {
+  const searchString = RegExp(`/${args.input}/`);
+  return ContentMappingModel(context).then(async ContentMapping => {
+    const query1 = {
+      $or: [
+        {
+          "content.name": searchString,
+        },
+        {
+          "asset_id": searchString,
+        },
+      ]
+    };
+    const projection1 = {
+      "content.name": 1,
+      "asset_id": 1,
+      "orientation": 1,
+      "branches": 1,
+      "refs.textbook.code": 1,
+      "refs.topic.code": 1,
+    };
+    return ContentMapping.find(query1, projection1).then(async result1 => {
+      console.log(JSON.stringify(result1, null, 2));
+    });
+  });
+}
+
 export default{
   updateContent
 }
