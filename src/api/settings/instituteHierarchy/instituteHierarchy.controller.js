@@ -108,7 +108,7 @@ export async function getFiltersOnLevel(body, context) {
   const InstituteHierarchy = await getModel(context);
   const { level } = body;
   if (!level) {
-    throw new Errocsvr('Invalid level');
+    throw new Error('Invalid level');
   } else {
     InstituteHierarchy.distinct('child', { level }).then((doc) => {
       const data = doc;
