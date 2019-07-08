@@ -261,14 +261,37 @@ export async function codeAndTextbooks(context){
   
   })
 }
+export async function returnAllBranches(context)
+{
+  return InstituteHierarchyModel(context).then((InstituteHierarchy) => {
+    return InstituteHierarchy.distinct("child", {levelName: "Branch"}).then(branchesArray => {
+      return branchesArray;
+    })
+  })  
+
+}
+
+
+export async function returnAllTextbooks(context)
+{
+  return TextbookModel(context).then((Textbook) => {
+    return Textbook.distinct("name",{}).then(obj => {
+      return obj
+    })
+  })  
+
+}
+
 
 export async function uploadTextbook(req)
 {
   const workbook = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true });
 
   const data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-
-
+  const textbooks = []
+  let uniqueBranches = []
+  let branches = []
+  let uniqueBranches_db = []
   const tbclassdata = JSON.parse(req.body.class)
   const tbsubdata = JSON.parse(req.body.subject)
 
@@ -291,7 +314,24 @@ export async function uploadTextbook(req)
       throw new Error("orientations and branches are mandatory fields.")
     }
     textbookList.push(prepObj)
+    textbooks.push(prepObj.name)
   }
+  for (var y = 0 ; y < textbookList.length ; y+=1)
+  {
+    let branchesList = textbookList[0].branches.concat(textbookList[y].branches)
+    uniqueBranches = branchesList.filter((p, i, a) => a.indexOf(p) == i)
+  }
+
+  let checkBranches = await returnAllBranches(req.user_cxt)
+  let checkTextbooks = await returnAllTextbooks(req.user_cxt)
+  // console.log(checkBranches);
+  // console.log("damn son!",checkTextbooks)
+
+  //now find the set difference.
+
+
+
+
   return TextbookModel(req.user_cxt).then((Textbook) => {
     return Textbook.insertMany(textbookList).then(obj => {
       return obj
