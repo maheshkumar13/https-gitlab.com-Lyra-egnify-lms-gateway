@@ -464,7 +464,7 @@ export function validateUploadedContentMapping(req){
               }
             }
             obj['category'] = ''
-            obj['orientations'] = s.orientations
+            obj['orientation'] = s.orientations
             obj['branches'] = s.branches
             finalObj[k++] = obj
             
