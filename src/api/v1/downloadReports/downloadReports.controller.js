@@ -293,6 +293,10 @@ export function validateUploadedContentMapping(req){
     if(temp['Coins'] == null || temp['Coins']==''){
       err1.push('Coins')
     }
+    //validating coins
+    if(temp['Coins'] && temp['Coins']<0){
+      error['E0002'].push(`Coins can not be less than 0 at row : ${i+2}`)
+    }
     if(temp['Content Type'] == null || temp['Content Type']==''){
       err1.push('Content Type')
     }
@@ -313,13 +317,6 @@ export function validateUploadedContentMapping(req){
   })
   textbookList  = [...new Set(textbookList)]
   subjectList   = [...new Set(subjectList)]
-  let coinCheck = data.map(x=>parseInt(x["Coins"]))
-
-  //validating coins column. Error code : E0002
-  coinCheck = coinCheck.findIndex(x=>x<0)
-  if(coinCheck > -1){
-    error['E0002'].push(`Coins can not be less than 1 at row : ${coinCheck+2}`)
-  }
 
   return Promise.all([
     SubjectModel(req.user_cxt),
