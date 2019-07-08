@@ -277,11 +277,11 @@ export async function uploadTextbook(req)
   {
     let tempObj = data[x]
     const prepObj = {
-      name: tempObj && tempObj.name ? tempObj.name : null ,
-      orientations : tempObj && tempObj.orientation ? tempObj.orientation.split(",") :null,
-      branches : tempObj && tempObj.branches ? tempObj.branches.split(",") : null,
-      publisher : tempObj && tempObj.publisher ? tempObj.publisher : null,
-      year : tempObj && tempObj.year ? tempObj.year :null,
+      name: tempObj && tempObj["Book Title"] ? tempObj["Book Title"] : null ,
+      orientations : tempObj && tempObj.Orientations ? tempObj.Orientations.split(",") :null,
+      branches : tempObj && tempObj.Branches ? tempObj.Branches.split(",") : null,
+      publisher : tempObj && tempObj.Publisher ? tempObj.Publisher : null,
+      year : tempObj && tempObj["Publish Year"] ? tempObj["Publish Year"] :null,
       active: true,
       refs : {"class" : {"name" : tbclassdata.name , "code" : tbclassdata.code } , "subject" : {"name" : tbsubdata.name , "code" : tbsubdata.code}},
       code: `${Date.now()}${crypto.randomBytes(5).toString('hex')}`
