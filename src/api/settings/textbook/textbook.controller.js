@@ -316,6 +316,7 @@ export async function uploadTextbook(req)
     textbookList.push(prepObj)
     textbooks.push(prepObj.name)
   }
+  console.log("-------------",textbookList)
   for (var y = 0 ; y < textbookList.length ; y+=1)
   {
     let branchesList = textbookList[0].branches.concat(textbookList[y].branches)
@@ -328,15 +329,32 @@ export async function uploadTextbook(req)
   // console.log("damn son!",checkTextbooks)
 
   //now find the set difference.
+  let difference_branch = uniqueBranches.filter(x=> !checkBranches.includes(x));
+  let difference_textbook = textbooks.filter(x=> !checkTextbooks.includes(x));
+  console.log(difference_textbook)
+  if(difference_branch.length >0)
+  {
+    throw new Error("branches you have entered don't exist.")
+  }
 
+  let textbookList_final = []
 
+  for (var y = 0 ; y < textbookList.length ; y+=1)
+  {
 
+    console.log(textbookList[y].name)
+    if(textbookList[y].name.toString() in difference_textbook_array)
+    {
+      textbookList_final.push(textbookList[y])
+    }
 
-  return TextbookModel(req.user_cxt).then((Textbook) => {
-    return Textbook.insertMany(textbookList).then(obj => {
-      return obj
-    })
-  })
+  }
+  console.log("check this:",textbookList_final)
+  // return TextbookModel(req.user_cxt).then((Textbook) => {
+  //   return Textbook.insertMany(textbookList_final).then(obj => {
+  //     return obj
+  //   })
+  // })
 }
 
 export default{
