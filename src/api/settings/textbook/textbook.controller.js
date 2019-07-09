@@ -3,6 +3,7 @@ import { getModel as InstituteHierarchyModel} from '../instituteHierarchy/instit
 import { getModel as SubjectModel } from '../subject/subject.model'
 import { getModel as StudentModel } from '../student/student.model'
 import { config } from '../../../config/environment';
+import _ from 'lodash';
 
 const xlsx = require('xlsx');
 const csvjson = require('csvjson');
@@ -261,6 +262,7 @@ export async function codeAndTextbooks(context){
   
   })
 }
+
 export async function returnAllBranches(context)
 {
   return InstituteHierarchyModel(context).then((InstituteHierarchy) => {
@@ -270,7 +272,6 @@ export async function returnAllBranches(context)
   })  
 
 }
-
 
 export async function returnAllTextbooks(context)
 {
@@ -285,19 +286,49 @@ export async function returnAllTextbooks(context)
 
 export async function uploadTextbook(req)
 {
+
+  // console.log("req:",req.file)
+  //initial error handling.
+  if(!req || !req.file)
+  {
+    throw new Error("file not received.Please upload file.")
+  }
+  if(!req || !req.body || !req.body.class)
+  {
+    throw new Error("classObj is missing.")
+  }
+  if(!req  || !req.body || !req.body.subject)
+  {
+    throw new Error("subjectObj is missing.")
+  }
   const workbook = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true });
 
-  const data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-  const textbooks = []
-  let uniqueBranches = []
-  let branches = []
-  let uniqueBranches_db = []
+  let  data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+
+  const textbooksNames = []
   const tbclassdata = JSON.parse(req.body.class)
   const tbsubdata = JSON.parse(req.body.subject)
+  let textbooksInSheet = []
 
-  let textbookList =[]
-  for (var x=0;x<data.length;x+=1)
-  {
+//removing duplicates from sheets
+for (let x=0;x<data.length;x+=1)
+{
+  textbooksNames.push(data[x]["Book Title"])
+
+}
+
+let textbooksNames_unique = _.uniq(textbooksNames);
+
+if(textbooksNames_unique.length != textbooksNames.length)
+{
+  throw new Error("duplicates exist in the uploaded sheet.")
+}
+
+//forming object to insert data.
+
+let textbookList =[]
+for (var x=0;x<data.length;x+=1)
+{
     let tempObj = data[x]
     const prepObj = {
       name: tempObj && tempObj["Book Title"] ? tempObj["Book Title"] : null ,
@@ -314,47 +345,63 @@ export async function uploadTextbook(req)
       throw new Error("orientations and branches are mandatory fields.")
     }
     textbookList.push(prepObj)
-    textbooks.push(prepObj.name)
+    textbooksInSheet.push(prepObj.name  )
+}
+  // console.log("-------------",textbookList)
+  //ensuring branches are in db.
+  let branchesInSheet = [];
+  let allBranchesInDb = await returnAllBranches(req.user_cxt)
+  for (var y = 0 ; y < textbookList.length ; y+=1) {
+    const tempBranch = textbookList[y].branches;
+    console.log(tempBranch)
+    branchesInSheet = branchesInSheet.concat(tempBranch);
   }
-  console.log("-------------",textbookList)
-  for (var y = 0 ; y < textbookList.length ; y+=1)
+  branchesInSheet = _.uniq(branchesInSheet);
+  console.log("----------------------------------------------")
+
+  let branchDifference = _.difference(branchesInSheet,allBranchesInDb)
+  console.log(branchDifference)
+  let errorBranches = []
+  if(branchDifference.length>0)
   {
-    let branchesList = textbookList[0].branches.concat(textbookList[y].branches)
-    uniqueBranches = branchesList.filter((p, i, a) => a.indexOf(p) == i)
-  }
-
-  let checkBranches = await returnAllBranches(req.user_cxt)
-  let checkTextbooks = await returnAllTextbooks(req.user_cxt)
-  // console.log(checkBranches);
-  // console.log("damn son!",checkTextbooks)
-
-  //now find the set difference.
-  let difference_branch = uniqueBranches.filter(x=> !checkBranches.includes(x));
-  let difference_textbook = textbooks.filter(x=> !checkTextbooks.includes(x));
-  console.log(difference_textbook)
-  if(difference_branch.length >0)
-  {
-    throw new Error("branches you have entered don't exist.")
-  }
-
-  let textbookList_final = []
-
-  for (var y = 0 ; y < textbookList.length ; y+=1)
-  {
-
-    console.log(textbookList[y].name)
-    if(textbookList[y].name.toString() in difference_textbook_array)
-    {
-      textbookList_final.push(textbookList[y])
+    for(var y=0; y < branchDifference.length ; y++ )
+    { 
+        errorBranches.push(branchDifference[y])
     }
+    throw new Error(`${errorBranches} branches do not exist in the db.`)
+  } 
+  //ensuring textbooks already in db are not inserted again.
+  let allTextbooksInDb = await returnAllTextbooks(req.user_cxt)
 
+  let textbookDifference = _.difference(textbooksInSheet,allTextbooksInDb)
+  console.log("difference:",textbookDifference);
+
+  let textbookObjs_final = []
+  
+  for (var y = 0 ; y < textbookList.length ; y+=1)
+  {
+    // console.log(textbookList[y])
+    if(textbookDifference.map(x=>x==textbookList[y].name))
+    {
+      textbookObjs_final.push(textbookList[y])
+    }
   }
-  console.log("check this:",textbookList_final)
+  console.log("check this:",textbookObjs_final);
+
   // return TextbookModel(req.user_cxt).then((Textbook) => {
-  //   return Textbook.insertMany(textbookList_final).then(obj => {
-  //     return obj
+  //   return Textbook.insertMany(textbookObjs_final).then((obj) => {
+  //     return obj;
   //   })
   // })
+  return getModel(context).then((InstituteHierarchy) => {
+    const bulk = InstituteHierarchy.collection.initializeUnorderedBulkOp();
+
+
+bulk.find(findQuery).update( { $set: { category: obj.category } }, {multi: true});
+
+
+  })
+
 }
 
 export default{
