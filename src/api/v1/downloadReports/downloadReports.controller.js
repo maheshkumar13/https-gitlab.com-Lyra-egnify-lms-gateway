@@ -255,8 +255,8 @@ export function validateUploadedContentMapping(req){
   // Reading  workbook
   const workbook = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true });
   // converting the sheet data to csv
-  const data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-	// deleting all trailing empty rows
+  const data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]],{defval:''});
+  // deleting all trailing empty rows
   for (let i = data.length - 1; i >= 0; i -= 1) {
     let values = Object.values(data[i]);
     values = values.map(x => x.toString());
@@ -278,6 +278,7 @@ export function validateUploadedContentMapping(req){
   for(var i = 0 ; i < data.length ;i++){
     const temp = data[i]
     const err1 =[]
+    temp['Coins'] = String(temp['Coins'])
     if(temp['Name'] == null || temp['Name']== ''){
       err1.push('Name')
     }
@@ -293,9 +294,11 @@ export function validateUploadedContentMapping(req){
     if(temp['Coins'] == null || temp['Coins']==''){
       err1.push('Coins')
     }
+    temp['Coins'] = parseInt(temp['Coins'])
     //validating coins
-    if(temp['Coins'] && temp['Coins']<0){
-      error['E0002'].push(`Coins can not be less than 0 at row : ${i+2}`)
+    // console.log(typeof(temp['Coins']))
+    if(temp['Coins'] && temp['Coins']<0 || typeof(temp['Coins']) != 'number'){
+      error['E0002'].push(`Coins can not be less than 0 or anything other than number at row : ${i+2}`)
     }
     if(temp['Content Type'] == null || temp['Content Type']==''){
       err1.push('Content Type')
@@ -331,11 +334,13 @@ export function validateUploadedContentMapping(req){
     let difference = subjectList.filter(x => !subList.includes(x));
     //invalid subject error code E0003
     if(difference.length >=1){
+      difference = [...new Set(difference)]
       error['E0003'].push(`Subjects not existing in database : ${difference}`)
     }
     difference = textbookList.filter(x => !tbookList.includes(x))
      //invalid textbook error code E0004
     if(difference.length >=1){
+       difference = [...new Set(difference)]
       error['E0003'].push(`Textbooks not existing in database : ${difference}`)
     }
     const  subtextQuery = {}
@@ -464,7 +469,6 @@ export function validateUploadedContentMapping(req){
             obj['orientation'] = s.orientations
             obj['branches'] = s.branches
             finalObj[k++] = obj
-            
             }
           }
           return ContentMappingModel(req.user_cxt).then((content)=>{
