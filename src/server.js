@@ -32,6 +32,7 @@ mongoose.Promise = require('bluebird');
 
 const cachegoose = require('cachegoose');
 cachegoose(mongoose);
+cachegoose.clearCache(null);
 
 // Connect to MongoDB
 mongoose.connect(config.mongo.uri, config.mongo.options);
