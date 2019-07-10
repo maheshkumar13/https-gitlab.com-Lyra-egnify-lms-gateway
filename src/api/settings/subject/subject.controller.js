@@ -25,7 +25,7 @@ export async function getStudentData(context) {
       active: true,
       orientation: 1,
     };
-    return Student.findOne({ studentId }, project).cache(config.cacheTimeOut.student);
+    return Student.findOne({ studentId }, project);
   });
 }
 export async function getSubjects(args, context) {
@@ -168,7 +168,7 @@ export async function getSubjectTextbookTopic(args, context) {
     }
     return Subject.find(subjectQuery, {
       _id: 0, subject: 1, code: 1, isMandatory: 1,
-    }).cache(config.cacheTimeOut.subject).then((subjects) => {
+    }).then((subjects) => {
       const subjectcodes = subjects.map(x => x.code);
       const textbookQuery = {
         active: true,
@@ -188,7 +188,7 @@ export async function getSubjectTextbookTopic(args, context) {
       }
       return Textbook.find(textbookQuery, {
         _id: 0, name: 1, code: 1, 'refs.subject.code': 1, imageUrl: 1,
-      }).cache(config.cacheTimeOut.textbook).then((textbooks) => {
+      }).then((textbooks) => {
         const textbookCodes = textbooks.map(x => x.code);
         const topicQuery = {
           active: true,
@@ -197,7 +197,7 @@ export async function getSubjectTextbookTopic(args, context) {
         };
         return ConceptTaxonomy.find(topicQuery, {
           _id: 0, child: 1, code: 1, childCode: 1, 'refs.textbook.code': 1,
-        }).cache(config.cacheTimeOut.topic).lean().then((topics) => {
+        }).lean().then((topics) => {
           const data = [];
           subjects.forEach((subject) => {
             const subjectData = {

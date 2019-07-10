@@ -388,7 +388,7 @@ export async function getBranchNameAndCategory(context, obj) {
       const project = {
         _id: 0, child: 1, childCode: 1, category: 1,
       };
-      return InstituteHierarchy.findOne({ childCode: branchData.childCode }, project).cache(config.cacheTimeOut.instituteHierarchy);
+      return InstituteHierarchy.findOne({ childCode: branchData.childCode }, project);
     }
     return false;
   });
@@ -422,9 +422,8 @@ export async function getContentMapping(args, context) {
       const query = getMongoQueryForContentMapping(args);
       const skip = (args.pageNumber - 1) * args.limit;
       return ContentMappingModel(context).then(ContentMapping => Promise.all([
-        ContentMapping.find(query).skip(skip).limit(args.limit)
-          .cache(config.cacheTimeOut.contentMapping),
-        ContentMapping.count(query).cache(config.cacheTimeOut.contentMapping),
+        ContentMapping.find(query).skip(skip).limit(args.limit),
+        ContentMapping.count(query),
       ]).then(([data, count]) => ({
         data,
         count,
@@ -457,7 +456,7 @@ export async function getContentMappingStats(args, context) {
         ]
       }
     }
-    return Subject.find(subjectQuery, {_id: 0, subject: 1, code: 1, isMandatory: 1}).cache(config.cacheTimeOut.subject).then((subjects) => {
+    return Subject.find(subjectQuery, {_id: 0, subject: 1, code: 1, isMandatory: 1}).then((subjects) => {
       const subjectcodes = subjects.map(x => x.code)
       const textbookQuery = {
         active: true,
@@ -480,7 +479,7 @@ export async function getContentMappingStats(args, context) {
           }
         }
       }
-      return Textbook.find(textbookQuery, { _id: 0, name: 1, code: 1, 'refs.subject.code': 1, imageUrl: 1 }).cache(config.cacheTimeOut.textbook).then((textbooks) => {
+      return Textbook.find(textbookQuery, { _id: 0, name: 1, code: 1, 'refs.subject.code': 1, imageUrl: 1 }).then((textbooks) => {
         const textbookCodes = textbooks.map(x => x.code);
         const mappingQuery = {
           active: true,
@@ -531,7 +530,7 @@ export async function getContentMappingStats(args, context) {
               }
           }
         ]
-        return ContentMapping.aggregate(aggregateQuery).allowDiskUse(true).cache(config.cacheTimeOut.contentMapping).then((data) => {
+        return ContentMapping.aggregate(aggregateQuery).allowDiskUse(true).then((data) => {
           const finalData = {}
           data.forEach((obj) => {
             const textbookCode = obj.textbookCode;
