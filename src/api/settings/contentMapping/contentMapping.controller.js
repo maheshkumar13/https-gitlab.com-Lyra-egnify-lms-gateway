@@ -158,7 +158,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     'publisher', 'publish year', 'content name', 'content category',
     'file path', 'file size', 'media type',
   ];
-  for (let i = 0; i < data.length; i += 1) {
+  for(let i = 0; i < data.length; i += 1){
     const obj = data[i];
     for (let j = 0; j < mandetoryFields.length; j += 1) {
       if (!obj[mandetoryFields[j]]) {
@@ -301,6 +301,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
   req.data = data;
   return result;
 }
+
 export async function uploadContentMapping(req, res) {
   if (!req.file) return res.status(400).end('File required');
   return Promise.all([
