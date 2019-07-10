@@ -174,7 +174,9 @@ export const FileDataOutputType = new ObjectType({
     coins:{type:StringType},
     filePath :{type:StringType, description:'path of the file'},
     fileSize: {type:StringType,description: 'size of the file'},
-    mediaType: {type: StringType, description:'type of the file'}
+    mediaType: {type: StringType, description:'type of the file'},
+    metaData :{type :GraphQLJSON , description :'metadata of the file'},
+    count : {type:Count , description :'count of orientation and branches'}
   },
 });
 

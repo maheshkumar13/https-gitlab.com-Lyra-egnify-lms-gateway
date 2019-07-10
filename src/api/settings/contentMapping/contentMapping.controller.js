@@ -822,6 +822,12 @@ export async function getFileData(args, context){
               filePath: finalObjElement.resource.key,
               fileSize: finalObjElement.resource.size,
               mediaType:finalObjElement.resource.type,
+              metaData :finalObjElement.metaData,
+              count:{
+              orientation : finalObjElement && finalObjElement.orientation ?
+              finalObjElement.orientation.length : null,
+              branches :finalObjElement && finalObjElement.branches ? finalObjElement.branches.length : null,
+              }
             }
             finalObj[i]= singleFile
           };
