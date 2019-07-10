@@ -283,12 +283,53 @@ export async function returnAllTextbooks(context)
 
 }
 
+/**
+@description This function validates whether branches mentioned in the upload file exist in db.
 
-export async function uploadTextbook(req)
+@author Sairam
+@date   9/7/2019
+*/
+
+export async function ValidationFunction_for_Textbook(req,textbookList)
+{
+  let branchesInSheet = [];
+  let allBranchesInDb = await returnAllBranches(req.user_cxt)
+  for (var y = 0 ; y < textbookList.length ; y+=1) {
+    const tempBranch = textbookList[y].branches;
+    branchesInSheet = branchesInSheet.concat(tempBranch);
+  }
+  branchesInSheet = _.uniq(branchesInSheet);
+
+  let branchDifference = _.difference(branchesInSheet,allBranchesInDb)
+
+  let errorBranches = []
+
+  if(branchDifference.length>0)
+  {
+    for(var y=0; y < branchDifference.length ; y++ )
+    { 
+        errorBranches.push(branchDifference[y])
+    }
+  return errorBranches
+  }
+  return errorBranches 
+}
+
+/**
+@description This function uploads textbook in bulk from a spreadsheet and also handles various constraints.
+
+@author Sairam
+@date   9/7/2019
+*/
+
+export async function uploadTextbook(req,res)
 {
 
-  // console.log("req:",req.file)
-  //initial error handling.
+  const name = req.file.originalname.split('.');
+  const extname = name[name.length - 1];
+  if ( extname !== 'xlsx') {
+    throw new Error("please upload xlxs file only.")
+	}
   if(!req || !req.file)
   {
     throw new Error("file not received.Please upload file.")
@@ -297,23 +338,27 @@ export async function uploadTextbook(req)
   {
     throw new Error("classObj is missing.")
   }
-  if(!req  || !req.body || !req.body.subject)
+  if(!req.body.subject)
   {
     throw new Error("subjectObj is missing.")
   }
   const workbook = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true });
 
-  let  data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+  let  jsonTextbookData = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
 
   const textbooksNames = []
+
   const tbclassdata = JSON.parse(req.body.class)
+
   const tbsubdata = JSON.parse(req.body.subject)
+  
   let textbooksInSheet = []
 
 //removing duplicates from sheets
-for (let x=0;x<data.length;x+=1)
+
+for (let x=0;x<jsonTextbookData.length;x+=1)
 {
-  textbooksNames.push(data[x]["Book Title"])
+  textbooksNames.push(jsonTextbookData[x]["Book Title"])
 
 }
 
@@ -327,15 +372,15 @@ if(textbooksNames_unique.length != textbooksNames.length)
 //forming object to insert data.
 
 let textbookList =[]
-for (var x=0;x<data.length;x+=1)
+for (var x=0;x<jsonTextbookData.length;x+=1)
 {
-    let tempObj = data[x]
+    let tempObj = jsonTextbookData[x]
     const prepObj = {
-      name: tempObj && tempObj["Book Title"] ? tempObj["Book Title"] : null ,
+      name: tempObj && tempObj["Book Title"] ? tempObj["Book Title"].trim() : null ,
       orientations : tempObj && tempObj.Orientations ? tempObj.Orientations.split(",") :null,
       branches : tempObj && tempObj.Branches ? tempObj.Branches.split(",") : null,
-      publisher : tempObj && tempObj.Publisher ? tempObj.Publisher : null,
-      year : tempObj && tempObj["Publish Year"] ? tempObj["Publish Year"] :null,
+      publisher : tempObj && tempObj.Publisher ? tempObj.Publisher.trim() : null,
+      year : tempObj && tempObj["Publish Year"] ? tempObj["Publish Year"].toString().trim() :null,
       active: true,
       refs : {"class" : {"name" : tbclassdata.name , "code" : tbclassdata.code } , "subject" : {"name" : tbsubdata.name , "code" : tbsubdata.code}},
       code: `${Date.now()}${crypto.randomBytes(5).toString('hex')}`
@@ -347,61 +392,26 @@ for (var x=0;x<data.length;x+=1)
     textbookList.push(prepObj)
     textbooksInSheet.push(prepObj.name  )
 }
-  // console.log("-------------",textbookList)
-  //ensuring branches are in db.
-  let branchesInSheet = [];
-  let allBranchesInDb = await returnAllBranches(req.user_cxt)
-  for (var y = 0 ; y < textbookList.length ; y+=1) {
-    const tempBranch = textbookList[y].branches;
-    console.log(tempBranch)
-    branchesInSheet = branchesInSheet.concat(tempBranch);
-  }
-  branchesInSheet = _.uniq(branchesInSheet);
-  console.log("----------------------------------------------")
 
-  let branchDifference = _.difference(branchesInSheet,allBranchesInDb)
-  console.log(branchDifference)
-  let errorBranches = []
-  if(branchDifference.length>0)
-  {
-    for(var y=0; y < branchDifference.length ; y++ )
-    { 
-        errorBranches.push(branchDifference[y])
-    }
-    throw new Error(`${errorBranches} branches do not exist in the db.`)
-  } 
-  //ensuring textbooks already in db are not inserted again.
-  let allTextbooksInDb = await returnAllTextbooks(req.user_cxt)
-
-  let textbookDifference = _.difference(textbooksInSheet,allTextbooksInDb)
-  console.log("difference:",textbookDifference);
-
-  let textbookObjs_final = []
-  
-  for (var y = 0 ; y < textbookList.length ; y+=1)
-  {
-    // console.log(textbookList[y])
-    if(textbookDifference.map(x=>x==textbookList[y].name))
+let temp = await ValidationFunction_for_Textbook(req,textbookList)
+if(temp.length>0)
+{
+  throw new Error (`${temp} branches do not exist in db.`)
+}
+//the following code directly adds textbooks which are not present in db and updates textbooks which are already present.
+  return TextbookModel(req.user_cxt).then((Textbook) => {
+    const bulk = Textbook.collection.initializeUnorderedBulkOp();
+    for(var x=0;x<textbooksInSheet.length ; x++)
     {
-      textbookObjs_final.push(textbookList[y])
+      const findQuery = {
+        name : textbooksInSheet[x] 
+      }
+      bulk.find(findQuery).upsert().update({ $set: textbookList[x]});
     }
-  }
-  console.log("check this:",textbookObjs_final);
-
-  // return TextbookModel(req.user_cxt).then((Textbook) => {
-  //   return Textbook.insertMany(textbookObjs_final).then((obj) => {
-  //     return obj;
-  //   })
-  // })
-  return getModel(context).then((InstituteHierarchy) => {
-    const bulk = InstituteHierarchy.collection.initializeUnorderedBulkOp();
-
-
-bulk.find(findQuery).update( { $set: { category: obj.category } }, {multi: true});
-
-
+    return bulk.execute().then(() => {
+        res.send("inserted successfully.")
+    })
   })
-
 }
 
 export default{
