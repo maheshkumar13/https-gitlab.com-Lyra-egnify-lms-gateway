@@ -42,7 +42,7 @@ export async function getSubjects(args, context) {
         ];
       }
     }
-    return SubjectModel(context).then(Subject => Subject.find(query).cache(config.cacheTimeOut.subject));
+    return SubjectModel(context).then(Subject => Subject.find(query));
   });
 }
 
