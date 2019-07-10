@@ -192,6 +192,7 @@ const AWSPrivateFileUpload = (req, res) => {
       if (data) {
         const tempData = {
           key: data.key,
+          name: file.originalname,
           fileSize,
           fileType: file.mimetype,
         };
@@ -240,7 +241,8 @@ const AWSHTMLUpload = (req, res) => {
         dataCount += 1;
         if (data.key === `${originalnameArray[0]}/index.html`) {
           const tempData = {
-            key: data.key, // since it is a public file location is stored in our db
+            name: originalnameArray[0],
+            key: data.key,
             fileSize,
             fileType: file.mimetype,
           };
