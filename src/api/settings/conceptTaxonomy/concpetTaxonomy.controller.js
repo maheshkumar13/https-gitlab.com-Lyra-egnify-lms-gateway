@@ -198,6 +198,6 @@ function getFetchNodesQuery(args){
 export async function fetchNodes(args, context){
 	const query = getFetchNodesQuery(args);
 	return ConcpetTaxonomyModel(context).then((ConceptTaxonomy) => {
-		return ConceptTaxonomy.find(query).cache(config.cacheTimeOut.topic);
+		return ConceptTaxonomy.find(query);
 	})
 }

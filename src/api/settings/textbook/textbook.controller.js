@@ -17,7 +17,7 @@ export async function getStudentData(context) {
       orientation: 1,
       active: true,
     }
-    return Student.findOne({ studentId }, project).cache(config.cacheTimeOut.student)
+    return Student.findOne({ studentId }, project)
   })
 }
 
@@ -46,7 +46,7 @@ export async function getTextbooks(args, context){
     const query = getTextbooksQuery(args)
     console.log(query);
     return TextbookModel(context).then( (Textbook) => {
-      return Textbook.find(query).cache(config.cacheTimeOut.textbook)
+      return Textbook.find(query)
     })
   })
 }
