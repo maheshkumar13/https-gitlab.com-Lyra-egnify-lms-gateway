@@ -265,42 +265,48 @@ export function validateUploadedContentMapping(req){
     else break;
   }
   let error  = {}
-  error['E0001'] = []
-  error['E0002'] = []
-  error['E0003'] = []
-  error['E0004'] = []
-  error['E0005'] = []
-  error['E0006'] = []
-  error['E0007'] = []
-  error['E0008'] = []
+  error['E0001'] = [] //Null value Error(Missing information)
+  error['E0002'] = [] //Invalid coins input
+  error['E0003'] = [] //Subjects/Textbooks not existing in database
+  error['E0004'] = [] //Count mismatch between comma separated values
+  error['E0005'] = [] //invalid subject-textbook combination
+  error['E0006'] = [] //invalid chapter-textbook combination 
+  error['E0007'] = [] //Name mismatch Error
+  error['E0008'] = [] //Invalid File Type
 
   //checking for null values error code : E0001
   for(var i = 0 ; i < data.length ;i++){
     const temp = data[i]
     const err1 =[]
-    temp['Coins'] = String(temp['Coins'])
-    if(temp['Name'] == null || temp['Name']== ''){
+    temp['Coins'] = String(temp['Coins']).trim()
+    let coins = temp['Coins']
+    const name  = temp['Name'].trim()
+    const subject = temp['Subject'].trim()
+    const textbook = temp['Textbook'].trim()
+    const contentType = temp['Content Type'].trim()
+    const chapter = temp['Chapter'].trim()
+    if(name == null || name== ''){
       err1.push('Name')
     }
-    if(temp['Subject'] == null || temp['Subject']== ''){
+    if(subject == null ||subject== ''){
       err1.push('Subject')
     }
-    if(temp['Textbook'] == null || temp['Textbook']==''){
+    if(textbook == null ||textbook==''){
       err1.push('Textbook')
     }
-    if(temp['Chapter'] == null || temp['Chapter']==''){
+    if(chapter == null || chapter==''){
       err1.push('Chapter')
     }
-    if(temp['Coins'] == null || temp['Coins']==''){
+    if(coins == null || coins==''){
       err1.push('Coins')
     }
-    temp['Coins'] = parseInt(temp['Coins'])
+    coins = parseInt(coins)
+    temp['Coins'] = coins
     //validating coins
-    // console.log(typeof(temp['Coins']))
-    if(temp['Coins'] && temp['Coins']<0 || typeof(temp['Coins']) != 'number'){
+    if(coins && coins<0 || typeof(coins) != 'number'){
       error['E0002'].push(`Coins can not be less than 0 or anything other than number at row : ${i+2}`)
     }
-    if(temp['Content Type'] == null || temp['Content Type']==''){
+    if(contentType == null || contentType==''){
       err1.push('Content Type')
     }
     if(err1.length >0){
@@ -312,9 +318,18 @@ export function validateUploadedContentMapping(req){
 
   //splitting individual columns 
   data.map(x=>{
-    x['Subject'] = x['Subject'] ? x['Subject'].split(',') : x['Subject']
-    x['Textbook'] = x['Textbook'] ? x['Textbook'].split(',') : x['Textbook']
-    x['Chapter'] = x['Chapter'] ? x['Chapter'].split(',') : x['Chapter']
+    x['Subject'] = x['Subject'].split(',')
+    for(var i = 0 ; i < x['Subject'].length;i++){
+      x['Subject'][i] = x['Subject'][i].trim()
+    }
+    x['Textbook'] = x['Textbook'].split(',') 
+    for(var i = 0 ; i < x['Textbook'].length;i++){
+      x['Textbook'][i] = x['Textbook'][i].trim()
+    }
+    x['Chapter'] = x['Chapter'].split(',')
+    for(var i = 0 ; i < x['Chapter'].length;i++){
+      x['Chapter'][i] = x['Chapter'][i].trim()
+    }
     subjectList = subjectList.concat(x['Subject'])
     textbookList = textbookList.concat( x['Textbook'])
   })
@@ -331,17 +346,17 @@ export function validateUploadedContentMapping(req){
    ]).then(([sList,tList])=>{
     let subList = sList.map(x=>x['subject'])
     let tbookList = tList.map(x=>x['name']) 
-    let difference = subjectList.filter(x => !subList.includes(x));
+    let subdifference = subjectList.filter(x => !subList.includes(x));
     //invalid subject error code E0003
-    if(difference.length >=1){
-      difference = [...new Set(difference)]
-      error['E0003'].push(`Subjects not existing in database : ${difference}`)
+    subdifference = subdifference.filter(x => x!='')
+    if(subdifference.length >=1){
+      error['E0003'].push(`Subjects not existing in database : ${subdifference}`)
     }
-    difference = textbookList.filter(x => !tbookList.includes(x))
+    let textbookdifference = textbookList.filter(x => !tbookList.includes(x))
+    textbookdifference = textbookdifference.filter(x => x!='')
      //invalid textbook error code E0004
-    if(difference.length >=1){
-       difference = [...new Set(difference)]
-      error['E0003'].push(`Textbooks not existing in database : ${difference}`)
+    if(textbookdifference.length >=1){
+      error['E0003'].push(`Textbooks not existing in database : ${textbookdifference}`)
     }
     const  subtextQuery = {}
     subtextQuery['$or'] = [] 
@@ -360,7 +375,7 @@ export function validateUploadedContentMapping(req){
         }
         
         if((tempObj.Subject.length != tempObj.Chapter.length )||( tempObj.Textbook.length!= tempObj.Chapter.length)){
-          error['E0004'].push(`Count mismatch between Subject-TextBook and Chapter at row : ${i+1}`)
+          error['E0004'].push(`Count mismatch between Subject-TextBook and Chapter at row : ${i+2}`)
         }
       
       for(var k = 0 ; k< tempObj.Subject.length; k++){
@@ -415,7 +430,7 @@ export function validateUploadedContentMapping(req){
           }
 
           let count = 0
-          const keys = Object.keys(error)
+          const keys = error && Object.keys(error) ? Object.keys(error) : []
           for(var j = 0 ; j<keys.length ;j++){
             
             if(error[keys[j]].length >0 ){
@@ -429,8 +444,9 @@ export function validateUploadedContentMapping(req){
           if(count >0 ){
             return error
           }
-
           //preparing documents for insertion
+          return ContentMappingModel(req.user_cxt).then((contentMapping)=>{
+          const bulk = contentMapping.collection.initializeUnorderedBulkOp()
           const finalObj = []
           var k =0;
           for(var i = 0 ; i <data.length;i++){
@@ -442,22 +458,27 @@ export function validateUploadedContentMapping(req){
             let s = subtextList.find(x=>x.refs.subject.name === temp.Subject[j] && 
               x.name === temp.Textbook[j])
             let u = uploadList.find(x=>x['Name'] == temp['Name'])
-            let obj = {}
-            obj['content'] = {
+            let setobj = {}
+            let whereObj = {}
+            whereObj['content.name'] = temp['Name']
+            whereObj['refs.textbook.code'] = s.code
+            whereObj['refs.topic.code'] = t.childCode
+            whereObj['active']  = true;
+            setobj['content'] = {
               name: temp['Name'],
               category: req.body.contentCategory,
               type : temp['Content Type']
             }
-            obj['resource'] ={
+            setobj['resource'] ={
               key : u['Key'],
               size: u['Size'],
               type : u['Type']
             }
-            obj["publication.publisher"] = s.publisher
-            obj["publication.year"] = null
-            obj['coins'] = temp['Coins']
-            obj['active'] = true
-            obj['refs']={
+            setobj["publication.publisher"] = s.publisher
+            setobj["publication.year"] = null
+            setobj['coins'] = temp['Coins']
+            setobj['active'] = true
+            setobj['refs']={
               topic:{
                 code:t.childCode
               },
@@ -465,25 +486,31 @@ export function validateUploadedContentMapping(req){
                 code:s.code
               }
             }
-            obj['category'] = ''
-            obj['orientation'] = s.orientations
-            obj['branches'] = s.branches
-            finalObj[k++] = obj
+            setobj['category'] = ''
+            setobj['orientation'] = s.orientations
+            setobj['branches'] = s.branches
+            finalObj[k++] = setobj
+            bulk.find(whereObj).upsert().updateOne(setobj);
             }
           }
-          return ContentMappingModel(req.user_cxt).then((content)=>{
-            return content.insertMany(finalObj).then((obj)=>{
-              return "Inserted Successfully"
-            })
+          
+          return bulk.execute().then((obj) => {
+            return `${req.file.originalname} : Uploaded successfully`
+          }).catch((err) => {
+            return 'Error occured while uploading'
+          });
+          })
           })
         })
       })
     })
    });
-  });
-}
+1  }
 
 export async function uploadedContentMapping(req,res){
+  if(!req){
+    throw new Error('No request received')
+  }
   if(!req.file){
     throw new Error('File required')
   }
@@ -507,7 +534,7 @@ export async function uploadedContentMapping(req,res){
    
   return validateUploadedContentMapping(req).then((done)=>{
     if(done.error){
-      res.status(400).send(error).end()
+      res.status(400).send(done.error).end()
     }
     res.status(200).send(done).end()
   })
