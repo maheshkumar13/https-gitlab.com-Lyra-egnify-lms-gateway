@@ -1,14 +1,13 @@
 /**
- * @Author :Aditi
- * @date
+ * @author Aditi
+ * @date 10/07/2019
  */
-
 import { getModel as TestTypeModel } from './testType.model';
-import { config } from '../../../config/environment';
 import { getModel as InstituteHierarchyModel} from '../instituteHierarchy/instituteHierarchy.model'
 import { getModel as CounterModel} from '../Counter/counter.model';
 import {getModel as SubjectModel} from '../subject/subject.model'
 import {getHierarchyData} from '../textbook/textbook.controller'
+
 
 async function validateTestType(args, context){
   const query = {
@@ -25,6 +24,10 @@ async function validateTestType(args, context){
   });
 }
 
+/**
+ * @description purpose : To create and save a new test type to the database.
+ *              This function takes name,classCode,educationType and subjects.
+ */
 export async function createTestType(args, context){
 
   args.name = args.name ? args.name.replace(/\s\s+/g, ' ').trim() : ''
@@ -85,6 +88,11 @@ function getTestTypeQuery(args){
    return query;
  };
 
+ /**
+ * @description purpose : To get list of testtypes based on filter
+ *              This function filters testtypes based on classCode and educationType.
+ *              Returns a list of testtypes based on filter if applied any.
+ */
 export async function getTestType(args, context){
    const query = getTestTypeQuery(args)
    const project = {
@@ -145,6 +153,9 @@ export async function getTestType(args, context){
   });
  }
 
+  /**
+ * @description This function deletes testtype based on given code if existing
+ */
 export async function deleteTestType(args, context) {
   if (!args || !args.code) throw new Error('Code is required')
   return TestTypeModel(context).then((testType) => {
@@ -156,6 +167,11 @@ export async function deleteTestType(args, context) {
     });
   });
 }
+
+
+ /**
+ * @description This function checks if the testtype updation results in duplication.
+ */
 
 export async function validateTestTypeForUpdate(args, context){
   let query = {
@@ -189,6 +205,10 @@ export async function validateTestTypeForUpdate(args, context){
 });
 }
 
+ /**
+ * @description This function takes in code of the testype to be updated
+ *              and field to be updated(name,educationType,subjects,classCode) 
+ */
 export async function updateTestType(args, context){
   if (!args || !args.code){
     throw new Error('code required to make an update')

@@ -417,6 +417,13 @@ export async function uploadCategory(req, res){
 }
 
 
+/**
+ * @author Aditi
+ * @date 10/07/2019
+ * @description  get list of all childs based on parent level name, parent code and
+ *               child level name to be fetched. 
+ * @example getting all branches(child) for a particular class(parent)
+ */
 export async function getChildDataFromParent(args, context){
   var query = {}
   if(!args.parentLevelName){       
