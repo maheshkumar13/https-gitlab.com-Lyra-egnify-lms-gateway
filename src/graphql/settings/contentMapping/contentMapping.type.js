@@ -255,20 +255,6 @@ export const TextbookBasedQuizOutputType = new ObjectType({
   }
 });
 
-export const AssetDetailsSearchOutputType = new ObjectType({
-  name: 'AssetDetailsSearchOutputType',
-  fields: {
-    name: { type: StringType, description: 'Name of the asset' },
-    id: { type: StringType, description: 'assetId of the asset' },
-    orientation: { type: new List(StringType) },
-    branches: { type: new List(StringType) },
-    class: { type: IntType },
-    subject: { type: StringType, description: 'Name of the subject' },
-    textbook: { type: StringType, description: 'Name of the textbook' },
-    chapter: { type: StringType, description: 'Name of the chapter' },
-  }
-});
-
 export default {
   ContentMappingType,
   CmsCategoryStatsOutputType,
@@ -282,6 +268,5 @@ export default {
   UpdateMetaDataInputType,
   TextbookBasedQuizInputType,
   TextbookBasedQuizOutputType,
-  AssetDetailsSearchOutputType,
 };
 

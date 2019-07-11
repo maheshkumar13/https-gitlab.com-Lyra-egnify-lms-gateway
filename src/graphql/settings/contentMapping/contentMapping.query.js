@@ -28,7 +28,6 @@ import {
   CmsTopicLevelStatsInputType,
   TextbookBasedQuizInputType,
   TextbookBasedQuizOutputType,
-  AssetDetailsSearchOutputType,
 } from './contentMapping.type';
 
 const controller = require('../../../api/settings/contentMapping/contentMapping.controller');
@@ -177,17 +176,6 @@ export const TextbookBasedQuiz = {
   },
 };
 
-export const AssetDetailsSearch = {
-  args: {
-    input: { type: StringType, description: 'The search string' },
-  },
-  type: new List(AssetDetailsSearchOutputType),
-  async resolve(obj, args, context) {
-    return controller.getAssetDetails(args, context)
-      .then(async json => json); 
-  },
-}
-
 export default {
   ContentMapping,
   CmsCategoryStats,
@@ -196,5 +184,4 @@ export default {
   CmsTopicLevelStats,
   ContentMappingStats,
   TextbookBasedQuiz,
-  AssetDetailsSearch,
 };
