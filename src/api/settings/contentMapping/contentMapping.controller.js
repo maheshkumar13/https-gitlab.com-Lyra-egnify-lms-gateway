@@ -1064,6 +1064,7 @@ async function makeJSONforCSV(filedata){
   for(var j =0 ; j < filedata.length ;j++){
     const singleData = filedata[j]
     const finalELe = {
+      Id : singleData.id,
       Orientation : singleData.orientation ,
       Class :singleData.class,
       Category : singleData.category,
