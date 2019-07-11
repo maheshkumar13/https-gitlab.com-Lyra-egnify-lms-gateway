@@ -659,6 +659,8 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   const pageNumber = args && args.input && args.input.pageNumber ? args.input.pageNumber : 1;
   const limit = args && args.input && args.input.limit ? args.input.limit : 0;
   const category = args && args.input && args.input.category ? args.input.category : null;
+  const searchString = args && args.input && args.input.searchString ? args.input.searchString : null;
+
   if (!category) {
     throw new Error('Please select correct category');
   }
@@ -668,6 +670,15 @@ export async function getCategoryWiseFilesPaginated(args, context) {
     query1['refs.class.code'] = classCode;
   } if (subjectCode) {
     query1['refs.subject.code'] = subjectCode;
+  }
+  if (searchString) {
+    const reString = new RegExp(`(^${searchString})|(${searchString})`, 'i');
+    if(isNaN(searchString)){
+      query['content.name'] = reString;
+    }
+    else {
+      query['asset_id'] = reString;
+    }
   }
   const textbookCodes = [];
   if (textbookCode) {
@@ -1219,39 +1230,6 @@ export async function getTextbookBasedListOfQuizzes(args, context) {
     return ContentMapping.aggregate([{$match: query}, {$project: projection}]).allowDiskUse(true);
   });
   
-}
-
-/**
- * @author Shreyas
- * @description This function implements a search on Name or Id of the asset and returns all matching results
- * @returns  Array of jsons
- */
-
-export async function getAssetDetails(args, context) {
-  const searchString = RegExp(`/${args.input}/`);
-  return ContentMappingModel(context).then(async ContentMapping => {
-    const query1 = {
-      $or: [
-        {
-          "content.name": searchString,
-        },
-        {
-          "asset_id": searchString,
-        },
-      ]
-    };
-    const projection1 = {
-      "content.name": 1,
-      "asset_id": 1,
-      "orientation": 1,
-      "branches": 1,
-      "refs.textbook.code": 1,
-      "refs.topic.code": 1,
-    };
-    return ContentMapping.find(query1, projection1).then(async result1 => {
-      console.log(JSON.stringify(result1, null, 2));
-    });
-  });
 }
 
 export default{

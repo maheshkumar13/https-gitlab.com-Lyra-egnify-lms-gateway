@@ -94,6 +94,7 @@ export const CategoryWiseFilesInputType = new InputType({
     category: { type: new NonNull(StringType), description: 'Name of the category' },
     pageNumber: { type: IntType, description: 'Page number' },
     limit: { type: IntType, description: 'Limit of the records to be fetched' },
+    searchString: { type: StringType, description: 'Search string entered in the search bar.' },
   },
 });
 
