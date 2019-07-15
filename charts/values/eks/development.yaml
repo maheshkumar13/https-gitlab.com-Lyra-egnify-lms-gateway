@@ -25,8 +25,8 @@ projectEnv:
   parserQueueNs : 'lms-parser-dev-mq'
   celeryBrokerUrl: "redis://:vvqfBAUfPI@redis-master.dev.svc.cluster.local:6379/0"
   celeryResultBackend: "redis://:vvqfBAUfPI@redis-master.dev.svc.cluster.local:6379/0"
-  AWS_S3_KEY: "AKIA4XBZMKL5IIJGR4UK"
-  AWS_S3_SECRET: "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"
+  AWS_S3_KEY: "AKIA4XBZMKL5KA5DMR75"
+  AWS_S3_SECRET: "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"
   AWS_S3_REGION: "ap-south-1"
   REDIS_AUTH: "A"
   REDIS_HOST: 'redis-master.development.svc.cluster.local'

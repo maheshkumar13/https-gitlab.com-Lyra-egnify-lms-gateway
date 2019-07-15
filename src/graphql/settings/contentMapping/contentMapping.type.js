@@ -13,9 +13,9 @@ import GraphQLJSON from 'graphql-type-json';
 const contentType = new ObjectType({
   name: 'ContentMappingContentType',
   fields: {
-    name: { type: StringType, description: 'Conent name' },
+    name: { type: StringType, description: 'Content name' },
     category: { type: StringType, description: 'Content category' },
-    type: { type: StringType, description: 'Conent type' },
+    type: { type: StringType, description: 'Content type' },
   },
 });
 
@@ -109,13 +109,33 @@ const pageInfoType = new ObjectType({
   },
 });
 
+const TextBookType = new ObjectType({
+  name: "TextBookType",
+  fields:{
+    code :{type: StringType},
+    name :{type :StringType}
+  }
+})
+const Count = new ObjectType({
+  name :'Count',
+  fields:{
+    orientation:{type :IntType},
+    branches:{type:IntType}
+  }
+})
 const categoryListType = new ObjectType({
   name: 'categoryListType',
   fields: {
     id :{type: StringType ,description :'mongodb id'},
     content: { type: contentType, description: 'content json' },
     resource: { type: resourceType, description: 'resource of the file' },
-    textbookCode: { type: StringType, description: 'code of the textbook' },
+    textbook :{type: TextBookType},
+    topic:{type:TextBookType},
+    className :{type :StringType},
+    subject :{type:StringType},
+    count :{type:Count},
+    orientation:{type:new List(StringType)},
+    branches : {type: new List(StringType)}
   },
 });
 
@@ -132,7 +152,7 @@ export const FileDataInputType = new InputType({
   fields: {
     // fileKey: { type: new NonNull(StringType), description: 'Key of the file' },
     // textbookCode: { type: new NonNull(StringType), description: 'code of textbook ' },
-    id :{ type: new NonNull(StringType), description : 'mongodb id'}
+    id :{ type: new NonNull(new List(StringType)), description : 'mongodb id'}
   },
 });
 
@@ -151,6 +171,12 @@ export const FileDataOutputType = new ObjectType({
     subject: { type: StringType, description: 'subject to which the file belongs to' },
     textBookName: { type: StringType, description: 'Name of the textBook' },
     topicName: { type: StringType, description: 'Name of the topic' },
+    coins:{type:StringType},
+    filePath :{type:StringType, description:'path of the file'},
+    fileSize: {type:StringType,description: 'size of the file'},
+    mediaType: {type: StringType, description:'type of the file'},
+    metaData :{type :GraphQLJSON , description :'metadata of the file'},
+    count : {type:Count , description :'count of orientation and branches'}
   },
 });
 
@@ -186,6 +212,50 @@ export const CmsTopicLevelStatsInputType = new InputType({
   },
 });
 
+export const UpdateContentInputType = new InputType({
+  name: 'UpdateContentInputType',
+  fields :{
+    id :{type :new NonNull(StringType) , description : 'ID of the file to be edited'},
+    contentName :{type : StringType , description :'name of the asset'},
+    contentType :{type :StringType, description:'type of the content'},
+    contentCategory : {type: StringType,description:'category of the content'},
+    coins :{type : IntType , description: 'number of coins'},
+    metaData: { type: GraphQLJSON, description: 'eg: thumbnailKey: "String", audioFiles: [{key :"String",name:"String"}], questionpaperId: "String"'},
+    // thumbnailKey:{type: StringType ,description : 'url of the thumbnail'},
+    topicCode:{type: StringType, description:'code for chapter'},
+    textbookCode:{type: StringType, description:'textbook'},
+  }
+})
+
+export const UpdateContentOutputType = new ObjectType({
+  name:'UpdateContentOutputType',
+  fields:{
+    id:{type:StringType,description:'description of the filetype'},
+  }
+})
+export const UpdateMetaDataInputType = new InputType({
+  name: 'UpdateMetaDataInputType',
+  fields: {
+    id: { type: new NonNull(StringType), description: 'mongodb _id of the animation' },
+    questionpaperId: { type: new NonNull(StringType), description: 'question paper id of the quiz' },
+  },
+});
+
+export const TextbookBasedQuizInputType = new InputType({
+  name: 'TextbookBasedQuizInputType',
+  fields: {
+    textbookCode: { type: StringType, description: 'Code of the textbook' },
+  }
+});
+
+export const TextbookBasedQuizOutputType = new ObjectType({
+  name: 'TextbookBasedQuizOutputType',
+  fields: {
+    quizName: { type: StringType, description: 'Name of the quiz' },
+    questionpaperId: { type: StringType, description: 'ID of the question paper'},
+  }
+});
+
 export default {
   ContentMappingType,
   CmsCategoryStatsOutputType,
@@ -194,4 +264,10 @@ export default {
   FileDataInputType,
   ContentMappingInsertionInputType,
   CmsTopicLevelStatsInputType,
+  UpdateContentOutputType,
+  UpdateContentInputType,
+  UpdateMetaDataInputType,
+  TextbookBasedQuizInputType,
+  TextbookBasedQuizOutputType
 };
+

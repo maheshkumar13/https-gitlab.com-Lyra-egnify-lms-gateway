@@ -416,6 +416,38 @@ export async function uploadCategory(req, res){
   })
 }
 
+
+/**
+ * @author Aditi
+ * @date 10/07/2019
+ * @description  get list of all childs based on parent level name, parent code and
+ *               child level name to be fetched. 
+ * @example getting all branches(child) for a particular class(parent)
+ */
+export async function getChildDataFromParent(args, context){
+  var query = {}
+  if(!args.parentLevelName){       
+    throw new Error('Missing parent LevelName');
+  }
+  if(!args.childLevelName ){
+    throw new Error('Missing child LevelName');
+  }
+  if(args.parentCode && args.parentCode.length >= 1 ){
+    query["anscetors.childCode"]  = {$in : args.parentCode }
+  }
+  query['levelName'] = args.childLevelName
+  query["anscetors.levelName"] = args.parentLevelName
+
+  const project = {
+    childCode: 1,child: 1
+  };
+  return (getModel(context)).then((InstituteHierarchy)=>{
+    return (InstituteHierarchy.find(query,project)).then((ChildList)=>{
+      return ChildList;
+      });
+    });
+}
 export default {
   fetchNodes,
+  getChildDataFromParent,
 };
