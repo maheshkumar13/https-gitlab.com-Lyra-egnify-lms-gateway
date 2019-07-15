@@ -1,12 +1,13 @@
+/**
+   @description GraphQl queries for testtypes.
+   @author Aditi
+   @date   10/07/2019
+*/
 import {
     GraphQLList as List,
-    GraphQLNonNull as NonNull,
     GraphQLString as StringType,
-    GraphQLBoolean as BooleanType,
-  
   } from 'graphql';
   
-import GraphQLJSON from 'graphql-type-json';
 import { OutputTestType } from './testType.type';
 const controller = require('../../../api/settings/testType/testType.controller');
 

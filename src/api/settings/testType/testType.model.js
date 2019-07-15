@@ -1,4 +1,11 @@
-
+/**
+ *@description
+ *    This File contains the Mongoose Schema defined for testtypes
+ * @Author :
+ *    Aditi
+ * @date
+ *    02/07/2019
+ */
 import mongoose from 'mongoose';
 import { getDB } from '../../../db';
 

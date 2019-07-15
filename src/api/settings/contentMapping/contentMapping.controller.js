@@ -773,7 +773,12 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   return finalJson;
 
 }
-
+/**
+ *
+ * @Author Aditi
+ * @description get list of all ContentMappings based on array of mongodb ids
+ * @date 10/07/2019
+ */
 export async function getFileData(args, context){
   const fileExists = args && args.input && args.input.id
   if(!fileExists){
@@ -1045,8 +1050,11 @@ export async function getCmsTopicLevelStats(args, context) {
     return finalObj;
   }));
 }
-
-/* req.body should caontain filters key of the format ---
+/**
+ *
+ * @author Aditi
+ * @description Returns a array of jsons for csv conversion based on filters
+ * req.body should contain filters of the format ---
 
 	"filters":{
     "contentCategory" :"Reading Material etc.",  //compulsory input
@@ -1055,8 +1063,7 @@ export async function getCmsTopicLevelStats(args, context) {
     "subjectCode" : "String",  //optional
     "topicCode" :"String" //optional but no topic code without textbookcode
   }
-
-}*/
+*/
 export async function downloadContentDetails(req, res){
   const args = req.body;
   if(!args.filters){
@@ -1070,7 +1077,9 @@ export async function downloadContentDetails(req, res){
     res.send(response)
   }))
 }
-
+/**
+ * @description utility function for function downloadContentDetails
+ */
 async function makeJSONforCSV(filedata){
   var final = []
   for(var j =0 ; j < filedata.length ;j++){
@@ -1098,7 +1107,9 @@ async function makeJSONforCSV(filedata){
   }
   return final
 }
-
+/**
+ * @description utility function for function downloadContentDetails
+ */
 export async function getContentDetails(context,filters={}){
     if(!filters.contentCategory){
       throw new Error('Select A category')
@@ -1147,7 +1158,11 @@ export async function getContentDetails(context,filters={}){
     });
   });
 }
-
+/**
+ * @author Aditi
+ * @date 10/07/2019
+ * @description edit contentMappings based on mongodb id and fields to be updated
+ */
 export async function updateContent(args,context){
   if(!args || !args.input || !args.input.id){
     throw new Error('Enter the File to be edited');
