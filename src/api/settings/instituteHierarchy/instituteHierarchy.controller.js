@@ -94,7 +94,7 @@ async function filterNodes(fltrs, context) {
     ];
   }
   return new Promise((resolve, reject) => {
-    InstituteHierarchy.find(query).cache(config.cacheTimeOut.instituteHierarchy)
+    InstituteHierarchy.find(query)
       .then((docs) => {
         resolve(docs);
       })

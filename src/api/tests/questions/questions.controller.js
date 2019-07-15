@@ -11,7 +11,7 @@ function getQuery(args) {
 export async function getQuestions(args, context) {
   if (!args.questionPaperId) throw new Error('questionPaperId required');
   const query = getQuery(args);
-  return QuestionModel(context).then(Question => Question.find(query).cache(config.cacheTimeOut.question));
+  return QuestionModel(context).then(Question => Question.find(query));
 }
 
 async function prepareDataForMasterResults(args, resultStats, evaluation, context) {

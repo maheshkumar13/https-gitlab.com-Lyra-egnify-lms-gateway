@@ -9,14 +9,14 @@ import {
   GraphQLObjectType as ObjectType,
 } from 'graphql';
 
-import { Subjects, getSubjectTextbookTopic } from './settings/subject/subject.query';
+import { Subjects, getSubjectTextbookTopic, TextbooksForEachSubject, } from './settings/subject/subject.query';
 import { InstituteHierarchy, InstituteHierarchyPaginated,ChildDataFromParent } from './settings/instituteHierarchy/instituteHierarchy.query';
 import { Institute } from './settings/institute/institute.query';
 import { InstituteHierarchyGrid } from './settings/instituteHierarchy/instituteHierarchyGrid.query';
 import { updateCategory } from './settings/instituteHierarchy/instituteHierarchy.mutaion';
 import { createSubject } from './settings/subject/subject.mutation';
 import { Programs } from './settings/programs/programs.query';
-import { Textbooks , TextbooksInfo} from './settings/textbook/textbook.query';
+import { Textbooks, TextbooksInfo, } from './settings/textbook/textbook.query';
 import { createTextbook, updateTextbook, deleteTextbook } from './settings/textbook/textbook.mutation';
 import { Students, StudentUniqueValues, StudentsByLastNode, StudentById } from './settings/student/student.query';
 import { updateStudentAvatar, updateStudentSubjects } from './settings/student/student.mutation';
@@ -25,13 +25,16 @@ import { ContentMapping, ContentMappingStats, CmsCategoryStats, CategoryWiseFile
 import { LaunchRequest } from './launcher/launchRequest/launchRequest.query';
 import { Questions, Results, QuestionEvaluation } from './tests/questions/questions.query';
 import { MasterResults } from './tests/masterResults/masterResults.query';
-import { InsertContent } from './settings/contentMapping/contentMapping.mutation';
+import { InsertContent,UpdateContent, updateMetaData } from './settings/contentMapping/contentMapping.mutation';
 import { CreateTestType,DeleteTestType,UpdateTestType} from  './settings/testType/testType.mutation';
 import { TestType} from './settings/testType/testType.query';
 import {TestPatterns} from './settings/testPattern/testPattern.query'
-import {createTestPattern,updateTestPattern,deleteTestPattern} from './settings/testPattern/testPattern.mutation'
+import {createTestPattern,updateTestPattern,deleteTestPattern} from './settings/testPattern/testPattern.mutation';
+import { CreatePackage } from './settings/package/package.mutation';
+import {PackageList, PackageDetails} from './settings/package/package.query';
+import {UpdatePackage,FeedbackPackage} from './settings/package/package.mutation';
 
-const schema = new Schema({
+const schema = new Schema({ 
   query: new ObjectType({
     name: 'Query',
     fields: {
@@ -60,10 +63,14 @@ const schema = new Schema({
       TextbookBasedQuiz,
       getSubjectTextbookTopic,
       ContentMappingStats,
+      PackageList,
+      PackageDetails,
       ChildDataFromParent,
       TestType,
       TextbooksInfo,
-      TestPatterns
+      TestPatterns,
+      PackageList,
+      TextbooksForEachSubject,
     },
   }),
   mutation: new ObjectType({
@@ -77,12 +84,17 @@ const schema = new Schema({
       updateStudentAvatar,
       updateStudentSubjects,
       InsertContent,
+      UpdateContent,
+      updateMetaData,
       CreateTestType,
       DeleteTestType,
       UpdateTestType,
       createTestPattern,
       updateTestPattern,
       deleteTestPattern
+      CreatePackage,
+      UpdatePackage,
+      FeedbackPackage,
     },
   }),
 });

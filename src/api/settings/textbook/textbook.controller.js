@@ -17,7 +17,7 @@ export async function getStudentData(context) {
       orientation: 1,
       active: true,
     }
-    return Student.findOne({ studentId }, project).cache(config.cacheTimeOut.student)
+    return Student.findOne({ studentId }, project)
   })
 }
 
@@ -46,7 +46,7 @@ export async function getTextbooks(args, context){
     const query = getTextbooksQuery(args)
     console.log(query);
     return TextbookModel(context).then( (Textbook) => {
-      return Textbook.find(query).cache(config.cacheTimeOut.textbook)
+      return Textbook.find(query)
     })
   })
 }
@@ -247,7 +247,7 @@ export async function codeAndTextbooks(context){
       {"$group" :{"_id" : null , "data" : {"$push" : {"k" : "$_id.code" , "v" : "$_id.data"}} } } , { "$replaceRoot": {"newRoot": { "$arrayToObject": "$data" }}} , 
     ]
 
-  return Textbook.aggregate(aggregateQuery).cache(config.cacheTimeOut.textbook).then((docs) => {
+  return Textbook.aggregate(aggregateQuery).then((docs) => {
     if(!docs || docs.length < 1){
       return {};
     }

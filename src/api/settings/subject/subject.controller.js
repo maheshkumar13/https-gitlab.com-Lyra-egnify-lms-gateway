@@ -25,7 +25,7 @@ export async function getStudentData(context) {
       active: true,
       orientation: 1,
     };
-    return Student.findOne({ studentId }, project).cache(config.cacheTimeOut.student);
+    return Student.findOne({ studentId }, project);
   });
 }
 export async function getSubjects(args, context) {
@@ -42,7 +42,7 @@ export async function getSubjects(args, context) {
         ];
       }
     }
-    return SubjectModel(context).then(Subject => Subject.find(query).cache(config.cacheTimeOut.subject));
+    return SubjectModel(context).then(Subject => Subject.find(query));
   });
 }
 
@@ -168,7 +168,7 @@ export async function getSubjectTextbookTopic(args, context) {
     }
     return Subject.find(subjectQuery, {
       _id: 0, subject: 1, code: 1, isMandatory: 1,
-    }).cache(config.cacheTimeOut.subject).then((subjects) => {
+    }).then((subjects) => {
       const subjectcodes = subjects.map(x => x.code);
       const textbookQuery = {
         active: true,
@@ -188,7 +188,7 @@ export async function getSubjectTextbookTopic(args, context) {
       }
       return Textbook.find(textbookQuery, {
         _id: 0, name: 1, code: 1, 'refs.subject.code': 1, imageUrl: 1,
-      }).cache(config.cacheTimeOut.textbook).then((textbooks) => {
+      }).then((textbooks) => {
         const textbookCodes = textbooks.map(x => x.code);
         const topicQuery = {
           active: true,
@@ -197,7 +197,7 @@ export async function getSubjectTextbookTopic(args, context) {
         };
         return ConceptTaxonomy.find(topicQuery, {
           _id: 0, child: 1, code: 1, childCode: 1, 'refs.textbook.code': 1,
-        }).cache(config.cacheTimeOut.topic).lean().then((topics) => {
+        }).lean().then((topics) => {
           const data = [];
           subjects.forEach((subject) => {
             const subjectData = {
@@ -224,3 +224,58 @@ export async function getSubjectTextbookTopic(args, context) {
     });
   });
 }
+
+
+
+/**
+ * @description This function takes an array of subjectIds (args.input), and returns an 
+ *              array of JSONs; each JSON contains: subjectName, subjectCode and an 
+ *              array of textBooks (containing textbookName, textbookCode)
+ * @author Shreyas
+ * @date 01/07/2019
+ */
+
+export async function getTextbooksForEachSubject(args, context) {
+  const subjectsArray = args.input;
+  const query = {
+    "refs.subject.code": { $in : subjectsArray },
+  };
+  const projection = {
+    "name": 1,
+    "code": 1,
+    "refs.subject.name": 1,
+    "refs.subject.code": 1,
+  };
+  const group = {
+    _id: {
+      subject: {
+        name: "$refs.subject.name",
+        code: "$refs.subject.code",
+      },
+    },
+    textBooks: {
+      $addToSet: {
+        "code": "$code",
+        "name": "$name",
+      }
+    }
+  }
+  return TextbookModel(context).then(Textbook => {
+    return (Textbook.aggregate([
+      { $match: query },
+      { $project: projection },
+      { $group: group },
+    ]).allowDiskUse(true)).then(result => {
+      const finalResult = [];
+      for (let i=0; i<result.length; i+=1) {
+        const subject = {};
+        subject.subjectName = result[i]._id.subject.name;
+        subject.subjectCode = result[i]._id.subject.code;
+        subject.textBooks = result[i].textBooks;
+        finalResult.push(subject);
+      }
+      return finalResult;
+    });
+  }).catch(err => err);
+}
+

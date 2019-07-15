@@ -147,7 +147,7 @@ export const FileData = {
   args: {
     input: { type: FileDataInputType },
   },
-  type: FileDataOutputType,
+  type: new List(FileDataOutputType),
   async resolve(obj, args, context) {
     return controller.getFileData(args, context)
       .then(async json => json);
