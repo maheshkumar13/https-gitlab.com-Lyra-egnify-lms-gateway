@@ -147,7 +147,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
       const lowerKey = key.toLowerCase();
       if (lowerKey === 'branches' || lowerKey === 'file path'){
          obj[lowerKey] = obj[key];
-      }   
+      }
       else obj[lowerKey] = obj[key].toString().replace(/\s\s+/g, ' ').trim();
       if (key !== lowerKey) delete obj[key];
     }
@@ -675,7 +675,7 @@ export async function getCategoryWiseFilesPaginated(args, context) {
     query1['code'] = textbookCode
   }
   let textbookCodeObj=[];
-  
+
   await TextbookModel(context).then(async (TextBook) => {
     await TextBook.find(query1, { code: 1, _id: 0,name:1 ,
       "refs.class.name":1,"refs.subject.name":1,}).then((textbookCodeObjs) => {
@@ -689,7 +689,7 @@ export async function getCategoryWiseFilesPaginated(args, context) {
     });
   });
 
-  
+
   if (textbookCodes.length === 0) {
     return null;
   }
@@ -722,6 +722,18 @@ export async function getCategoryWiseFilesPaginated(args, context) {
       return conceptTaxonomy.find({levelName:"topic",code:{
         $in:topicList}},{_id:0,code:1,child:1}).then((topicObj)=>{
       for (let c = 0; c < contentObjs.length; c += 1) {
+        const className = textbookCodeObj &&
+          textbookCodeObj.find(x =>x.code ==contentObjs[c].refs.textbook.code) &&
+          (textbookCodeObj.find(x =>x.code ==contentObjs[c].refs.textbook.code)).refs &&
+          (textbookCodeObj.find(x =>x.code ==contentObjs[c].refs.textbook.code)).refs.class &&
+          (textbookCodeObj.find(x =>x.code ==contentObjs[c].refs.textbook.code)).refs.class.name ?
+          (textbookCodeObj.find(x =>x.code ==contentObjs[c].refs.textbook.code)).refs.class.name : null;
+        const subject = textbookCodeObj &&
+          textbookCodeObj.find(x =>x.code ==contentObjs[c].refs.textbook.code) &&
+          (textbookCodeObj.find(x =>x.code ==contentObjs[c].refs.textbook.code)).refs &&
+          (textbookCodeObj.find(x =>x.code ==contentObjs[c].refs.textbook.code)).refs.subject &&
+          (textbookCodeObj.find(x =>x.code ==contentObjs[c].refs.textbook.code)).refs.subject.name ?
+          (textbookCodeObj.find(x =>x.code ==contentObjs[c].refs.textbook.code)).refs.subject.name : null;
         const tempCategory = {
           id: contentObjs[c]._id,
           content: contentObjs[c].content, //eslint-disable-line
@@ -730,18 +742,18 @@ export async function getCategoryWiseFilesPaginated(args, context) {
             code: contentObjs[c].refs.textbook.code,
             name :(textbookCodeObj.find(x =>x.code ==contentObjs[c].refs.textbook.code)).name,
           },
-          className :(textbookCodeObj.find(x =>x.code ==contentObjs[c].refs.textbook.code)).refs.class.name,
-          subject :(textbookCodeObj.find(x =>x.code ==contentObjs[c].refs.textbook.code)).refs.subject.name,
+          className,
+          subject,
           topic:{
-            code : contentObjs[c].refs.topic.code,
-            name : (topicObj.find(x =>x.code ==contentObjs[c].refs.topic.code)).child
+            code : contentObjs && contentObjs[c] && contentObjs[c].refs && contentObjs[c].refs.topic && contentObjs[c].refs.topic.code ? contentObjs[c].refs.topic.code : null,
+            name : topicObj && topicObj.find(x =>x.code ==contentObjs[c].refs.topic.code) && (topicObj.find(x =>x.code ==contentObjs[c].refs.topic.code)).child ? (topicObj.find(x =>x.code ==contentObjs[c].refs.topic.code)).child : null
           },
           count:{
-            orientation: contentObjs[c].orientation.length,
-            branches: contentObjs[c].branches.length,
+            orientation: contentObjs && contentObjs[c] && contentObjs[c].orientation ? contentObjs[c].orientation.length : 0,
+            branches:  contentObjs &&  contentObjs[c] &&  contentObjs[c].branches ? contentObjs[c].branches.length : 0,
           },
-          orientation: contentObjs[c].orientation,
-          branches: contentObjs[c].branches,
+          orientation: contentObjs && contentObjs[c] && contentObjs[c].orientation ? contentObjs[c].orientation : null,
+          branches: contentObjs &&  contentObjs[c] &&  contentObjs[c].branches ? contentObjs[c].branches : null,
         };
         categoryFiles.push(tempCategory);
       }
@@ -762,13 +774,13 @@ export async function getCategoryWiseFilesPaginated(args, context) {
 
 }
 /**
- * 
+ *
  * @Author Aditi
- * @description get list of all ContentMappings based on array of mongodb ids 
+ * @description get list of all ContentMappings based on array of mongodb ids
  * @date 10/07/2019
  */
 export async function getFileData(args, context){
-  const fileExists = args && args.input && args.input.id 
+  const fileExists = args && args.input && args.input.id
   if(!fileExists){
     throw new Error("Please enter a id");
   }
@@ -777,7 +789,7 @@ export async function getFileData(args, context){
   const query ={
     _id : {$in : mongoDbId}
   }
-  return ContentMappingModel(context).then((contentMapping) =>{ 
+  return ContentMappingModel(context).then((contentMapping) =>{
     return (contentMapping.find(query)).then((contentMappingObj) =>{
       const textbookQuery = contentMappingObj.map(value => value.refs.textbook.code)
       const conceptQuery = contentMappingObj.map(value => value.refs.topic.code)
@@ -792,7 +804,7 @@ export async function getFileData(args, context){
           textBookRefs,
           topicObj
         ])=>{
-          const finalObj = []  
+          const finalObj = []
           let singleFile  = {};
           for(var i = 0 ; i < contentMappingObj.length ; i++){
               var finalObjElement = contentMappingObj[i] ;
@@ -1039,11 +1051,11 @@ export async function getCmsTopicLevelStats(args, context) {
   }));
 }
 /**
- * 
+ *
  * @author Aditi
  * @description Returns a array of jsons for csv conversion based on filters
  * req.body should contain filters of the format ---
-   
+
 	"filters":{
     "contentCategory" :"Reading Material etc.",  //compulsory input
     "textbookCode":"155695623436235d2fe4581",//optional
@@ -1109,11 +1121,11 @@ export async function getContentDetails(context,filters={}){
     if(filters.textbookCode){
       findQuery['refs.textbook.code'] = filters.textbookCode
     }
-    
+
     if(filters.topicCode && filters.textbookCode){
       findQuery['refs.topic.code'] = {$in: [null, '', filters.topicCode]}
     }
-    
+
     return ContentMappingModel(context).then((contentMapping) => {
     if(!filters.textbookCode && (filters.subjectCode || filters.classCode)){
       const findtextbookQuery = {
@@ -1166,7 +1178,7 @@ export async function updateContent(args,context){
   };
   var whereObj = {};
   whereObj['_id'] = mongoDbId ;
-  
+
   var setObj = {};
   if(args && args.input ){
     if(args.input.textbookCode && args.input.topicCode){
@@ -1192,7 +1204,7 @@ export async function updateContent(args,context){
       var metaDatakeys = Object.keys(args.input.metaData) ;
       // setObj['metaData.thumbnailKey'] = args.input.thumbnailKey
       for(var i = 0 ;i <metaDatakeys.length ;i++){
-        setObj[`metaData.${metaDatakeys[i]}`] = args.input.metaData[metaDatakeys[i]] 
+        setObj[`metaData.${metaDatakeys[i]}`] = args.input.metaData[metaDatakeys[i]]
       }
     }
   }
@@ -1240,7 +1252,7 @@ export async function getTextbookBasedListOfQuizzes(args, context) {
     };
     return ContentMapping.aggregate([{$match: query}, {$project: projection}]).allowDiskUse(true);
   });
-  
+
 }
 
 export default{
