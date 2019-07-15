@@ -223,6 +223,13 @@ export function allTestAverageAnalysisReport(req, res) {
   request(options).pipe(res);
 }
 
+/**
+ * 
+ * @author Aditi
+ * @description Returns a array of jsons for csv conversion based with name of asset 
+ *              already entered into sheet
+ * 
+ * */
 export function downloadContentMappingSample(req,res){
   if(!req || !req.body){
     throw new Error('Please provide with the inputs')
@@ -245,7 +252,7 @@ export function downloadContentMappingSample(req,res){
   res.send(result)
 }
 
-
+// validate uploaded sheet for content mapping
 export function validateUploadedContentMapping(req){
 
   let uploadList = req.body.uploadList
@@ -506,7 +513,7 @@ export function validateUploadedContentMapping(req){
     })
    });
 1  }
-
+// Upload content Mapping provided in a xlsx file.
 export async function uploadedContentMapping(req,res){
   if(!req){
     throw new Error('No request received')

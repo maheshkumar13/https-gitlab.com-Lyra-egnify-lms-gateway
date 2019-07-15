@@ -1,4 +1,8 @@
-
+/**
+   @description GraphQl queries for testtypes.
+   @author Aditi
+   @date   10/07/2019
+*/
 import {
     GraphQLList as List,
     GraphQLObjectType as ObjectType,
