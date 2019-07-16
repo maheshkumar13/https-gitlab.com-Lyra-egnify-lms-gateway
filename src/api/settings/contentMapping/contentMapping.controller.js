@@ -806,10 +806,18 @@ export async function getFileData(args, context){
         ])=>{
           const finalObj = []
           let singleFile  = {};
-          for(var i = 0 ; i < contentMappingObj.length ; i++){
-              var finalObjElement = contentMappingObj[i] ;
-              var tbookRefsElement = textBookRefs.find(x=>x.code === finalObjElement.refs.textbook.code);
-              const topicObjElement = topicObj.find(x=>x.code === finalObjElement.refs.topic.code);
+          for(let i = 0 ; i < contentMappingObj.length ; i++){
+              let finalObjElement = contentMappingObj[i];
+              const tbookCode = finalObjElement &&
+                                finalObjElement.refs && finalObjElement.refs.textbook &&
+                                finalObjElement.refs.textbook.code ?
+                                finalObjElement.refs.textbook.code : null;
+              const topicCode = finalObjElement && finalObjElement.refs &&
+                                finalObjElement.refs.topic &&
+                                finalObjElement.refs.topic.code ?
+                                finalObjElement.refs.topic.code : null;
+              let tbookRefsElement = textBookRefs.find(x=>x.code === tbookCode);
+              const topicObjElement = topicObj.find(x=>x.code === topicCode);
               singleFile  = {
               id: finalObjElement._id,
               content: finalObjElement && finalObjElement.content ?
@@ -835,12 +843,18 @@ export async function getFileData(args, context){
                 tbookRefsElement.refs.subject.name : null,
               category:finalObjElement.category,
               textBookName: tbookRefsElement && tbookRefsElement.name ? tbookRefsElement.name : null,
-              topicName: topicObjElement.child,
-              coins: finalObjElement.coins,
-              filePath: finalObjElement.resource.key,
-              fileSize: finalObjElement.resource.size,
-              mediaType:finalObjElement.resource.type,
-              metaData :finalObjElement.metaData,
+              topicName: topicObjElement && topicObjElement.child ? topicObjElement.child : null,
+              coins: finalObjElement && finalObjElement.coins ? finalObjElement.coins : null,
+              filePath: finalObjElement &&
+                        finalObjElement.resource &&
+                        finalObjElement.resource.key ? finalObjElement.resource.key : null,
+              fileSize: finalObjElement && finalObjElement.resource &&
+                        finalObjElement.resource.size ? finalObjElement.resource.size : null,
+              mediaType: finalObjElement &&
+                         finalObjElement.resource &&
+                         finalObjElement.resource.type ? finalObjElement.resource.type : null,
+              metaData : finalObjElement.metaData &&
+                         finalObjElement.metaData ? finalObjElement.metaData : null,
               count:{
               orientation : finalObjElement && finalObjElement.orientation ?
               finalObjElement.orientation.length : null,
