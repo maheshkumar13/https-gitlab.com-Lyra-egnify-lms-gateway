@@ -292,19 +292,19 @@ export function validateUploadedContentMapping(req) {
     const textbook = temp.Textbook.trim();
     const contentType = temp['Content Type'].trim();
     const chapter = temp.Chapter.trim();
-    if (name == null || name == '') {
+    if (name == null || name === '') {
       err1.push('Name');
     }
-    if (subject == null || subject == '') {
+    if (subject == null || subject === '') {
       err1.push('Subject');
     }
-    if (textbook == null || textbook == '') {
+    if (textbook == null || textbook === '') {
       err1.push('Textbook');
     }
-    if (chapter == null || chapter == '') {
+    if (chapter == null || chapter === '') {
       err1.push('Chapter');
     }
-    if (coins == null || coins == '') {
+    if (coins == null || coins === '') {
       err1.push('Coins');
     }
     coins = parseInt(coins);
@@ -313,7 +313,7 @@ export function validateUploadedContentMapping(req) {
     if (coins && coins < 0 || typeof (coins) !== 'number') {
       error.E0002.push(`Coins can not be less than 0 or anything other than number at row : ${i + 2}`);
     }
-    if (contentType == null || contentType == '') {
+    if (contentType == null || contentType === '') {
       err1.push('Content Type');
     }
     if (err1.length > 0) {
@@ -326,15 +326,15 @@ export function validateUploadedContentMapping(req) {
   // splitting individual columns
   data.map((x) => {
     x.Subject = x.Subject.split(',');
-    for (var i = 0; i < x.Subject.length; i++) {
+    for (let i = 0; i < x.Subject.length; i++) {
       x.Subject[i] = x.Subject[i].trim();
     }
     x.Textbook = x.Textbook.split(',');
-    for (var i = 0; i < x.Textbook.length; i++) {
+    for (let i = 0; i < x.Textbook.length; i++) {
       x.Textbook[i] = x.Textbook[i].trim();
     }
     x.Chapter = x.Chapter.split(',');
-    for (var i = 0; i < x.Chapter.length; i++) {
+    for (let i = 0; i < x.Chapter.length; i++) {
       x.Chapter[i] = x.Chapter[i].trim();
     }
     subjectList = subjectList.concat(x.Subject);
@@ -375,18 +375,19 @@ export function validateUploadedContentMapping(req) {
     let j = 0;
 
     // checking for subject-textbook combinations
-    for (let i = 0; i < data.length; i++) {
+    for (let i = 0; i < data.length; i += 1) {
       const tempObj = data[i];
       if (tempObj.Subject && tempObj.Textbook) {
-        if (tempObj.Subject.length != tempObj.Textbook.length) {
+        if (tempObj.Subject.length !== tempObj.Textbook.length) {
           error.E0004.push(`Count mismatch between Subject and TextBook at row : ${i + 2}`);
         }
 
-        if ((tempObj.Subject.length != tempObj.Chapter.length) || (tempObj.Textbook.length != tempObj.Chapter.length)) {
+        if ((tempObj.Subject.length !== tempObj.Chapter.length) ||
+          (tempObj.Textbook.length !== tempObj.Chapter.length)) {
           error.E0004.push(`Count mismatch between Subject-TextBook and Chapter at row : ${i + 2}`);
         }
 
-        for (var k = 0; k < tempObj.Subject.length; k++) {
+        for (let k = 0; k < tempObj.Subject.length; k += 1) {
           subtextQuery.$or[j] = {
             'refs.subject.name': tempObj.Subject[k],
             name: tempObj.Textbook[k],
@@ -411,10 +412,10 @@ export function validateUploadedContentMapping(req) {
       branches: 1,
     })).then((subtextList) => {
       // let subtextMismatch = []
-      for (let i = 0; i < data.length; i++) {
+      for (let i = 0; i < data.length; i += 1) {
         const temp = data[i];
         if (temp.Subject && temp.Textbook) {
-          for (var j = 0; j < temp.Subject.length; j++) {
+          for (let j = 0; j < temp.Subject.length; j += 1) {
             const check = subtextList.find(x => x.refs.subject.name === temp.Subject[j] && x.name === temp.Textbook[j]);
             if (check == undefined) {
               error.E0005.push(`invalid subject-textbook combination at row : ${i + 2}`);
@@ -426,10 +427,10 @@ export function validateUploadedContentMapping(req) {
         _id: 0, child: 1, 'refs.textbook.code': 1, childCode: 1, 'refs.textbook.name': 1,
       }).then((topicList) => {
         // let chaptextMismatch = []
-        for (let i = 0; i < data.length; i++) {
+        for (let i = 0; i < data.length; i += 1) {
           const temp = data[i];
           if (temp.Subject && temp.Textbook) {
-            for (var j = 0; j < temp.Subject.length; j++) {
+            for (let j = 0; j < temp.Subject.length; j += 1) {
               const textBookCode = tList.find(x => x.name === temp.Textbook[j]) ?
                 tList.find(x => x.name === temp.Textbook[j]).code : null;
               const check = topicList.find(x => x.refs.textbook.code === textBookCode && x.child === temp.Chapter[j]);
@@ -437,8 +438,8 @@ export function validateUploadedContentMapping(req) {
                 error.E0006.push(`invalid chapter-textbook combination at row : ${i + 2}`);
               }
             }
-            const u = uploadList.find(x => x.Name == temp.Name);
-            if (u == undefined || null) {
+            const u = uploadList.find(x => x.Name === temp.Name);
+            if (u === undefined || u === null) {
               error.E0007.push(`Name mismatch at row : ${i + 2}`);
             }
           }
@@ -446,10 +447,10 @@ export function validateUploadedContentMapping(req) {
 
         let count = 0;
         const keys = error && Object.keys(error) ? Object.keys(error) : [];
-        for (var j = 0; j < keys.length; j++) {
+        for (let j = 0; j < keys.length; j += 1) {
           if (error[keys[j]].length > 0) {
             // return error
-            count++;
+            count += 1;
           } else {
             delete error[keys[j]];
           }
@@ -462,15 +463,15 @@ export function validateUploadedContentMapping(req) {
           const bulk = contentMapping.collection.initializeUnorderedBulkOp();
           const finalObj = [];
           let k = 0;
-          for (let i = 0; i < data.length; i++) {
+          for (let i = 0; i < data.length; i += 1) {
             const temp = data[i];
-            for (var j = 0; j < temp.Subject.length; j++) {
+            for (let j = 0; j < temp.Subject.length; j += 1) {
               const textBookCode = tList.find(x => x.name === temp.Textbook[j]).code;
               const t = topicList.find(x => x.refs.textbook.code === textBookCode &&
                x.child === temp.Chapter[j]);
               const s = subtextList.find(x => x.refs.subject.name === temp.Subject[j] &&
               x.name === temp.Textbook[j]);
-              const u = uploadList.find(x => x.Name == temp.Name);
+              const u = uploadList.find(x => x.Name === temp.Name);
               const setobj = {};
               const whereObj = {};
               whereObj['content.name'] = temp.Name;
@@ -512,7 +513,6 @@ export function validateUploadedContentMapping(req) {
       }));
     });
   }));
-  1;
 }
 // Upload content Mapping provided in a xlsx file.
 export async function uploadedContentMapping(req, res) {
