@@ -258,7 +258,7 @@ export function validateUploadedContentMapping(req) {
   let uploadList = req.body.uploadList;
   uploadList = JSON.parse(uploadList);
   const classCode = req.body.classCode;
-
+  // console.log('im heer');
   // Reading  workbook
   const workbook = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true });
   // converting the sheet data to csv
@@ -271,44 +271,48 @@ export function validateUploadedContentMapping(req) {
     if (values.every(x => x === '')) data.pop();
     else break;
   }
-  const error = {};
-  error.E0001 = []; // Null value Error(Missing information)
-  error.E0002 = []; // Invalid coins input
-  error.E0003 = []; // Subjects/Textbooks not existing in database
-  error.E0004 = []; // Count mismatch between comma separated values
-  error.E0005 = []; // invalid subject-textbook combination
-  error.E0006 = []; // invalid chapter-textbook combination
-  error.E0007 = []; // Name mismatch Error
-  error.E0008 = []; // Invalid File Type
+  const error = {
+    E0001: [], // Null value Error(Missing information)
+    E0002: [], // Invalid coins input
+    E0003: [], // Subjects/Textbooks not existing in database
+    E0004: [], // Count mismatch between comma separated values
+    E0005: [], // invalid subject-textbook combination
+    E0006: [], // invalid chapter-textbook combination
+    E0007: [], // Name mismatch Error
+    E0008: [], // Invalid File Type
+  };
 
   // checking for null values error code : E0001
-  for (let i = 0; i < data.length; i++) {
+  for (let i = 0; i < data.length; i += 1) {
     const temp = data[i];
     const err1 = [];
-    temp.Coins = String(temp.Coins).trim();
-    let coins = temp.Coins;
-    const name = temp.Name.trim();
-    const subject = temp.Subject.trim();
-    const textbook = temp.Textbook.trim();
-    const contentType = temp['Content Type'].trim();
-    const chapter = temp.Chapter.trim();
+    temp.coins = String(temp.coins).trim();
+    console.log('temp1111111', temp);
+    let coins = temp.coins;
+    const name = temp.name.trim();
+    const subject = temp.subject.trim();
+    const textbook = temp.textbook.trim();
+    const contentType = temp.contentType.trim();
+    const chapter = temp.chapter.trim();
+    console.log('temp', temp);
     if (name == null || name === '') {
-      err1.push('Name');
+      err1.push('name');
     }
     if (subject == null || subject === '') {
-      err1.push('Subject');
+      err1.push('subject');
     }
     if (textbook == null || textbook === '') {
-      err1.push('Textbook');
+      err1.push('textbook');
     }
     if (chapter == null || chapter === '') {
-      err1.push('Chapter');
+      err1.push('chapter');
     }
     if (coins == null || coins === '') {
-      err1.push('Coins');
+      err1.push('coins');
     }
+    console.log('err1', err1);
     coins = parseInt(coins);
-    temp.Coins = coins;
+    temp.coins = coins;
     // validating coins
     if (coins && coins < 0 || typeof (coins) !== 'number') {
       error.E0002.push(`Coins can not be less than 0 or anything other than number at row : ${i + 2}`);
@@ -320,25 +324,26 @@ export function validateUploadedContentMapping(req) {
       error.E0001.push(`missing information at columns ${err1} at row ${i + 2}`);
     }
   }
+  console.log('error', error);
   let subjectList = [];
   let textbookList = [];
 
   // splitting individual columns
   data.map((x) => {
-    x.Subject = x.Subject.split(',');
-    for (let i = 0; i < x.Subject.length; i++) {
-      x.Subject[i] = x.Subject[i].trim();
+    x.subject = x.subject.split(',');
+    for (let i = 0; i < x.subject.length; i++) {
+      x.subject[i] = x.subject[i].trim();
     }
-    x.Textbook = x.Textbook.split(',');
-    for (let i = 0; i < x.Textbook.length; i++) {
-      x.Textbook[i] = x.Textbook[i].trim();
+    x.textbook = x.textbook.split(',');
+    for (let i = 0; i < x.textbook.length; i++) {
+      x.textbook[i] = x.textbook[i].trim();
     }
-    x.Chapter = x.Chapter.split(',');
-    for (let i = 0; i < x.Chapter.length; i++) {
-      x.Chapter[i] = x.Chapter[i].trim();
+    x.chapter = x.chapter.split(',');
+    for (let i = 0; i < x.chapter.length; i++) {
+      x.chapter[i] = x.chapter[i].trim();
     }
-    subjectList = subjectList.concat(x.Subject);
-    textbookList = textbookList.concat(x.Textbook);
+    subjectList = subjectList.concat(x.subject);
+    textbookList = textbookList.concat(x.textbook);
   });
   textbookList = [...new Set(textbookList)];
   subjectList = [...new Set(subjectList)];
@@ -377,27 +382,27 @@ export function validateUploadedContentMapping(req) {
     // checking for subject-textbook combinations
     for (let i = 0; i < data.length; i += 1) {
       const tempObj = data[i];
-      if (tempObj.Subject && tempObj.Textbook) {
-        if (tempObj.Subject.length !== tempObj.Textbook.length) {
+      if (tempObj.subject && tempObj.textbook) {
+        if (tempObj.subject.length !== tempObj.textbook.length) {
           error.E0004.push(`Count mismatch between Subject and TextBook at row : ${i + 2}`);
         }
 
-        if ((tempObj.Subject.length !== tempObj.Chapter.length) ||
-          (tempObj.Textbook.length !== tempObj.Chapter.length)) {
+        if ((tempObj.subject.length !== tempObj.chapter.length) ||
+          (tempObj.textbook.length !== tempObj.chapter.length)) {
           error.E0004.push(`Count mismatch between Subject-TextBook and Chapter at row : ${i + 2}`);
         }
 
-        for (let k = 0; k < tempObj.Subject.length; k += 1) {
+        for (let k = 0; k < tempObj.subject.length; k += 1) {
           subtextQuery.$or[j] = {
-            'refs.subject.name': tempObj.Subject[k],
-            name: tempObj.Textbook[k],
+            'refs.subject.name': tempObj.subject[k],
+            name: tempObj.textbook[k],
           };
-          const textBookCode = tList.find(x => x.name === tempObj.Textbook[k]) ?
-            tList.find(x => x.name === tempObj.Textbook[k]).code : null;
+          const textBookCode = tList.find(x => x.name === tempObj.textbook[k]) ?
+            tList.find(x => x.name === tempObj.textbook[k]).code : null;
 
           chaptextQuery.$or[j++] = {
             'refs.textbook.code': textBookCode,
-            child: tempObj.Chapter[k],
+            child: tempObj.chapter[k],
           };
         }
       }
@@ -414,10 +419,11 @@ export function validateUploadedContentMapping(req) {
       // let subtextMismatch = []
       for (let i = 0; i < data.length; i += 1) {
         const temp = data[i];
-        if (temp.Subject && temp.Textbook) {
-          for (let j = 0; j < temp.Subject.length; j += 1) {
-            const check = subtextList.find(x => x.refs.subject.name === temp.Subject[j] && x.name === temp.Textbook[j]);
-            if (check == undefined) {
+        if (temp.subject && temp.textbook) {
+          for (let j = 0; j < temp.subject.length; j += 1) {
+            const check = subtextList.find(x => x.refs.subject.name === temp.subject[j] &&
+              x.name === temp.textbook[j]);
+            if (check === undefined) {
               error.E0005.push(`invalid subject-textbook combination at row : ${i + 2}`);
             }
           }
@@ -429,16 +435,16 @@ export function validateUploadedContentMapping(req) {
         // let chaptextMismatch = []
         for (let i = 0; i < data.length; i += 1) {
           const temp = data[i];
-          if (temp.Subject && temp.Textbook) {
-            for (let j = 0; j < temp.Subject.length; j += 1) {
-              const textBookCode = tList.find(x => x.name === temp.Textbook[j]) ?
-                tList.find(x => x.name === temp.Textbook[j]).code : null;
-              const check = topicList.find(x => x.refs.textbook.code === textBookCode && x.child === temp.Chapter[j]);
-              if (check == undefined) {
+          if (temp.subject && temp.textbook) {
+            for (let j = 0; j < temp.subject.length; j += 1) {
+              const textBookCode = tList.find(x => x.name === temp.textbook[j]) ?
+                tList.find(x => x.name === temp.textbook[j]).code : null;
+              const check = topicList.find(x => x.refs.textbook.code === textBookCode && x.child === temp.chapter[j]);
+              if (check === undefined) {
                 error.E0006.push(`invalid chapter-textbook combination at row : ${i + 2}`);
               }
             }
-            const u = uploadList.find(x => x.Name === temp.Name);
+            const u = uploadList.find(x => x.name === temp.name);
             if (u === undefined || u === null) {
               error.E0007.push(`Name mismatch at row : ${i + 2}`);
             }
@@ -465,32 +471,32 @@ export function validateUploadedContentMapping(req) {
           let k = 0;
           for (let i = 0; i < data.length; i += 1) {
             const temp = data[i];
-            for (let j = 0; j < temp.Subject.length; j += 1) {
-              const textBookCode = tList.find(x => x.name === temp.Textbook[j]).code;
+            for (let j = 0; j < temp.subject.length; j += 1) {
+              const textBookCode = tList.find(x => x.name === temp.textbook[j]).code;
               const t = topicList.find(x => x.refs.textbook.code === textBookCode &&
-               x.child === temp.Chapter[j]);
-              const s = subtextList.find(x => x.refs.subject.name === temp.Subject[j] &&
-              x.name === temp.Textbook[j]);
-              const u = uploadList.find(x => x.Name === temp.Name);
+               x.child === temp.chapter[j]);
+              const s = subtextList.find(x => x.refs.subject.name === temp.subject[j] &&
+              x.name === temp.textbook[j]);
+              const u = uploadList.find(x => x.name === temp.name);
               const setobj = {};
               const whereObj = {};
-              whereObj['content.name'] = temp.Name;
+              whereObj['content.name'] = temp.name;
               whereObj['refs.textbook.code'] = s.code;
               whereObj['refs.topic.code'] = t.childCode;
               whereObj.active = true;
               setobj.content = {
-                name: temp.Name,
+                name: temp.name,
                 category: req.body.contentCategory,
-                type: temp['Content Type'],
+                type: temp.contentType,
               };
               setobj.resource = {
-                key: u.Key,
-                size: u.Size,
-                type: u.Type,
+                key: u.key,
+                size: u.fileSize,
+                type: u.fileType,
               };
               setobj['publication.publisher'] = s.publisher;
               setobj['publication.year'] = null;
-              setobj.coins = temp.Coins;
+              setobj.coins = temp.coins;
               setobj.active = true;
               setobj.refs = {
                 topic: {
@@ -516,20 +522,28 @@ export function validateUploadedContentMapping(req) {
 }
 // Upload content Mapping provided in a xlsx file.
 export async function uploadedContentMapping(req, res) {
+  console.log('req', req.file);
+  console.log('req', req.body);
   if (!req) {
-    throw new Error('No request received');
+    const error = 'No request received';
+    return res.status(400).send(error).end();
+    // throw new Error(err);
   }
   if (!req.file) {
-    throw new Error('File required');
+    const error = 'File required';
+    return res.status(400).send(error).end();
   }
   if (!req.body || !req.body.contentCategory) {
-    throw new Error('content category required');
+    const error = 'content category required';
+    return res.status(400).send(error).end();
   }
   if (!req.body || !req.body.classCode) {
-    throw new Error('Class required');
+    const error = 'ClassCode required';
+    return res.status(400).send(error).end();
   }
   if (!req.body || !req.body.uploadList) {
-    throw new Error('list required');
+    const error = 'List required';
+    return res.status(400).send(error).end();
   }
   // vaidating file type
   const error = {};
