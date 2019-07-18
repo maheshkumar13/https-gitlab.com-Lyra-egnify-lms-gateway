@@ -38,7 +38,7 @@ const all = {
   secrets: {
     session: 'vega-secret',
   },
-  
+
   // emailAuth: {
   //   user: process.env.MAILJET_API_KEY || 'a1fb4988b5a359099061d2cb8aebc80d',
   //   pass: process.env.MAILJET_API_SECRETKEY || '2fc962b7e3aae82acee17b355fb9de2d',
@@ -57,8 +57,8 @@ const all = {
   },
 
   // AWS
-  AWS_S3_KEY: process.env.AWS_S3_KEY || 'AKIA4XBZMKL5IIJGR4UK',
-  AWS_S3_SECRET: process.env.AWS_S3_SECRET || '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',
+  AWS_S3_KEY: process.env.AWS_S3_KEY || 'AKIA4XBZMKL5KA5DMR75',
+  AWS_S3_SECRET: process.env.AWS_S3_SECRET || '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',
 	AWS_S3_REGION: process.env.AWS_S3_REGION || 'ap-south-1',
   AWS_PUBLIC_BUCKET: process.env.AWS_PUBLIC_BUCKET || 'ekslmsprojectpublic',
   AWS_PRIVATE_BUCKET: process.env.AWS_PRIVATE_BUCKET || 'ekslmsproject',
