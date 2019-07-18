@@ -73,6 +73,8 @@ export const CmsCategoryStatsInputType = new InputType({
     subjectCode: { type: StringType, description: 'Code of the subject' },
     chapterCode: { type: StringType, description: 'Code of the chapter' },
     textbookCode: { type: StringType, description: 'Code of the textBook' },
+    branch: { type: StringType, description: 'Branch name' },
+    orientation: { type: StringType, description: 'Orientaion name' },
   },
 });
 

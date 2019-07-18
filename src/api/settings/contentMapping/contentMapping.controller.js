@@ -564,8 +564,8 @@ export async function getCMSCategoryStats(args, context) {
     args.input.textbookCode : null;
   const chapterCode = args && args.input && args.input.chapterCode ? args.input.chapterCode : null;
   const studentId = args && args.input && args.input.studentId ? args.input.studentId : null;
-  let orientation = null;
-  let branch = null;
+  let orientation = args && args.input && args.input.orientation || null;
+  let branch = args && args.input && args.input.branch || null;
   if (studentId) {
     await studentInfoModel(context).then(async (studentInfo) => {
       await studentInfo.findOne(
@@ -623,7 +623,7 @@ export async function getCMSCategoryStats(args, context) {
     };
   } if (orientation) {
     query.orientation = {
-      $in: [orientation],
+      $in: [orientation, null],
     };
   } if (branch) {
     query.branches = {
