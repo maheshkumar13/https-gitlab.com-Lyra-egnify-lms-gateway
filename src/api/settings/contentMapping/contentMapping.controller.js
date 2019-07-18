@@ -594,6 +594,14 @@ export async function getCMSCategoryStats(args, context) {
     query1['refs.class.code'] = classCode;
   } if (subjectCode) {
     query1['refs.subject.code'] = subjectCode;
+  } if (orientation) {
+    query1.orientation = {
+      $in: [orientation, null],
+    };
+  } if (branch) {
+    query1.branches = {
+      $in: [branch, null],
+    };
   }
   const textbookCodes = [];
   if (textbookCode) {
@@ -659,6 +667,8 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   const pageNumber = args && args.input && args.input.pageNumber ? args.input.pageNumber : 1;
   const limit = args && args.input && args.input.limit ? args.input.limit : 0;
   const category = args && args.input && args.input.category ? args.input.category : null;
+  let orientation = args && args.input && args.input.orientation || null;
+  let branch = args && args.input && args.input.branch || null;
   if (!category) {
     throw new Error('Please select correct category');
   }
@@ -673,6 +683,16 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   if (textbookCode) {
     textbookCodes.push(textbookCode);
     query1['code'] = textbookCode
+  }
+
+  if (orientation) {
+    query1.orientation = {
+      $in: [orientation, null],
+    };
+  } if (branch) {
+    query1.branches = {
+      $in: [branch, null],
+    };
   }
   let textbookCodeObj=[];
 
@@ -703,6 +723,15 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   }
   if (category) {
     query['content.category'] = category;
+  }
+  if (orientation) {
+    query.orientation = {
+      $in: [orientation, null],
+    };
+  } if (branch) {
+    query.branches = {
+      $in: [branch, null],
+    };
   }
   const skip = (pageNumber - 1) * limit;
   const categoryFiles = [];
