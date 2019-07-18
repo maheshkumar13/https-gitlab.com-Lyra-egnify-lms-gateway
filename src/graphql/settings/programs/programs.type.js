@@ -11,6 +11,7 @@ export const ProgramInputType = new InputType({
   fields: {
     program: { type: new List(StringType) },
     class: { type: new List(StringType) },
+    branch: { type: new List(StringType) },
   },
 });
 
