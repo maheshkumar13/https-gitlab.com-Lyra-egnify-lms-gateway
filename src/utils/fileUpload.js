@@ -221,8 +221,10 @@ const AWSHTMLUpload = (req, res) => {
   // const ResponseData = [];
   const promisesArray = [];
   let folderName = '';
+  let overallFileSize = 0;
   files.forEach((file) => {
     const fileSize = file.buffer.byteLength;
+    overallFileSize += fileSize;
     const originalnameArray = file.originalname.split('/');
     folderName = originalnameArray[0];
     const Key = `htmlContentSamples/${file.originalname}`; // upload to s3 folder "id" with filename === Key
@@ -245,8 +247,15 @@ const AWSHTMLUpload = (req, res) => {
   });
   Promise.all(promisesArray).then((dataValues) => {
     const indexObj = dataValues.find(x => x.key === `htmlContentSamples/${folderName}/index.html`);
-    console.info(indexObj);
-    return res.json({ error: false, Message: 'File Uploaded    SuceesFully', Data: indexObj });
+    const finalObj = {
+      key: indexObj.key,
+      name: folderName,
+      fileType: 'HTML',
+      Location: indexObj.Location,
+      Key: indexObj.Key,
+      fileSize: overallFileSize,
+    };
+    return res.json({ error: false, Message: 'File Uploaded    SuceesFully', Data: finalObj });
   });
 };
 
