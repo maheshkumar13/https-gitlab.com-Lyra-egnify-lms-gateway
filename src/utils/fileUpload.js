@@ -209,7 +209,6 @@ const AWSHTMLUpload = (req, res) => {
   if (!(req && req.files)) {
     res.status(404).send('Please upload files');
   }
-  let dataCount = 0;
   AWS.config.update({
     accessKeyId: config.AWS_S3_KEY,
     secretAccessKey: config.AWS_S3_SECRET,
@@ -219,10 +218,15 @@ const AWSHTMLUpload = (req, res) => {
   // console.log('req', req.files);
   const s3 = new AWS.S3();
   const { files } = req;
-  const ResponseData = [];
+  // const ResponseData = [];
+  const promisesArray = [];
+  let folderName = '';
+  let overallFileSize = 0;
   files.forEach((file) => {
     const fileSize = file.buffer.byteLength;
+    overallFileSize += fileSize;
     const originalnameArray = file.originalname.split('/');
+    folderName = originalnameArray[0];
     const Key = `htmlContentSamples/${file.originalname}`; // upload to s3 folder "id" with filename === Key
     const params = {
       Key,
@@ -231,29 +235,27 @@ const AWSHTMLUpload = (req, res) => {
       ContentType: file.mimetype,
       ACL: 'public-read',
     };
-    s3.upload(params).on('httpUploadProgress', (progress) => {
-      console.info('Uploaded Percentage', `${Math.floor((progress.loaded * 100) / progress.total)}%`);
-    }).send((err, data) => {
-      if (err) {
-        res.send(`Error Uploading Data: ${JSON.stringify(err)}\n${JSON.stringify(err.stack)}`);
-      }
-      if (data) {
-        dataCount += 1;
-        if (data.key === `${originalnameArray[0]}/index.html`) {
-          const tempData = {
-            name: originalnameArray[0],
-            key: data.key,
-            fileSize,
-            fileType: file.mimetype,
-          };
-          ResponseData.push(tempData);
+    promisesArray.push(new Promise(((resolve, reject) => {
+      s3.upload(params, (err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(data);
         }
-        if (dataCount === files.length) {
-          console.info('ResponseData', ResponseData);
-          res.json({ error: false, Message: 'File Uploaded SuceesFully', Data: ResponseData });
-        }
-      }
-    });
+      });
+    })));
+  });
+  Promise.all(promisesArray).then((dataValues) => {
+    const indexObj = dataValues.find(x => x.key === `htmlContentSamples/${folderName}/index.html`);
+    const finalObj = {
+      key: indexObj.key,
+      name: folderName,
+      fileType: 'HTML',
+      Location: indexObj.Location,
+      Key: indexObj.Key,
+      fileSize: overallFileSize,
+    };
+    return res.json({ error: false, Message: 'File Uploaded    SuceesFully', Data: finalObj });
   });
 };
 
