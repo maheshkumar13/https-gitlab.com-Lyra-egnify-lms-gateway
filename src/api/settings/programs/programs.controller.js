@@ -12,6 +12,10 @@ export async function fetchProgramsBasedOnBoard(body, context) {
   if (args && args.program && args.program.length) {
     query.orientation = { $in: args.program };
   }
+
+  if (args && args.branch && args.branch.length) {
+    query['hierarchyLevels.L_5'] = { $in: args.branch };
+  }
   const tempProgramWiseStudentCount = await Student.aggregate([
     { $match: query },
     { $project: { orientation: 1, hierarchyLevels: 1 } },
