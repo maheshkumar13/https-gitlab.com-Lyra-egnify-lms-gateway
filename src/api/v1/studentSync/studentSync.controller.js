@@ -95,13 +95,28 @@ export function student(req, res) {
   return InstituteHierarchyModel(req.user_cxt).then((InstituteHierarchy) => {
     const hierarchyPath = `${args.country}-${args.class}-${args.state}-${args.city}-${args.branch}-${args.section}`;
     const checkHierarhcyQuery = {
-      pathId: hierarchyPath,
+      pathId: { $regex: hierarchyPath, $options: 'i' },
     };
     return InstituteHierarchy.findOne(checkHierarhcyQuery).then((hierarchyObj) => {
       if (!hierarchyObj) {
         res.statusMessage = 'Requested student hierarchy not found';
         return res.status(404).end();
       }
+      const { pathId } = hierarchyObj;
+      if (!pathId) {
+        res.statusMessage = 'Something went wrong!';
+        return res.status(404).end();
+      }
+
+      const pathArray = pathId.split('-');
+
+      args.country = pathArray[0]; // eslint-disable-line
+      args.class = pathArray[1]; // eslint-disable-line
+      args.state = pathArray[2]; // eslint-disable-line
+      args.city = pathArray[3]; // eslint-disable-line
+      args.branch = pathArray[4]; // eslint-disable-line
+      args.section = pathArray[5]; // eslint-disable-line
+
       const hierarchyLevels = {
         L_1: args.country,
         L_2: args.class,
