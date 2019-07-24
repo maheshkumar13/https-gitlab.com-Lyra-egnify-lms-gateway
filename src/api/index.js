@@ -14,6 +14,7 @@ const auth = require('../auth').default;
 const authValidation = require('./v1/authValidation');
 const converter = require('./v1/converter');
 const studentSync = require('./v1/studentSync');
+const hierarchySync = require('./v1/hierarchySync');
 
 export default function (app) {
   //  Insert API below
@@ -28,4 +29,5 @@ export default function (app) {
   app.use('/auth', auth);
   app.use('/api/v1/authValidation', authValidation);
   app.use('/api/v1/studentSync', studentSync);
+  app.use('/api/v1/hierarchySync', hierarchySync);
 }

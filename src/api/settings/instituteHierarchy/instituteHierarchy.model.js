@@ -28,6 +28,7 @@ const instituteHierarchy = new mongoose.Schema({
   isLeafNode: { type: Boolean, default: true },
   category: { type: String, enum: ['A', 'B', 'C'], description: 'Category' }, 
   active: { type: Boolean, default: true },
+  metadata: {},
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 });
