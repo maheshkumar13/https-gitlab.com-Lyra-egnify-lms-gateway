@@ -11,8 +11,7 @@ export function createHierarchy(req, res) {
   let latestPath = '';
   const order = [];
   if (args.createFrom === 'country') {
-    res.statusMessage = 'Sorry!, you can not create from country';
-    return res.status(403).end();
+    return res.status(403).send({ message: 'Sorry!, you can not create from country' });
   }
   mandateFields.forEach((x) => {
     if (x === 'createFrom') return;
@@ -34,12 +33,10 @@ export function createHierarchy(req, res) {
     }
   });
   if (bodyValidationFields) {
-    res.statusMessage = `${bodyValidationFields} field(s) not found in body or can not be empty`;
-    return res.status(404).end();
+    return res.status(404).send({ message: `${bodyValidationFields} field(s) not found in body or can not be empty` });
   }
   if (!mandateFields.slice(0, mandateFields.length - 1).includes(args.createFrom)) {
-    res.statusMessage = 'Invalid createFrom value';
-    return res.status(404).end();
+    return res.status(403).send({ message: 'Invalid createFrom value' });
   }
   return InstituteHierarchyModel(req.user_cxt).then((InstituteHierarchy) => {
     const query = {
@@ -55,13 +52,11 @@ export function createHierarchy(req, res) {
       InstituteHierarchy.findOne(checkExistingPathsQuery),
     ]).then(([hierarchyObj, toCreateObj]) => {
       if (!hierarchyObj) {
-        res.statusMessage = `Invalid hierarchy to create ${args.createFrom}`;
-        return res.status(404).end();
+        return res.status(404).send({ message: `Invalid hierarchy to create ${args.createFrom}` });
       }
 
       if (toCreateObj) {
-        res.statusMessage = `${args.createFrom} already exists in given hierarchy`;
-        return res.status(403).end();
+        return res.status(403).send({ message: `${args.createFrom} already exists in given hierarchy` });
       }
 
       hierarchyPath = hierarchyObj.pathId;
@@ -100,6 +95,9 @@ export function createHierarchy(req, res) {
         return res.send(data);
       });
     });
+  }).catch((err) => {
+    console.error(err);
+    return res.status(400).send({ message: 'Something went wrong!' });
   });
 }
 export default {
