@@ -6,6 +6,7 @@ import {
   GraphQLInputObjectType as InputType,
   GraphQLNonNull as NonNull,
   GraphQLList as List,
+  GraphQLEnumType as EnumType,
 } from 'graphql';
 
 import GraphQLJSON from 'graphql-type-json';
@@ -73,6 +74,8 @@ export const CmsCategoryStatsInputType = new InputType({
     subjectCode: { type: StringType, description: 'Code of the subject' },
     chapterCode: { type: StringType, description: 'Code of the chapter' },
     textbookCode: { type: StringType, description: 'Code of the textBook' },
+    branch: { type: StringType, description: 'Branch name' },
+    orientation: { type: StringType, description: 'Orientaion name' },
   },
 });
 
@@ -92,8 +95,48 @@ export const CategoryWiseFilesInputType = new InputType({
     chapterCode: { type: StringType, description: 'Code of the chapter' },
     textbookCode: { type: StringType, description: 'Code of the textBook' },
     category: { type: new NonNull(StringType), description: 'Name of the category' },
+    branch: { type: StringType, description: 'Branch name' },
+    orientation: { type: StringType, description: 'Orientaion name' },
     pageNumber: { type: IntType, description: 'Page number' },
     limit: { type: IntType, description: 'Limit of the records to be fetched' },
+  },
+});
+
+export const DashboardHeaderEnumType = new EnumType({ // eslint-disable-line
+  name: 'DashboardHeaderEnumType',
+  values: {
+    class: {
+      value: 'class',
+    },
+    branch: {
+      value: 'branch',
+    },
+    orientation: {
+      value: 'orientation',
+    },
+    subject: {
+      value: 'subject',
+    },
+    textbook: {
+      value: 'textbook',
+    },
+    chapter: {
+      value: 'chapter',
+    },
+  },
+});
+
+export const DashboardHeadersAssetCountInputType = new InputType({
+  name: 'DashboardHeadersAssetCountInputType',
+  fields: {
+    classCode: { type: StringType, description: 'Code of the class' },
+    subjectCode: { type: StringType, description: 'Code of the subject' },
+    chapterCode: { type: StringType, description: 'Code of the chapter' },
+    textbookCode: { type: StringType, description: 'Code of the textBook' },
+    branch: { type: StringType, description: 'Branch name' },
+    orientation: { type: StringType, description: 'Orientaion name' },
+    contentCategory: { type: StringType, description: 'content category' },
+    header: { type: NonNull(DashboardHeaderEnumType), description: 'Header' },
   },
 });
 

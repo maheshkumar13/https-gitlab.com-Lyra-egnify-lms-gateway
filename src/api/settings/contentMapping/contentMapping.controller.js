@@ -557,6 +557,95 @@ export async function getContentMappingStats(args, context) {
   });
 }
 
+export async function getDashboardHeadersAssetCount(args, context) {
+  const {
+    classCode,
+    subjectCode,
+    chapterCode,
+    textbookCode,
+    branch,
+    orientation,
+    contentCategory,
+    header
+  } = args;
+  let groupby = 'class';
+  if (header === 'subject') groupby = header;
+  const textbookQuery = { active: true }
+  if (classCode ) textbookQuery['refs.class.code'] = classCode;
+  if (subjectCode) textbookQuery['refs.subject.code'] = subjectCode;
+  if (textbookCode) textbookQuery['code'] = textbookCode;
+  if (branch) textbookQuery['branches'] = { $in: [ branch, null ] };
+  if (orientation) textbookQuery['orientations'] = { $in: [ orientation, null ] };
+  const textbookMatchQuery = { $match: textbookQuery }
+  const textbookGroupQuery = {
+    $group: {
+      _id: `$refs.${groupby}.code`,
+      textbookCodes: { $push: '$code' }
+    }
+  }
+  return TextbookModel(context).then((Textbook) => {
+    return Textbook.aggregate([textbookMatchQuery, textbookGroupQuery]).allowDiskUse(true).then((docs) => {
+      if(!docs || !docs.length) return {};
+      let textbookCodes = []
+      docs.forEach(x => {
+        textbookCodes = textbookCodes.concat(x.textbookCodes)
+      })
+      groupby = 'refs.textbook.code';
+      if (header === 'chapter' ) groupby = 'refs.topic.code';
+      if (header === 'branch' ) groupby = 'branches';
+      if (header === 'orientation') groupby = 'orientation';
+      const contentQuery = { 
+        active: true,
+        'refs.textbook.code': { $in: textbookCodes },
+      };
+      if (chapterCode) contentQuery['refs.topic.code'] = chapterCode;
+      if (contentCategory) contentQuery['content.category'] = contentCategory;
+      if (branch) contentQuery['branches'] = branch;
+      if (orientation) contentQuery['orientation'] = orientation;
+      const aggregateQuery = []; 
+      const contentMatchQuery = {
+        $match: contentQuery,
+      }
+      aggregateQuery.push(contentMatchQuery);
+      if(header === 'branch') {
+        aggregateQuery.push({$unwind: '$branches'});
+      }
+      if(header === 'orientation') {
+        aggregateQuery.push({$unwind: '$orientation'});
+      }
+      const contentGroupQuery = {
+        $group: {
+          _id: `$${groupby}`,
+          count: { $sum: 1 },
+        }
+      }
+      aggregateQuery.push(contentGroupQuery)
+      return ContentMappingModel(context).then((ContentMapping) => {
+        return ContentMapping.aggregate(aggregateQuery).allowDiskUse(true).then((result) => {
+          const finaldata = {}
+          if( header === 'subject' || header === 'class' || !header) {
+            docs.forEach(x => {
+              console.log(x._id);
+               finaldata[x._id] = 0;
+               x.textbookCodes.forEach(y => {
+                  const tempbook = result.find(z => z._id === y);                 
+                  if(tempbook){
+                    finaldata[x._id] += tempbook.count;
+                  }     
+              })
+            })        
+          } else {
+            result.forEach(x => {
+              finaldata[x._id] = x.count;
+            })
+          }
+          return finaldata;
+        })
+      })
+    })
+  })
+}
+
 export async function getCMSCategoryStats(args, context) {
   let classCode = args && args.input && args.input.classCode ? args.input.classCode : null;
   const subjectCode = args && args.input && args.input.subjectCode ? args.input.subjectCode : null;
@@ -564,8 +653,8 @@ export async function getCMSCategoryStats(args, context) {
     args.input.textbookCode : null;
   const chapterCode = args && args.input && args.input.chapterCode ? args.input.chapterCode : null;
   const studentId = args && args.input && args.input.studentId ? args.input.studentId : null;
-  let orientation = null;
-  let branch = null;
+  let orientation = args && args.input && args.input.orientation || null;
+  let branch = args && args.input && args.input.branch || null;
   if (studentId) {
     await studentInfoModel(context).then(async (studentInfo) => {
       await studentInfo.findOne(
@@ -594,6 +683,14 @@ export async function getCMSCategoryStats(args, context) {
     query1['refs.class.code'] = classCode;
   } if (subjectCode) {
     query1['refs.subject.code'] = subjectCode;
+  } if (orientation) {
+    query1.orientation = {
+      $in: [orientation, null],
+    };
+  } if (branch) {
+    query1.branches = {
+      $in: [branch, null],
+    };
   }
   const textbookCodes = [];
   if (textbookCode) {
@@ -623,7 +720,7 @@ export async function getCMSCategoryStats(args, context) {
     };
   } if (orientation) {
     query.orientation = {
-      $in: [orientation],
+      $in: [orientation, null],
     };
   } if (branch) {
     query.branches = {
@@ -659,6 +756,8 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   const pageNumber = args && args.input && args.input.pageNumber ? args.input.pageNumber : 1;
   const limit = args && args.input && args.input.limit ? args.input.limit : 0;
   const category = args && args.input && args.input.category ? args.input.category : null;
+  let orientation = args && args.input && args.input.orientation || null;
+  let branch = args && args.input && args.input.branch || null;
   if (!category) {
     throw new Error('Please select correct category');
   }
@@ -673,6 +772,16 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   if (textbookCode) {
     textbookCodes.push(textbookCode);
     query1['code'] = textbookCode
+  }
+
+  if (orientation) {
+    query1.orientation = {
+      $in: [orientation, null],
+    };
+  } if (branch) {
+    query1.branches = {
+      $in: [branch, null],
+    };
   }
   let textbookCodeObj=[];
 
@@ -703,6 +812,15 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   }
   if (category) {
     query['content.category'] = category;
+  }
+  if (orientation) {
+    query.orientation = {
+      $in: [orientation, null],
+    };
+  } if (branch) {
+    query.branches = {
+      $in: [branch, null],
+    };
   }
   const skip = (pageNumber - 1) * limit;
   const categoryFiles = [];
