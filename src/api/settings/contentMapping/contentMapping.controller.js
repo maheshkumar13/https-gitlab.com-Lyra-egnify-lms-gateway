@@ -600,6 +600,7 @@ export async function getDashboardHeadersAssetCount(args, context) {
       };
       if (chapterCode) contentQuery['refs.topic.code'] = chapterCode;
       if (contentCategory) contentQuery['content.category'] = contentCategory;
+      else contentQuery['content.category'] = { $nin: ['Take Quiz', 'Tests']};
       if (branch) contentQuery['branches'] = branch;
       if (orientation) contentQuery['orientation'] = orientation;
       const aggregateQuery = []; 
