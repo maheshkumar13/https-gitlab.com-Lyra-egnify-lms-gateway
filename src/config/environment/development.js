@@ -5,13 +5,15 @@
 module.exports = {
   // MongoDB connection options
   mongo: {
-    uri: 'mongodb://localhost/tenantregistry-lms-dev',
+    uri: process.env.MONGODB_URI ||
+    process.env.MONGODB_URL ||
+    'mongodb://localhost/tenantregistry-lms-dev',
   },
   // Seed database on startup
   seedDB: false,
   services: {
     // sso: 'http://localhost:3002',
-    sso: 'https://accounts.dev.rankguru.com',
+    sso: process.env.SVC_SSO || 'https://accounts.dev.rankguru.com',
     // egnifyAccountsURL: process.env.SVC_SSO || 'http://localhost:3002',
     egnifyAccountsURL: process.env.SVC_SSO || 'https://accounts.dev.rankguru.com',
   },

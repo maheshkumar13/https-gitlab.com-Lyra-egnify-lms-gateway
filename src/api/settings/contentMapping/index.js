@@ -21,7 +21,7 @@ const multer = Multer({
   },
 });
 
-
+router.post('/downloadContentDetails', controller.downloadContentDetails)
 router.post('/upload', multer.single('file'), controller.uploadContentMapping)
 
 module.exports = router

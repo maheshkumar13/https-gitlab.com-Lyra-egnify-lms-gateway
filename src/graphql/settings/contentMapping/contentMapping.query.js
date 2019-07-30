@@ -26,6 +26,9 @@ import {
   FileDataInputType,
   FileDataOutputType,
   CmsTopicLevelStatsInputType,
+  TextbookBasedQuizInputType,
+  TextbookBasedQuizOutputType,
+  DashboardHeadersAssetCountInputType,
 } from './contentMapping.type';
 
 const controller = require('../../../api/settings/contentMapping/contentMapping.controller');
@@ -141,11 +144,23 @@ export const CategoryWiseFiles = {
   },
 };
 
+
+export const DashboardHeadersAssetCount = {
+  args: {
+    input: { type: DashboardHeadersAssetCountInputType },
+  },
+  type: GraphQLJSON,
+  async resolve(obj, args, context) {
+    return controller.getDashboardHeadersAssetCount(args.input, context)
+      .then(async json => json);
+  },
+};
+
 export const FileData = {
   args: {
     input: { type: FileDataInputType },
   },
-  type: FileDataOutputType,
+  type: new List(FileDataOutputType),
   async resolve(obj, args, context) {
     return controller.getFileData(args, context)
       .then(async json => json);
@@ -163,6 +178,17 @@ export const CmsTopicLevelStats = {
   },
 };
 
+export const TextbookBasedQuiz = {
+  args: {
+    input: { type: TextbookBasedQuizInputType },
+  },
+  type: new List(TextbookBasedQuizOutputType),
+  async resolve(obj, args, context) {
+    return controller.getTextbookBasedListOfQuizzes(args, context)
+      .then(async json => json);
+  },
+};
+
 export default {
-  ContentMapping, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats, ContentMappingStats,
+  ContentMapping, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats, ContentMappingStats, TextbookBasedQuiz, DashboardHeadersAssetCount,
 };

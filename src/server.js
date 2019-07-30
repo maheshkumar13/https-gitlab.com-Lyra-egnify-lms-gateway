@@ -31,12 +31,8 @@ mongoose.Promise = require('bluebird');
 // mongoose.set('debug', true);
 
 const cachegoose = require('cachegoose');
-cachegoose(mongoose, {
-  engine: 'redis',    /* If you don't specify the redis engine,      */
-  port: 6379,         /* the query results will be cached in memory. */
-  host: config.redis.host,
-  password: config.redis.auth ? config.redis.password: ''
-});
+cachegoose(mongoose);
+cachegoose.clearCache(null);
 
 // Connect to MongoDB
 mongoose.connect(config.mongo.uri, config.mongo.options);

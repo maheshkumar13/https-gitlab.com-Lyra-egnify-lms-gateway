@@ -177,7 +177,7 @@ export async function getStudentDetailsById(args, context) { // eslint-disable-l
       hierarchy: 1,
       orientation: 1,
     },
-  ).cache(config.cacheTimeOut.student).then(student => student);
+  ).then(student => student);
 }
 
 export async function updateStudentAvatar(args, context) { // eslint-disable-line
