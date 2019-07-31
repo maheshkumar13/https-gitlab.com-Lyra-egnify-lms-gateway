@@ -65,10 +65,11 @@ export const TextbookInputType = new InputType({
     classCode: { type: new NonNull(StringType), description: 'childCode of class' },
     subjectCode: { type: new NonNull(StringType), description: 'Internal code of subject' },
     imageUrl: { type: StringType, description: 'image url' },
-    publisher:{ type: StringType, description: 'Publisher name' },
-    orientations: { type: new List(StringType), description: 'List Of Orientations'},
-  }
-})
+    publisher: { type: StringType, description: 'Publisher name' },
+    orientations: { type: new List(StringType), description: 'List Of Orientations' },
+    branches: { type: new List(StringType), description: 'List of branches' },
+  },
+});
 
 export const updateTextbookInputType = new InputType({
   name: 'updateTextbookInputType',
@@ -78,6 +79,7 @@ export const updateTextbookInputType = new InputType({
     publisher:{ type: StringType, description: 'Publisher name' },
     code: { type: new NonNull(StringType), description: 'Internal code of textbook' },
     orientations: { type: new List(StringType), description: 'List Of Orientations'},
+    branches: { type: new List(StringType), description: 'List of branches' },
   }
 })
 
