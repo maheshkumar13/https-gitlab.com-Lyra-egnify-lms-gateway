@@ -79,7 +79,7 @@ export const updateTextbookInputType = new InputType({
     publisher:{ type: StringType, description: 'Publisher name' },
     code: { type: new NonNull(StringType), description: 'Internal code of textbook' },
     orientations: { type: new List(StringType), description: 'List Of Orientations'},
-    branches: { type: new List(StringType), description: 'List of branches' },
+    branches: { type: new List(StringType), description: 'List of branches'},
   }
 })
 
