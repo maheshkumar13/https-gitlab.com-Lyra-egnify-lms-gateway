@@ -112,6 +112,14 @@ export async function createTextbook(args, context){
     if(items.length) args.orientations = items;
     else args.orientations = null;
   }
+  if(args.branches) {
+    const items = []
+    args.branches.forEach(element => {
+      if(element) items.push(element)
+    });
+    if(items.length) args.branches = items;
+    else args.branches = null;
+  }
   if (
     !args.name ||
     !args.classCode ||
@@ -143,6 +151,7 @@ export async function createTextbook(args, context){
         imageUrl: args.imageUrl,
         publisher: args.publisher,
         orientations: args.orientations,
+        branches: args.branches,
         refs: {
           class: {
             name: classData.child,
@@ -208,6 +217,15 @@ export async function updateTextbook(args, context){
     if(items.length) args.orientations = items;
     else args.orientations = null;
   }
+
+  if(args.branches) {
+    const items = []
+    args.branches.forEach(element => {
+      if(element) items.push(element)
+    });
+    if(items.length) args.branches = items;
+    else args.branches = null;
+  }
   
   return validateTextbookForUpdate(args, context).then((Textbook) => { 
     const matchQuery ={
@@ -219,6 +237,7 @@ export async function updateTextbook(args, context){
     if(args.imageUrl) patch.imageUrl = args.imageUrl
     if(args.publisher) patch.publisher = args.publisher
     if(args.orientations) patch.orientations = args.orientations;
+    if(args.branches) patch.branches = args.branches;
     return Textbook.updateOne(matchQuery, patch).then(() => {
       return Textbook.findOne(matchQuery)
     })
