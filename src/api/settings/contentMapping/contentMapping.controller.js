@@ -414,11 +414,11 @@ function getMongoQueryForContentMapping(args) {
 export async function getContentMapping(args, context) {
   if (!args.textbookCode) throw new Error('textbookCode required');
   return getStudentData(context).then((obj) => {
-    // if (obj && obj.orientation) args.orientation = obj.orientation;
+    if (obj && obj.orientation) args.orientation = obj.orientation;
     return getBranchNameAndCategory(context, obj).then((branchData) => {
       if (branchData) {
-        // if (branchData.child) args.branch = branchData.child;
-        // if (branchData.category) args.category = branchData.category;
+        if (branchData.child) args.branch = branchData.child;
+        if (branchData.category) args.category = branchData.category;
       }
       const query = getMongoQueryForContentMapping(args);
       const skip = (args.pageNumber - 1) * args.limit;
@@ -486,8 +486,8 @@ export async function getContentMappingStats(args, context) {
           active: true,
           'refs.textbook.code': { $in: textbookCodes },
         };
-        // if (studentOrientation) mappingQuery['orientation'] = { $in: [null, '', studentOrientation]}
-        // if (studentBranch) mappingQuery['branches'] = { $in: [null, '', studentBranch]}
+        if (studentOrientation) mappingQuery['orientation'] = { $in: [null, '', studentOrientation]}
+        if (studentBranch) mappingQuery['branches'] = { $in: [null, '', studentBranch]}
         const aggregateQuery = [
           {
             $match: mappingQuery
