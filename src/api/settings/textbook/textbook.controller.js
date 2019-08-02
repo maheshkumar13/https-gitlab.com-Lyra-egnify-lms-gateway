@@ -1,10 +1,14 @@
+/* eslint-disable */
 import { getModel as TextbookModel } from './textbook.model';
 import { getModel as InstituteHierarchyModel} from '../instituteHierarchy/instituteHierarchy.model'
 import { getModel as SubjectModel } from '../subject/subject.model'
 import { getModel as StudentModel } from '../student/student.model'
+import { getUniqueDataForValidation, getUniqueBranchesForValidation } from '../contentMapping/contentMapping.controller';
 import { config } from '../../../config/environment';
 
 const crypto = require('crypto')
+const _ = require('lodash')
+const xlsx = require('xlsx');
 
 export async function getStudentData(context) {
   const { studentId } = context;
@@ -274,6 +278,198 @@ export async function codeAndTextbooks(context){
   })
   
   })
+}
+
+export async function getUniqueOrientationForValidation(context) {
+  return StudentModel(context).then(Student => Student.distinct('orientation', { active: true }));
+}
+
+function cleanUploadBranchAndOrientationiMappingTextbookData(data) {
+    // deleting empty string keys from all objects
+    data.forEach((v) => { delete v['']; }); // eslint-disable-line
+
+    // deleting all trailing empty rows
+    for (let i = data.length - 1; i >= 0; i -= 1) {
+      let values = Object.values(data[i]);
+      values = values.map(x => x.toString());
+      const vals = values.map(x => x.trim());
+      if (vals.every(x => x === '')) data.pop();
+      else break;
+    }
+
+    // trim and remove whitespace and chaging keys to lower case
+    data.forEach((obj) => {
+      const keys = Object.keys(obj);
+      for (let i = 0; i < keys.length; i += 1) {
+        const key = keys[i];
+        const lowerKey = key.toLowerCase();
+        obj[lowerKey] = obj[key].toString().replace(/\s\s+/g, ' ').trim();
+        if (key !== lowerKey) delete obj[key];
+      }
+    });
+    return data;
+}
+
+function validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, uniqueBranches, uniqueOrientations) {
+  const result = {
+    success: true,
+    message: 'Invalid data',
+    errors: [],
+  };
+  const errors = [];
+  const uniqueBranchesObj = {};
+  uniqueBranches.forEach(x => { uniqueBranchesObj[x.toLowerCase()] = x;})
+  const uniqueBranchesLower = Object.keys(uniqueBranchesObj);
+
+  const uniqueOrientationsObj = {};
+  uniqueOrientations.forEach(x => { uniqueOrientationsObj[x.toLowerCase()] = x;}) 
+  const uniqueOrientationsLower = Object.keys(uniqueOrientationsObj);
+
+  const mandetoryFields = [
+    'class', 'subject', 'textbook', 'orientations', 'branches'
+  ];
+
+  for(let i=0; i< data.length; i+=1) {
+    const row = i + 2;
+    const obj = data[i];
+    let isMandateAllExists = true;
+     mandetoryFields.forEach(x => {
+       if(!obj[x]) {
+        isMandateAllExists = false;
+         result.success = false,
+         result.message = `Row ${row}, No value found for ${x.toUpperCase()}`;
+         errors.push(result.message);
+       }
+     })
+     
+     if(!isMandateAllExists) continue; 
+
+     if (!dbData[obj.class.toLowerCase()]) {
+      result.success = false;
+      result.message = `Row ${row}, Invalid CLASS (${obj.class})`;
+      errors.push(result.message);
+      continue;
+    }
+
+    if (!dbData[obj.class.toLowerCase()][obj.subject.toLowerCase()]) {
+      result.success = false;
+      result.message = `Row ${row}, Invalid SUBJECT (${obj.subject})`;
+      errors.push(result.message);
+      continue;
+    }
+
+    const textbookCode = dbData[obj.class.toLowerCase()][obj.subject.toLowerCase()][obj.textbook.toLowerCase()];
+    if (!textbookCode) {
+      result.success = false;
+      result.message = `Row ${row}, Invalid TEXTBOOK (${obj.textbook})`;
+      errors.push(result.message);
+      continue;
+    }
+    
+    obj.textbookCode = textbookCode;
+
+    // validate and set branches
+    let branches = obj.branches.split(',').map(x => x.toString().replace(/\s\s+/g, ' ').trim()).filter(x => x).map(x => x.replace('-', ' '))
+    const insheetBranches = {}
+    branches.forEach(x => {
+      insheetBranches[x.toLowerCase()] = x;
+    })
+    branches = Object.keys(insheetBranches);
+
+    if(!branches.length) {
+      result.success = false;
+      result.message = `Row ${row}, No Branches found`;
+      errors.push(result.message);
+      continue;
+    }
+    let diffBranches = _.difference(branches, uniqueBranchesLower);
+    if(diffBranches.length) {
+      diffBranches = diffBranches.map(x => insheetBranches[x]);
+      result.success = false;
+      result.message = `Row ${row}, Invalid Branches (${diffBranches.toString()})`;
+      errors.push(result.message);
+      continue;
+    }
+    const finalBranches = [];
+    branches.forEach(x => {
+      finalBranches.push(uniqueBranchesObj[x]);
+    })
+    obj.branches = finalBranches;
+  
+    // validate and set orientations
+    let orientations = obj.orientations.split(',').map(x => x.toString().replace(/\s\s+/g, ' ').trim()).filter(x => x);
+    const insheetOrientations = {};
+    orientations.forEach(x => { insheetOrientations[x.toLowerCase()] = x});
+    orientations = Object.keys(insheetOrientations);
+
+    if(!orientations.length) {
+      result.success = false;
+      result.message = `Row ${row}, No Orientations found`;
+      errors.push(result.message);
+      continue;
+    }
+    let diffOrientations = _.difference(orientations, uniqueOrientationsLower);
+    if(diffOrientations.length) {
+      diffOrientations = diffOrientations.map(x => insheetOrientations[x]);
+      result.success = false;
+      result.message = `Row ${row}, Invalid Orientations (${diffOrientations.toString()})`;
+      errors.push(result.message);
+      continue;
+    }
+    const finalOrientations = [];
+    orientations.forEach(x => {
+      finalOrientations.push(uniqueOrientationsObj[x]);
+    })
+    obj.orientations = finalOrientations;
+  }
+
+  if(errors.length) result.errors = errors;
+  return result;
+
+}
+export async function uploadBranchAndOrientationiMappingTextbook(req, res){
+  if (!req.file) return res.status(400).end('File required');
+  
+    // validate extension
+    const name = req.file.originalname.split('.');
+    const extname = name[name.length - 1];
+    if (extname !== 'xlsx') {
+      return res.status(400).end('Invalid extension, please upload .xlsx file');
+    }
+    const workbook = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true });
+    // converting the sheet data to csv
+    let data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+    // console.log(data);
+    data = cleanUploadBranchAndOrientationiMappingTextbookData(data);
+    
+    if(!data.length) return res.status(400).end('No Data found');
+    return Promise.all([
+      getUniqueDataForValidation(req.user_cxt),
+      getUniqueBranchesForValidation(req.user_cxt),
+      getUniqueOrientationForValidation(req.user_cxt),
+      TextbookModel(req.user_cxt),
+    ]).then(([dbData, uniqueBranches, uniqueOrientations, Textbook]) => {
+        const validate = validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, uniqueBranches, uniqueOrientations);
+        if(!validate.success) {
+          validate.message = 'Invalid data'
+          return res.send(validate);
+        }
+        const bulk = Textbook.collection.initializeUnorderedBulkOp();
+        data.forEach(obj => {
+          const query = { active: true, code: obj.textbookCode };
+          const patch = { $set: { branches: obj.branches, orientations: obj.orientations }};
+          bulk.find(query).updateOne(patch);
+        })
+        bulk.execute().then(() => {
+          return res.send({message: 'Succeccfully updated'})
+        }).catch(err => {
+          console.error(err);
+          return res.status(400).end('Something went wrong');
+        })
+    }).catch(err => {
+      console.error(err);
+      return res.status(400).end('Something went wrong');
+    })
 }
 
 export default{

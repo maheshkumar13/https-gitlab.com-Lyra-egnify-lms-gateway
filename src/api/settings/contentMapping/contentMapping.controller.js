@@ -87,7 +87,7 @@ export async function getUniqueDataForValidation(context) {
 }
 
 export async function getUniqueBranchesForValidation(context) {
-  return InstituteHierarchyModel(context).then(InstituteHierarchy => InstituteHierarchy.distinct('child', { levelName: 'Branch' }));
+  return InstituteHierarchyModel(context).then(InstituteHierarchy => InstituteHierarchy.distinct('child', { active: true, levelName: 'Branch' }));
 }
 
 function checkUniqueRowByCondition(data, temp, index) {
@@ -163,7 +163,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     for (let j = 0; j < mandetoryFields.length; j += 1) {
       if (!obj[mandetoryFields[j]]) {
         result.success = false;
-        result.message = `${mandetoryFields[j].toUpperCase()} not found at row ${i + 1}`;
+        result.message = `${mandetoryFields[j].toUpperCase()} not found for row ${i + 1}`;
         return result;
       }
     }
@@ -1389,5 +1389,7 @@ export async function getTextbookBasedListOfQuizzes(args, context) {
 }
 
 export default{
-  updateContent
+  updateContent,
+  getUniqueDataForValidation,
+  getUniqueBranchesForValidation,
 }
