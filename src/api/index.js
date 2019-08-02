@@ -5,6 +5,7 @@
 const concpetTaxonomy = require('./settings/conceptTaxonomy');
 const instituteHierarchy = require('./settings/instituteHierarchy');
 const contentMapping = require('./settings/contentMapping');
+const textbook = require('./settings/textbook');
 
 // Util modules
 const uploadFile = require('./v1/uploadFile');
@@ -21,6 +22,7 @@ export default function (app) {
   app.use('/api/concpetTaxonomy', concpetTaxonomy);
   app.use('/api/instituteHierarchy', instituteHierarchy);
   app.use('/api/contentMapping', contentMapping);
+  app.use('/api/textbook', textbook);
   // Util APIs
   app.use('/api/v1/converter', converter);
   app.use('/api/v1/uploadFile', uploadFile);
