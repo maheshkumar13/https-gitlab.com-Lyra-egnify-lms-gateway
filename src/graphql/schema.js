@@ -31,6 +31,7 @@ import { TestType} from './settings/testType/testType.query';
 import { CreatePackage } from './settings/package/package.mutation';
 import {PackageList, PackageDetails} from './settings/package/package.query';
 import {UpdatePackage,FeedbackPackage} from './settings/package/package.mutation';
+import { SearchResult } from './search/searchRequest/search.query'
 
 const schema = new Schema({ 
   query: new ObjectType({
@@ -68,6 +69,7 @@ const schema = new Schema({
       TextbooksInfo,
       TextbooksForEachSubject,
       DashboardHeadersAssetCount,
+      SearchResult
     },
   }),
   mutation: new ObjectType({
