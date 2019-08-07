@@ -49,12 +49,12 @@ export const searchResult = {
     resolve: async (context, args) => {
         try {
             let q = args.q;
-            // q = q.split(" ").map(word => '.*' + word + '.*').join(" ");
-            // console.log(q);
+            q = q.split(" ").map(word => '.*' + word + '.*').join(" ");
+            console.log(q);
             let options = {
                 method: "POST",
                 url: "http://localhost:9200/content/_search",
-                json: {
+                json:{
                     "query": {
                         "match": {
                             "title": q
@@ -64,7 +64,7 @@ export const searchResult = {
             }
             let res = await requestForResult(options);
             let result = res["hits"]["hits"].map((search_result) => { return { title: search_result["_source"].title, id: search_result["_id"], type: search_result["_source"]["type"] } })
-            // console.log(JSON.stringify(res));
+            console.log(JSON.stringify(res));
             return result;
         } catch (err) {
             throw new Error(err);

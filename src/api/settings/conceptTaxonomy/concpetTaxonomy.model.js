@@ -8,7 +8,7 @@
  */
 import mongoose from 'mongoose';
 import { getDB } from '../../../db';
-const elasticQueries = require("./utils");
+import { addChapter,updateChapter } from './utils';
 
 const nameCodeSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -41,18 +41,17 @@ export async function getModel(userCxt) {
 
 ConceptTaxonomySchema.post('save',function(doc, next){
   setTimeout(function(){
-    elasticQueries.addChapter(doc);
+    addChapter(doc);
   },10);
   next();
 });
 
 ConceptTaxonomySchema.post('findOneAndUpdate',function(doc, next){
   setTimeout(function(){
-    elasticQueries.updateChapter(doc);
+    updateChapter(doc);
   },10)
   next();
 });
-// ConceptTaxonomySchema.plugin(mexp);
 
 export default {
   getModel,

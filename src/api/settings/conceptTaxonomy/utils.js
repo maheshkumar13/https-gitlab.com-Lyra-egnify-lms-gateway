@@ -1,7 +1,7 @@
 import request from 'request';
 const indexing = {};
 
-indexing.addContent = function (content) {
+export async  function addContent(content) {
     let options = {};
     if(content["active"]){
         options = {
@@ -22,7 +22,7 @@ indexing.addContent = function (content) {
     fireRequestToElasticSearch(options);
 }
 
-indexing.updateContent = function (content) {
+export async function updateContent(content) {
     let options ={}
     if(content["active"]){
         options = {
@@ -43,7 +43,7 @@ indexing.updateContent = function (content) {
     fireRequestToElasticSearch(options);
 }
 
-indexing.addChapter = function (content) {
+export async function addChapter(content) {
     let options = {};
     if (content["active"] && content["levelName"] === "topic") {
         options = {
@@ -67,7 +67,7 @@ indexing.addChapter = function (content) {
     fireRequestToElasticSearch(options);
 }
 
-indexing.updateChapter = function (content) {
+export async function updateChapter(content) {
     let options = {};
     if (content["active"] && content["levelName"] === "topic") {
         options = {
@@ -94,4 +94,9 @@ function fireRequestToElasticSearch(options){
     });
 }
 
-module.exports = indexing;
+export default {
+    updateChapter,
+    addChapter,
+    updateContent,
+    addContent
+}

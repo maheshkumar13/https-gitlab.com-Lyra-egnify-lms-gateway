@@ -8,8 +8,8 @@
  */
 import mongoose from 'mongoose';
 import { getDB } from '../../../db';
-const elasticQueries = require("../conceptTaxonomy/utils");
 
+import { addContent, updateContent } from '../conceptTaxonomy/utils'
 const contentSchema = new mongoose.Schema({
   name: { type: String },
   category: { type: String },
@@ -60,14 +60,14 @@ export async function getModel(userCxt) {
 
 contentMappingSchema.post('save',function(doc ,next){
   setTimeout(function(){
-    elasticQueries.addContent(doc);
+    addContent(doc);
   },10);
   next();
 });
 
 contentMappingSchema.post('findOneAndUpdate',function(doc, next){
   setTimeout(function(){
-    elasticQueries.updateContent(doc);  
+    updateContent(doc);  
   },10);
   next();
 });
