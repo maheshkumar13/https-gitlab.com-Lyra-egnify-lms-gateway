@@ -8,6 +8,7 @@
  */
 import mongoose from 'mongoose';
 import { getDB } from '../../../db';
+const elasticQueries = require("../conceptTaxonomy/utils");
 
 const contentSchema = new mongoose.Schema({
   name: { type: String },
@@ -56,6 +57,20 @@ export async function getModel(userCxt) {
   const db = await getDB(instituteId);
   return db.model('contentMapping', contentMappingSchema);
 }
+
+contentMappingSchema.post('save',function(doc ,next){
+  setTimeout(function(){
+    elasticQueries.addContent(doc);
+  },10);
+  next();
+});
+
+contentMappingSchema.post('findOneAndUpdate',function(doc, next){
+  setTimeout(function(){
+    elasticQueries.updateContent(doc);  
+  },10);
+  next();
+});
 
 export default {
   getModel,

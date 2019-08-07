@@ -15,7 +15,7 @@ const authValidation = require('./v1/authValidation');
 const converter = require('./v1/converter');
 const studentSync = require('./v1/studentSync');
 const hierarchySync = require('./v1/hierarchySync');
-
+const elasticindexing = require('./indexelasticsearch/indexcontent/index');
 export default function (app) {
   //  Insert API below
   app.use('/api/concpetTaxonomy', concpetTaxonomy);
@@ -30,4 +30,5 @@ export default function (app) {
   app.use('/api/v1/authValidation', authValidation);
   app.use('/api/v1/studentSync', studentSync);
   app.use('/api/v1/hierarchySync', hierarchySync);
+  app.use('/api/elastic', elasticindexing);
 }
