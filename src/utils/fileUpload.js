@@ -245,7 +245,7 @@ const AWSHTMLUpload = (req, res) => {
       });
     })));
   });
-  Promise.all(promisesArray).then((dataValues) => {
+  return Promise.all(promisesArray).then((dataValues) => {
     const indexObj = dataValues.find(x => x.key === `htmlContentSamples/${folderName}/index.html`);
     const finalObj = {
       key: indexObj.key,
@@ -255,7 +255,7 @@ const AWSHTMLUpload = (req, res) => {
       Key: indexObj.Key,
       fileSize: overallFileSize,
     };
-    return res.json({ error: false, Message: 'File Uploaded    SuceesFully', Data: finalObj });
+    return res.json({ error: false, Message: 'File Uploaded SuceesFully', Data: finalObj });
   });
 };
 
