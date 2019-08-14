@@ -74,7 +74,7 @@ release:
 #   stage: deploy
 #   image: arbaz7/gcloud-kubectl-helm:latest
 #   services:
-#     - docker:dind
+#     - docker:18.09.7-dind
 #   before_script:
 #     - mkdir -p /etc/deploy
 #     - echo ${kube_config} > kube_config
@@ -100,7 +100,7 @@ release:
 #   stage: deploy
 #   image: arbaz7/gcloud-kubectl-helm:latest
 #   services:
-#     - docker:dind
+#     - docker:18.09.7-dind
 #   before_script:
 #     - mkdir -p /etc/deploy
 #     - echo ${kube_config} > kube_config
@@ -127,7 +127,7 @@ release:
 #   stage: deploy
 #   image: google/cloud-sdk:latest
 #   services:
-#     - docker:dind
+#     - docker:18.09.7-dind
 #   before_script:
 #     - mkdir -p /etc/deploy
 #     - echo ${GLOUD_AUTH_DEV} > gcloud_auth.base64
