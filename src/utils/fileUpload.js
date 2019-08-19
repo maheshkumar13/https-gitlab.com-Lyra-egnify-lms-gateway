@@ -235,6 +235,11 @@ const AWSHTMLUpload = (req, res) => {
       ContentType: file.mimetype,
       ACL: 'public-read',
     };
+    // console.log("file", file);
+    // console.log("---------------------------------------")
+    if (!file.buffer.length) {
+      return res.json({ error: true, Message: `${file.originalname} File is empty` });
+    }
     promisesArray.push(new Promise(((resolve, reject) => {
       s3.upload(params, (err, data) => {
         if (err) {
