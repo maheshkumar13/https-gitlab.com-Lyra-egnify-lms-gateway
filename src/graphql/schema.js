@@ -31,6 +31,7 @@ import { TestType} from './settings/testType/testType.query';
 import { CreatePackage } from './settings/package/package.mutation';
 import {PackageList, PackageDetails} from './settings/package/package.query';
 import {UpdatePackage,FeedbackPackage} from './settings/package/package.mutation';
+import { addTimeseries } from './analysis/timeseries/timeseries.query';
 
 const schema = new Schema({ 
   query: new ObjectType({
@@ -88,6 +89,7 @@ const schema = new Schema({
       CreatePackage,
       UpdatePackage,
       FeedbackPackage,
+      addTimeseries,
     },
   }),
 });
