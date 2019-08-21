@@ -190,11 +190,17 @@ const AWSPrivateFileUpload = (req, res) => {
         res.send(`Error Uploading Data: ${JSON.stringify(err)}\n${JSON.stringify(err.stack)}`);
       }
       if (data) {
+        const tempUrl = s3.getSignedUrl('getObject', {
+          Bucket: buketName,
+          Key: data.key,
+          Expires: 120
+        });
         const tempData = {
           key: data.key,
           name: file.originalname,
           fileSize,
           fileType: file.mimetype,
+          tempUrl
         };
         ResponseData.push(tempData);
         if (ResponseData.length === files.length) {
@@ -259,6 +265,25 @@ const AWSHTMLUpload = (req, res) => {
   });
 };
 
+const s3GetFileData = (key , cb) => {
+  AWS.config.update({
+    accessKeyId: config.AWS_S3_KEY,
+    secretAccessKey: config.AWS_S3_SECRET,
+  });
+  const s3 = new AWS.S3();
+  const options = {
+    Bucket    : config.AWS_PRIVATE_BUCKET,
+    Key    : key,
+  }
+  s3.getObject(options, function(err, data) {
+    if (err){
+      return cb(err);
+    }else{
+      return cb(undefined ,{ "size" : data.ContentLength , "data" : data.Body})
+    }
+});
+}
+
 module.exports = {
   getPublicUrl,
   sendUploadToGCS,
@@ -268,4 +293,5 @@ module.exports = {
   AWSPrivateFileUpload,
   AWSHTMLUpload,
   multerNameAsPath,
+  s3GetFileData
 };
