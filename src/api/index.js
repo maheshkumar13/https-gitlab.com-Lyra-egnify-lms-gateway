@@ -6,7 +6,7 @@ const concpetTaxonomy = require('./settings/conceptTaxonomy');
 const instituteHierarchy = require('./settings/instituteHierarchy');
 const contentMapping = require('./settings/contentMapping');
 const textbook = require('./settings/textbook');
-
+const testUpload = require('./tests/questions');
 // Util modules
 const uploadFile = require('./v1/uploadFile');
 const downloadReports = require('./v1/downloadReports');
@@ -23,6 +23,7 @@ export default function (app) {
   app.use('/api/instituteHierarchy', instituteHierarchy);
   app.use('/api/contentMapping', contentMapping);
   app.use('/api/textbook', textbook);
+  app.use('/api/practice',testUpload);
   // Util APIs
   app.use('/api/v1/converter', converter);
   app.use('/api/v1/uploadFile', uploadFile);
