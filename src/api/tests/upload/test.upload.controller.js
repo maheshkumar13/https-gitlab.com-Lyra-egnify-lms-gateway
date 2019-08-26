@@ -8,7 +8,7 @@ import {
   request
 } from 'request';
 
-const config = require('../../../config/environment');
+const config = require('../../../config/environment')["config"];
 const fileUpload = require('../../../utils/fileUpload');
 
 function queryForListTest(args) {
@@ -90,7 +90,7 @@ function validateTestInfo(args) {
 
 export async function parseAndValidateTest(args, ctx) {
   try {
-    validateTestInfo(args);
+    validateTestInfo(args); //validaion of user inputs
     let lang = "english";
     //'hindi','telugu','tamil','kannada','sanskrit'
     if (args.subject_name.toLowerCase() === "telugu" ||
