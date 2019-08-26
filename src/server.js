@@ -19,6 +19,7 @@ import schema from './graphql/schema';
 import { config } from './config/environment';
 import * as auth from './auth/auth.service';
 import seedDatabaseIfNeeded from './config/seed';
+import  client from './redis';
 
 const { ApolloEngine } = require('apollo-engine');
 const morgan = require('morgan');
@@ -43,7 +44,6 @@ mongoose.connection.on('error', (err) => {
   console.info(`MongoDB connection error: ${err}`);
   process.exit(-1); // eslint-disable-line no-process-exit
 });
-
 
 const app = express();
 app.use(Sentry.Handlers.requestHandler());
@@ -81,6 +81,28 @@ app.use(
     };
   }),
 );
+app.post('/parsing-details',function(req,res){
+  try{
+    const key = req.body.api_token;
+    
+    if("208b9605-b7f3-4d15-b609-d95eefabb53e" !== key){
+      return res.status(401).send("unauthorized");
+    }
+    // console.log(req.body.record);
+    const data_object = JSON.stringify(JSON.parse(req.body.record));
+    const file_id = req.body.id;
+    client.set(file_id , data_object,function(err,reply){
+      if(err){
+        return res.status(500).send("Internal server error.");
+      }else{
+        return res.status(200).send("Ok");
+      }
+    });
+  }catch(err){
+    console.log(err);
+    return res.status(500).send(err);
+  }
+})
 
 app.use('/api', auth.isAuthenticated())
 require('./api').default(app);

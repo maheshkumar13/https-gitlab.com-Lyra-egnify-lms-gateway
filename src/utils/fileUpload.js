@@ -5,12 +5,16 @@
 */
 
 /* eslint consistent-return: 0 */
-import { config } from '../config/environment';
+import {
+  config
+} from '../config/environment';
 
 const AWS = require('aws-sdk');
 const Storage = require('@google-cloud/storage');
 
-const { CLOUD_BUCKET } = config;
+const {
+  CLOUD_BUCKET
+} = config;
 
 const storage = Storage({
   projectId: config.GCLOUD_PROJECT,
@@ -151,8 +155,10 @@ const AWSPublicFileUpload = (req, res) => {
       res.send(`Error Uploading Data: ${JSON.stringify(err)}\n${JSON.stringify(err.stack)}`);
     }
     if (data) {
-      res.send({ fileUrl: data.Location });
-    // console.log("Uploaded in:", data.Location);
+      res.send({
+        fileUrl: data.Location
+      });
+      // console.log("Uploaded in:", data.Location);
     }
   });
 };
@@ -171,7 +177,9 @@ const AWSPrivateFileUpload = (req, res) => {
 
   // console.log('req', req.files);
   const s3 = new AWS.S3();
-  const { files } = req;
+  const {
+    files
+  } = req;
   const ResponseData = [];
   files.forEach((file) => {
     const originalname = `${date}_${file.originalname}`;
@@ -190,15 +198,25 @@ const AWSPrivateFileUpload = (req, res) => {
         res.send(`Error Uploading Data: ${JSON.stringify(err)}\n${JSON.stringify(err.stack)}`);
       }
       if (data) {
+        const tempUrl = s3.getSignedUrl('getObject', {
+          Bucket: buketName,
+          Key: data.key,
+          Expires: 120
+        });
         const tempData = {
           key: data.key,
           name: file.originalname,
           fileSize,
           fileType: file.mimetype,
+          tempUrl
         };
         ResponseData.push(tempData);
         if (ResponseData.length === files.length) {
-          res.json({ error: false, Message: 'File Uploaded    SuceesFully', Data: ResponseData });
+          res.json({
+            error: false,
+            Message: 'File Uploaded    SuceesFully',
+            Data: ResponseData
+          });
         }
       }
     });
@@ -217,7 +235,9 @@ const AWSHTMLUpload = (req, res) => {
 
   // console.log('req', req.files);
   const s3 = new AWS.S3();
-  const { files } = req;
+  const {
+    files
+  } = req;
   // const ResponseData = [];
   const promisesArray = [];
   let folderName = '';
@@ -255,9 +275,37 @@ const AWSHTMLUpload = (req, res) => {
       Key: indexObj.Key,
       fileSize: overallFileSize,
     };
-    return res.json({ error: false, Message: 'File Uploaded    SuceesFully', Data: finalObj });
+    return res.json({
+      error: false,
+      Message: 'File Uploaded    SuceesFully',
+      Data: finalObj
+    });
   });
 };
+
+const s3GetFileData = async (key) => {
+  return new Promise(function (resolve, reject) {
+    AWS.config.update({
+      accessKeyId: config.AWS_S3_KEY,
+      secretAccessKey: config.AWS_S3_SECRET,
+    });
+    const s3 = new AWS.S3();
+    const options = {
+      Key : key,
+      Bucket:config.AWS_PRIVATE_BUCKET
+    }
+    s3.getObject(options, function (err, data) {
+      if (err) {
+        reject(err);
+      } else {
+         resolve({
+          "size": data.ContentLength,
+          "data": data.Body
+        });
+      }
+    });
+  })
+}
 
 module.exports = {
   getPublicUrl,
@@ -268,4 +316,5 @@ module.exports = {
   AWSPrivateFileUpload,
   AWSHTMLUpload,
   multerNameAsPath,
+  s3GetFileData
 };

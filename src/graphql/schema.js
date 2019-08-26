@@ -33,7 +33,7 @@ import {PackageList, PackageDetails} from './settings/package/package.query';
 import {UpdatePackage,FeedbackPackage} from './settings/package/package.mutation';
 import { ListTest } from '../graphql/tests/upload/upload.query';
 import { ListMarkingSchema } from '../graphql/tests/markingShema/marking.shema.query';
-import { PublishTest } from './tests/upload/upload.mutation'
+import { PublishTest , ParseAndValidateTest } from './tests/upload/upload.mutation'
 
 const schema = new Schema({ 
   query: new ObjectType({
@@ -93,7 +93,8 @@ const schema = new Schema({
       CreatePackage,
       UpdatePackage,
       FeedbackPackage,
-      PublishTest
+      PublishTest,
+      ParseAndValidateTest
     },
   }),
 });

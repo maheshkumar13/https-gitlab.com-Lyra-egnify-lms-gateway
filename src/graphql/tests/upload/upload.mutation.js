@@ -1,9 +1,10 @@
 import GraphQLJSON from 'graphql-type-json';
 import {
-    GraphQLString as StringType
+    GraphQLString as StringType,
 } from 'graphql';
 
-import { publishTest } from '../../../api/tests/upload/test.upload.controller';
+import { TestUploadInputType } from './upload.type'
+import { publishTest , parseAndValidateTest} from '../../../api/tests/upload/test.upload.controller';
 
 export const PublishTest = {
     args : {
@@ -13,6 +14,22 @@ export const PublishTest = {
     async  resolve( obj , args , context){
         try{
             return await publishTest(args,context);
+        }catch(err){
+            throw new Error(err);
+        }
+    }
+}
+
+export const ParseAndValidateTest = {
+    args : {
+        input : {
+            type : TestUploadInputType
+        }
+    },
+    type : GraphQLJSON,
+    async resolve(obj , args, context){
+        try{
+            return await parseAndValidateTest(args.input,context);
         }catch(err){
             throw new Error(err);
         }

@@ -18,7 +18,3 @@ export const ListMarkingSchema = {
       }
     }
 };
-
-export default {
-    ListMarkingSchema
-}

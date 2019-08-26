@@ -37,8 +37,9 @@ const TestMapping = new mongoose.Schema({
 const TestSchema = new mongoose.Schema({
     mapping : { type : TestMapping , requried : true },
     test : { type : TestInfo , required : true },
-    marking_scheme : { type: Schema.Types.ObjectId, ref: 'MarkingScheme' },
-    active : { type : Boolean , default : false }
+    marking_scheme : { type: Schema.Types.ObjectId },
+    active : { type : Boolean , default : false },
+    file_key : { type : String,default : null}
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
   minimize : false
