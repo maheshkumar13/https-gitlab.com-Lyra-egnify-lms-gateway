@@ -3,7 +3,7 @@ import {
     GraphQLString as StringType,
 } from 'graphql';
 
-import { TestUploadInputType } from './upload.type'
+import { TestUploadInputType , TestValidateAndParseOutput } from './upload.type'
 import { publishTest , parseAndValidateTest} from '../../../api/tests/upload/test.upload.controller';
 
 export const PublishTest = {
@@ -26,7 +26,7 @@ export const ParseAndValidateTest = {
             type : TestUploadInputType
         }
     },
-    type : GraphQLJSON,
+    type :  GraphQLJSON,
     async resolve(obj , args, context){
         try{
             return await parseAndValidateTest(args.input,context);

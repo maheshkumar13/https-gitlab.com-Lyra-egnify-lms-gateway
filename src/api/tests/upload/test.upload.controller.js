@@ -4,9 +4,7 @@ import {
 import {
   getModel as Questions
 } from '../questions/questions.model';
-import {
-  request
-} from 'request';
+const request = require("request");
 
 const config = require('../../../config/environment')["config"];
 const fileUpload = require('../../../utils/fileUpload');
@@ -115,8 +113,8 @@ export async function parseAndValidateTest(args, ctx) {
     }
     const name = args.file_key.split("/")[1];
     const contetType = mimeType[name.split(".").pop()];
-    let test = await createTest(args, ctx);
     let parsedData = await parseFile(option, name, contetType, file_data);
+    let test = await createTest(args, ctx);
     const jsonifiedData = JSON.parse(parsedData);
     let errorQuestions = jsonifiedData.filter((question) => {
       return question.errors.length > 0;
@@ -132,12 +130,7 @@ export async function parseAndValidateTest(args, ctx) {
       errorQuestionNumbers,
       test_id: test["_id"]
     };
-  }
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // });
-  catch (err) {
+  } catch (err) {
     console.log(err);
     throw err;
   }
@@ -192,6 +185,7 @@ async function setQuestionInDb(questions, ctx, qpid, filePath) {
 
 async function parseFile(option, filename, contentType, data) {
   return new Promise(function (resolve, reject) {
+    console.log(option);
     var req = request(option, function (err, resp, body) {
       if (err) {
         reject(err);
@@ -243,7 +237,6 @@ function createObjectForTestMapping(args) {
 async function createTest(args, ctx) {
   try {
     const TestSchema = await Tests(ctx);
-    await TestSchema.create(createObjectForTestMapping(args));
     return await TestSchema.create(createObjectForTestMapping(args));;
   } catch (err) {
     throw err;
