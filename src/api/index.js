@@ -16,6 +16,7 @@ const authValidation = require('./v1/authValidation');
 const converter = require('./v1/converter');
 const studentSync = require('./v1/studentSync');
 const hierarchySync = require('./v1/hierarchySync');
+const test = require('./tests/upload');
 
 export default function (app) {
   //  Insert API below
@@ -24,6 +25,7 @@ export default function (app) {
   app.use('/api/contentMapping', contentMapping);
   app.use('/api/textbook', textbook);
   app.use('/api/practice',testUpload);
+  app.use('/api/test',test);
   // Util APIs
   app.use('/api/v1/converter', converter);
   app.use('/api/v1/uploadFile', uploadFile);

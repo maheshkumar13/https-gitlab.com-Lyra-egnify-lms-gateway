@@ -4,14 +4,22 @@ import {
 import {
   getModel as Questions
 } from '../questions/questions.model';
-const request = require("request");
+import {
+  getModel as OldTest
+} from '../../settings/contentMapping/contentMapping.model';
 
+import {
+  getModel as TextBook
+} from '../../settings/textbook/textbook.model';
+
+const request = require("request");
 const config = require('../../../config/environment')["config"];
 const fileUpload = require('../../../utils/fileUpload');
-
+const uuidv1 = require('uuid/v1');
+ 
 function queryForListTest(args) {
   let query = {
-    find: {},
+    find: {active : true},
     search: {},
     sort: {
       "test.date": -1
@@ -37,7 +45,6 @@ function queryForListTest(args) {
       "test.date": 1
     }
   }
-
   return query;
 
 }
@@ -58,6 +65,7 @@ export async function listTest(args, ctx) {
     throw err;
   }
 }
+
 
 function validateTestInfo(args) {
   if (new Date(args.start_time) == "Invalid Date") {
@@ -114,6 +122,15 @@ export async function parseAndValidateTest(args, ctx) {
     const name = args.file_key.split("/")[1];
     const contetType = mimeType[name.split(".").pop()];
     let parsedData = await parseFile(option, name, contetType, file_data);
+    const paper_id = uuidv1();
+    args["paper_id"] = paper_id;
+    const orientationsAndBranches = await getOrientationAndBranches(args.textbook_code,req.user_cxt);
+    if(orientationsAndBranches){
+      throw "Invalid textbook"
+    }else{
+      args["orientations"] = orientationsAndBranches["orientations"];
+      args["branches"] = orientationsAndBranches["branches"];
+    }
     let test = await createTest(args, ctx);
     const jsonifiedData = JSON.parse(parsedData);
     let errorQuestions = jsonifiedData.filter((question) => {
@@ -123,7 +140,7 @@ export async function parseAndValidateTest(args, ctx) {
       return question.qno;
     });
     let percentageError = (errorQuestions.length / jsonifiedData.length) * 100;
-    await setQuestionInDb(jsonifiedData, ctx, test["_id"], args.file_key);
+    await setQuestionInDb(jsonifiedData, ctx, paper_id, args.file_key);
     return {
       jsonifiedData,
       percentageError,
@@ -136,7 +153,45 @@ export async function parseAndValidateTest(args, ctx) {
   }
 }
 
-//This function taken in any number of date object and return whether they are equal in terms of year, month and date.
+export async function updateTest(args, ctx){
+  try{
+    validateTestInfo(args);
+    const orientationsAndBranches = await getOrientationAndBranches(args.textbook_code,req.user_cxt);
+    if(orientationsAndBranches){
+      throw "Invalid textbook"
+    }else{
+      args["orientations"] = orientationsAndBranches["orientations"];
+      args["branches"] = orientationsAndBranches["branches"];
+    }
+
+  }catch(err){
+    throw err;
+  }
+}
+
+async function updateTestInfo( args , info){
+  try{
+    
+  }catch(err){
+    throw err;
+  }
+}
+
+function createUpdateObject(args){
+  let updateQuery = {}
+  updateQuery["test.start_time"] = ""
+  updateQuery["test.end_time"] = ""
+  updateQuery["test.date"] = ""
+  updateQuery["test.duration"] = ""
+  updateQuery["test.name"] = ""
+  updateQuery["mappings.class.code"] = ""
+  updateQuery["mappings.class.name"] = ""
+  updateQuery["mappings.subject.code"] = ""
+  updateQuery["mappings.subject.name"] = ""
+}
+export async function getTest(args, ctx){}
+
+//This function taken in any number of date object as parameter and return whether they are equal in terms of year, month and date.
 function compareDays() {
   let compare = true;
   let dateInfo = {
@@ -168,6 +223,15 @@ function compareDays() {
     }
   }
   return compare;
+}
+
+async function getOrientationAndBranches(textbook_code,ctx){
+  try{
+    const TextBookSchema = await TextBook(ctx);
+    return await TextBookSchema.findOne({code : textbook_code}).select({orientations:1,branches:1,_id : 0}).lean();
+  }catch(err){
+
+  }
 }
 
 async function setQuestionInDb(questions, ctx, qpid, filePath) {
@@ -226,11 +290,14 @@ function createObjectForTestMapping(args) {
       start_time: new Date(args.start_time),
       end_time: new Date(args.end_time),
       date: new Date(args.test_date),
-      duration: parseInt(args.test_duration)
+      duration: parseInt(args.test_duration),
+      paper_id : args.paper_id
     },
     marking_scheme: args.marking_schema,
     file_key: args.file_key,
-    active: false
+    active: false,
+    branches : args.branches,
+    orientations: args.orientations
   }
 }
 
@@ -266,5 +333,39 @@ export async function publishTest(args, ctx) {
     }
   } catch (err) {
     throw err;
+  }
+}
+
+export async function convertOldTestToNewFormat(req, res){
+  try{
+    const OldTestSchema = await OldTest(req.user_cxt);
+    let ExistingTestsInOldFormat   = await OldTestSchema.aggregate([
+      {$match:{"content.category":"Tests",active:true}},
+      {$lookup:{from:"textbooks",localField:"refs.textbook.code",foreignField:"code",as:"mapping"}},
+      {$unwind:"$mapping"},
+      {
+        $project:{
+          "_id" : 0,
+          "active" : 1,
+          "mapping.class.code":"$mapping.refs.class.code",
+          "mapping.class.name" : "$mapping.refs.class.name",
+          "mapping.subject.code":"$mapping.refs.subject.code",
+          "mapping.subject.name" : "$mapping.refs.subject.name",
+          "mapping.textbook.code" : "$mapping.code",
+          "mapping.textbook.name":"$mapping.name",
+          "test.name":"$content.name",
+          "test.paper_id" : "$resource.key",
+          "branches":"$mapping.branches",
+          "orientations":"$mapping.orientations"
+        }
+      }
+    ]);
+    const TestSchema = await Tests(req.user_cxt);
+    console.log(ExistingTestsInOldFormat.length);
+    await TestSchema.create(ExistingTestsInOldFormat);
+    return res.status(200).send("Converted old format to new one");
+  }catch(err){
+    console.log(err);
+    return res.status(500).send("Internal server error");
   }
 }
