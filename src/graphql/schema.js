@@ -32,6 +32,9 @@ import { CreatePackage } from './settings/package/package.mutation';
 import {PackageList, PackageDetails} from './settings/package/package.query';
 import {UpdatePackage,FeedbackPackage} from './settings/package/package.mutation';
 import { addTimeseries } from './analysis/timeseries/timeseries.query';
+import { ListTest } from '../graphql/tests/upload/upload.query';
+import { ListMarkingSchema } from '../graphql/tests/markingShema/marking.shema.query';
+import { PublishTest , ParseAndValidateTest } from './tests/upload/upload.mutation'
 
 const schema = new Schema({ 
   query: new ObjectType({
@@ -69,6 +72,8 @@ const schema = new Schema({
       TextbooksInfo,
       TextbooksForEachSubject,
       DashboardHeadersAssetCount,
+      ListTest,
+      ListMarkingSchema
     },
   }),
   mutation: new ObjectType({
@@ -90,6 +95,8 @@ const schema = new Schema({
       UpdatePackage,
       FeedbackPackage,
       addTimeseries,
+      PublishTest,
+      ParseAndValidateTest
     },
   }),
 });
