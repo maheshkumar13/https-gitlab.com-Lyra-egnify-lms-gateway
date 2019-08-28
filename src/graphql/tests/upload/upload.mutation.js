@@ -3,8 +3,8 @@ import {
     GraphQLString as StringType,
 } from 'graphql';
 
-import { TestUploadInputType , TestValidateAndParseOutput } from './upload.type'
-import { publishTest , parseAndValidateTest} from '../../../api/tests/upload/test.upload.controller';
+import { TestUploadInputType ,TestUpdateInputType} from './upload.type'
+import { publishTest , parseAndValidateTest, updateTest} from '../../../api/tests/upload/test.upload.controller';
 
 export const PublishTest = {
     args : {
@@ -30,6 +30,20 @@ export const ParseAndValidateTest = {
     async resolve(obj , args, context){
         try{
             return await parseAndValidateTest(args.input,context);
+        }catch(err){
+            throw new Error(err);
+        }
+    }
+}
+
+export const updateTestInfo = {
+    args : {
+        input : {type : TestUpdateInputType}
+    },
+    type : GraphQLJSON,
+    async resolve (obj ,args, context){
+        try{
+            return await updateTest(args.input , context);
         }catch(err){
             throw new Error(err);
         }

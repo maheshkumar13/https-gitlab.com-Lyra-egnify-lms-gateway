@@ -165,7 +165,6 @@ export async function updateTest(args, ctx){
     }
     await updateTestInfo(args , ctx);
     return { message : "Test updated successfully." }
-
   }catch(err){
     throw err;
   }

@@ -75,6 +75,50 @@ export const TestUploadInputType = new InputType({
     }
 });
 
+export const TestUpdateInputType = new InputType({
+    name: "TestUpdateInputType",
+    fields: {
+        id : {
+            type : NonNull(StringType)
+        },
+        class_code: {
+            type: NonNull(StringType)
+        },
+        class_name: {
+            type: NonNull(StringType)
+        },
+        subject_name: {
+            type: NonNull(StringType)
+        },
+        subject_code: {
+            type: NonNull(StringType)
+        },
+        textbook_name: {
+            type: NonNull(StringType)
+        },
+        textbook_code: {
+            type: NonNull(StringType)
+        },
+        test_name: {
+            type: NonNull(StringType)
+        },
+        test_date: {
+            type: NonNull(StringType)
+        },
+        test_duration: {
+            type: NonNull(IntType)
+        },
+        marking_schema: {
+            type: NonNull(StringType)
+        },
+        start_time: {
+            type: NonNull(StringType)
+        },
+        end_time: {
+            type: NonNull(StringType)
+        }
+    }
+});
 
 const TestInfo = new ObjectType({
     name: "TestInfo",
