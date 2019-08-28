@@ -163,15 +163,25 @@ export async function updateTest(args, ctx){
       args["orientations"] = orientationsAndBranches["orientations"];
       args["branches"] = orientationsAndBranches["branches"];
     }
+    await updateTestInfo(args , ctx);
+    return { message : "Test updated successfully." }
 
   }catch(err){
     throw err;
   }
 }
 
-async function updateTestInfo( args , info){
+async function updateTestInfo( args , ctx){
   try{
-    
+    const TestSchema = await Tests(ctx);
+    const updatedTest = await TestSchema.findOneAndUpdate({
+      _id : args.id
+    },{$set:createUpdateObject(args)},{new : true});
+    if(updatedTest){
+      return updatedTest
+    }else{
+      throw "No such test available";
+    }
   }catch(err){
     throw err;
   }
@@ -179,17 +189,22 @@ async function updateTestInfo( args , info){
 
 function createUpdateObject(args){
   let updateQuery = {}
-  updateQuery["test.start_time"] = ""
-  updateQuery["test.end_time"] = ""
-  updateQuery["test.date"] = ""
-  updateQuery["test.duration"] = ""
-  updateQuery["test.name"] = ""
-  updateQuery["mappings.class.code"] = ""
-  updateQuery["mappings.class.name"] = ""
-  updateQuery["mappings.subject.code"] = ""
-  updateQuery["mappings.subject.name"] = ""
+  updateQuery["test.start_time"] = args.start_time
+  updateQuery["test.end_time"] = args.end_time
+  updateQuery["test.date"] = args.test_date
+  updateQuery["test.duration"] = args.test_duration
+  updateQuery["test.name"] = args.test_name
+  updateQuery["mappings.class.code"] = args.class_code
+  updateQuery["mappings.class.name"] = args.class_name
+  updateQuery["mappings.subject.code"] = args.subject_code
+  updateQuery["mappings.subject.name"] = args.subject_name
+  updateQuery["mappings.textbook.name"] = args.textbook_name
+  updateQuery["mappings.textbook.code"] = args.textbook_code
+  updateQuery["orientations"] = args.orientations
+  updateQuery["branches"] = args.branches
+  updateQuery["marking_scheme"] = args.marking_schema
+  return updateQuery;
 }
-export async function getTest(args, ctx){}
 
 //This function taken in any number of date object as parameter and return whether they are equal in terms of year, month and date.
 function compareDays() {
