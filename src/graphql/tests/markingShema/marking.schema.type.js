@@ -8,9 +8,9 @@ import {
 const EvalType = new ObjectType({
     name : "EvalType",
     fields:  {
-        right_answer : {type : FloatType},
-        wrong_answer : {type : FloatType},
-        unattempted  : {type : FloatType}
+        rightAnswer : {type : FloatType},
+        wrongAnswer : {type : FloatType},
+        unAttempted  : {type : FloatType}
     }
 })
 
@@ -19,8 +19,8 @@ export const MarkingSchemaOutPut = new ObjectType({
     name : "MarkingSchemaOutPut",
     fields : {
         _id : {type : StringType},
-        total_marks : {type : FloatType},
-        total_questions : {type : IntType},
+        totalMarks : {type : FloatType},
+        totalQuestions : {type : IntType},
         eval : {type : EvalType}
     }
 })
