@@ -35,6 +35,14 @@ function queryForListTest(args) {
     query["find"]["mapping.subject.code"] = args.subject_code;
   }
 
+  if(args.branch){
+    query["find"]["branches"] = args.branch;
+  }
+
+  if(args.orientation){
+    query["find"]["orientations"] = args.orientation;
+  }
+
   if (args.search_query) {
     query["search"]["value"] = args.search_query;
     query["search"]["fields"] = ["mapping.subject.name", "test.name", "mapping.textbook.name", "mapping.class.name"]
@@ -51,16 +59,28 @@ function queryForListTest(args) {
 
 export async function listTest(args, ctx) {
   try {
-    console.log(args);
     const queries = queryForListTest(args);
     const TestSchema = await Tests(ctx);
-    return await TestSchema.dataTables({
-      limit: 0,
-      skip: 0,
+    let limit = args.limit ? args.limit : 40 ;
+    let skip = args.pageNumber ? args.pageNumber-1 : 0; 
+    let data = await TestSchema.dataTables({
+      limit: limit,
+      skip: skip*limit,
       find: queries.find,
       search: queries.search,
       sort: queries.sort,
     });
+
+    data["pageInfo"] = {
+      pageNumber : args.pageNumber,
+      recordsShown: data["data"].length,
+      nextPage: limit !== 0 && limit * args.pageNumber < data["total"],
+      prevPage: args.pageNumber !== 1 && data["total"] > 0,
+      totalEntries: data["total"],
+      totalPages: limit > 0 ? Math.ceil(data["total"] / limit) : 1,
+    }
+
+    return data
   } catch (err) {
     throw err;
   }

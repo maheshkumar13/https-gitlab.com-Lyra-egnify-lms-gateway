@@ -7,7 +7,7 @@ import {
     GraphQLList as ListType,
     GraphQLBoolean as BooleanType
 } from 'graphql';
-
+import GraphQLJSON from 'graphql-type-json';
 
 export const ListInputType = new InputType({
     name: 'ListInputType',
@@ -26,6 +26,18 @@ export const ListInputType = new InputType({
         },
         sort_order: {
             type: StringType
+        },
+        pageNumber : {
+            type : NonNull(IntType)
+        },
+        limit : {
+            type : NonNull(IntType)
+        },
+        orientation : {
+            type : StringType
+        },
+        branch : {
+            type : StringType
         }
     }
 });
@@ -199,16 +211,18 @@ const Data = new ObjectType({
         },
         mapping: {
             type: Mapping
-        }
+        },
+        orientations : { type : new ListType(StringType) },
+        branches : { type : new ListType(StringType)}
     }
 })
 
 export const ListTestOutput = new ObjectType({
     name: "ListTestOutput",
     fields: {
-        total: {
-            type: IntType,
-            description: "Total tests created."
+        pageInfo: {
+            type: GraphQLJSON,
+            description: "Page Info."
         },
         data: {
             type: new ListType(Data),
