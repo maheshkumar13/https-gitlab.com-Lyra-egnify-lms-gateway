@@ -13,11 +13,11 @@ const dataTables = require('mongoose-datatables');
 
 const TestInfo = new mongoose.Schema({
     name : { type : String  ,index : true},
-    start_time : { type : Date  , index : true,default :null},
-    end_time : { type : Date  , index : true,default :null},
+    startTime : { type : Date  , index : true,default :null},
+    endTime : { type : Date  , index : true,default :null},
     date : { type : Date  , index : true,default :null},
     duration : { type : Number ,default :null},
-    paper_id : { type : String, default : null,default :null}
+    papeId : { type : String, default : null,default :null}
 });
 
 const TestMapping = new mongoose.Schema({
@@ -38,9 +38,9 @@ const TestMapping = new mongoose.Schema({
 const TestSchema = new mongoose.Schema({
     mapping : { type : TestMapping  },
     test : { type : TestInfo  },
-    marking_scheme : { type: Schema.Types.ObjectId ,default :null},
+    markingScheme : { type: Schema.Types.ObjectId ,default :null},
     active : { type : Boolean , default : false },
-    file_key : { type : String,default : null},
+    fileKey : { type : String,default : null},
     branches : { type : Array , default : []},
     orientations : { type : Array , deffault : []}
 }, {

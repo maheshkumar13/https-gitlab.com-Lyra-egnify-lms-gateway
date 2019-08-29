@@ -12,19 +12,19 @@ import GraphQLJSON from 'graphql-type-json';
 export const ListInputType = new InputType({
     name: 'ListInputType',
     fields: {
-        class_code: {
+        classCode: {
             type: StringType
         },
-        textbook_code: {
+        textbookCode: {
             type: StringType
         },
-        subject_code: {
+        subjectCode: {
             type: StringType
         },
-        search_query: {
+        searchQuery: {
             type: StringType
         },
-        sort_order: {
+        sortOrder: {
             type: StringType
         },
         pageNumber : {
@@ -45,43 +45,43 @@ export const ListInputType = new InputType({
 export const TestUploadInputType = new InputType({
     name: "TestUploadInputType",
     fields: {
-        class_code: {
+        classCode: {
             type: NonNull(StringType)
         },
-        class_name: {
+        className: {
             type: NonNull(StringType)
         },
-        subject_name: {
+        subjectName: {
             type: NonNull(StringType)
         },
-        subject_code: {
+        subjectCode: {
             type: NonNull(StringType)
         },
-        textbook_name: {
+        textbookName: {
             type: NonNull(StringType)
         },
-        textbook_code: {
+        textbookCode: {
             type: NonNull(StringType)
         },
-        test_name: {
+        testName: {
             type: NonNull(StringType)
         },
-        test_date: {
+        testDate: {
             type: NonNull(StringType)
         },
-        test_duration: {
+        testDuration: {
             type: NonNull(IntType)
         },
-        file_key: {
+        fileKey: {
             type: NonNull(StringType)
         },
-        marking_schema: {
+        markingSchema: {
             type: NonNull(StringType)
         },
-        start_time: {
+        startTime: {
             type: NonNull(StringType)
         },
-        end_time: {
+        endTime: {
             type: NonNull(StringType)
         }
     }
@@ -93,40 +93,40 @@ export const TestUpdateInputType = new InputType({
         id : {
             type : NonNull(StringType)
         },
-        class_code: {
+        classCode: {
             type: NonNull(StringType)
         },
-        class_name: {
+        className: {
             type: NonNull(StringType)
         },
-        subject_name: {
+        subjectName: {
             type: NonNull(StringType)
         },
-        subject_code: {
+        subjectCode: {
             type: NonNull(StringType)
         },
-        textbook_name: {
+        textbookName: {
             type: NonNull(StringType)
         },
-        textbook_code: {
+        textbookCode: {
             type: NonNull(StringType)
         },
-        test_name: {
+        testName: {
             type: NonNull(StringType)
         },
-        test_date: {
+        testDate: {
             type: NonNull(StringType)
         },
-        test_duration: {
+        testDuration: {
             type: NonNull(IntType)
         },
-        marking_schema: {
+        markingSchema: {
             type: NonNull(StringType)
         },
-        start_time: {
+        startTime: {
             type: NonNull(StringType)
         },
-        end_time: {
+        endTime: {
             type: NonNull(StringType)
         }
     }
@@ -141,10 +141,10 @@ const TestInfo = new ObjectType({
         name: {
             type: StringType
         },
-        start_time: {
+        startTime: {
             type: StringType
         },
-        end_time: {
+        endTime: {
             type: StringType
         },
         date: {
@@ -191,13 +191,13 @@ const Data = new ObjectType({
         active: {
             type: BooleanType
         },
-        file_key: {
+        fileKey: {
             type: StringType
         },
         _id: {
             type: StringType
         },
-        marking_scheme: {
+        markingScheme: {
             type: StringType
         },
         created_at: {

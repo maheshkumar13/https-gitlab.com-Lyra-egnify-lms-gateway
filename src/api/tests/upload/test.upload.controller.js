@@ -25,14 +25,14 @@ function queryForListTest(args) {
       "test.date": -1
     }
   }
-  if (args.class_code) {
-    query["find"]["mapping.class.code"] = args.class_code;
+  if (args.classCode) {
+    query["find"]["mapping.class.code"] = args.classCode;
   }
-  if (args.textbook_code) {
-    query["find"]["mapping.textbook.code"] = args.textbook_code;
+  if (args.textbookCode) {
+    query["find"]["mapping.textbook.code"] = args.textbookCode;
   }
-  if (args.subject_code) {
-    query["find"]["mapping.subject.code"] = args.subject_code;
+  if (args.subjectCode) {
+    query["find"]["mapping.subject.code"] = args.subjectCode;
   }
 
   if(args.branch){
@@ -43,12 +43,12 @@ function queryForListTest(args) {
     query["find"]["orientations"] = args.orientation;
   }
 
-  if (args.search_query) {
-    query["search"]["value"] = args.search_query;
+  if (args.searchQuery) {
+    query["search"]["value"] = args.searchQuery;
     query["search"]["fields"] = ["mapping.subject.name", "test.name", "mapping.textbook.name", "mapping.class.name"]
   }
 
-  if (args.sort_order === "asc") {
+  if (args.sortOrder === "asc") {
     query["sort"] = {
       "test.date": 1
     }
@@ -88,27 +88,27 @@ export async function listTest(args, ctx) {
 
 
 function validateTestInfo(args) {
-  if (new Date(args.start_time) == "Invalid Date") {
+  if (new Date(args.startTime) == "Invalid Date") {
     throw "Invalid start time.";
-  } else if (new Date(args.start_time).getTime() <= new Date().getTime()) {
-    console.log(new Date(args.start_time).getTime(), new Date().getTime());
+  } else if (new Date(args.startTime).getTime() <= new Date().getTime()) {
+    console.log(new Date(args.startTime).getTime(), new Date().getTime());
     throw "Invalid start time.";
   }
-  if (new Date(args.end_time) == "Invalid Date") {
+  if (new Date(args.endTime) == "Invalid Date") {
     throw "Invalid end time.";
-  } else if (new Date(args.end_time).getTime() <= new Date().getTime()) {
+  } else if (new Date(args.endTime).getTime() <= new Date().getTime()) {
     throw "Invalid end time.";
   }
-  if (new Date(args.test_date) == "Invalid Date") {
+  if (new Date(args.testDate) == "Invalid Date") {
     throw "Invalid test date.";
-  } else if (new Date(args.test_date).getTime() <= new Date().getTime()) {
+  } else if (new Date(args.testDate).getTime() <= new Date().getTime()) {
     throw "Invalid test date.";
   }
-  if (!compareDays(args.start_time, args.test_date)) {
+  if (!compareDays(args.startTime, args.testDate)) {
     throw "Date mismatch.";
   }
 
-  if ((new Date(args.end_time).getTime() - new Date(args.start_time).getTime()) < parseInt(args.test_duration)) {
+  if ((new Date(args.endTime).getTime() - new Date(args.startTime).getTime()) < parseInt(args.testDuration)) {
     throw "End time minus starttime cannot be samller than test duration.";
   }
   return '';
@@ -119,32 +119,32 @@ export async function parseAndValidateTest(args, ctx) {
     validateTestInfo(args); //validaion of user inputs
     let lang = "english";
     //'hindi','telugu','tamil','kannada','sanskrit'
-    if (args.subject_name.toLowerCase() === "telugu" ||
-      args.subject_name.toLowerCase() === "hindi" ||
-      args.subject_name.toLowerCase() === "tamil" ||
-      args.subject_name.toLowerCase() === "kannada" ||
-      args.subject_name.toLowerCase() === "sanskrit") {
-      lang = args.subject_name.toLowerCase();
+    if (args.subjectName.toLowerCase() === "telugu" ||
+      args.subjectName.toLowerCase() === "hindi" ||
+      args.subjectName.toLowerCase() === "tamil" ||
+      args.subjectName.toLowerCase() === "kannada" ||
+      args.subjectName.toLowerCase() === "sanskrit") {
+      lang = args.subjectName.toLowerCase();
     }
-    let data = await fileUpload.s3GetFileData(args.file_key);
+    let data = await fileUpload.s3GetFileData(args.fileKey);
     const mimeType = {
       "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "xml": "text/xml"
     }
-    const file_id = args.file_key;
+    const file_id = args.fileKey;
     const url = config.parser.uri + "?subject=" + lang + "&file_id=" + file_id;
     const file_data = data.data;
     const option = {
       method: "POST",
       url: url
     }
-    const name = args.file_key.split("/")[1];
+    const name = args.fileKey.split("/")[1];
     const contetType = mimeType[name.split(".").pop()];
     let parsedData = await parseFile(option, name, contetType, file_data);
     const paper_id = uuidv1();
     args["paper_id"] = paper_id;
-    const orientationsAndBranches = await getOrientationAndBranches(args.textbook_code,req.user_cxt);
+    const orientationsAndBranches = await getOrientationAndBranches(args.textbookCode,req.user_cxt);
     if(orientationsAndBranches){
       throw "Invalid textbook"
     }else{
@@ -160,7 +160,7 @@ export async function parseAndValidateTest(args, ctx) {
       return question.qno;
     });
     let percentageError = (errorQuestions.length / jsonifiedData.length) * 100;
-    await setQuestionInDb(jsonifiedData, ctx, paper_id, args.file_key);
+    await setQuestionInDb(jsonifiedData, ctx, paper_id, args.fileKey);
     return {
       jsonifiedData,
       percentageError,
@@ -176,7 +176,7 @@ export async function parseAndValidateTest(args, ctx) {
 export async function updateTest(args, ctx){
   try{
     validateTestInfo(args);
-    const orientationsAndBranches = await getOrientationAndBranches(args.textbook_code,req.user_cxt);
+    const orientationsAndBranches = await getOrientationAndBranches(args.textbookCode,req.user_cxt);
     if(orientationsAndBranches){
       throw "Invalid textbook"
     }else{
@@ -208,20 +208,20 @@ async function updateTestInfo( args , ctx){
 
 function createUpdateObject(args){
   let updateQuery = {}
-  updateQuery["test.start_time"] = args.start_time
-  updateQuery["test.end_time"] = args.end_time
-  updateQuery["test.date"] = args.test_date
-  updateQuery["test.duration"] = args.test_duration
+  updateQuery["test.startTime"] = args.startTime
+  updateQuery["test.endTime"] = args.endTime
+  updateQuery["test.date"] = args.testDate
+  updateQuery["test.duration"] = args.testDuration
   updateQuery["test.name"] = args.test_name
-  updateQuery["mappings.class.code"] = args.class_code
-  updateQuery["mappings.class.name"] = args.class_name
-  updateQuery["mappings.subject.code"] = args.subject_code
-  updateQuery["mappings.subject.name"] = args.subject_name
-  updateQuery["mappings.textbook.name"] = args.textbook_name
-  updateQuery["mappings.textbook.code"] = args.textbook_code
+  updateQuery["mappings.class.code"] = args.classCode
+  updateQuery["mappings.class.name"] = args.className
+  updateQuery["mappings.subject.code"] = args.subjectCode
+  updateQuery["mappings.subject.name"] = args.subjectName
+  updateQuery["mappings.textbook.name"] = args.textbooName
+  updateQuery["mappings.textbook.code"] = args.textbookCode
   updateQuery["orientations"] = args.orientations
   updateQuery["branches"] = args.branches
-  updateQuery["marking_scheme"] = args.marking_schema
+  updateQuery["markingScheme"] = args.markingScheme
   return updateQuery;
 }
 
@@ -259,12 +259,12 @@ function compareDays() {
   return compare;
 }
 
-async function getOrientationAndBranches(textbook_code,ctx){
+async function getOrientationAndBranches(textbookCode,ctx){
   try{
     const TextBookSchema = await TextBook(ctx);
-    return await TextBookSchema.findOne({code : textbook_code}).select({orientations:1,branches:1,_id : 0}).lean();
+    return await TextBookSchema.findOne({code : textbookCode}).select({orientations:1,branches:1,_id : 0}).lean();
   }catch(err){
-
+    throw err;
   }
 }
 
@@ -307,28 +307,28 @@ function createObjectForTestMapping(args) {
   return {
     mapping: {
       class: {
-        code: args.class_code,
-          name: args.class_name
+        code: args.classCode,
+          name: args.className
       },
       subject: {
-        code: args.subject_code,
-        name: args.subject_name
+        code: args.subjectCode,
+        name: args.subjectName
       },
       textbook: {
-        code: args.textbook_code,
-        name: args.textbook_name
+        code: args.textbookCode,
+        name: args.textbooName
       }
     },
     test: {
       name: args.test_name,
-      start_time: new Date(args.start_time),
-      end_time: new Date(args.end_time),
-      date: new Date(args.test_date),
-      duration: parseInt(args.test_duration),
+      startTime: new Date(args.startTime),
+      endTime: new Date(args.endTime),
+      date: new Date(args.testDate),
+      duration: parseInt(args.testDuration),
       paper_id : args.paper_id
     },
-    marking_scheme: args.marking_schema,
-    file_key: args.file_key,
+    markingScheme: args.markingScheme,
+    fileKey: args.fileKey,
     active: false,
     branches : args.branches,
     orientations: args.orientations

@@ -11,12 +11,12 @@ import { getDB } from '../../../db';
 
 const MarkingSchema = new mongoose.Schema({
     name : { type : String, requried : true , unique : true },
-    total_marks : { type : Number , default : null },
-    total_questions : { type : Number , default : null },
+    totalMarks : { type : Number , default : null },
+    totalQuestions : { type : Number , default : null },
     eval : {
-        right_answer : { type : Number , requried : true },
-        wrong_answer : { type : Number , required : true },
-        unattempted : { type : Number , default : 0 }
+        rightAnswer : { type : Number , requried : true },
+        wrongAnswer : { type : Number , required : true },
+        unAttempted : { type : Number , default : 0 }
     }
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
