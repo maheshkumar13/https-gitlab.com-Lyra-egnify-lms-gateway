@@ -7,7 +7,7 @@ import {
     GraphQLList as ListType,
     GraphQLBoolean as BooleanType
 } from 'graphql';
-
+import GraphQLJSON from 'graphql-type-json';
 
 export const ListInputType = new InputType({
     name: 'ListInputType',
@@ -26,6 +26,18 @@ export const ListInputType = new InputType({
         },
         sort_order: {
             type: StringType
+        },
+        pageNumber : {
+            type : NonNull(IntType)
+        },
+        limit : {
+            type : NonNull(IntType)
+        },
+        orientation : {
+            type : StringType
+        },
+        branch : {
+            type : StringType
         }
     }
 });
@@ -75,6 +87,50 @@ export const TestUploadInputType = new InputType({
     }
 });
 
+export const TestUpdateInputType = new InputType({
+    name: "TestUpdateInputType",
+    fields: {
+        id : {
+            type : NonNull(StringType)
+        },
+        class_code: {
+            type: NonNull(StringType)
+        },
+        class_name: {
+            type: NonNull(StringType)
+        },
+        subject_name: {
+            type: NonNull(StringType)
+        },
+        subject_code: {
+            type: NonNull(StringType)
+        },
+        textbook_name: {
+            type: NonNull(StringType)
+        },
+        textbook_code: {
+            type: NonNull(StringType)
+        },
+        test_name: {
+            type: NonNull(StringType)
+        },
+        test_date: {
+            type: NonNull(StringType)
+        },
+        test_duration: {
+            type: NonNull(IntType)
+        },
+        marking_schema: {
+            type: NonNull(StringType)
+        },
+        start_time: {
+            type: NonNull(StringType)
+        },
+        end_time: {
+            type: NonNull(StringType)
+        }
+    }
+});
 
 const TestInfo = new ObjectType({
     name: "TestInfo",
@@ -155,16 +211,18 @@ const Data = new ObjectType({
         },
         mapping: {
             type: Mapping
-        }
+        },
+        orientations : { type : new ListType(StringType) },
+        branches : { type : new ListType(StringType)}
     }
 })
 
 export const ListTestOutput = new ObjectType({
     name: "ListTestOutput",
     fields: {
-        total: {
-            type: IntType,
-            description: "Total tests created."
+        pageInfo: {
+            type: GraphQLJSON,
+            description: "Page Info."
         },
         data: {
             type: new ListType(Data),
