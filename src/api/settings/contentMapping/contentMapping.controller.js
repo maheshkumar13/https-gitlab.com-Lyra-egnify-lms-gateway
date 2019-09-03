@@ -14,6 +14,8 @@ import { getStudentData } from '../textbook/textbook.controller';
 const xlsx = require('xlsx');
 const upath = require('upath');
 const crypto = require('crypto');
+const _ = require('lodash');
+
 const mongoose = require('mongoose');
 
 export async function getTextbookWiseTopicCodes(context) {
@@ -125,7 +127,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
   const workbook = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true });
 
   // converting the sheet data to csv
-  const data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+  const data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]],{defval:""});
 
   // deleting all trailing empty rows
   for (let i = data.length - 1; i >= 0; i -= 1) {
@@ -154,22 +156,42 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
   });
 
   const mandetoryFields = [
-    'class', 'subject', 'textbook', 'chapter', 'orientation',
-    'publisher', 'publish year', 'content name', 'content category',
-    'file path', 'file size', 'media type',
+    'class', 'subject', 'textbook', 'chapter',
+    'content name', 'content category',
+    'file path', 'media type',
+    'view order'
   ];
+  const headers  = [
+    'class', 'subject', 'textbook', 'chapter',
+    'content name', 'content category', 'content type',
+    'file path', 'file size', 'media type',
+    'timg path', 'coins', 'view order',
+    'category', 'publish year', 'publisher',
+  ]
+  if(!data.length) {
+    result.success = false;
+    result.message = 'Data not found in sheet'
+    return result;
+  }
+  const sheetHeaders = Object.keys(data[0])
+  let diffHeaders = _.difference(headers,sheetHeaders);
+  if(diffHeaders.length) {
+    result.success = false;
+    result.message = `${diffHeaders.toString()} headers not found`
+    return result;
+  }
+
   for(let i = 0; i < data.length; i += 1){
     const obj = data[i];
     for (let j = 0; j < mandetoryFields.length; j += 1) {
       if (!obj[mandetoryFields[j]]) {
         result.success = false;
-        result.message = `${mandetoryFields[j].toUpperCase()} not found for row ${i + 1}`;
+        result.message = `${mandetoryFields[j].toUpperCase()} value not found for row ${i + 2}`;
         return result;
       }
     }
   }
 
-  let invalidBranches = new Set();
 
   for (let i = 0; i < data.length; i += 1) {
     const row = i + 2;
@@ -186,7 +208,6 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     if (!dbData[obj.class]) {
       result.success = false;
       result.message = `Invalid CLASS at row ${row} (${className})`;
-      // return result;
       errors.push(result.message);
       continue;
     }
@@ -194,7 +215,6 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     if (!dbData[obj.class][obj.subject]) {
       result.success = false;
       result.message = `Invalid SUBJECT at row ${row} (${className}->${subjectName})`;
-      // return result;
       errors.push(result.message);
       continue;
     }
@@ -203,22 +223,21 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     if (!textbookCode) {
       result.success = false;
       result.message = `Invalid TEXTBOOK at row ${row} (${subjectName}->${textbookName})`;
-      // return result;
       errors.push(result.message);
       continue;
     }
+
     const topicData = textbookData[textbookCode] ? textbookData[textbookCode].find(x => x.name === obj.chapter) : '';
     if (!topicData) {
       result.success = false;
       result.message = `Invalid CHAPTER at row ${row} (${subjectName}->${textbookName}->${chapterName})`;
-      // return result;
       errors.push(result.message);
       continue;
     }
-
     obj['chapter code'] = topicData.code;
 
     obj['file path'] = upath.toUnix(obj['file path']);
+    if(obj['timg path']) obj['timg path'] = upath.toUnix(obj['timg path']);
 
     obj.textbookCode = textbookCode;
     ['class', 'subject', 'textbook'].forEach(e => delete obj[e]);
@@ -227,74 +246,50 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     if (obj.category && !categories.includes(obj.category)) {
       result.success = false;
       result.message = `Invalid CATEGORY at row ${row}`;
-      // return result;
       errors.push(result.message);
       // eslint-disable-next-line no-continue
       continue;
     }
 
     if (obj['media type']) obj['media type'] = obj['media type'].toLowerCase();
-
-    if (obj.orientation) {
-      obj.orientationString = obj.orientation;
-      let values = obj.orientation.split(',');
-      values = values.map(x => x.toString().replace(/\s\s+/g, ' ').trim());
-      const finalOrientations = [];
-      values.forEach((x) => {
-        if (x) finalOrientations.push(x);
-      });
-      obj.orientation = finalOrientations;
+    const viewOrder = parseInt(obj['view order']);
+    if (!Number.isInteger(viewOrder) || viewOrder < 1) {
+      result.success = false;
+      result.message = `Invalid view order at row ${row}`;
     }
-    if (obj.branches) {
-      const branchNames = obj.branches.split(',');
-      const finalBranchNames = [];
-      for (let j = 0; j < branchNames.length; j += 1) {
-        const branch = branchNames[j];
-        // eslint-disable-next-line no-continue
-        if (!branch) continue;
-        // if (!uniqueBranches.includes(branch)) {
-        //   invalidBranches.add(branch);
-        // }
-        finalBranchNames.push(branch);
+    obj['view order'] = viewOrder;
+    
+    if(obj['coins']) {
+      const coins = parseInt(obj['coins']);
+      if (!Number.isInteger(coins) || coins < 0) {
+        result.success = false;
+        result.message = `Invalid coins at row ${row}`;
       }
-      obj.branches = finalBranchNames;
+      obj['coins'] = coins
     }
+   
+    // obj.tempunqiuecode = crypto.randomBytes(10).toString('hex');
 
-    obj.tempunqiuecode = crypto.randomBytes(10).toString('hex');
+    // obj.originalContentName = obj['content name'];
 
-    obj.originalContentName = obj['content name'];
-
-    const prindex = checkUniqueRowByCondition(data, obj, i);
-    if (prindex > -1) {
-      const tempunqiuecode = data[prindex].tempunqiuecode;
-      if (!dupmapping[tempunqiuecode]) {
-        dupmapping[tempunqiuecode] = 1;
-        data[prindex]['content name'] = `${obj.originalContentName} - 1`;
-      }
-      dupmapping[tempunqiuecode] += 1;
-      obj.tempunqiuecode = tempunqiuecode;
-      const seqNumber = dupmapping[tempunqiuecode];
-      obj['content name'] = `${obj.originalContentName} - ${seqNumber}`;
-    }
+    // const prindex = checkUniqueRowByCondition(data, obj, i);
+    // if (prindex > -1) {
+    //   const tempunqiuecode = data[prindex].tempunqiuecode;
+    //   if (!dupmapping[tempunqiuecode]) {
+    //     dupmapping[tempunqiuecode] = 1;
+    //     data[prindex]['content name'] = `${obj.originalContentName} - 1`;
+    //   }
+    //   dupmapping[tempunqiuecode] += 1;
+    //   obj.tempunqiuecode = tempunqiuecode;
+    //   const seqNumber = dupmapping[tempunqiuecode];
+    //   obj['content name'] = `${obj.originalContentName} - ${seqNumber}`;
+    // }
   }
   if (errors.length) {
     result.success = false;
     result.message = 'invalid data',
     result.errors = errors;
     result.isArray = true;
-    return result;
-  }
-  invalidBranches = Array.from(invalidBranches);
-  if (invalidBranches.length) {
-    result.success = false;
-    result.message = 'Invalid branche(s)';
-    result.errors = invalidBranches;
-    result.isArray = true;
-    return result;
-  }
-  if (!data.length) {
-    result.success = false;
-    result.message = 'No valid data found in sheet';
     return result;
   }
 
@@ -342,6 +337,8 @@ export async function uploadContentMapping(req, res) {
           year: temp['publish year'],
         },
         coins,
+        timgPath: temp['timg path'],
+        viewOrder: temp['view order'],
         orientation: temp.orientation,
         refs: {
           topic: {
@@ -362,14 +359,10 @@ export async function uploadContentMapping(req, res) {
         'content.name': temp['content name'],
         'content.category': temp['content category'],
         'content.type': temp['content type'],
-        category: temp.category,
-        orientation: { $in: temp.orientation },
       };
-      if(temp.branches && temp.branches.length) {
-        findQuery.branches = { $size : temp.branches.length }
-      }
-      bulk.find(findQuery).upsert().updateOne(obj);
+      bulk.find(findQuery).upsert().updateOne(obj)
     }
+    console.log('trying to insert..')
     return bulk.execute().then(() => {
       console.info(req.file.originalname, 'Uploaded successfully....')
       return res.send('Data inserted/updated successfully')
