@@ -42,10 +42,12 @@ const contentMappingSchema = new mongoose.Schema({
   refs: { type: refsSchema, required: true },
   orientation: [String],
   publication: { type: publicationSchema },
-  category: { type: String, enum: ['A', 'B', 'C',''], default: null },
+  category: { type: String, enum: ['A', 'B', 'C', ''], default: null },
   branches: { type: [String], default: null },
   active: { type: Boolean, default: true },
   coins: { type: Number, default: 0 },
+  timgPath: { type: String },
+  viewOrder: { type: Number },
   metaData: {},
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
