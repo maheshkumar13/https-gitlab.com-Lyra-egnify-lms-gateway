@@ -359,6 +359,7 @@ export async function uploadContentMapping(req, res) {
         'content.name': temp['content name'],
         'content.category': temp['content category'],
         'content.type': temp['content type'],
+        'resource.key': temp['file path']
       };
       bulk.find(findQuery).upsert().updateOne(obj)
     }
