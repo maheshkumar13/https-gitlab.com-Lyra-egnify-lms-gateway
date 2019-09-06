@@ -8,7 +8,7 @@
  */
 import mongoose from 'mongoose';
 import { getDB } from '../../../db';
-import { addChapter,updateChapter } from './utils';
+// import { addChapter,updateChapter } from './utils';
 
 const nameCodeSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -39,19 +39,19 @@ export async function getModel(userCxt) {
   return db.model('ConceptTaxonomy', ConceptTaxonomySchema);
 }
 
-ConceptTaxonomySchema.post('save',function(doc, next){
-  setTimeout(function(){
-    addChapter(doc);
-  },10);
-  next();
-});
+// ConceptTaxonomySchema.post('save',function(doc, next){
+//   setTimeout(function(){
+//     addChapter(doc);
+//   },10);
+//   next();
+// });
 
-ConceptTaxonomySchema.post('findOneAndUpdate',function(doc, next){
-  setTimeout(function(){
-    updateChapter(doc);
-  },10)
-  next();
-});
+// ConceptTaxonomySchema.post('findOneAndUpdate',function(doc, next){
+//   setTimeout(function(){
+//     updateChapter(doc);
+//   },10)
+//   next();
+// });
 
 export default {
   getModel,

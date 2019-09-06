@@ -1,11 +1,11 @@
 import request from 'request';
-
+const config = require("../../../config/environment")["config"];
 export async  function addContent(content) {
     let options = {};
     if(content["active"]){
         options = {
             method: "POST",
-            url: "http://localhost:9200/content/_doc/" + content["_id"],
+            url: config["elasticSearch"]["url"]+"content/_doc/" + content["_id"],
             json:
             {
                 "title": content["name"],
@@ -27,7 +27,7 @@ export async function updateContent(content) {
     if(content["active"]){
         options = {
             method: "PUT",
-            url: "http://localhost:9200/content/_doc/" + content["_id"],
+            url: config["elasticSearch"]["url"]+"content/_doc/" + content["_id"],
             json:
             {
                 "title": content["name"],
@@ -49,7 +49,7 @@ export async function addChapter(content) {
     if (content["active"] && content["levelName"] === "topic") {
         options = {
             method: "POST",
-            url: "http://localhost:9200/content/_doc/" + content["_id"],
+            url: config["elasticSearch"]["url"]+"content/_doc/" + content["_id"],
             json:
             {
                 "title": content["child"],
@@ -74,7 +74,7 @@ export async function updateChapter(content) {
     if (content["active"] && content["levelName"] === "topic") {
         options = {
             method: "PUT",
-            url: "http://localhost:9200/content/_doc/" + content["_id"],
+            url: config["elasticSearch"]["url"]+"content/_doc/" + content["_id"],
             json:
             {
                 "title": content["name"],

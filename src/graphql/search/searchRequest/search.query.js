@@ -3,7 +3,7 @@ import {
     GraphQLString as StringType,
     GraphQLList as List
 } from 'graphql';
-
+const config = require("../../../config/environment")["config"];
 import request from 'request';
 // import GraphQLJSON from 'graphql-type-json';
 // const config = 
@@ -19,7 +19,7 @@ export const autoComplete = {
             const q = args.q;
             let options = {
                 method: "POST",
-                url: "http://localhost:9200/content/_search",
+                url: config["elasticSearch"]["url"]+"content/_search",
                 json: {
                     "suggest": {
                         "_doc": {
@@ -53,7 +53,7 @@ export const searchResult = {
             console.log(q);
             let options = {
                 method: "POST",
-                url: "http://localhost:9200/content/_search",
+                url: config["elasticSearch"]["url"]+"content/_search",
                 json:{
                     "query": {
                         "match": {

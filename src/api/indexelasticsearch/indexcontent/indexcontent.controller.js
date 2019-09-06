@@ -4,7 +4,7 @@ import { getModel as conceptTaxonomy } from '../../settings/conceptTaxonomy/conc
 
 //Packages
 import request from 'request';
-
+const config = require("../../../config/environment")["config"];
 export async function indexContent(req, res) {
     try{
         let context = req.user_cxt;
@@ -16,7 +16,7 @@ export async function indexContent(req, res) {
             if(contents[i]["active"]){
                 let option = {
                     json: {"title" : contents[i]["content"]["name"], "type" : contents[i]["content"]["category"] , "id" : contents[i]["_id"]},
-                    url : "http://localhost:9200/content/_doc/"+contents[i]["_id"],
+                    url : config["elasticSearch"]["url"]+"content/_doc/"+contents[i]["_id"],
                     method : "POST"
                 }
                 setTimeout(function(){
@@ -41,7 +41,7 @@ export async function indexChapter(req, res) {
             if(chapters[i]["active"]){
                 let option = {
                     json: {"title" : chapters[i]["name"], type : "chapter" , id : chapters[i]["_id"]},
-                    url : "http://localhost:9200/content/_doc/"+contents[i]["_id"],
+                    url : config["elasticSearch"]["url"]+"content/_doc/"+contents[i]["_id"],
                     method : "POST"
                 }
                 setTimeout(function(){
