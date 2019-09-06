@@ -1,5 +1,4 @@
 import request from 'request';
-const indexing = {};
 
 export async  function addContent(content) {
     let options = {};
@@ -10,7 +9,8 @@ export async  function addContent(content) {
             json:
             {
                 "title": content["name"],
-                "type": content["category"]
+                "type": content["category"],
+                "id" : content["_id"]
             }
         }
     }else{
@@ -31,7 +31,8 @@ export async function updateContent(content) {
             json:
             {
                 "title": content["name"],
-                "type": content["category"]
+                "type": content["category"],
+                "id" : content["_id"]
             }
         }
     }else{
@@ -52,7 +53,8 @@ export async function addChapter(content) {
             json:
             {
                 "title": content["child"],
-                "type": "chapter"
+                "type": "chapter",
+                "id" : content["_id"]
             }
         }
         request(options, (err, res, body) => {
@@ -76,7 +78,8 @@ export async function updateChapter(content) {
             json:
             {
                 "title": content["name"],
-                "type": content["category"]
+                "type": content["category"],
+                "id" : content["_id"]
             }
         }
     }else{
