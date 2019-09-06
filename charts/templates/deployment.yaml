@@ -72,6 +72,8 @@ spec:
               value: {{ .Values.projectEnv.CACHE_TIMEOUT_STUDENT }}    
             - name: PARSER_SERVICE
               value: {{ .Values.projectEnv.PARSER_SERVICE}}
+            - name: ELASTIC_SEARCH_URL
+              value: {{ .Values.projectEnv.ELASTIC_SEARCH_URL}}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.service.internalPort }}

@@ -31,6 +31,7 @@ import { TestType} from './settings/testType/testType.query';
 import { CreatePackage } from './settings/package/package.mutation';
 import {PackageList, PackageDetails} from './settings/package/package.query';
 import {UpdatePackage,FeedbackPackage} from './settings/package/package.mutation';
+import { autoComplete , searchResult } from './search/searchRequest/search.query'
 import { addTimeseries } from './analysis/timeseries/timeseries.query';
 import { ListTest } from '../graphql/tests/upload/upload.query';
 import { ListMarkingSchema } from '../graphql/tests/markingShema/marking.shema.query';
@@ -72,6 +73,8 @@ const schema = new Schema({
       TextbooksInfo,
       TextbooksForEachSubject,
       DashboardHeadersAssetCount,
+      autoComplete,
+      searchResult,
       ListTest,
       ListMarkingSchema
     },

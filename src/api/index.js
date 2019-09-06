@@ -16,6 +16,7 @@ const authValidation = require('./v1/authValidation');
 const converter = require('./v1/converter');
 const studentSync = require('./v1/studentSync');
 const hierarchySync = require('./v1/hierarchySync');
+const elasticindexing = require('./indexelasticsearch/indexcontent/index');
 const test = require('./tests/upload');
 
 export default function (app) {
@@ -35,4 +36,5 @@ export default function (app) {
   app.use('/api/v1/authValidation', authValidation);
   app.use('/api/v1/studentSync', studentSync);
   app.use('/api/v1/hierarchySync', hierarchySync);
+  app.use('/api/elastic', elasticindexing);
 }
