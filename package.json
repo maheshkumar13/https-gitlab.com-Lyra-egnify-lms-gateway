@@ -59,7 +59,10 @@
     "universal-fetch": "^1.0.0",
     "upath": "^1.1.2",
     "xlsx": "^0.14.2",
-    "yamljs": "^0.3.0"
+    "yamljs": "^0.3.0",
+    "mongoose-datatables" : "^3.2.0",
+    "redis" : "^2.8.0",
+    "uuid" : "^3.3.2"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

@@ -7,7 +7,7 @@ module.exports = {
   mongo: {
     uri: process.env.MONGODB_URI ||
     process.env.MONGODB_URL ||
-    'mongodb://localhost/tenantregistry-lms-dev',
+    'mongodb://localhost/tenantregistry-lms-qa',
   },
   // Seed database on startup
   seedDB: false,
@@ -33,4 +33,7 @@ module.exports = {
     host: process.env.REDIS_HOST || '35.244.34.84',
     password: process.env.REDIS_PASSWORD || 'rQsVPF2gbiHi',
   },
+  parser:{
+    uri : process.env.PARSER_SERVICE || "http://localhost:8080/parse"
+  }
 };

@@ -5,7 +5,8 @@
 const concpetTaxonomy = require('./settings/conceptTaxonomy');
 const instituteHierarchy = require('./settings/instituteHierarchy');
 const contentMapping = require('./settings/contentMapping');
-
+const textbook = require('./settings/textbook');
+const testUpload = require('./tests/questions');
 // Util modules
 const uploadFile = require('./v1/uploadFile');
 const downloadReports = require('./v1/downloadReports');
@@ -16,11 +17,16 @@ const converter = require('./v1/converter');
 const studentSync = require('./v1/studentSync');
 const hierarchySync = require('./v1/hierarchySync');
 const elasticindexing = require('./indexelasticsearch/indexcontent/index');
+const test = require('./tests/upload');
+
 export default function (app) {
   //  Insert API below
   app.use('/api/concpetTaxonomy', concpetTaxonomy);
   app.use('/api/instituteHierarchy', instituteHierarchy);
   app.use('/api/contentMapping', contentMapping);
+  app.use('/api/textbook', textbook);
+  app.use('/api/practice',testUpload);
+  app.use('/api/test',test);
   // Util APIs
   app.use('/api/v1/converter', converter);
   app.use('/api/v1/uploadFile', uploadFile);

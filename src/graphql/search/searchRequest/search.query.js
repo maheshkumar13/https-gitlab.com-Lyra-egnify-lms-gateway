@@ -6,7 +6,7 @@ import {
 
 import request from 'request';
 // import GraphQLJSON from 'graphql-type-json';
-
+// const config = 
 import { SearchResultType } from './search.type';
 
 export const autoComplete = {
