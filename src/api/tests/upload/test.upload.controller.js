@@ -388,7 +388,7 @@ export async function convertOldTestToNewFormat(req, res){
           "mapping.textbook.code" : "$mapping.code",
           "mapping.textbook.name":"$mapping.name",
           "test.name":"$content.name",
-          "test.paper_id" : "$resource.key",
+          "test.paperId" : "$resource.key",
           "branches":"$mapping.branches",
           "orientations":"$mapping.orientations"
         }

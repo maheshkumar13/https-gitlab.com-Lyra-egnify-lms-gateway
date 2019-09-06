@@ -17,7 +17,7 @@ const TestInfo = new mongoose.Schema({
     endTime : { type : Date  , index : true,default :null},
     date : { type : Date  , index : true,default :null},
     duration : { type : Number ,default :null},
-    papeId : { type : String, default : null,default :null}
+    paperId : { type : String, default : null,default :null}
 });
 
 const TestMapping = new mongoose.Schema({

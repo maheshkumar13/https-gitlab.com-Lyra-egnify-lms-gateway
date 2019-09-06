@@ -152,6 +152,9 @@ const TestInfo = new ObjectType({
         },
         duration: {
             type: IntType
+        },
+        paperId : {
+            type : StringType
         }
     }
 })
