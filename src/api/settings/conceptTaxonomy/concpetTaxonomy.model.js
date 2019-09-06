@@ -21,7 +21,7 @@ const refsSchema = new mongoose.Schema({
 
 const ConceptTaxonomySchema = new mongoose.Schema({
   child: { type: String, required: true },
-  childCode: { type: String, required: true , es_indexed: true },
+  childCode: { type: String, required: true  },
   code: { type: String },
   levelName: { type: String, required: true },
   parentCode: { type: String, required: true },
