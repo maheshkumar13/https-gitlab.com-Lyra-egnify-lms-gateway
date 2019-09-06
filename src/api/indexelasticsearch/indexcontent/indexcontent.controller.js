@@ -10,9 +10,7 @@ export async function indexContent(req, res) {
         let context = req.user_cxt;
         let contentMappingModel = await contentMapping(context);
         let contents = await contentMappingModel.find().lean().select({content : 1, active:1});
-        console.log(contents.length);
         for (let i = 0 ; i < contents.length ; i++){
-            console.log(contents[i]["active"]);
             if(contents[i]["active"]){
                 let option = {
                     json: {"title" : contents[i]["content"]["name"], "type" : contents[i]["content"]["category"] , "id" : contents[i]["_id"]},
@@ -21,7 +19,6 @@ export async function indexContent(req, res) {
                 }
                 setTimeout(function(){
                     request(option,(err,response, body) => {
-                        console.log(body);
                     })
                 },i*10);
             }
@@ -46,7 +43,6 @@ export async function indexChapter(req, res) {
                 }
                 setTimeout(function(){
                     request(option,(err,response, body) => {
-                        console.log(err || response.statusCode || body);
                     })
                 },i*10);
             }

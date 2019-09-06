@@ -64,7 +64,6 @@ export const searchResult = {
             }
             let res = await requestForResult(options);
             let result = res["hits"]["hits"].map((search_result) => { return { title: search_result["_source"].title, id: search_result["_id"], type: search_result["_source"]["type"] } })
-            console.log(JSON.stringify(res));
             return result;
         } catch (err) {
             throw new Error(err);
