@@ -16,7 +16,7 @@ export async  function addContent(content) {
     }else{
         options = {
             method: "DELETE",
-            url: "http://localhost:9200/content/_doc/" + content["_id"]
+            url: config["elasticSearch"]["url"]+"content/_doc/" + content["_id"]
         }
     }
     fireRequestToElasticSearch(options);
@@ -38,7 +38,7 @@ export async function updateContent(content) {
     }else{
         options = {
             method: "DELETE",
-            url: "http://localhost:9200/content/_doc/" + content["_id"]
+            url: config["elasticSearch"]["url"]+"content/_doc/"+ content["_id"]
         }
     }
     fireRequestToElasticSearch(options);
@@ -63,7 +63,7 @@ export async function addChapter(content) {
     }else{
         options = {
             method: "DELETE",
-            url: "http://localhost:9200/content/_doc/" + content["_id"]    
+            url: config["elasticSearch"]["url"]+"content/_doc/" + content["_id"]    
         }
     }
     fireRequestToElasticSearch(options);
@@ -85,7 +85,7 @@ export async function updateChapter(content) {
     }else{
         options = {
             method: "DELETE",
-            url: "http://localhost:9200/content/_doc/" + content["_id"]    
+            url: config["elasticSearch"]["url"]+"content/_doc/" + content["_id"]    
         }
     }
     fireRequestToElasticSearch(options);
