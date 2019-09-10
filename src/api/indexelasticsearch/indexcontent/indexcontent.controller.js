@@ -18,7 +18,9 @@ export async function indexContent(req, res) {
             }
             setTimeout(function(){
                 request(option,(err,response, body) => {
-                    console.log(response.statusCode);
+                    if(!err){
+                        console.log(response.statusCode);
+                    }
                 })
             },i*10);
         }
@@ -42,7 +44,9 @@ export async function indexChapter(req, res) {
             }
             setTimeout(function(){
                 request(option,(err,response, body) => {
-                    console.log(response.statusCode);
+                    if(!err){
+                        console.log(response.statusCode);
+                    }
                 })
             },i*10);
         }
