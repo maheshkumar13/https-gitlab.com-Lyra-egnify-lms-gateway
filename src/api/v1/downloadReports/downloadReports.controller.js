@@ -287,14 +287,14 @@ export function validateUploadedContentMapping(req) {
     const temp = data[i];
     const err1 = [];
     temp.coins = String(temp.coins).trim();
-    console.log('temp1111111', temp);
+    // console.log('temp1111111', temp);
     let coins = temp.coins;
     const name = temp.name.trim();
     const subject = temp.subject.trim();
     const textbook = temp.textbook.trim();
     const contentType = temp.contentType.trim();
     const chapter = temp.chapter.trim();
-    console.log('temp', temp);
+    // console.log('temp', temp);
     if (name == null || name === '') {
       err1.push('name');
     }
@@ -310,7 +310,7 @@ export function validateUploadedContentMapping(req) {
     if (coins == null || coins === '') {
       err1.push('coins');
     }
-    console.log('err1', err1);
+    // console.log('err1', err1);
     coins = parseInt(coins);
     temp.coins = coins;
     // validating coins
@@ -324,7 +324,7 @@ export function validateUploadedContentMapping(req) {
       error.E0001.push(`missing information at columns ${err1} at row ${i + 2}`);
     }
   }
-  console.log('error', error);
+  // console.log('error', error);
   let subjectList = [];
   let textbookList = [];
 
@@ -347,12 +347,11 @@ export function validateUploadedContentMapping(req) {
   });
   textbookList = [...new Set(textbookList)];
   subjectList = [...new Set(subjectList)];
-
   return Promise.all([
     SubjectModel(req.user_cxt),
     TextbookModel(req.user_cxt),
   ]).then(([subjects, textbooks]) => Promise.all([
-    subjects.find({ subject: { $in: subjectList } }, { _id: 0, subject: 1 }),
+    subjects.find({ subject: { $in: subjectList }, 'refs.class.code': classCode }, { _id: 0, subject: 1 }),
     textbooks.find({ name: { $in: textbookList }, 'refs.class.code': classCode }, {
       _id: 0, name: 1, code: 1, orientations: 1, branches: 1, publisher: 1,
     }),
@@ -396,6 +395,7 @@ export function validateUploadedContentMapping(req) {
           subtextQuery.$or[j] = {
             'refs.subject.name': tempObj.subject[k],
             name: tempObj.textbook[k],
+            'refs.class.code': classCode,
           };
           const textBookCode = tList.find(x => x.name === tempObj.textbook[k]) ?
             tList.find(x => x.name === tempObj.textbook[k]).code : null;
@@ -429,101 +429,102 @@ export function validateUploadedContentMapping(req) {
           }
         }
       }
-      return ConceptTaxonomyModel(req.user_cxt).then(conceptTaxonomy => conceptTaxonomy.find(chaptextQuery, {
-        _id: 0, child: 1, 'refs.textbook.code': 1, childCode: 1, 'refs.textbook.name': 1,
-      }).then((topicList) => {
+      return ConceptTaxonomyModel(req.user_cxt).then(conceptTaxonomy =>
+        conceptTaxonomy.find(chaptextQuery, {
+          _id: 0, child: 1, 'refs.textbook.code': 1, childCode: 1, code: 1, 'refs.textbook.name': 1,
+        }).then((topicList) => {
         // let chaptextMismatch = []
-        for (let i = 0; i < data.length; i += 1) {
-          const temp = data[i];
-          if (temp.subject && temp.textbook) {
-            for (let j = 0; j < temp.subject.length; j += 1) {
-              const textBookCode = tList.find(x => x.name === temp.textbook[j]) ?
-                tList.find(x => x.name === temp.textbook[j]).code : null;
-              const check = topicList.find(x => x.refs.textbook.code === textBookCode && x.child === temp.chapter[j]);
-              if (check === undefined) {
-                error.E0006.push(`invalid chapter-textbook combination at row : ${i + 2}`);
-              }
-            }
-            const u = uploadList.find(x => x.name === temp.name);
-            if (u === undefined || u === null) {
-              error.E0007.push(`Name mismatch at row : ${i + 2}`);
-            }
-          }
-        }
-
-        let count = 0;
-        const keys = error && Object.keys(error) ? Object.keys(error) : [];
-        for (let j = 0; j < keys.length; j += 1) {
-          if (error[keys[j]].length > 0) {
-            // return error
-            count += 1;
-          } else {
-            delete error[keys[j]];
-          }
-        }
-        if (count > 0) {
-          return error;
-        }
-        // preparing documents for insertion
-        return ContentMappingModel(req.user_cxt).then((contentMapping) => {
-          const bulk = contentMapping.collection.initializeUnorderedBulkOp();
-          const finalObj = [];
-          let k = 0;
           for (let i = 0; i < data.length; i += 1) {
             const temp = data[i];
-            for (let j = 0; j < temp.subject.length; j += 1) {
-              const textBookCode = tList.find(x => x.name === temp.textbook[j]).code;
-              const t = topicList.find(x => x.refs.textbook.code === textBookCode &&
-               x.child === temp.chapter[j]);
-              const s = subtextList.find(x => x.refs.subject.name === temp.subject[j] &&
-              x.name === temp.textbook[j]);
+            if (temp.subject && temp.textbook) {
+              for (let j = 0; j < temp.subject.length; j += 1) {
+                const textBookCode = tList.find(x => x.name === temp.textbook[j]) ?
+                  tList.find(x => x.name === temp.textbook[j]).code : null;
+                const check = topicList.find(x => x.refs.textbook.code === textBookCode &&
+                  x.child === temp.chapter[j]);
+                if (check === undefined) {
+                  error.E0006.push(`invalid chapter-textbook combination at row : ${i + 2}`);
+                }
+              }
               const u = uploadList.find(x => x.name === temp.name);
-              const setobj = {};
-              const whereObj = {};
-              whereObj['content.name'] = temp.name;
-              whereObj['refs.textbook.code'] = s.code;
-              whereObj['refs.topic.code'] = t.childCode;
-              whereObj.active = true;
-              setobj.content = {
-                name: temp.name,
-                category: req.body.contentCategory,
-                type: temp.contentType,
-              };
-              setobj.resource = {
-                key: u.key,
-                size: u.fileSize,
-                type: u.fileType,
-              };
-              setobj['publication.publisher'] = s.publisher;
-              setobj['publication.year'] = null;
-              setobj.coins = temp.coins;
-              setobj.active = true;
-              setobj.refs = {
-                topic: {
-                  code: t.childCode,
-                },
-                textbook: {
-                  code: s.code,
-                },
-              };
-              setobj.category = '';
-              setobj.orientation = s.orientations;
-              setobj.branches = s.branches;
-              finalObj[k++] = setobj;
-              bulk.find(whereObj).upsert().updateOne(setobj);
+              if (u === undefined || u === null) {
+                error.E0007.push(`Name mismatch at row : ${i + 2}`);
+              }
             }
           }
 
-          return bulk.execute().then(obj => `${req.file.originalname} : Uploaded successfully`).catch(err => 'Error occured while uploading');
-        });
-      }));
+          let count = 0;
+          const keys = error && Object.keys(error) ? Object.keys(error) : [];
+          for (let j = 0; j < keys.length; j += 1) {
+            if (error[keys[j]].length > 0) {
+            // return error
+              count += 1;
+            } else {
+              delete error[keys[j]];
+            }
+          }
+          if (count > 0) {
+            return error;
+          }
+          // preparing documents for insertion
+          return ContentMappingModel(req.user_cxt).then((contentMapping) => {
+            const bulk = contentMapping.collection.initializeUnorderedBulkOp();
+            const finalObj = [];
+            let k = 0;
+            for (let i = 0; i < data.length; i += 1) {
+              const temp = data[i];
+              for (let j = 0; j < temp.subject.length; j += 1) {
+                const textBookCode = tList.find(x => x.name === temp.textbook[j]).code;
+                const t = topicList.find(x => x.refs.textbook.code === textBookCode &&
+               x.child === temp.chapter[j]);
+                const s = subtextList.find(x => x.refs.subject.name === temp.subject[j] &&
+              x.name === temp.textbook[j]);
+                const u = uploadList.find(x => x.name === temp.name);
+                const setobj = {};
+                const whereObj = {};
+                whereObj['content.name'] = temp.name;
+                whereObj['refs.textbook.code'] = s.code;
+                whereObj['refs.topic.code'] = t.childCode;
+                whereObj.active = true;
+                setobj.content = {
+                  name: temp.name,
+                  category: req.body.contentCategory,
+                  type: temp.contentType,
+                };
+                setobj.resource = {
+                  key: u.key,
+                  size: u.fileSize,
+                  type: u.fileType,
+                };
+                setobj.publication = {
+                  publisher: s.publisher,
+                  year: null,
+                };
+                setobj.coins = temp.coins;
+                setobj.active = true;
+                setobj.refs = {
+                  topic: {
+                    code: t.code,
+                  },
+                  textbook: {
+                    code: s.code,
+                  },
+                };
+                setobj.category = '';
+                setobj.orientation = s.orientations;
+                setobj.branches = s.branches;
+                finalObj[k++] = setobj;
+                bulk.find(whereObj).upsert().updateOne(setobj);
+              }
+            }
+            return bulk.execute().then(obj => `${req.file.originalname} : Uploaded successfully`).catch(err => 'Error occured while uploading');
+          });
+        }));
     });
   }));
 }
 // Upload content Mapping provided in a xlsx file.
 export async function uploadedContentMapping(req, res) {
-  console.log('req', req.file);
-  console.log('req', req.body);
   if (!req) {
     const error = 'No request received';
     return res.status(400).send(error).end();
