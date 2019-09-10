@@ -15,6 +15,7 @@ const xlsx = require('xlsx');
 const upath = require('upath');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
+const uniq = require('lodash/uniq');
 
 export async function getTextbookWiseTopicCodes(context) {
   return ConceptTaxonomyModel(context).then((ConceptTaxonomy) => {
@@ -424,7 +425,7 @@ export async function getContentMapping(args, context) {
       const skip = (args.pageNumber - 1) * args.limit;
       return ContentMappingModel(context).then(ContentMapping => Promise.all([
         ContentMapping.find(query).skip(skip).limit(args.limit),
-        ContentMapping.count(query),
+        ContentMapping.countDocuments(query),
       ]).then(([data, count]) => ({
         data,
         count,
@@ -594,7 +595,7 @@ export async function getDashboardHeadersAssetCount(args, context) {
       if (header === 'chapter' ) groupby = 'refs.topic.code';
       if (header === 'branch' ) groupby = 'branches';
       if (header === 'orientation') groupby = 'orientation';
-      const contentQuery = { 
+      const contentQuery = {
         active: true,
         'refs.textbook.code': { $in: textbookCodes },
       };
@@ -603,7 +604,7 @@ export async function getDashboardHeadersAssetCount(args, context) {
       else contentQuery['content.category'] = { $nin: ['Take Quiz', 'Tests']}
       if (branch) contentQuery['branches'] = branch;
       if (orientation) contentQuery['orientation'] = orientation;
-      const aggregateQuery = []; 
+      const aggregateQuery = [];
       const contentMatchQuery = {
         $match: contentQuery,
       }
@@ -626,15 +627,15 @@ export async function getDashboardHeadersAssetCount(args, context) {
           const finaldata = {}
           if( header === 'subject' || header === 'class' || !header) {
             docs.forEach(x => {
-              console.log(x._id);
+              // console.log(x._id);
                finaldata[x._id] = 0;
                x.textbookCodes.forEach(y => {
-                  const tempbook = result.find(z => z._id === y);                 
+                  const tempbook = result.find(z => z._id === y);
                   if(tempbook){
                     finaldata[x._id] += tempbook.count;
-                  }     
+                  }
               })
-            })        
+            })
           } else {
             result.forEach(x => {
               finaldata[x._id] = x.count;
@@ -757,11 +758,22 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   const pageNumber = args && args.input && args.input.pageNumber ? args.input.pageNumber : 1;
   const limit = args && args.input && args.input.limit ? args.input.limit : 0;
   const category = args && args.input && args.input.category ? args.input.category : null;
+  if (textbookCode) {
+    if (!subjectCode) {
+      throw new Error('Please select Subject before selecting textbook');
+    }
+  }
+  if (chapterCode) {
+    if (!textbookCode) {
+      throw new Error('Please select textbook before selecting chapter');
+    }
+  }
   let orientation = args && args.input && args.input.orientation || null;
   let branch = args && args.input && args.input.branch || null;
   if (!category) {
     throw new Error('Please select correct category');
   }
+
   const query = {};
   const query1 = {};
   if (classCode) {
@@ -769,9 +781,11 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   } if (subjectCode) {
     query1['refs.subject.code'] = subjectCode;
   }
-  const textbookCodes = [];
+  let textbookCodes = [];
   if (textbookCode) {
-    textbookCodes.push(textbookCode);
+    if(!textbookCodes.includes(textbookCode)) {
+      textbookCodes.push(textbookCode);
+    }
     query1['code'] = textbookCode
   }
 
@@ -785,7 +799,6 @@ export async function getCategoryWiseFilesPaginated(args, context) {
     };
   }
   let textbookCodeObj=[];
-
   await TextbookModel(context).then(async (TextBook) => {
     await TextBook.find(query1, { code: 1, _id: 0,name:1 ,
       "refs.class.name":1,"refs.subject.name":1,}).then((textbookCodeObjs) => {
@@ -799,7 +812,6 @@ export async function getCategoryWiseFilesPaginated(args, context) {
     });
   });
 
-
   if (textbookCodes.length === 0) {
     return null;
   }
@@ -807,12 +819,16 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   if (chapterCode) {
     query['refs.topic.code'] = chapterCode;
   } if (textbookCodes && textbookCodes.length) {
+    textbookCodes = uniq(textbookCodes);
     query['refs.textbook.code'] = {
       $in: textbookCodes,
     };
   }
   if (category) {
     query['content.category'] = category;
+    query['resource.type'] = {
+      $in: config.CONTENT_TYPES[category]
+    }
   }
   if (orientation) {
     query.orientation = {
@@ -826,14 +842,15 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   const skip = (pageNumber - 1) * limit;
   const categoryFiles = [];
   const finalJson = {};
+  // console.log("query", query);
   await ContentMappingModel(context).then(async ContentMappings =>
     Promise.all([
       ContentMappings.find(query, {
         content: 1, _id: 1, resource: 1, 'refs.textbook.code': 1,'refs.topic.code': 1,branches:1,
         orientation :1
       }).skip(skip).limit(limit),
-      ContentMappings.find(query).skip(skip).limit(limit).count(),
-      ContentMappings.count(query),
+      ContentMappings.find(query).skip(skip).limit(limit).countDocuments(),
+      ContentMappings.countDocuments(query),
     ]).then(([contentObjs, queryCount, count]) =>{
       const tlist = contentObjs.map(x => x.refs.textbook.code)
       const topicList = contentObjs.map(x=>x.refs.topic.code)
@@ -1060,7 +1077,7 @@ export async function getCmsTopicLevelStats(args, context) {
     args.input.category : [];
   const studentId = args && args.input && args.input.studentId ?
     args.input.studentId : null;
-  console.log('studentId', studentId);
+  // console.log('studentId', studentId);
   let orientation = null;
   let branch = null;
   if (studentId) {
@@ -1100,7 +1117,7 @@ export async function getCmsTopicLevelStats(args, context) {
   } if (subjectCode) {
     query1['refs.subject.code'] = subjectCode;
   }
-  const textbookCodes = [];
+  let textbookCodes = [];
   if (textbookCode) {
     textbookCodes.push(textbookCode);
   }
