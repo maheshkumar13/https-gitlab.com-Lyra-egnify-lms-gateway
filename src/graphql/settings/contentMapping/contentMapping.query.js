@@ -128,7 +128,7 @@ export const CmsCategoryStats = {
   },
   type: new List(CmsCategoryStatsOutputType),
   async resolve(obj, args, context) {
-    return controller.getCMSCategoryStats(args, context)
+    return controller.getCMSCategoryStatsV2(args.input, context)
       .then(async json => json);
   },
 };
@@ -151,7 +151,7 @@ export const DashboardHeadersAssetCount = {
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) {
-    return controller.getDashboardHeadersAssetCount(args.input, context)
+    return controller.getDashboardHeadersAssetCountV2(args.input, context)
       .then(async json => json);
   },
 };
