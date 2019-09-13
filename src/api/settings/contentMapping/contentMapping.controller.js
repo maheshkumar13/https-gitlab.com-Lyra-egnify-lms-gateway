@@ -423,7 +423,7 @@ export async function getContentMapping(args, context) {
       const query = getMongoQueryForContentMapping(args);
       const skip = (args.pageNumber - 1) * args.limit;
       return ContentMappingModel(context).then(ContentMapping => Promise.all([
-        ContentMapping.find(query).skip(skip).limit(args.limit),
+        ContentMapping.find(query).sort({viewOrder: 1}).skip(skip).limit(args.limit),
         ContentMapping.count(query),
       ]).then(([data, count]) => ({
         data,

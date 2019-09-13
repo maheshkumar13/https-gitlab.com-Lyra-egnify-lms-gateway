@@ -63,6 +63,8 @@ export const ContentMappingType = new ObjectType({
     category: { type: StringType, description: 'Category' },
     metaData: { type: GraphQLJSON, description: 'metadata' },
     coins: { type: IntType, description: 'Coins' },
+    timgPath: { type: StringType, description: 'Thumbnail image path' },
+    viewOrder: { type: IntType, description: 'view order' },
   },
 });
 
