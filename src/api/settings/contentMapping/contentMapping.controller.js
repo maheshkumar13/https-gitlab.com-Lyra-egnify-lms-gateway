@@ -825,15 +825,16 @@ export async function getCMSCategoryStats(args, context) {
     query['refs.textbook.code'] = {
       $in: textbookCodes,
     };
-  } if (orientation) {
-    query.orientation = {
-      $in: [orientation, null],
-    };
-  } if (branch) {
-    query.branches = {
-      $in: [branch, null],
-    };
   }
+  // if (orientation) {
+  //   query.orientation = {
+  //     $in: [orientation, null],
+  //   };
+  // } if (branch) {
+  //   query.branches = {
+  //     $in: [branch, null],
+  //   };
+  // }
   // console.log('query', query);
   const categoryWiseCount = [];
   await ContentMappingModel(context).then(async (ContentMappings) => {
@@ -996,15 +997,6 @@ export async function getCategoryWiseFilesPaginated(args, context) {
     query['resource.type'] = {
       $in: config.CONTENT_TYPES[category]
     }
-  }
-  if (orientation) {
-    query.orientation = {
-      $in: [orientation, null],
-    };
-  } if (branch) {
-    query.branches = {
-      $in: [branch, null],
-    };
   }
   const skip = (pageNumber - 1) * limit;
   const categoryFiles = [];
