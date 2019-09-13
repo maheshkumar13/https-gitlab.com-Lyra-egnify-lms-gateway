@@ -32,4 +32,6 @@ module.exports = {
     host: process.env.REDIS_HOST || '35.244.34.84',
     password: process.env.REDIS_PASSWORD || 'rQsVPF2gbiHi',
   },
+  AWS_PRIVATE_BUCKET: 'rankguru-uat',
+  AWS_PUBLIC_BUCKET: 'rankguru-uat-public',
 };
