@@ -84,6 +84,7 @@ export const CmsCategoryStatsInputType = new InputType({
 export const CmsCategoryStatsOutputType = new ObjectType({
   name: 'CmsCategoryStatsOutputType',
   fields: {
+    classCode: { type: StringType, description: 'Class code' },
     category: { type: StringType, description: 'Name of the category' },
     count: { type: IntType, description: 'Count of the files which belongs to that category' },
   },

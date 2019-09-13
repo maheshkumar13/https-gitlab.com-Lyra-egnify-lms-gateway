@@ -38,6 +38,10 @@ const QuestionSchema = new mongoose.Schema({
   skill: { type: String },
   solution: { type: String },
   xml_id: { type: Number },
+  chapter : {
+    code : { type : String , default : null},
+    name : { type : String , default : null}
+  }
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 });

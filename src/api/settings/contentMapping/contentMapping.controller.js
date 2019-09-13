@@ -17,6 +17,7 @@ const crypto = require('crypto');
 const _ = require('lodash');
 
 const mongoose = require('mongoose');
+const uniq = require('lodash/uniq');
 
 export async function getTextbookWiseTopicCodes(context) {
   return ConceptTaxonomyModel(context).then((ConceptTaxonomy) => {
@@ -588,7 +589,7 @@ export async function getDashboardHeadersAssetCount(args, context) {
       if (header === 'chapter' ) groupby = 'refs.topic.code';
       if (header === 'branch' ) groupby = 'branches';
       if (header === 'orientation') groupby = 'orientation';
-      const contentQuery = { 
+      const contentQuery = {
         active: true,
         'refs.textbook.code': { $in: textbookCodes },
       };
@@ -597,7 +598,7 @@ export async function getDashboardHeadersAssetCount(args, context) {
       else contentQuery['content.category'] = { $nin: ['Take Quiz', 'Tests']}
       if (branch) contentQuery['branches'] = branch;
       if (orientation) contentQuery['orientation'] = orientation;
-      const aggregateQuery = []; 
+      const aggregateQuery = [];
       const contentMatchQuery = {
         $match: contentQuery,
       }
@@ -620,15 +621,15 @@ export async function getDashboardHeadersAssetCount(args, context) {
           const finaldata = {}
           if( header === 'subject' || header === 'class' || !header) {
             docs.forEach(x => {
-              console.log(x._id);
+              // console.log(x._id);
                finaldata[x._id] = 0;
                x.textbookCodes.forEach(y => {
-                  const tempbook = result.find(z => z._id === y);                 
+                  const tempbook = result.find(z => z._id === y);
                   if(tempbook){
                     finaldata[x._id] += tempbook.count;
-                  }     
+                  }
               })
-            })        
+            })
           } else {
             result.forEach(x => {
               finaldata[x._id] = x.count;
@@ -639,6 +640,111 @@ export async function getDashboardHeadersAssetCount(args, context) {
       })
     })
   })
+}
+
+
+function getContentTypeMatchOrData(contentCategory){
+  const orData = [];
+  let contentTypes = config.CONTENT_TYPES || {};
+  if(contentCategory) {
+    if(contentTypes[contentCategory]){
+      orData.push({'content.category': contentCategory, 'resource.type': { $in: contentTypes[contentCategory]}});
+    } else {
+      orData.push({'content.category': contentCategory });
+    }
+    return orData;
+  }
+  for(let category in contentTypes){
+    orData.push({'content.category': category, 'resource.type': { $in: contentTypes[category]}});
+  }
+  return orData;
+}
+
+export async function getDashboardHeadersAssetCountV2(args, context) {
+  const {
+    classCode,
+    subjectCode,
+    chapterCode,
+    textbookCode,
+    branch,
+    orientation,
+    contentCategory,
+    header
+  } = args;
+  let groupby = 'code';
+  if(header === 'class') groupby = 'refs.class.code';
+  else if (header === 'branch') groupby = 'branches';
+  else if (header === 'orientation') groupby = 'orientations';
+  else if (header === 'subject') groupby = 'refs.subject.code';
+
+  const textbookAggregateQuery = [];
+
+  const textbookMatchQuery = { active: true }
+  if (classCode ) textbookMatchQuery['refs.class.code'] = classCode;
+  if (subjectCode) textbookMatchQuery['refs.subject.code'] = subjectCode;
+  if (textbookCode) textbookMatchQuery['code'] = textbookCode;
+  if (branch) textbookMatchQuery['branches'] = { $in: [ branch, null ] };
+  if (orientation) textbookMatchQuery['orientations'] = { $in: [ orientation, null ] };
+  textbookAggregateQuery.push({ $match: textbookMatchQuery });
+
+  if(header === 'branch') textbookAggregateQuery.push({$unwind: '$branches'})
+  if(header === 'orientation') textbookAggregateQuery.push({$unwind: '$orientations'})
+
+  const textbookGroupQuery = {
+    $group: {
+      _id: `$${groupby}`,
+      textbookCodes: { $push: '$code' }
+    }
+  }
+  textbookAggregateQuery.push(textbookGroupQuery);
+
+  const [ Textbook, ContentMapping ] = await Promise.all([TextbookModel(context), ContentMappingModel(context)]);
+  const docs = await Textbook.aggregate(textbookAggregateQuery).allowDiskUse(true);
+
+  if(!docs || !docs.length) return {};
+
+  let textbookCodes = []
+  docs.forEach(x => {
+    textbookCodes = textbookCodes.concat(x.textbookCodes)
+  })
+
+  textbookCodes = Array.from(new Set(textbookCodes));
+
+  const contentQuery = { 
+    active: true,
+    'refs.textbook.code': { $in: textbookCodes },
+  };
+  const contentTypeMatchOrData = getContentTypeMatchOrData(contentCategory);
+  if(contentTypeMatchOrData.length) contentQuery['$or'] = contentTypeMatchOrData;
+  
+  if (chapterCode) contentQuery['refs.topic.code'] = chapterCode;
+  const aggregateQuery = []; 
+  const contentMatchQuery = {
+    $match: contentQuery,
+  }
+  groupby = 'refs.textbook.code';
+  if(header === 'chapter') groupby = 'refs.topic.code';
+  aggregateQuery.push(contentMatchQuery);
+  const contentGroupQuery = {
+    $group: {
+      _id: `$${groupby}`,
+      count: { $sum: 1 },
+    }
+  }
+  aggregateQuery.push(contentGroupQuery)
+  const result = await ContentMapping.aggregate(aggregateQuery).allowDiskUse(true);
+  if(!result || !result.length) return {};
+  const objectifyResult = {};
+  result.forEach(x => objectifyResult[x._id] = x.count)
+  if(header === 'chapter') return objectifyResult;
+  const finalData = {};
+  docs.forEach(x => {
+     finalData[x._id] = 0;
+     x.textbookCodes.forEach(y => {
+      finalData[x._id] += objectifyResult[y] || 0;
+    });
+  });
+  return finalData;
 }
 
 export async function getCMSCategoryStats(args, context) {
@@ -713,15 +819,16 @@ export async function getCMSCategoryStats(args, context) {
     query['refs.textbook.code'] = {
       $in: textbookCodes,
     };
-  } if (orientation) {
-    query.orientation = {
-      $in: [orientation, null],
-    };
-  } if (branch) {
-    query.branches = {
-      $in: [branch, null],
-    };
   }
+  // if (orientation) {
+  //   query.orientation = {
+  //     $in: [orientation, null],
+  //   };
+  // } if (branch) {
+  //   query.branches = {
+  //     $in: [branch, null],
+  //   };
+  // }
   // console.log('query', query);
   const categoryWiseCount = [];
   await ContentMappingModel(context).then(async (ContentMappings) => {
@@ -742,6 +849,68 @@ export async function getCMSCategoryStats(args, context) {
   return categoryWiseCount;
 }
 
+export async function getCMSCategoryStatsV2(args, context) {
+  const {
+    classCode,
+    subjectCode,
+    chapterCode,
+    textbookCode,
+    branch,
+    orientation,
+  } = args;
+
+  // Textbook data;
+  const textbookMatchQuery = { active: true }
+  if (classCode ) textbookMatchQuery['refs.class.code'] = classCode;
+  if (subjectCode) textbookMatchQuery['refs.subject.code'] = subjectCode;
+  if (textbookCode) textbookMatchQuery['code'] = textbookCode;
+  if (branch) textbookMatchQuery['branches'] = { $in: [ branch, null ] };
+  if (orientation) textbookMatchQuery['orientations'] = { $in: [ orientation, null ] };
+
+
+  const [ Textbook, ContentMapping ] = await Promise.all([TextbookModel(context), ContentMappingModel(context)]);
+  const docs = await Textbook.find(textbookMatchQuery,{_id: 0, code: 1, 'refs.class.code': 1 })
+  if(!docs || !docs.length) return [];
+  // return docs;
+  const objectifyDocs = {};
+  docs.forEach(x => objectifyDocs[x.code] = x.refs.class.code);
+  let textbookCodes = docs.map(x => x.code);
+
+  // Content mapping
+  const contentAggregateQuery = [];
+  const contentMatchQuery = { active: true }
+  const contentTypeMatchOrData = getContentTypeMatchOrData("");
+  if(contentTypeMatchOrData.length) contentMatchQuery['$or'] = contentTypeMatchOrData;
+  contentMatchQuery['refs.textbook.code'] = { $in: textbookCodes };
+  if(chapterCode) contentMatchQuery['refs.topic.code'] = chapterCode;
+  contentAggregateQuery.push({$match: contentMatchQuery});
+  // return contentMatchQuery;
+  const contentGroupQuery = {
+    _id: {
+      textbookCode: '$refs.textbook.code',
+      category: '$content.category'
+    }, count: { $sum: 1 }
+  }
+  contentAggregateQuery.push({$group: contentGroupQuery });
+  const data = await ContentMapping.aggregate(contentAggregateQuery).allowDiskUse(true);
+  const tempData = {}
+  data.forEach(x => {
+      const classCode = objectifyDocs[x._id.textbookCode]; 
+      const category = x._id.category;
+      if(!tempData[classCode]) tempData[classCode] = {};
+      if(!tempData[classCode][category]) tempData[classCode][category] = 0;
+      tempData[classCode][category] += x.count;
+  })
+  // return tempData;
+  const finalData = [];
+  for(let temp in tempData){
+    for(let category in tempData[temp]){
+      finalData.push({classCode: temp, category, count: tempData[temp][category]})
+    }
+  }
+  return finalData;
+}  
+
 export async function getCategoryWiseFilesPaginated(args, context) {
   const classCode = args && args.input && args.input.classCode ? args.input.classCode : null;
   const subjectCode = args && args.input && args.input.subjectCode ? args.input.subjectCode : null;
@@ -751,11 +920,22 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   const pageNumber = args && args.input && args.input.pageNumber ? args.input.pageNumber : 1;
   const limit = args && args.input && args.input.limit ? args.input.limit : 0;
   const category = args && args.input && args.input.category ? args.input.category : null;
+  if (textbookCode) {
+    if (!subjectCode) {
+      throw new Error('Please select Subject before selecting textbook');
+    }
+  }
+  if (chapterCode) {
+    if (!textbookCode) {
+      throw new Error('Please select textbook before selecting chapter');
+    }
+  }
   let orientation = args && args.input && args.input.orientation || null;
   let branch = args && args.input && args.input.branch || null;
   if (!category) {
     throw new Error('Please select correct category');
   }
+
   const query = {};
   const query1 = {};
   if (classCode) {
@@ -763,9 +943,11 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   } if (subjectCode) {
     query1['refs.subject.code'] = subjectCode;
   }
-  const textbookCodes = [];
+  let textbookCodes = [];
   if (textbookCode) {
-    textbookCodes.push(textbookCode);
+    if(!textbookCodes.includes(textbookCode)) {
+      textbookCodes.push(textbookCode);
+    }
     query1['code'] = textbookCode
   }
 
@@ -779,7 +961,6 @@ export async function getCategoryWiseFilesPaginated(args, context) {
     };
   }
   let textbookCodeObj=[];
-
   await TextbookModel(context).then(async (TextBook) => {
     await TextBook.find(query1, { code: 1, _id: 0,name:1 ,
       "refs.class.name":1,"refs.subject.name":1,}).then((textbookCodeObjs) => {
@@ -793,7 +974,6 @@ export async function getCategoryWiseFilesPaginated(args, context) {
     });
   });
 
-
   if (textbookCodes.length === 0) {
     return null;
   }
@@ -801,33 +981,29 @@ export async function getCategoryWiseFilesPaginated(args, context) {
   if (chapterCode) {
     query['refs.topic.code'] = chapterCode;
   } if (textbookCodes && textbookCodes.length) {
+    textbookCodes = uniq(textbookCodes);
     query['refs.textbook.code'] = {
       $in: textbookCodes,
     };
   }
   if (category) {
     query['content.category'] = category;
-  }
-  if (orientation) {
-    query.orientation = {
-      $in: [orientation, null],
-    };
-  } if (branch) {
-    query.branches = {
-      $in: [branch, null],
-    };
+    query['resource.type'] = {
+      $in: config.CONTENT_TYPES[category]
+    }
   }
   const skip = (pageNumber - 1) * limit;
   const categoryFiles = [];
   const finalJson = {};
+  // console.log("query", query);
   await ContentMappingModel(context).then(async ContentMappings =>
     Promise.all([
       ContentMappings.find(query, {
         content: 1, _id: 1, resource: 1, 'refs.textbook.code': 1,'refs.topic.code': 1,branches:1,
         orientation :1
       }).skip(skip).limit(limit),
-      ContentMappings.find(query).skip(skip).limit(limit).count(),
-      ContentMappings.count(query),
+      ContentMappings.find(query).skip(skip).limit(limit).countDocuments(),
+      ContentMappings.countDocuments(query),
     ]).then(([contentObjs, queryCount, count]) =>{
       const tlist = contentObjs.map(x => x.refs.textbook.code)
       const topicList = contentObjs.map(x=>x.refs.topic.code)
@@ -1054,7 +1230,7 @@ export async function getCmsTopicLevelStats(args, context) {
     args.input.category : [];
   const studentId = args && args.input && args.input.studentId ?
     args.input.studentId : null;
-  console.log('studentId', studentId);
+  // console.log('studentId', studentId);
   let orientation = null;
   let branch = null;
   if (studentId) {
@@ -1094,7 +1270,7 @@ export async function getCmsTopicLevelStats(args, context) {
   } if (subjectCode) {
     query1['refs.subject.code'] = subjectCode;
   }
-  const textbookCodes = [];
+  let textbookCodes = [];
   if (textbookCode) {
     textbookCodes.push(textbookCode);
   }
