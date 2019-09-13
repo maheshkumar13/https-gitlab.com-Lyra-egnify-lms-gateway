@@ -9,6 +9,8 @@
 import mongoose from 'mongoose';
 import { getDB } from '../../../db';
 
+// import { addContent, updateContent } from '../conceptTaxonomy/utils'
+
 const contentSchema = new mongoose.Schema({
   name: { type: String },
   category: { type: String },
@@ -56,6 +58,28 @@ export async function getModel(userCxt) {
   const db = await getDB(instituteId);
   return db.model('contentMapping', contentMappingSchema);
 }
+
+// contentMappingSchema.post('save',function(doc ,next){
+//   setTimeout(function(){
+//     addContent(doc);
+//   },10);
+//   next();
+// });
+
+// contentMappingSchema.post('updateOne',function(doc ,next){
+//   setTimeout(function(){
+//     console.log(this);
+//     addContent(doc.toJSON());
+//   },10);
+//   next();
+// });
+
+// contentMappingSchema.post('findOneAndUpdate',function(doc, next){
+//   setTimeout(function(){
+//     updateContent(doc);  
+//   },10);
+//   next();
+// });
 
 export default {
   getModel,

@@ -64,6 +64,7 @@ const all = {
   AWS_PRIVATE_BUCKET: process.env.AWS_PRIVATE_BUCKET || 'ekslmsproject',
   AWS_PUBLIC_BUCKET_FOLDER: 'samplefiles',
   AWS_PRIVATE_BUCKET_FOLDER: 'contentSampleFiles',
+
   CONTENT_TYPES: {
     Animation: ['mp4'],
     Activity: ['html'],

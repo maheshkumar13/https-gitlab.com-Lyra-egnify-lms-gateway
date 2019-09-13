@@ -28,8 +28,13 @@ import { MasterResults } from './tests/masterResults/masterResults.query';
 import { InsertContent, UpdateContent, updateMetaData } from './settings/contentMapping/contentMapping.mutation';
 import { CreateTestType, DeleteTestType } from './settings/testType/testType.mutation';
 import { TestType } from './settings/testType/testType.query';
-import { PackageList, PackageDetails } from './settings/package/package.query';
-import { CreatePackage, UpdatePackage, FeedbackPackage } from './settings/package/package.mutation';
+import { CreatePackage, PackageList, PackageDetails } from './settings/package/package.query';
+import { UpdatePackage, FeedbackPackage } from './settings/package/package.mutation';
+import { autoComplete, searchResult } from './search/searchRequest/search.query';
+import { addTimeseries } from './analysis/timeseries/timeseries.query';
+import { ListTest } from '../graphql/tests/upload/upload.query';
+import { ListMarkingSchema } from '../graphql/tests/markingShema/marking.shema.query';
+import { PublishTest, ParseAndValidateTest, updateTestInfo } from './tests/upload/upload.mutation';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -67,6 +72,10 @@ const schema = new Schema({
       TextbooksInfo,
       TextbooksForEachSubject,
       DashboardHeadersAssetCount,
+      autoComplete,
+      searchResult,
+      ListTest,
+      ListMarkingSchema,
     },
   }),
   mutation: new ObjectType({
@@ -87,6 +96,10 @@ const schema = new Schema({
       CreatePackage,
       UpdatePackage,
       FeedbackPackage,
+      addTimeseries,
+      PublishTest,
+      ParseAndValidateTest,
+      updateTestInfo,
     },
   }),
 });

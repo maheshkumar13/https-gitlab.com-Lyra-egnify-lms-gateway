@@ -1,6 +1,13 @@
 import { getModel as QuestionModel } from './questions.model';
 import { getModel as MasterResultModel } from '../masterResults/masterResults.model';
+import { getModel as ContentMappingModel } from '../../settings/contentMapping/contentMapping.model';
 import { config } from '../../../config/environment';
+import request from 'request';
+var client = require('../../../redis');
+const uuidv1 = require('uuid/v1');
+const fileUpload = require('../../../utils/fileUpload')
+
+const fs = require("fs");
 
 function getQuery(args) {
   const query = {};
@@ -148,4 +155,190 @@ export async function getQuestionLevelEvaluatedData(args, context) {
   }));
 }
 
-export default { getQuestions, getAndSaveResults, getQuestionLevelEvaluatedData };
+export async function practiceParseAndValidate(req, res) {
+  const { className, subject, textbookCode, chapterCode, fileName, qNo, fileKey } = req.body;
+  if (!className) {
+    return res.status(400).send("Class fileName is required to upload a Practice.")
+  }
+
+  if (!fileKey) {
+    return res.status(400).send("File key is required to upload a Practice.")
+  }
+
+  if (!qNo) {
+    return res.status(400).send("Q no. is required to upload a Practice");
+  }
+
+  if (!fileName) {
+    return res.status(400).send("File fileName is required to upload a Practice.")
+  }
+
+  if (!subject) {
+    return res.status(400).send("Subject is required to upload a Practice.")
+  }
+
+  if (!textbookCode) {
+    return res.status(400).send("Textbook is required to upload a Practice.");
+  }
+
+  if (!chapterCode) {
+    return res.status(400).send("Chapter is required to upload a Practice.");
+  }
+  let lang = "english";
+  //'hindi','telugu','tamil','kannada','sanskrit'
+  if (subject.toLowerCase() === "telugu" ||
+    subject.toLowerCase() === "hindi" ||
+    subject.toLowerCase() === "tamil" ||
+    subject.toLowerCase() === "kannada" ||
+    subject.toLowerCase() === "sanskrit") {
+    lang = subject.toLowerCase();
+  }
+
+  fileUpload.s3GetFileData(fileKey, async function (err, data) {
+    try {
+      if (err) {
+        return res.status(500).send("Internal server error.");
+      } else {
+        const mimeType = {
+          "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "xml": "text/xml"
+        }
+        const file_id = fileKey;
+        const url = config.parser.uri+"?subject=" + lang + "&file_id=" + file_id;
+        const file_data = data.data;
+        const option = {
+          method: "POST",
+          url: url
+        }
+        const name = fileKey.split("/")[1];
+        const contetType = mimeType[name.split(".").pop()];
+        const parsedData = await parseFile(option, name, contetType, file_data);
+        const jsonifiedData = JSON.parse(parsedData);
+        let errorQuestions = jsonifiedData.filter((question) => {
+          return question.errors.length > 0;
+        });
+        let errorQuestionNumbers = errorQuestions.map((question) => {
+          return question.qno;
+        });
+        let percentageError = (errorQuestions.length / jsonifiedData.length) * 100;
+        const qPid = uuidv1();
+        let obj = {
+          "content": {
+            "name": fileName,
+            "category": "Practice",
+            "type": "Objective Questions"
+          },
+          "resource": {
+            "key": qPid,
+            "size": data.size / 1024^2,
+            "type": name.split(".").pop()
+          },
+          "publication": null,
+          "coins": "0",
+          "orientation": null,
+          "refs": {
+            "topic": {
+              "code": chapterCode
+            },
+            "textbook": {
+              "code": textbookCode
+            }
+          },
+          "branches": null,
+          "category": null,
+          "active": false,
+          "category" : ''
+        }
+        // console.log(setContentMappingForPractice(obj, req.user_cxt));
+        const mapping = await setContentMappingForPractice(obj, req.user_cxt);
+        // console.log(mapping);
+        await setQuestionInDb(jsonifiedData, req.user_cxt ,  qPid , fileKey);
+        return res.status(200).send({ jsonifiedData, percentageError, errorQuestionNumbers , paper_id : mapping["_id"]});
+      }
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send("Internal server error.");
+    }
+  });
+}
+export async function publishPractice (req , res ){
+  try{
+    let { paper_id } = req.body;
+    const _id = paper_id;
+    const ContentMapping = await ContentMappingModel(req.user_cxt);
+    await ContentMapping.findOneAndUpdate({ _id },{$set: {active :true}},{multi : false , new : true }).lean()
+    return res.status(200).send({message : "Practice published successfully."})
+  }catch(err){
+    console.log(err);
+    return res.status(500).send("Internal server error.");
+  }
+}
+async function setContentMappingForPractice(obj, ctx) {
+  try{
+    const contentMapping = await ContentMappingModel(ctx);
+    const mappings = await contentMapping.create(obj);
+    return mappings;
+  }catch(err){
+    console.log(err);
+    throw new Error(err);
+  }
+}
+
+async function setQuestionInDb(questions , ctx , qpid , filePath){
+    try{
+      for(let i = 0 ; i < questions.length ; i ++){
+        questions[i]["questionPaperId"] = qpid;
+      }
+      const Questions = await QuestionModel(ctx);
+      await Questions.create(questions);
+      return true;
+    }catch(err){
+      throw new Error(err);
+    }
+}
+
+async function parseFile(option, filename, contentType, data) {
+  return new Promise(function (resolve, reject) {
+    var req = request(option, function (err, resp, body) {
+      if (err) {
+        reject(err);
+      } else {
+        if (resp.statusCode !== 200) {
+          reject("Parse Error");
+        } else {
+          resolve(body);
+        }
+      }
+    });
+    var form = req.form();
+    form.append('file', data, {
+      filename: filename,
+      contentType: contentType
+    });
+  });
+}
+
+export async function parserStatus(req, res) {
+  try {
+    if (!req.body.file_id) {
+      return res.status(400).send("File id is requried.");
+    }
+
+    const file_id = req.body.file_id;
+    client.get(file_id, function (err, reply) {
+      if (err) {
+        console.log(err);
+        return res.status(500).send("Internal server error.")
+      } else {
+        console.log(reply);
+        return res.status(200).send(JSON.parse(JSON.parse(reply)));
+      }
+    })
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send('Internal server error.');
+  }
+}
+
+export default { getQuestions, getAndSaveResults, getQuestionLevelEvaluatedData, practiceParseAndValidate, parserStatus ,publishPractice };
