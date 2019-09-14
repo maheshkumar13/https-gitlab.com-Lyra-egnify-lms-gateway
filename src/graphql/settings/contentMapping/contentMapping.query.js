@@ -139,7 +139,7 @@ export const CategoryWiseFiles = {
   },
   type: CategoryWiseFilesOutputType,
   async resolve(obj, args, context) {
-    return controller.getCategoryWiseFilesPaginated(args, context)
+    return controller.getCategoryWiseFilesPaginatedV2(args.input, context)
       .then(async json => json);
   },
 };
