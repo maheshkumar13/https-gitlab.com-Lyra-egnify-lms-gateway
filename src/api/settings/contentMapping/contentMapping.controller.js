@@ -909,7 +909,113 @@ export async function getCMSCategoryStatsV2(args, context) {
     }
   }
   return finalData;
-}  
+}
+
+export async function getCategoryWiseFilesPaginatedV2(args, context) {
+  const {
+    classCode,
+    subjectCode,
+    chapterCode,
+    textbookCode,
+    branch,
+    orientation,
+    category,
+  } = args;
+  const pageNumber = args.pageNumber || 1;
+  const limit = args.limit || 0;
+  
+  const textbookMatchQuery = { active: true }
+  if (classCode ) textbookMatchQuery['refs.class.code'] = classCode;
+  if (subjectCode) textbookMatchQuery['refs.subject.code'] = subjectCode;
+  if (textbookCode) textbookMatchQuery['code'] = textbookCode;
+  if (branch) textbookMatchQuery['branches'] = { $in: [ branch, null ] };
+  if (orientation) textbookMatchQuery['orientations'] = { $in: [ orientation, null ] };
+
+  const [ Textbook, ContentMapping, ConceptTaxonomy ] = await Promise.all([TextbookModel(context), ContentMappingModel(context), ConceptTaxonomyModel(context)]);
+  const textbooks = await Textbook.find(textbookMatchQuery);
+  const textbooksObj = {}
+  textbooks.forEach(x => textbooksObj[x.code] = x);
+  const textbookCodes = textbooks.map(x => x.code);
+  
+  if (!textbookCodes.length) return null;
+  const topicAggregateQuery = [];
+  const topicMatchQuery = {
+    active: true,
+    levelName: 'topic',
+    'refs.textbook.code': { $in: textbookCodes },
+  }
+  if (chapterCode) topicMatchQuery['code'] = chapterCode;
+  topicAggregateQuery.push({$match: topicMatchQuery});
+  const topicGroupQuery = {
+    _id: {
+      textbookCode: '$refs.textbook.code',
+      topicCode: '$code',
+      name: '$child'
+    }
+  }
+  topicAggregateQuery.push({$group: topicGroupQuery });
+  const topics = await ConceptTaxonomy.aggregate(topicAggregateQuery).allowDiskUse(true);
+  const topicsObj = {};
+  topics.forEach(x => {
+    if(!topicsObj[x._id.textbookCode]) topicsObj[x._id.textbookCode] = {};
+    topicsObj[x._id.textbookCode][x._id.topicCode] = x._id.name;
+  })
+
+  if (!topics.length) return null;
+  
+  const contentQuery = {
+    active: true,
+    'refs.textbook.code': { $in: textbookCodes },
+  }
+  const contentTypeMatchOrData = getContentTypeMatchOrData(category);
+  contentQuery['$or'] = contentTypeMatchOrData;
+  if (chapterCode) contentQuery['refs.topic.code'] = chapterCode;
+
+  const skip = (pageNumber - 1) * limit;
+  const [assets, count] = await Promise.all([
+    ContentMapping.find(contentQuery).skip(skip).limit(limit),
+    ContentMapping.countDocuments(contentQuery)
+  ]);
+  const finalData = [];
+  assets.forEach(obj => {
+    const textbook = textbooksObj[obj.refs.textbook.code];
+    const topicName = topicsObj[obj.refs.textbook.code][obj.refs.topic.code];
+    const temp = {
+      id: obj._id,
+      content: obj.content, //eslint-disable-line
+      resource: obj.resource,
+      textbook:{
+        code: obj.refs.textbook.code,
+        name: textbook.name,
+      },
+      className: textbook.refs.class.name,
+      subject: textbook.refs.subject.name,
+      topic:{
+        code : obj.refs.topic.code,
+        name : topicName,
+      },
+      count:{
+        orientation: textbook.orientations ? textbook.orientations.length : 0,
+        branches: textbook.branches ? textbook.branches.length : 0,
+      },
+      orientation: textbook.orientations,
+      branches: textbook.branches,
+    };
+    finalData.push(temp);
+  })
+  const finalJson = {}
+  const pageInfo = {
+    pageNumber,
+    recordsShown: assets.count,
+    nextPage: limit !== 0 && limit * pageNumber < count,
+    prevPage: pageNumber !== 1 && count > 0,
+    totalEntries: count,
+    totalPages: limit > 0 ? Math.ceil(count / limit) : 1,
+  };
+  finalJson.page = finalData;
+  finalJson.pageInfo = pageInfo;
+  return finalJson;
+}
 
 export async function getCategoryWiseFilesPaginated(args, context) {
   const classCode = args && args.input && args.input.classCode ? args.input.classCode : null;
