@@ -11,15 +11,20 @@ import {
 import {
   getModel as TextBook
 } from '../../settings/textbook/textbook.model';
+import {
+  getModel as MasterResult
+} from '../masterResults/test.masterResults.model';
 
 const request = require("request");
 const config = require('../../../config/environment')["config"];
 const fileUpload = require('../../../utils/fileUpload');
 const uuidv1 = require('uuid/v1');
- 
+
 function queryForListTest(args) {
   let query = {
-    find: {active : true},
+    find: {
+      active: true
+    },
     search: {},
     sort: {
       "test.date": -1
@@ -35,11 +40,11 @@ function queryForListTest(args) {
     query["find"]["mapping.subject.code"] = args.subjectCode;
   }
 
-  if(args.branch){
+  if (args.branch) {
     query["find"]["branches"] = args.branch;
   }
 
-  if(args.orientation){
+  if (args.orientation) {
     query["find"]["orientations"] = args.orientation;
   }
 
@@ -61,18 +66,18 @@ export async function listTest(args, ctx) {
   try {
     const queries = queryForListTest(args);
     const TestSchema = await Tests(ctx);
-    let limit = args.limit ? args.limit : 40 ;
-    let skip = args.pageNumber ? args.pageNumber-1 : 0; 
+    let limit = args.limit ? args.limit : 0;
+    let skip = args.pageNumber ? args.pageNumber - 1 : 0;
     let data = await TestSchema.dataTables({
       limit: limit,
-      skip: skip*limit,
+      skip: skip * limit,
       find: queries.find,
       search: queries.search,
       sort: queries.sort,
     });
 
     data["pageInfo"] = {
-      pageNumber : args.pageNumber,
+      pageNumber: args.pageNumber,
       recordsShown: data["data"].length,
       nextPage: limit !== 0 && limit * args.pageNumber < data["total"],
       prevPage: args.pageNumber !== 1 && data["total"] > 0,
@@ -85,7 +90,6 @@ export async function listTest(args, ctx) {
     throw err;
   }
 }
-
 
 function validateTestInfo(args) {
   if (new Date(args.startTime) == "Invalid Date") {
@@ -144,10 +148,10 @@ export async function parseAndValidateTest(args, ctx) {
     let parsedData = await parseFile(option, name, contetType, file_data);
     const paper_id = uuidv1();
     args["paper_id"] = paper_id;
-    const orientationsAndBranches = await getOrientationAndBranches(args.textbookCode,req.user_cxt);
-    if(orientationsAndBranches){
+    const orientationsAndBranches = await getOrientationAndBranches(args.textbookCode, req.user_cxt);
+    if (orientationsAndBranches) {
       throw "Invalid textbook"
-    }else{
+    } else {
       args["orientations"] = orientationsAndBranches["orientations"];
       args["branches"] = orientationsAndBranches["branches"];
     }
@@ -173,40 +177,46 @@ export async function parseAndValidateTest(args, ctx) {
   }
 }
 
-export async function updateTest(args, ctx){
-  try{
+export async function updateTest(args, ctx) {
+  try {
     validateTestInfo(args);
-    const orientationsAndBranches = await getOrientationAndBranches(args.textbookCode,req.user_cxt);
-    if(orientationsAndBranches){
+    const orientationsAndBranches = await getOrientationAndBranches(args.textbookCode, req.user_cxt);
+    if (orientationsAndBranches) {
       throw "Invalid textbook"
-    }else{
+    } else {
       args["orientations"] = orientationsAndBranches["orientations"];
       args["branches"] = orientationsAndBranches["branches"];
     }
-    await updateTestInfo(args , ctx);
-    return { message : "Test updated successfully." }
-  }catch(err){
+    await updateTestInfo(args, ctx);
+    return {
+      message: "Test updated successfully."
+    }
+  } catch (err) {
     throw err;
   }
 }
 
-async function updateTestInfo( args , ctx){
-  try{
+async function updateTestInfo(args, ctx) {
+  try {
     const TestSchema = await Tests(ctx);
     const updatedTest = await TestSchema.findOneAndUpdate({
-      _id : args.id
-    },{$set:createUpdateObject(args)},{new : true});
-    if(updatedTest){
+      _id: args.id
+    }, {
+      $set: createUpdateObject(args)
+    }, {
+      new: true
+    });
+    if (updatedTest) {
       return updatedTest
-    }else{
+    } else {
       throw "No such test available";
     }
-  }catch(err){
+  } catch (err) {
     throw err;
   }
 }
 
-function createUpdateObject(args){
+function createUpdateObject(args) {
   let updateQuery = {}
   updateQuery["test.startTime"] = args.startTime
   updateQuery["test.endTime"] = args.endTime
@@ -225,7 +235,7 @@ function createUpdateObject(args){
   return updateQuery;
 }
 
-//This function taken in any number of date object as parameter and return whether they are equal in terms of year, month and date.
+//This function takes in any number of date object as parameter and return whether they are equal in terms of year, month and date.
 function compareDays() {
   let compare = true;
   let dateInfo = {
@@ -259,11 +269,17 @@ function compareDays() {
   return compare;
 }
 
-async function getOrientationAndBranches(textbookCode,ctx){
-  try{
+async function getOrientationAndBranches(textbookCode, ctx) {
+  try {
     const TextBookSchema = await TextBook(ctx);
-    return await TextBookSchema.findOne({code : textbookCode}).select({orientations:1,branches:1,_id : 0}).lean();
-  }catch(err){
+    return await TextBookSchema.findOne({
+      code: textbookCode
+    }).select({
+      orientations: 1,
+      branches: 1,
+      _id: 0
+    }).lean();
+  } catch (err) {
     throw err;
   }
 }
@@ -325,12 +341,12 @@ function createObjectForTestMapping(args) {
       endTime: new Date(args.endTime),
       date: new Date(args.testDate),
       duration: parseInt(args.testDuration),
-      paper_id : args.paper_id
+      paper_id: args.paper_id
     },
     markingScheme: args.markingScheme,
     fileKey: args.fileKey,
     active: false,
-    branches : args.branches,
+    branches: args.branches,
     orientations: args.orientations
   }
 }
@@ -370,27 +386,40 @@ export async function publishTest(args, ctx) {
   }
 }
 
-export async function convertOldTestToNewFormat(req, res){
-  try{
+export async function convertOldTestToNewFormat(req, res) {
+  try {
     const OldTestSchema = await OldTest(req.user_cxt);
-    let ExistingTestsInOldFormat   = await OldTestSchema.aggregate([
-      {$match:{"content.category":"Tests",active:true}},
-      {$lookup:{from:"textbooks",localField:"refs.textbook.code",foreignField:"code",as:"mapping"}},
-      {$unwind:"$mapping"},
+    let ExistingTestsInOldFormat = await OldTestSchema.aggregate([{
+        $match: {
+          "content.category": "Tests",
+          active: true
+        }
+      },
       {
-        $project:{
-          "_id" : 0,
-          "active" : 1,
-          "mapping.class.code":"$mapping.refs.class.code",
-          "mapping.class.name" : "$mapping.refs.class.name",
-          "mapping.subject.code":"$mapping.refs.subject.code",
-          "mapping.subject.name" : "$mapping.refs.subject.name",
-          "mapping.textbook.code" : "$mapping.code",
-          "mapping.textbook.name":"$mapping.name",
-          "test.name":"$content.name",
-          "test.questionPaperId" : "$resource.key",
-          "branches":"$mapping.branches",
-          "orientations":"$mapping.orientations"
+        $lookup: {
+          from: "textbooks",
+          localField: "refs.textbook.code",
+          foreignField: "code",
+          as: "mapping"
+        }
+      },
+      {
+        $unwind: "$mapping"
+      },
+      {
+        $project: {
+          "_id": 0,
+          "active": 1,
+          "mapping.class.code": "$mapping.refs.class.code",
+          "mapping.class.name": "$mapping.refs.class.name",
+          "mapping.subject.code": "$mapping.refs.subject.code",
+          "mapping.subject.name": "$mapping.refs.subject.name",
+          "mapping.textbook.code": "$mapping.code",
+          "mapping.textbook.name": "$mapping.name",
+          "test.name": "$content.name",
+          "test.questionPaperId": "$resource.key",
+          "branches": "$mapping.branches",
+          "orientations": "$mapping.orientations"
         }
       }
     ]);
@@ -398,8 +427,271 @@ export async function convertOldTestToNewFormat(req, res){
     console.log(ExistingTestsInOldFormat.length);
     await TestSchema.create(ExistingTestsInOldFormat);
     return res.status(200).send("Converted old format to new one");
-  }catch(err){
+  } catch (err) {
     console.log(err);
     return res.status(500).send("Internal server error");
+  }
+}
+
+export async function listTextBooksWithTestSubectWise(args, ctx) {
+  try {
+    const TestSchema = await Tests(ctx);
+    const list = await TestSchema.aggregate([{
+      $match: {
+        "mapping.subject.code": args.subjectCode,
+        "active": true
+      }
+    }, {
+      $group: {
+        "_id": "$mapping.textbook.code",
+        count: {
+          "$sum": 1
+        }
+      }
+    }, {
+      $project: {
+        "textbookCode": "$_id",
+        count: 1,
+        "_id": 0
+      }
+    }, {
+      $lookup: {
+        from: "textbooks",
+        localField: "textbookCode",
+        foreignField: "code",
+        as: "textbookInfo"
+      }
+    }, {
+      $unwind: "$textbookInfo"
+    }, {
+      $project: {
+        testCount: "$count",
+        textbookCode: 1,
+        name: "$textbookInfo.name",
+        imageurl: "$textbookInfo.imageUrl"
+      }
+    }]);
+    return list;
+  } catch (err) {
+    throw err;
+  }
+}
+
+export async function listUpcomingTestTextBookWise(args, ctx) {
+  try {
+    let promises = await Promise.all([Tests(ctx),await MasterResult(ctx)])
+    const TestSchema = promises[0];
+    const TestList = await TestSchema.aggregate([{
+      "$match": {
+        "test.endTime": {
+          $gte: new Date()
+        },
+        active: true,
+        "mapping.textbook.code": args.textbookCode
+      }
+    },{
+      $sort : {"test.endTime":1}
+    },{
+      $lookup: {
+        from: "markingschemes",
+        localField: "markingScheme",
+        foreignField: "_id",
+        as: "markingAnalysis"
+      }
+    }, {
+      $unwind: "$markingAnalysis"
+    }, {
+      $project: {
+        _id: 0,
+        "totalMarks": "$markingAnalysis.totalMarks",
+        "totalQuestions": "$markingAnalysis.totalQuestions",
+        "test": 1
+      }
+    }]);
+    const questionPaperIds = TestList.map((obj) => obj["test"]["questionPaperId"]);
+    const MasterResultSchema = promises[1];
+    const testAlreadySubmittedByStudent = (await MasterResultSchema.find({
+      questionPaperId: {
+        $in: questionPaperIds
+      },
+      studentId: ctx.studentId
+    }).select({
+      _id: 0,
+      questionPaperId: 1
+    })).map((obj) => obj.questionPaperId);
+    return appendIsTestActive(TestList, testAlreadySubmittedByStudent);
+  } catch (err) {
+    throw err;
+  }
+}
+
+export async function listOfCompletedTestTextBookWise(args , ctx){
+  try{
+    let promises = await Promise.all([Tests(ctx),MasterResult(ctx)]);
+    const TestSchema = promises[0];
+    const MasterResultSchema = promises[1];
+    const TestList = await TestSchema.find({
+      "mapping.textbook.code":args.textbookCode,
+      "test.startTime":{ "$lte" : new Date()}
+    }).select({_id : 0,test:1});
+    const questionPaperIds = TestList.map((obj)=> obj.test.questionPaperId);
+    const markingAnalysis = await MasterResultSchema.find({ studentId : ctx.studentId,questionPaperId:{$in:questionPaperIds}}).select({_id:0}).lean();
+    return appendMarkingAnalysis(TestList,markingAnalysis);
+  }catch(err){
+    throw err
+  }
+}
+
+function appendIsTestActive(testArr, testAlreadySubmittedByStudent) {
+  let finalUpcomingTest = [];
+  for (let i = 0; i < testArr.length; i++) {
+    if (testAlreadySubmittedByStudent.indexOf(testArr[i]["test"]["questionPaperId"]) > -1) {
+      continue;
+    }
+    testArr[i]["activeNow"] = new Date(testArr[i]["test"]["startTime"]).getTime() > new Date().getTime() ? false : true;
+    finalUpcomingTest.push(testArr[i]);
+  }
+  return finalUpcomingTest;
+}
+
+function appendMarkingAnalysis(possibleListOfCompletedTests,completedTests){
+  let finalCompletedTest = [];
+  for(let i=0; i < possibleListOfCompletedTests.length; i++){
+    let qPid = possibleListOfCompletedTests[i]["test"]["questionPaperId"];
+    let indexOfCompletedTest = completedTests.findIndex((obj)=>{
+      return qPid === obj["questionPaperId"]
+    });
+    if(indexOfCompletedTest > -1){
+      let obj = JSON.parse(JSON.stringify(possibleListOfCompletedTests[i]));
+      obj["markingAnalysis"] = completedTests[indexOfCompletedTest];
+      finalCompletedTest.push(obj);
+    }else if( indexOfCompletedTest === -1 &&   (new Date(possibleListOfCompletedTests[i]["test"]["endTime"]).getTime() < new Date().getTime())){
+      let obj = JSON.parse(JSON.stringify(possibleListOfCompletedTests[i]));
+      obj["markingAnalysis"] = null;
+      finalCompletedTest.push(obj);
+    }
+  }
+  return finalCompletedTest
+}
+
+export async function startTest(args , ctx){
+  try{
+    let promises = await Promise.all([Questions(ctx) , Tests(ctx), MasterResult(ctx)])
+    const TestSchema = promises[1] ;
+    const MasterResultSchema  = promises[2];
+    const isTestAlreadyTakenOrStarted = await MasterResultSchema.findOne({ studentId : ctx.studentId,questionPaperId:args.questionPaperId});
+    if(isTestAlreadyTakenOrStarted){
+      throw "Test already started or taken.";
+    }
+    let test = await TestSchema.aggregate([{
+      $match: {
+          "test.questionPaperId": args.questionPaperId,
+          "orientations": args.orientationOfStudent,
+          "branches": args.branchOfStudent,
+          "mapping.class.code": args.classOfStudent,
+          "test.startTime": {
+              $lte: new Date(args.startTime)
+            },
+          "test.endTime": {
+              $gte: new Date(args.startTime)
+            },
+            active : true
+          }
+        },
+        {
+          $lookup :{
+            from : "questions",
+            localField : "test.questionPaperId",
+            foreignField : "questionPaperId",
+            as : "questions"
+          }
+        },
+        {
+          $project:{
+            _id : 0,
+            test : 1,
+            questions : 1,
+            mapping : 1
+          }
+        }
+      ]
+    )
+    if(!test.length){
+      throw "Invalid test or test not started yet";
+    }
+    // const timeString = new Date();
+    const masterResultMapping = {
+      questionPaperId: args.questionPaperId,
+      studentId: ctx.studentId,
+      status: "STARTED",
+      startedAt: new Date(args.startTime),
+      classCode: args.classOfStudent,
+      textbookCode: test[0].mapping.textbook.code,
+      subjectCode: test[0].mapping.subject.code,
+      branch: args.branchOfStudent,
+      orientation: args.orientationOfStudent,
+      instructionAccepted : args.instructionAccepted ? args.instructionAccepted : false;
+    }
+    await MasterResultSchema.create(masterResultMapping);
+    test[0]["serverStartTime"] = args.startTime
+    delete test[0]["mapping"]
+    return test[0];
+  }catch(err){
+    throw err;
+  }
+}
+
+export async function headerCount(args , ctx){
+  try{
+    let matchPipeline = { active : true , type : "textbookbasedtest"};
+    if( args.classCode ){
+      matchPipeline["mapping.class.code"] = args.classCode
+    }
+  
+    if(args.orientation){
+      matchPipeline["orientations"] = args.orientation
+    }
+  
+    if(args.branch){
+      matchPipeline["branches"] = args.branch
+    }
+  
+    if(args.subjectCode){
+      matchPipeline["mapping.subject.code"] = args.subjectCode
+    }
+  
+    if(args.textbookCode){
+      matchPipeline["mapping.textbook.code"] = args.textbookCode
+    }
+  
+    let groupPipeline = {
+      "_id" : `$mapping.${args.header}.code`,
+      count : {$sum:1}
+    }
+
+    const TestSchema = await Tests(ctx);
+    const result = await TestSchema.aggregate([
+      {
+        $match : matchPipeline
+      },
+      {
+        $group : groupPipeline
+      }
+    ]);
+    let outputResult = {};
+    result.forEach(function(obj){
+      outputResult[obj._id] = obj["count"];
+    })
+    return outputResult;
+  }catch(err){
+    throw err;
+  }
+}
+
+export async function completeTest(args, ctx){
+  try{
+
+  }catch(err){
+    throw err;
   }
 }
