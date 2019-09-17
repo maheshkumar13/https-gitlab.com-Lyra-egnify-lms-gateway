@@ -9,16 +9,67 @@ export async function indexContent(req, res) {
     try{
         let context = req.user_cxt;
         let contentMappingModel = await contentMapping(context);
-        let contents = await contentMappingModel.find({active:true}).lean().select({content : 1});
+        let contents = await contentMappingModel.aggregate([{
+            $match: {
+                active: true
+            }
+        }, {
+            $lookup: {
+                from: "textbooks",
+                localField: "refs.textbook.code",
+                foreignField: "code",
+                as: "textbookInfo"
+            }
+        }, {
+            $unwind: {
+                "path": "$textbookInfo",
+                "preserveNullAndEmptyArrays": true
+            }
+        },{
+            "$project":{
+                "id":"$_id",
+                title : "$content.name",
+                type : "$content.category",
+                textbook : "$textbookInfo.name",
+                class : "$textbookInfo.refs.class.name",
+                subject : "$textbookInfo.refs.subject.name",
+                chapterCode : "$refs.topic.code",
+                "_id" : 0
+            }
+        },{
+            $lookup:{
+                from : "concepttaxonomies",
+                localField : "chapterCode",
+                foreignField: "code",
+                as : "chapterInfo"
+            }
+        },{
+            $unwind : {
+                path : "$chapterInfo",
+                "preserveNullAndEmptyArrays": true
+            }
+        },{
+            $project:{
+                id : 1,
+                title : 1,
+                type : 1,
+                textbook : 1,
+                class : 1,
+                subject : 1,
+                chapter : "$chapterInfo.child"
+            }
+        }]);
         for (let i = 0 ; i < contents.length ; i++){
             let option = {
-                json: {"title" : contents[i]["content"]["name"], "type" : contents[i]["content"]["category"] , "id" : contents[i]["_id"]},
-                url : config["elasticSearch"]["url"]+"content/_doc/"+contents[i]["_id"],
+                json: contents[i],
+                url : config["elasticSearch"]["url"]+"content/_doc/"+contents[i]["id"],
                 method : "POST"
             }
             setTimeout(function(){
                 request(option,(err,response, body) => {
-                    console.log(response.statusCode);
+                    if(!err){
+                        console.log(response.statusCode);
+                    }
                 })
             },i*10);
         }
@@ -42,7 +93,9 @@ export async function indexChapter(req, res) {
             }
             setTimeout(function(){
                 request(option,(err,response, body) => {
-                    console.log(response.statusCode);
+                    if(!err){
+                        console.log(response.statusCode);
+                    }
                 })
             },i*10);
         }
