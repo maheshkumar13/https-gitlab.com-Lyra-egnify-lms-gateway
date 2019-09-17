@@ -630,7 +630,7 @@ export async function startTest(args , ctx){
       subjectCode: test[0].mapping.subject.code,
       branch: args.branchOfStudent,
       orientation: args.orientationOfStudent,
-      instructionAccepted : args.instructionAccepted ? args.instructionAccepted : false;
+      instructionAccepted : args.instructionAccepted ? args.instructionAccepted : false
     }
     await MasterResultSchema.create(masterResultMapping);
     test[0]["serverStartTime"] = args.startTime
