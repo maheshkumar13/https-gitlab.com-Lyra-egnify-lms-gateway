@@ -34,6 +34,7 @@ export async function indexContent(req, res) {
                 class : "$textbookInfo.refs.class.name",
                 subject : "$textbookInfo.refs.subject.name",
                 chapterCode : "$refs.topic.code",
+                timgPath : 1,
                 "_id" : 0
             }
         },{
@@ -56,7 +57,8 @@ export async function indexContent(req, res) {
                 textbook : 1,
                 class : 1,
                 subject : 1,
-                chapter : "$chapterInfo.child"
+                chapter : "$chapterInfo.child",
+                timgPath : 1
             }
         }]);
         for (let i = 0 ; i < contents.length ; i++){
