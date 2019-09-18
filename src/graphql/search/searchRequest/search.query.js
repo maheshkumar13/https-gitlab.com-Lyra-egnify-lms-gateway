@@ -32,7 +32,7 @@ export const autoComplete = {
                 }
             }
             let res = await requestForResult(options);
-            let result = res["suggest"]["_doc"][0]["options"].map((search_result) => { return { title: search_result.text, id: search_result["_id"], type: search_result["_source"]["type"],textbook : search_result["_source"]["textbook"] ,class : search_result["_source"]["class"] ,subject : search_result["_source"]["subject"],chapter :search_result["_source"]["chapter"] } })
+            let result = res["suggest"]["_doc"][0]["options"].map((search_result) => { return { title: search_result.text, id: search_result["_id"], type: search_result["_source"]["type"],textbook : search_result["_source"]["textbook"] ,class : search_result["_source"]["class"] ,subject : search_result["_source"]["subject"],chapter :search_result["_source"]["chapter"], resourceKey : search_result["_source"]["resourceKey"] } })
             // console.log(JSON.stringify(res));
             return result;
         } catch (err) {
@@ -62,7 +62,7 @@ export const searchResult = {
                 }
             }
             let res = await requestForResult(options);
-            let result = res["hits"]["hits"].map((search_result) => { return { textbook : search_result["_source"].textbook, chapter:search_result["_source"].chapter,subject :search_result["_source"].subject,class: search_result["_source"].class,  title: search_result["_source"].title, id: search_result["_id"], type: search_result["_source"]["type"] } })
+            let result = res["hits"]["hits"].map((search_result) => { return { textbook : search_result["_source"].textbook, chapter:search_result["_source"].chapter,subject :search_result["_source"].subject,class: search_result["_source"].class,  title: search_result["_source"].title, id: search_result["_id"], type: search_result["_source"]["type"] , resourceKey :  search_result["_source"]["resourceKey"] } })
             return result;
         } catch (err) {
             throw new Error(err);
