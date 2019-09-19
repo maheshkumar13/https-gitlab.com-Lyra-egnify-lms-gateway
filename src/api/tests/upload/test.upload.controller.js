@@ -598,72 +598,64 @@ export async function fetchEncryptedQuestions( req, res){
   }
 }
 
-export async function startTest(args , ctx){
-  try{
-    let promises = await Promise.all([Questions(ctx) , Tests(ctx), MasterResult(ctx)])
-    const TestSchema = promises[1] ;
-    const MasterResultSchema  = promises[2];
-    const isTestAlreadyTakenOrStarted = await MasterResultSchema.findOne({ studentId : ctx.studentId,questionPaperId:args.questionPaperId});
-    if(isTestAlreadyTakenOrStarted){
-      throw "Test already started or taken.";
-    }
-    let test = await TestSchema.aggregate([{
-      $match: {
-          "test.questionPaperId": args.questionPaperId,
-          "orientations": args.orientationOfStudent,
-          "branches": args.branchOfStudent,
-          "mapping.class.code": args.classOfStudent,
-          "test.startTime": {
-              $lte: new Date(args.startTime)
-            },
-          "test.endTime": {
-              $gte: new Date(args.startTime)
-            },
-            active : true
-          }
-        },
-        {
-          $lookup :{
-            from : "questions",
-            localField : "test.questionPaperId",
-            foreignField : "questionPaperId",
-            as : "questions"
-          }
-        },
-        {
-          $project:{
-            _id : 0,
-            test : 1,
-            questions : 1,
-            mapping : 1
-          }
-        }
-      ]
-    )
-    if(!test.length){
-      throw "Invalid test or test not started yet";
-    }
-    // const timeString = new Date();
-    const masterResultMapping = {
-      questionPaperId: args.questionPaperId,
-      studentId: ctx.studentId,
-      status: "STARTED",
-      startedAt: new Date(args.startTime),
-      classCode: args.classOfStudent,
-      textbookCode: test[0].mapping.textbook.code,
-      subjectCode: test[0].mapping.subject.code,
-      branch: args.branchOfStudent,
-      orientation: args.orientationOfStudent,
-      instructionAccepted : args.instructionAccepted ? args.instructionAccepted : false
-    }
-    await MasterResultSchema.create(masterResultMapping);
-    test[0]["serverStartTime"] = args.startTime
-    delete test[0]["mapping"]
-    return test[0];
-  }catch(err){
-    throw err;
-  }
-}
+// export async function startTest(args , ctx){
+//   try{
+//     let promises = await Promise.all([Questions(ctx) , Tests(ctx), MasterResult(ctx)])
+//     const TestSchema = promises[1] ;
+//     const MasterResultSchema  = promises[2];
+//     const isTestAlreadyTakenOrStarted = await MasterResultSchema.findOne({ studentId : ctx.studentId,questionPaperId:args.questionPaperId});
+//     if(isTestAlreadyTakenOrStarted){
+//       throw "Test already started or taken.";
+//     }
+//     let test = await TestSchema.aggregate([{
+//       $match: {
+//           "test.questionPaperId": args.questionPaperId,
+//           "orientations": args.orientationOfStudent,
+//           "branches": args.branchOfStudent,
+//           "mapping.class.code": args.classOfStudent,
+//           "test.startTime": {
+//               $lte: new Date(args.startTime)
+//             },
+//           "test.endTime": {
+//               $gte: new Date(args.startTime)
+//             },
+//             active : true
+//           }
+//         },
+//         {
+//           $project:{
+//             _id : 0,
+//             test : 1,
+//             questions : 1,
+//             mapping : 1
+//           }
+//         }
+//       ]
+//     )
+//     if(!test.length){
+//       throw "Invalid test or test not started yet";
+//     }
+//     // const timeString = new Date();
+//     const masterResultMapping = {
+//       questionPaperId: args.questionPaperId,
+//       studentId: ctx.studentId,
+//       status: "STARTED",
+//       startedAt: new Date(args.startTime),
+//       classCode: args.classOfStudent,
+//       textbookCode: test[0].mapping.textbook.code,
+//       subjectCode: test[0].mapping.subject.code,
+//       branch: args.branchOfStudent,
+//       orientation: args.orientationOfStudent,
+//       instructionAccepted : args.instructionAccepted ? args.instructionAccepted : false
+//     }
+//     await MasterResultSchema.create(masterResultMapping);
+//     test[0]["serverStartTime"] = args.startTime
+//     delete test[0]["mapping"]
+//     return test[0];
+//   }catch(err){
+//     throw err;
+//   }
+// }
 
 export async function headerCount(args , ctx){
   try{
@@ -707,14 +699,6 @@ export async function headerCount(args , ctx){
       outputResult[obj._id] = obj["count"];
     })
     return outputResult;
-  }catch(err){
-    throw err;
-  }
-}
-
-export async function completeTest(args, ctx){
-  try{
-
   }catch(err){
     throw err;
   }
