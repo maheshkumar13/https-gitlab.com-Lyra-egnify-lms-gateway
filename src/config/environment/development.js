@@ -38,5 +38,8 @@ module.exports = {
   },
   elasticSearch:{
     url : process.env.ELASTIC_SEARCH_URL || "http://13.235.245.210:9200/"
+  },
+  encript: {
+    key: 'secret',
   }
 };

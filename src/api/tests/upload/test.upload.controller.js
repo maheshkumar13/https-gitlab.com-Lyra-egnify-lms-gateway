@@ -15,6 +15,7 @@ import {
   getModel as MasterResult
 } from '../masterResults/test.masterResults.model';
 
+const encrypt = require('../../../utils/encrypt');
 const request = require("request");
 const config = require('../../../config/environment')["config"];
 const fileUpload = require('../../../utils/fileUpload');
@@ -572,6 +573,29 @@ function appendMarkingAnalysis(possibleListOfCompletedTests,completedTests){
     }
   }
   return finalCompletedTest
+}
+
+export async function fetchEncryptedQuestions( req, res){
+  try{
+    if(!req.params.testId){
+      return res.status(400).send("test id is required.")
+    }
+    let testId = req.params.testId;
+    let findQuery = {questionPaperId : testId};
+    if(req.query.questionNo){
+      findQuery["qno"] = req.query.questionNo;
+    }    
+    const QuestionModel = await Questions(req.user_cxt);
+    let questions = await QuestionModel.find(findQuery).select({_id : 0 ,question:1,qno:1, subject : 1,q_type :1,q_category:1,options : 1,questionPaperId : 1}).lean();
+    if(questions.length){
+      return res.status(200).send(encrypt.encriptObject(questions));
+    }else{
+      return res.status(204).send("No Content");
+    }
+  }catch(err){
+    console.error(err);
+    return res.status(500).send("Internal server error");
+  }
 }
 
 export async function startTest(args , ctx){
