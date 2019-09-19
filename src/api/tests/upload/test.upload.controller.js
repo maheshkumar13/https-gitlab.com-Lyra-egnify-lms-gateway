@@ -703,3 +703,42 @@ export async function headerCount(args , ctx){
     throw err;
   }
 }
+
+export async function fetchInstructions(args , ctx ){
+  try{
+    const TestSchema = await Tests(ctx);
+    let currTime = new Date();
+    const instructions = await TestSchema.aggregate([
+      {
+        $match : {
+          "test.questionPaperId" : args.testId,
+          active : true,
+          "test.startTime" : { $lte : new Date(currTime)},
+          "test.endTime" : { $gte : new Date(currTime)}
+        }
+      },{
+        $lookup : {
+          from : "markingschemes",
+          localField : "markingScheme",
+          foreignField : "_id",
+          as : "markingScheme"
+        }
+      },
+      {
+        $unwind : "$markingScheme"  
+      },
+      {
+        $project : {
+          markingScheme : 1,
+          "startTime" : "$test.startTime",
+          "endTime" : "$test.endTime",
+          "duration" : "$test.duration",
+          "_id" : 0
+        }
+      }
+    ]);
+    return instructions;
+  }catch(err){
+    throw err;
+  }
+}
