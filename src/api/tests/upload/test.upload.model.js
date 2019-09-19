@@ -42,7 +42,8 @@ const TestSchema = new mongoose.Schema({
     active : { type : Boolean , default : false },
     fileKey : { type : String,default : null},
     branches : { type : Array , default : []},
-    orientations : { type : Array , deffault : []}
+    orientations : { type : Array , deffault : []},
+    type : { type : String , default : "textbookbasedtest"} // [textbookbasedtest , mocktest]
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
   minimize : false

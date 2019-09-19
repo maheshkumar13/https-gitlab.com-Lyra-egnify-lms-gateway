@@ -24,9 +24,9 @@ const CWUAnalysisType = new mongoose.Schema({
 const MasterResultSchema = new mongoose.Schema(
   {
     // test data
-    questionPaperId: { type: String, required: true },
+    questionPaperId: { type: String, required: true , index : true},
     // student data
-    studentId: { type: String, required: true },
+    studentId: { type: String, required: true , index : true },
 
     // response data
     responseData: ResponseDataSchema,

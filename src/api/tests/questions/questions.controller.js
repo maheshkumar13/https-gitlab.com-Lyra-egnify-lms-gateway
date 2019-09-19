@@ -1,6 +1,7 @@
 import { getModel as QuestionModel } from './questions.model';
 import { getModel as MasterResultModel } from '../masterResults/masterResults.model';
 import { getModel as ContentMappingModel } from '../../settings/contentMapping/contentMapping.model';
+import { getModel  as TextBook } from '.././../settings/textbook/textbook.model';
 import { config } from '../../../config/environment';
 import request from 'request';
 var client = require('../../../redis');
@@ -223,6 +224,10 @@ export async function practiceParseAndValidate(req, res) {
         });
         let percentageError = (errorQuestions.length / jsonifiedData.length) * 100;
         const qPid = uuidv1();
+        const branchAndOrientation  =  await getOrientationAndBranches(textbookCode , req.user_cxt)
+        if(!branchAndOrientation){
+          return res.status(400).send("Invalid textbook");
+        }
         let obj = {
           "content": {
             "name": fileName,
@@ -245,8 +250,8 @@ export async function practiceParseAndValidate(req, res) {
               "code": textbookCode
             }
           },
-          "branches": null,
-          "category": null,
+          "branches": branchAndOrientation["branches"],
+          "category": branchAndOrientation["orientations"],
           "active": false,
           "category" : ''
         }
@@ -262,6 +267,22 @@ export async function practiceParseAndValidate(req, res) {
     }
   });
 }
+
+async function getOrientationAndBranches(textbookCode, ctx) {
+  try {
+    const TextBookSchema = await TextBook(ctx);
+    return await TextBookSchema.findOne({
+      code: textbookCode
+    }).select({
+      orientations: 1,
+      branches: 1,
+      _id: 0
+    }).lean();
+  } catch (err) {
+    throw err;
+  }
+}
+
 export async function publishPractice (req , res ){
   try{
     let { paper_id } = req.body;
