@@ -12,6 +12,8 @@ variables:
   CONTAINER_IMAGE_LATEST: ${CI_REGISTRY_IMAGE}/${CI_BUILD_REF_NAME}:latest
   CONTAINER_IMAGE_UNTAGGED: ${CI_REGISTRY_IMAGE}/${CI_BUILD_REF_NAME}
   DOCKER_DRIVER: overlay2
+  REGION: ap-south-1
+  REPOSITORY_URL: 874146190074.dkr.ecr.ap-south-1.amazonaws.com/lms-gateway
 
 cache:
   paths:
