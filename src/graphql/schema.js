@@ -9,14 +9,14 @@ import {
   GraphQLObjectType as ObjectType,
 } from 'graphql';
 
-import { Subjects, getSubjectTextbookTopic, TextbooksForEachSubject, } from './settings/subject/subject.query';
-import { InstituteHierarchy, InstituteHierarchyPaginated,ChildDataFromParent } from './settings/instituteHierarchy/instituteHierarchy.query';
+import { Subjects, getSubjectTextbookTopic, TextbooksForEachSubject } from './settings/subject/subject.query';
+import { InstituteHierarchy, InstituteHierarchyPaginated, ChildDataFromParent } from './settings/instituteHierarchy/instituteHierarchy.query';
 import { Institute } from './settings/institute/institute.query';
 import { InstituteHierarchyGrid } from './settings/instituteHierarchy/instituteHierarchyGrid.query';
 import { updateCategory } from './settings/instituteHierarchy/instituteHierarchy.mutaion';
 import { createSubject } from './settings/subject/subject.mutation';
 import { Programs } from './settings/programs/programs.query';
-import { Textbooks, TextbooksInfo, } from './settings/textbook/textbook.query';
+import { Textbooks, TextbooksInfo } from './settings/textbook/textbook.query';
 import { createTextbook, updateTextbook, deleteTextbook } from './settings/textbook/textbook.mutation';
 import { Students, StudentUniqueValues, StudentsByLastNode, StudentById } from './settings/student/student.query';
 import { updateStudentAvatar, updateStudentSubjects } from './settings/student/student.mutation';
@@ -25,19 +25,18 @@ import { ContentMapping, ContentMappingStats, CmsCategoryStats, CategoryWiseFile
 import { LaunchRequest } from './launcher/launchRequest/launchRequest.query';
 import { Questions, Results, QuestionEvaluation } from './tests/questions/questions.query';
 import { MasterResults } from './tests/masterResults/masterResults.query';
-import { InsertContent,UpdateContent, updateMetaData } from './settings/contentMapping/contentMapping.mutation';
-import { CreateTestType,DeleteTestType,UpdateTestType} from  './settings/testType/testType.mutation';
-import { TestType} from './settings/testType/testType.query';
-import { CreatePackage } from './settings/package/package.mutation';
-import {PackageList, PackageDetails} from './settings/package/package.query';
-import {UpdatePackage,FeedbackPackage} from './settings/package/package.mutation';
-import { autoComplete , searchResult } from './search/searchRequest/search.query'
+import { InsertContent, UpdateContent, updateMetaData } from './settings/contentMapping/contentMapping.mutation';
+import { CreateTestType, DeleteTestType } from './settings/testType/testType.mutation';
+import { TestType } from './settings/testType/testType.query';
+import { PackageList, PackageDetails } from './settings/package/package.query';
+import { CreatePackage, UpdatePackage, FeedbackPackage } from './settings/package/package.mutation';
+import { autoComplete, searchResult } from './search/searchRequest/search.query';
 import { addTimeseries } from './analysis/timeseries/timeseries.query';
 import { ListTest , UpcomingTests , ListSubjectWiseBooksAndTestCount, CompletedTests ,  HeaderCountForTextBookBasedTest} from '../graphql/tests/upload/upload.query';
 import { ListMarkingSchema } from '../graphql/tests/markingShema/marking.shema.query';
-import { PublishTest , ParseAndValidateTest , updateTestInfo} from './tests/upload/upload.mutation'
+import { PublishTest, ParseAndValidateTest, updateTestInfo } from './tests/upload/upload.mutation';
 
-const schema = new Schema({ 
+const schema = new Schema({
   query: new ObjectType({
     name: 'Query',
     fields: {
@@ -77,10 +76,13 @@ const schema = new Schema({
       searchResult,
       ListTest,
       ListMarkingSchema,
+<<<<<<< HEAD
       UpcomingTests,
       ListSubjectWiseBooksAndTestCount,
       CompletedTests,
       HeaderCountForTextBookBasedTest
+=======
+>>>>>>> development
     },
   }),
   mutation: new ObjectType({
@@ -104,7 +106,7 @@ const schema = new Schema({
       addTimeseries,
       PublishTest,
       ParseAndValidateTest,
-      updateTestInfo
+      updateTestInfo,
     },
   }),
 });

@@ -34,5 +34,7 @@ module.exports = {
   },
   encript: {
     key: process.env.ENCRIPT_KEY || 'secret',
-  }
+  },
+  AWS_PRIVATE_BUCKET: 'rankguru-uat',
+  AWS_PUBLIC_BUCKET: 'rankguru-uat-public',
 };

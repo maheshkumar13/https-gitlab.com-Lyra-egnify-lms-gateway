@@ -63,6 +63,8 @@ export const ContentMappingType = new ObjectType({
     category: { type: StringType, description: 'Category' },
     metaData: { type: GraphQLJSON, description: 'metadata' },
     coins: { type: IntType, description: 'Coins' },
+    timgPath: { type: StringType, description: 'Thumbnail image path' },
+    viewOrder: { type: IntType, description: 'view order' },
   },
 });
 
@@ -82,6 +84,7 @@ export const CmsCategoryStatsInputType = new InputType({
 export const CmsCategoryStatsOutputType = new ObjectType({
   name: 'CmsCategoryStatsOutputType',
   fields: {
+    classCode: { type: StringType, description: 'Class code' },
     category: { type: StringType, description: 'Name of the category' },
     count: { type: IntType, description: 'Count of the files which belongs to that category' },
   },
