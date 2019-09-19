@@ -76,13 +76,10 @@ const schema = new Schema({
       searchResult,
       ListTest,
       ListMarkingSchema,
-<<<<<<< HEAD
       UpcomingTests,
       ListSubjectWiseBooksAndTestCount,
       CompletedTests,
       HeaderCountForTextBookBasedTest
-=======
->>>>>>> development
     },
   }),
   mutation: new ObjectType({
