@@ -41,5 +41,6 @@ module.exports = {
   AWS_PUBLIC_BUCKET_FOLDER: 'samplefiles',
   encript: {
     key: process.env.ENCRIPT_KEY || 'secret',
-  }
+  },
+  COUCH_DB_URL : process.env.COUCH_DB_URL
 };
