@@ -440,7 +440,10 @@ export async function listTextBooksWithTestSubectWise(args, ctx) {
     const list = await TestSchema.aggregate([{
       $match: {
         "mapping.subject.code": args.subjectCode,
-        "active": true
+        "active": true,
+        "branches" : args.branchOfStudent,
+        "orientations" : args.orientationOfStudent,
+        "mapping.class.code" : args.classOfStudent
       }
     }, {
       $group: {
@@ -515,7 +518,8 @@ export async function listUpcomingTestTextBookWise(args, ctx) {
       questionPaperId: {
         $in: questionPaperIds
       },
-      studentId: ctx.studentId
+      studentId: ctx.studentId,
+      status : { $ne : "SUBMITTED" }
     }).select({
       _id: 0,
       questionPaperId: 1
@@ -598,64 +602,84 @@ export async function fetchEncryptedQuestions( req, res){
   }
 }
 
-// export async function startTest(args , ctx){
-//   try{
-//     let promises = await Promise.all([Questions(ctx) , Tests(ctx), MasterResult(ctx)])
-//     const TestSchema = promises[1] ;
-//     const MasterResultSchema  = promises[2];
-//     const isTestAlreadyTakenOrStarted = await MasterResultSchema.findOne({ studentId : ctx.studentId,questionPaperId:args.questionPaperId});
-//     if(isTestAlreadyTakenOrStarted){
-//       throw "Test already started or taken.";
-//     }
-//     let test = await TestSchema.aggregate([{
-//       $match: {
-//           "test.questionPaperId": args.questionPaperId,
-//           "orientations": args.orientationOfStudent,
-//           "branches": args.branchOfStudent,
-//           "mapping.class.code": args.classOfStudent,
-//           "test.startTime": {
-//               $lte: new Date(args.startTime)
-//             },
-//           "test.endTime": {
-//               $gte: new Date(args.startTime)
-//             },
-//             active : true
-//           }
-//         },
-//         {
-//           $project:{
-//             _id : 0,
-//             test : 1,
-//             questions : 1,
-//             mapping : 1
-//           }
-//         }
-//       ]
-//     )
-//     if(!test.length){
-//       throw "Invalid test or test not started yet";
-//     }
-//     // const timeString = new Date();
-//     const masterResultMapping = {
-//       questionPaperId: args.questionPaperId,
-//       studentId: ctx.studentId,
-//       status: "STARTED",
-//       startedAt: new Date(args.startTime),
-//       classCode: args.classOfStudent,
-//       textbookCode: test[0].mapping.textbook.code,
-//       subjectCode: test[0].mapping.subject.code,
-//       branch: args.branchOfStudent,
-//       orientation: args.orientationOfStudent,
-//       instructionAccepted : args.instructionAccepted ? args.instructionAccepted : false
-//     }
-//     await MasterResultSchema.create(masterResultMapping);
-//     test[0]["serverStartTime"] = args.startTime
-//     delete test[0]["mapping"]
-//     return test[0];
-//   }catch(err){
-//     throw err;
-//   }
-// }
+export async function fetchDecryptionKey(req , res ){
+  return res.status(200).send(config.encript.key);
+}
+
+export async function startTest(args , ctx){
+  try{
+    console.log(args);
+    let promises = await Promise.all([Questions(ctx) , Tests(ctx), MasterResult(ctx)])
+    const TestSchema = promises[1] ;
+    const MasterResultSchema  = promises[2];
+    const isTestAlreadyTakenOrStarted = await MasterResultSchema.findOne({ studentId : ctx.studentId,questionPaperId:args.questionPaperId});
+    if(isTestAlreadyTakenOrStarted && isTestAlreadyTakenOrStarted.status === "STARTED"){
+      return {
+        status: 'success',
+        syncDbUrl: isTestAlreadyTakenOrStarted.syncDbUrl,
+        shouldSync: isTestAlreadyTakenOrStarted.status === "STARTED" ? true : false, // eslint-disable-line
+      };
+    }else if(isTestAlreadyTakenOrStarted && isTestAlreadyTakenOrStarted.status === "SUBMITTED"){
+      throw "Test already submitted";
+    }else{
+      let test = await TestSchema.aggregate([{
+        $match: {
+            "test.questionPaperId": args.questionPaperId,
+            "orientations": args.orientationOfStudent,
+            "branches": args.branchOfStudent,
+            "mapping.class.code": args.classOfStudent,
+            "test.startTime": {
+                $lte: new Date(args.startTime)
+              },
+            "test.endTime": {
+                $gte: new Date(args.startTime)
+              },
+              active : true
+            }
+          },
+          {
+            $project:{
+              _id : 0,
+              test : 1,
+              questions : 1,
+              mapping : 1
+            }
+          }
+        ]
+      )
+      if(!test.length){
+        throw "Invalid test or test not started yet";
+      }
+      // const timeString = new Date();
+      const randValue = Math.floor(Math.random() * (999 - 100 + 1) + 100); // eslint-disable-line
+      const dbName = `${ctx.instituteId}_${args.questionPaperId}_${ctx.studentId}_${randValue.toString()}`.toLowerCase();
+      const syncDbUrl = `${config.COUCH_DB_URL}/${dbName}`;
+      const masterResultMapping = {
+        questionPaperId: args.questionPaperId,
+        studentId: ctx.studentId,
+        status: "STARTED",
+        startedAt: new Date(args.startTime),
+        classCode: args.classOfStudent,
+        textbookCode: test[0].mapping.textbook.code,
+        subjectCode: test[0].mapping.subject.code,
+        branch: args.branchOfStudent,
+        orientation: args.orientationOfStudent,
+        instructionAccepted : args.instructionAccepted ? args.instructionAccepted : false,
+        syncDbUrl : syncDbUrl
+      }
+      await MasterResultSchema.create(masterResultMapping);
+      // test[0]["serverStartTime"] = args.startTime
+      // delete test[0]["mapping"]
+      return {
+        status: 'success',
+        syncDbUrl:  syncDbUrl,
+        shouldSync: false, // eslint-disable-line
+      };
+    }
+  }catch(err){
+    throw err;
+  }
+}
 
 export async function headerCount(args , ctx){
   try{
@@ -699,6 +723,45 @@ export async function headerCount(args , ctx){
       outputResult[obj._id] = obj["count"];
     })
     return outputResult;
+  }catch(err){
+    throw err;
+  }
+}
+
+export async function fetchInstructions(args , ctx ){
+  try{
+    const TestSchema = await Tests(ctx);
+    let currTime = new Date();
+    const instructions = await TestSchema.aggregate([
+      {
+        $match : {
+          "test.questionPaperId" : args.testId,
+          active : true,
+          "test.startTime" : { $lte : new Date(currTime)},
+          "test.endTime" : { $gte : new Date(currTime)}
+        }
+      },{
+        $lookup : {
+          from : "markingschemes",
+          localField : "markingScheme",
+          foreignField : "_id",
+          as : "markingScheme"
+        }
+      },
+      {
+        $unwind : "$markingScheme"  
+      },
+      {
+        $project : {
+          markingScheme : 1,
+          "startTime" : "$test.startTime",
+          "endTime" : "$test.endTime",
+          "duration" : "$test.duration",
+          "_id" : 0
+        }
+      }
+    ]);
+    return instructions;
   }catch(err){
     throw err;
   }

@@ -37,4 +37,5 @@ module.exports = {
   },
   AWS_PRIVATE_BUCKET: 'rankguru-uat',
   AWS_PUBLIC_BUCKET: 'rankguru-uat-public',
+  COUCH_DB_URL : process.env.COUCH_DB_URL
 };

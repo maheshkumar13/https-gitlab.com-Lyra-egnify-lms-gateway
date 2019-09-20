@@ -74,6 +74,8 @@ spec:
               value: {{ .Values.projectEnv.PARSER_SERVICE}}
             - name: ELASTIC_SEARCH_URL
               value: {{ .Values.projectEnv.ELASTIC_SEARCH_URL}}
+            - name: COUCH_DB_URL
+              value: {{ .Values.projectEnv.COUCH_DB_URL}}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.service.internalPort }}

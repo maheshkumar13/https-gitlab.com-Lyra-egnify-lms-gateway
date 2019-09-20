@@ -32,7 +32,7 @@ import { PackageList, PackageDetails } from './settings/package/package.query';
 import { CreatePackage, UpdatePackage, FeedbackPackage } from './settings/package/package.mutation';
 import { autoComplete, searchResult } from './search/searchRequest/search.query';
 import { addTimeseries } from './analysis/timeseries/timeseries.query';
-import { ListTest , UpcomingTests , ListSubjectWiseBooksAndTestCount, CompletedTests ,  HeaderCountForTextBookBasedTest} from '../graphql/tests/upload/upload.query';
+import { ListTest , UpcomingTests , ListSubjectWiseBooksAndTestCount, CompletedTests ,  HeaderCountForTextBookBasedTest , FetchInstruction , StartTest } from '../graphql/tests/upload/upload.query';
 import { ListMarkingSchema } from '../graphql/tests/markingShema/marking.shema.query';
 import { PublishTest, ParseAndValidateTest, updateTestInfo } from './tests/upload/upload.mutation';
 
@@ -79,7 +79,9 @@ const schema = new Schema({
       UpcomingTests,
       ListSubjectWiseBooksAndTestCount,
       CompletedTests,
-      HeaderCountForTextBookBasedTest
+      HeaderCountForTextBookBasedTest,
+      FetchInstruction,
+      StartTest
     },
   }),
   mutation: new ObjectType({
