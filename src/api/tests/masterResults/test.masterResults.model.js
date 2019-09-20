@@ -48,7 +48,8 @@ const TestMasterResultSchema = new mongoose.Schema(
     timeTaken : { type : String, default : null},
     rank :  { type : Number, default : null},
     status : { type : String, default : null}, //COMPLETED OR STARTED
-    instructionAccepted : { type : Boolean, default : true}
+    instructionAccepted : { type : Boolean, default : true},
+    syncDbUrl : { type : String,default : null }
   },
   {
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
