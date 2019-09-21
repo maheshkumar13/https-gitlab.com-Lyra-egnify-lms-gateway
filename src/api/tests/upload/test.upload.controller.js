@@ -540,7 +540,7 @@ export async function listOfCompletedTestTextBookWise(args , ctx){
       "test.startTime":{ "$lte" : new Date()}
     }).select({_id : 0,test:1});
     const questionPaperIds = TestList.map((obj)=> obj.test.questionPaperId);
-    const markingAnalysis = await MasterResultSchema.find({ studentId : ctx.studentId,questionPaperId:{$in:questionPaperIds}}).select({_id:0}).lean();
+    const markingAnalysis = await MasterResultSchema.find({ studentId : ctx.studentId,questionPaperId:{$in:questionPaperIds},status : "SUBMITTED"}).select({_id:0}).lean();
     return appendMarkingAnalysis(TestList,markingAnalysis);
   }catch(err){
     throw err
@@ -608,8 +608,7 @@ export async function fetchDecryptionKey(req , res ){
 
 export async function startTest(args , ctx){
   try{
-    console.log(args);
-    let promises = await Promise.all([Questions(ctx) , Tests(ctx), MasterResult(ctx)])
+    let promises = await Promise.all([Tests(ctx), MasterResult(ctx)])
     const TestSchema = promises[1] ;
     const MasterResultSchema  = promises[2];
     const isTestAlreadyTakenOrStarted = await MasterResultSchema.findOne({ studentId : ctx.studentId,questionPaperId:args.questionPaperId});
