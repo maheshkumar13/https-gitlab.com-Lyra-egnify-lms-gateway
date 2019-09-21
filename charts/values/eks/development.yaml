@@ -29,8 +29,8 @@ projectEnv:
   AWS_S3_SECRET: "ZwRdd5AiEEIFaN+8NOqtf+cqXb2vhQ9Xo+rFFt2n"
   AWS_S3_REGION: "ap-south-1"
   REDIS_AUTH: "A"
-  REDIS_HOST: 'redis-master.development.svc.cluster.local'
-  REDIS_PASSWORD: 'CwADcltNY0'
+  REDIS_HOST: '13.234.201.76'
+  REDIS_PASSWORD: ''
   CACHE_TIMEOUT_SUBJECT: "A"
   CACHE_TIMEOUT_TEXTBOOK: "A"
   CACHE_TIMEOUT_TOPIC: "A"
@@ -38,6 +38,8 @@ projectEnv:
   CACHE_TIMEOUT_QUESTION: "A"
   CACHE_TIMEOUT_INSTITUTEHIERARCHY: "A"
   CACHE_TIMEOUT_STUDENT: "A"
+  PARSER_SERVICE : "http://13.235.219.180:8080/parse/"
+  ELASTIC_SEARCH_URL : "http://13.235.245.210:9200/"
 
 service:
   name: lms-gateway

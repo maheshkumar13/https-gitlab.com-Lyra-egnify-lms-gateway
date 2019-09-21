@@ -9,6 +9,8 @@
 import mongoose from 'mongoose';
 import { getDB } from '../../../db';
 
+// import { addContent, updateContent } from '../conceptTaxonomy/utils'
+
 const contentSchema = new mongoose.Schema({
   name: { type: String },
   category: { type: String },
@@ -42,10 +44,12 @@ const contentMappingSchema = new mongoose.Schema({
   refs: { type: refsSchema, required: true },
   orientation: [String],
   publication: { type: publicationSchema },
-  category: { type: String, enum: ['A', 'B', 'C',''], default: null },
+  category: { type: String, enum: ['A', 'B', 'C', ''], default: null },
   branches: { type: [String], default: null },
   active: { type: Boolean, default: true },
   coins: { type: Number, default: 0 },
+  timgPath: { type: String },
+  viewOrder: { type: Number },
   metaData: {},
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
@@ -56,6 +60,28 @@ export async function getModel(userCxt) {
   const db = await getDB(instituteId);
   return db.model('contentMapping', contentMappingSchema);
 }
+
+// contentMappingSchema.post('save',function(doc ,next){
+//   setTimeout(function(){
+//     addContent(doc);
+//   },10);
+//   next();
+// });
+
+// contentMappingSchema.post('updateOne',function(doc ,next){
+//   setTimeout(function(){
+//     console.log(this);
+//     addContent(doc.toJSON());
+//   },10);
+//   next();
+// });
+
+// contentMappingSchema.post('findOneAndUpdate',function(doc, next){
+//   setTimeout(function(){
+//     updateContent(doc);  
+//   },10);
+//   next();
+// });
 
 export default {
   getModel,
