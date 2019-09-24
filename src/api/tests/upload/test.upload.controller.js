@@ -963,9 +963,9 @@ async function createTestSnapshotData(TestSnapshotSchema , args , analysisOfTest
       category : studentDetails.category || null,
       hierarchy : studentDetails.hierarchy || [],
       egnifyId : studentDetails.egnifyId || null,
-      accessTag : {},
+      accessTag : {hierarchy : studentDetails.hierarchy.pop()["childCode"]},
       testName : args.testName,
-      hierarchyTag : {},
+      hierarchyTag : null,
       behaviourData : args.behaviourData,
       hierarchyLevels : studentDetails.hierarchyLevels,
       responseData : {
