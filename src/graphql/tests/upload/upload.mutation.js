@@ -74,7 +74,6 @@ export const SubmitTest = {
 export const StartTest = {
     args : {
         questionPaperId : { type : NonNull(StringType) },
-        startTime : { type : NonNull(StringType) } // ISO FORMAT date String 2018-12-09:***
     },
     type : GraphQLJSON,
     async resolve (object , args , context){

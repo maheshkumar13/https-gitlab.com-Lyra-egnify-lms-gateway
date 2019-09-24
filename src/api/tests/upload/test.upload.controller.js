@@ -613,9 +613,8 @@ export async function fetchDecryptionKey(req , res ){
 export async function startTest(args , ctx){
   try{
     let promises = await Promise.all([Tests(ctx), MasterResult(ctx)])
-    const TestSchema = promises[1] ;
-    const MasterResultSchema  = promises[2];
-    console.log(MasterResultSchema)
+    const TestSchema = promises[0] ;
+    const MasterResultSchema  = promises[1];
     const isTestAlreadyTakenOrStarted = await MasterResultSchema.findOne({ studentId : ctx.studentId,questionPaperId:args.questionPaperId});
     if(isTestAlreadyTakenOrStarted && isTestAlreadyTakenOrStarted.status === "SUBMITTED"){
       throw "Test already submitted";
@@ -627,10 +626,10 @@ export async function startTest(args , ctx){
             "branches": args.branchOfStudent,
             "mapping.class.code": args.classOfStudent,
             "test.startTime": {
-                $lte: new Date(args.startTime)
+                $lte: new Date()
               },
             "test.endTime": {
-                $gte: new Date(args.startTime)
+                $gte: new Date()
               },
               active : true
             }
@@ -673,7 +672,7 @@ export async function startTest(args , ctx){
         questionPaperId: args.questionPaperId,
         studentId: ctx.studentId,
         status: "STARTED",
-        startedAt: new Date(args.startTime),
+        startedAt: new Date(),
         classCode: args.classOfStudent,
         textbookCode: test[0].mapping.textbook.code,
         subjectCode: test[0].mapping.subject.code,
