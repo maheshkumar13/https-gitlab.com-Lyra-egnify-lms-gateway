@@ -856,7 +856,7 @@ export async function completeTest ( args , ctx ){
     analysisOfTest["completedAt"] = new Date(submisssionTime);
     updateMasterResult(MasterSchema,analysisOfTest,ctx);
     createTestSnapshotData(TestSnapshotSchema , args,analysisOfTest,ctx );
-    return marksObtained;
+    return analysisOfTest;
   }catch(err){
     throw err;
   }
