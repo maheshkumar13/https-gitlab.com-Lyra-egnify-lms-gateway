@@ -42,5 +42,5 @@ module.exports = {
   encript: {
     key: 'secret',
   },
-  COUCH_DB_URL : process.env.COUCH_DB_URL || "http://127.0.0.1:5984/"
+  COUCH_DB_URL : process.env.COUCH_DB_URL || "http://13.235.245.210:5984/"
 };
