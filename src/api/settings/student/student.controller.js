@@ -169,13 +169,7 @@ export async function getStudentDetailsById(args, context) { // eslint-disable-l
   return Student.findOne(
     { studentId: args.studentId },
     {
-      studentId: 1,
-      studentName: 1,
-      hierarchyLevels: 1,
-      avatarUrl: 1,
-      subjects: 1,
-      hierarchy: 1,
-      orientation: 1,
+      _id : 0
     },
   ).then(student => student);
 }

@@ -14,6 +14,10 @@ import {
 import {
   getModel as MasterResult
 } from '../masterResults/test.masterResults.model';
+import { getStudentDetailsById } from '../../settings/student/student.controller';
+import { getModel as TestSnapshot } from './testsnapshot.model';
+
+const couchdb = require("../../../utils/couch");
 
 const encrypt = require('../../../utils/encrypt');
 const request = require("request");
@@ -611,14 +615,9 @@ export async function startTest(args , ctx){
     let promises = await Promise.all([Tests(ctx), MasterResult(ctx)])
     const TestSchema = promises[1] ;
     const MasterResultSchema  = promises[2];
+    console.log(MasterResultSchema)
     const isTestAlreadyTakenOrStarted = await MasterResultSchema.findOne({ studentId : ctx.studentId,questionPaperId:args.questionPaperId});
-    if(isTestAlreadyTakenOrStarted && isTestAlreadyTakenOrStarted.status === "STARTED"){
-      return {
-        status: 'success',
-        syncDbUrl: isTestAlreadyTakenOrStarted.syncDbUrl,
-        shouldSync: isTestAlreadyTakenOrStarted.status === "STARTED" ? true : false, // eslint-disable-line
-      };
-    }else if(isTestAlreadyTakenOrStarted && isTestAlreadyTakenOrStarted.status === "SUBMITTED"){
+    if(isTestAlreadyTakenOrStarted && isTestAlreadyTakenOrStarted.status === "SUBMITTED"){
       throw "Test already submitted";
     }else{
       let test = await TestSchema.aggregate([{
@@ -649,6 +648,23 @@ export async function startTest(args , ctx){
       if(!test.length){
         throw "Invalid test or test not started yet";
       }
+      let duration = test.test.duration; //In minutes
+
+      if(isTestAlreadyTakenOrStarted && isTestAlreadyTakenOrStarted.status === "STARTED"){
+        let timeLeft = (new Date().getTime() -  new Date(isTestAlreadyTakenOrStarted.startedAt).getTime()) / 1000*60;
+        if(timeLeft >= duration){
+          throw "Test duration is already completed."
+        }else{
+          return {
+            status: 'success',
+            syncDbUrl: isTestAlreadyTakenOrStarted.syncDbUrl,
+            shouldSync: isTestAlreadyTakenOrStarted.status === "STARTED" ? true : false, // eslint-disable-line
+            testKey : config.encript.key,
+            timeLeft,
+            duration
+          };
+        }
+      }
       // const timeString = new Date();
       const randValue = Math.floor(Math.random() * (999 - 100 + 1) + 100); // eslint-disable-line
       const dbName = `${ctx.instituteId}_${args.questionPaperId}_${ctx.studentId}_${randValue.toString()}`.toLowerCase();
@@ -672,7 +688,10 @@ export async function startTest(args , ctx){
       return {
         status: 'success',
         syncDbUrl:  syncDbUrl,
-        shouldSync: false, // eslint-disable-line
+        shouldSync: false, // eslint-disable-line,
+        testKey : config.encript.key,
+        duration,
+        timeLeft : duration
       };
     }
   }catch(err){
@@ -763,5 +782,203 @@ export async function fetchInstructions(args , ctx ){
     return instructions;
   }catch(err){
     throw err;
+  }
+}
+
+// {
+//   "testId":"*******",
+//   "rawResponse":{
+//     "1" : ["a","b"], //more than one option correct
+//     "2" : ["c"], // single answer correct
+//     "3" : ["d"],
+//     "4" : [] // unattempted or nothing,
+//     ...
+//   }
+// }
+// @params submisssionTime NOT REQUIRED client time cannot be trusted.
+// triggered when submit test is done or autotriggered when the duration of test is completed.
+// 
+export async function completeTest ( args , ctx ){
+  //Trigger an api to GA server with CWU ANALYSIS , RAW RESPONSE and BEHAVIOUR DATA 
+  //should be asynchronusly triggered with retries upto 3 times if failed keep in db so that can be synchronised later
+  //Need cron job to sync couchdb to lms mongo if the request is not made due to internet connectivity.
+  //once request is received validate the time at which test was submitted, if valid calculate CWU and total marks obtained with percentage.
+  try{
+    const promisesA = await Promise.all([MasterResult(ctx),Tests(ctx),Questions(ctx),TestSnapshot(ctx)]);
+    const MasterSchema = promisesA[0];
+    const TestSchema = promisesA[1];
+    const QuestionsSchema = promisesA[2];
+    const TestSnapshotSchema =  promisesA[3];
+    const test = TestSchema.aggregate([
+      {$match: {"test.questionPaperId": args.testId}},
+      {$lookup:{
+          from : "markingschemes",
+          localField : "markingScheme",
+          foreignField : "_id",
+          as : "markingScheme"   
+      }},{$unwind : "$markingScheme"},{
+        $project : {
+          _id : 0,
+          test : 1,
+          markingScheme : 1
+        }
+      }
+    ]);
+    const master = MasterSchema.findOne({ studentId : ctx.studentId,questionPaperId : args.testId,status : "STARTED"}).lean();
+    const questions = QuestionsSchema.find({questionPaperId : args.testId}).select({_id : 0,key : 1,qno : 1}).lean();
+    const promisesB = await Promise.all([test,master,questions]);
+    const testDetails = promisesB[0];
+    const correctOptions = promisesB[2];
+    const studentTestDetails = promisesB[1];
+    if(!testDetails || !correctOptions || !studentTestDetails){
+      throw "Invalid test or student or student has not started test yet."
+    }
+    const submisssionTime = new Date();
+    let timeDiff = (new Date(submisssionTime).getTime()- new Date(studentTestDetails.startedAt).getTime())/60000;
+    if( testDetails.test.duration < timeDiff ){
+      //Get behaviour data from couchDB and generate everything other than rank analysis
+      if(studentTestDetails.totalMarks){
+        throw "Test is over, please wait for your result"; 
+      }
+    }
+    let correctAnswerMapping = {};
+    correctOptions.forEach(function(objt){
+      correctAnswerMapping[objt["qno"]] = objt["key"];
+    });
+    const behaviourData = await fetchBehaviourDataFromCouchDb(studentTestDetails.syncDbUrl);
+    args.behaviourData = behaviourData;
+    if(!studentTestDetails.totalMarks){
+      const rawResponseFromBehaviourData = getRawResponseFromBehaviourData(behaviourData);
+      args.rawResponse = rawResponseFromBehaviourData;
+    }
+    args.testName = test.test.name;
+    let analysisOfTest = calculateMarks(args.rawResponse,testDetails.markingScheme,correctAnswerMapping);
+    analysisOfTest["timeTaken"] = timeDiff;
+    analysisOfTest["completedAt"] = new Date(submisssionTime);
+    updateMasterResult(MasterSchema,analysisOfTest,ctx);
+    createTestSnapshotData(TestSnapshotSchema , args,analysisOfTest,ctx );
+    return marksObtained;
+  }catch(err){
+    throw err;
+  }
+}
+
+function calculateMarks(rawResponse , markingScheme , correctOptions){
+  let marksObtained = 0 , percentageObtained;
+  let cwuAnalysis = {C : 0,W : 0, R : 0};
+  let responseData = {
+    evaluation: {},
+    score : { },
+    response : rawResponse
+  };
+  for(let key in correctOptions){
+    if(rawResponse.hasOwnProperty(key)){
+      if(isEqual(rawResponse[key],correctOptions[key])){
+        responseData.evaluation[key] = "C";
+        cwuAnalysis["C"] = cwuAnalysis["C"] + 1;
+        responseData.score[key] = markingScheme.eval.rightAnswer;
+        marksObtained = marksObtained + markingScheme.eval.rightAnswer;
+      }else{
+        responseData.evaluation[key] = "W";
+        cwuAnalysis["W"] = cwuAnalysis["W"] + 1;
+        responseData.score[key] = markingScheme.eval.wrongAnswer;
+        marksObtained = marksObtained + markingScheme.eval.wrongAnswer;
+      }
+    }else{
+      responseData.evaluation[key] = "U";
+      cwuAnalysis["U"] = cwuAnalysis["U"] + 1;
+      responseData.score[key] = markingScheme.eval.wrongAnswer;
+      marksObtained = marksObtained + markingScheme.eval.wrongAnswer;
+
+    }
+  }
+  percentageObtained = (marksObtained * 100)/markingScheme.totalMarks;
+  return {marksObtained,cwuAnalysis,percentageObtained,cwuAnalysis,responseData};
+}
+function isEqual(a , b) {
+  if (a.length != b.length)
+      return false;
+  else {
+      for (var i = 0; i < a.length; i++){
+        if (a[i] != b[i]){
+            return false;
+        }
+      }
+      return true;
+  }
+}
+
+async function fetchBehaviourDataFromCouchDb(dbName){
+  try{
+    const couchSyncDb = await couchdb.use(dbName);
+    const data = await couchSyncDb.list({ include_docs: true });
+    const { rows } = data;
+    const behaviourData = [];
+    for (let l = 0; l < rows.length; l += 1) {
+      behaviourData.push(rows[l].doc);
+    }
+    couchSyncDB.destroy(dbName,function(err,deleted){
+      console.log(err);
+    });
+    return behaviourData;
+  }catch(err){
+    throw err;
+  }
+}
+
+function getRawResponseFromBehaviourData(behaviourData){
+  let rawResponse = {};
+  behaviourData.forEach(function(resp){
+    rawResponse[resp.questionNumber] = resp["latestResponse"].pop()
+  });
+  return rawResponse;
+}
+
+function updateMasterResult(MasterSchema , args,ctx){
+  MasterSchema.update({questionPaperId : args.testId,studentId : ctx.studentId},{
+    $set : {
+      status :  "SUBMITTED",
+      timeTaken : args.timeTaken,
+      completedAt : args.completedAt,
+      percentage : args.percentageObtained,
+      obtainedMarks : args.marksObtained,
+      cwuAnalysis: args.cwuAnalysis,
+      responseData : args.responseData
+    }
+  });
+}
+
+async function createTestSnapshotData(TestSnapshotSchema , args , analysisOfTest , ctx){
+  try{
+    const studentDetails = await getStudentDetailsById(ctx.studentId , ctx);
+    TestSnapshotSchema.create({
+      studentId :   ctx.studentId,
+      testId : args.testId,
+      studentName : studentDetails.studentName || null,
+      fatherName : studentDetails.fatherName || null,
+      phone : null,
+      email : null,
+      dob : studentDetails.dob || null,
+      gender : studentDetails.gender || null,
+      category : studentDetails.category || null,
+      hierarchy : studentDetails.hierarchy || [],
+      egnifyId : studentDetails.egnifyId || null,
+      accessTag : {},
+      testName : args.testName,
+      hierarchyTag : {},
+      behaviourData : args.behaviourData,
+      hierarchyLevels : studentDetails.hierarchyLevels,
+      responseData : {
+        questionResponse : analysisOfTest.responseData.evaluation,
+        questionsMarks :  analysisOfTest.responseData.score,
+        rawResponse : args.rawResponse
+      }
+    },function (err , testSnapshot){
+      if(err){
+        console.log(err);
+      }
+    })
+  }catch(err){
+    console.log(err);
   }
 }
