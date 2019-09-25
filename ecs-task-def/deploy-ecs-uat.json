@@ -1,0 +1,120 @@
+{
+  "containerDefinitions":[
+    {
+        "name": "lms-gateway",
+        "image": "874146190074.dkr.ecr.ap-south-1.amazonaws.com/lms-gateway:latest",
+        "essential": true,
+        "memory": 1520,
+        "cpu": 375,
+        "portMappings": [
+          {
+            "containerPort": 5000,
+            "protocol": "tcp"
+          }
+        ],
+        "environment":[
+          {
+            "name":"PORT",
+            "value":"5000"
+          },
+          {
+            "name":"NODE_ENV",
+            "value":"uat"
+          },
+          {
+            "name":"MONGODB_URI",
+            "value":"mongodb://lms:WQPVnRNtXY7CqKGUYR2qg23RPItVXf5mGs9twASm@uat.db.rankguru.com:27017/tenantregistry-lms-uat"
+          },
+          {
+            "name":"JWT_SECRET",
+            "value":"KAJDK656kllksklfmFGDFGS765ujh765T6GHAJDSjjjkjiursrda"
+          },
+          {
+            "name":"MAILJET_API_KEY",
+            "value":"a1fb4988b5a359099061d2cb8aebc80d"
+          },
+          {
+            "name":"APOLLO_ENGINE_KEY",
+            "value":"service:hydra-jeet-dev:b9DCNb7tCkPO6TO5xHIdmw"
+          },
+          {
+            "name":"SVC_SSO",
+            "value":"https://accounts.uat.rankguru.com"
+          },
+          {
+            "name":"PARSER_QUEUE_NS",
+            "value":"lms-parser-uat-mq"
+          },
+          {
+            "name":"CELERY_BROKER_URL",
+            "value":"redis://:vvqfBAUfPI@redis-master.dev.svc.cluster.local:6379/0"
+          },
+          {
+            "name":"CELERY_RESULT_BACKEND",
+            "value":"redis://:vvqfBAUfPI@redis-master.dev.svc.cluster.local:6379/0"
+          },
+          {
+            "name":"AWS_S3_KEY",
+            "value":"AKIA4XBZMKL5KA5DMR75"
+          },
+          {
+            "name":"AWS_S3_SECRET",
+            "value":"ZwRdd5AiEEIFaN+8NOqtf+cqXb2vhQ9Xo+rFFt2n"
+          },
+          {
+            "name":"AWS_S3_REGION",
+            "value":"ap-south-1"
+          },
+          {
+            "name":"REDIS_AUTH",
+            "value":"A"
+          },
+          {
+            "name":"REDIS_HOST",
+            "value":"redis-master.development.svc.cluster.local"
+          },
+          {
+            "name":"REDIS_PASSWORD",
+            "value":"CwADcltNY0"
+          },
+          {
+            "name":"CACHE_TIMEOUT_SUBJECT",
+            "value":"A"
+          },
+          {
+            "name":"CACHE_TIMEOUT_TEXTBOOK",
+            "value":"A"
+          },
+          {
+            "name":"CACHE_TIMEOUT_TOPIC",
+            "value":"A"
+          },
+          {
+            "name":"CACHE_TIMEOUT_CONTENTMAPPING",
+            "value":"A"
+          },
+          {
+            "name":"CACHE_TIMEOUT_QUESTION",
+            "value":"A"
+          },
+          {
+            "name":"CACHE_TIMEOUT_INSTITUTEHIERARCHY",
+            "value":"A"
+          },
+          {
+            "name":"CACHE_TIMEOUT_STUDENT",
+            "value":"A"
+          }
+        ],
+        "logConfiguration": {
+          "logDriver": "awslogs",
+          "options": {
+              "awslogs-group": "/ecs/lms-gateway/uat",
+              "awslogs-region": "ap-south-1",
+              "awslogs-stream-prefix": "ecs-lms-gateway"
+          }
+        }
+      }
+  ],
+  "family": "lms-gateway-UAT-tdf"
+}
