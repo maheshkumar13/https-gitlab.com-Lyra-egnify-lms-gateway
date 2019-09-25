@@ -40,7 +40,7 @@ projectEnv:
   CACHE_TIMEOUT_STUDENT: "A"
   PARSER_SERVICE : "http://13.235.219.180:8080/parse/"
   ELASTIC_SEARCH_URL : "http://13.235.245.210:9200/"
-  COUCH_DB_URL : ""
+  COUCH_DB_URL : "http://admin:TcvddKOKtG@13.235.245.210:5984/"
 
 service:
   name: lms-gateway
