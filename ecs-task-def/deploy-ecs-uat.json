@@ -2,7 +2,7 @@
   "containerDefinitions":[
     {
         "name": "lms-gateway",
-        "image": "874146190074.dkr.ecr.ap-south-1.amazonaws.com/lms-gateway:latest",
+        "image": "874146190074.dkr.ecr.ap-south-1.amazonaws.com/lms-gateway:uat",
         "essential": true,
         "memory": 1520,
         "cpu": 375,
