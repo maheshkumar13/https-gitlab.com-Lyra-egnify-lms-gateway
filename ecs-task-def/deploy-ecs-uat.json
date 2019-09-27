@@ -104,6 +104,14 @@
           {
             "name":"CACHE_TIMEOUT_STUDENT",
             "value":"A"
+          },
+          {
+            "name":"AWS_PUBLIC_BUCKET",
+            "value":"rankguru-uat-public"
+          },
+          {
+            "name":"AWS_PRIVATE_BUCKET",
+            "value":"rankguru-uat"
           }
         ],
         "logConfiguration": {
