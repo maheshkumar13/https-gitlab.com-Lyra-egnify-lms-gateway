@@ -111,7 +111,7 @@
           },
           {
             "name":"AWS_PRIVATE_BUCKET",
-            "value":"rankguru-uat"
+            "value":"rankguru-uat-private"
           }
         ],
         "logConfiguration": {
