@@ -196,8 +196,8 @@ export async function getSubjectTextbookTopic(args, context) {
           'refs.textbook.code': textbookCodes,
         };
         return ConceptTaxonomy.find(topicQuery, {
-          _id: 0, child: 1, code: 1, childCode: 1, 'refs.textbook.code': 1,
-        }).lean().then((topics) => {
+          _id: 0, child: 1, code: 1, childCode: 1, 'refs.textbook.code': 1, viewOrder: 1,
+        }).sort({ viewOrder: 1 }).lean().then((topics) => {
           const data = [];
           subjects.forEach((subject) => {
             const subjectData = {
