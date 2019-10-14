@@ -18,7 +18,7 @@ const studentSync = require('./v1/studentSync');
 const hierarchySync = require('./v1/hierarchySync');
 const elasticindexing = require('./indexelasticsearch/indexcontent/index');
 const test = require('./tests/upload');
-const datacapture = require('./analysis/datacapture');
+const timeAnalysis = require('./analysis/timeAnalysis');
 
 export default function (app) {
   //  Insert API below
@@ -38,5 +38,5 @@ export default function (app) {
   app.use('/api/v1/studentSync', studentSync);
   app.use('/api/v1/hierarchySync', hierarchySync);
   app.use('/api/elastic', elasticindexing);
-  app.use('/api/datacapture', datacapture);
+  app.use('/api/timeAnalysis', timeAnalysis);
 }
