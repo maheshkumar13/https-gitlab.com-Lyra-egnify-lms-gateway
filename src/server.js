@@ -19,7 +19,8 @@ import schema from './graphql/schema';
 import { config } from './config/environment';
 import * as auth from './auth/auth.service';
 import seedDatabaseIfNeeded from './config/seed';
-import  client from './redis';
+import client from './redis';
+import { triggerTimeAnalysis } from './api/analysis/timeAnalysis/timeAnalysis.controller';
 
 const { ApolloEngine } = require('apollo-engine');
 const morgan = require('morgan');
@@ -113,6 +114,7 @@ app.get('/', (req, res) => res.send('Oh!! Yeah.'));
 
 app.listen(config.port, () => {
   console.info(`The server is running at http://localhost:${config.port}/`);
+  triggerTimeAnalysis.start();
 });
 
 // Initialize engine with your API key. Alternatively,

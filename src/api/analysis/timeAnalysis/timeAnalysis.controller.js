@@ -2,15 +2,28 @@ import celery from 'celery-client';
 
 import { config } from '../../../config/environment';
 import { getModel as TimeAnalysisModel } from './timeAnalysis.model';
+import { getModel as SchedulerTimeAnalysisModel } from './schedulerTimeAnalysis.model';
+
+const cron = require('node-cron');
 
 export async function analysisTrigger(args) {
-  return new Promise((resolve) => {
+  return new Promise(async (resolve) => {
+    console.info('triggering at', new Date(), args);
     if (!args.timestamp) {
       const tempDate = new Date();
       const date = new Date(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate());
       date.setDate(date.getDate() - 1);
       args.timestamp = date.toISOString();  // eslint-disable-line
     }
+    const SchedulerTimeAnalysis = await SchedulerTimeAnalysisModel();
+    const isTriggered = await SchedulerTimeAnalysis.findOne({ date: new Date(args.timestamp) });
+    if (isTriggered && !args.manualTrigger) {
+      const message = `Alreday triggered for ${args.timestamp}`;
+      console.info(message);
+      return resolve({ message });
+    }
+    const triggeredType = args.manualTrigger ? 'manual' : 'auto';
+    await SchedulerTimeAnalysis.create({ date: new Date(args.timestamp), triggeredType });
     const broker = new celery.RedisHandler(config.celery.CELERY_BROKER_URL);
     const backend = new celery.RedisHandler(config.celery.CELERY_RESULT_BACKEND);
     const celeryClient = new celery.Client(broker, backend);
@@ -52,9 +65,17 @@ export async function analysisTrigger(args) {
 
 export async function manualTrigger(req, res) {
   const args = req.body || {};
+  args.manualTrigger = true;
   const triggerObj = await analysisTrigger(args);
   return res.send(triggerObj);
 }
+// 0 0 1 * * *
+export const triggerTimeAnalysis = cron.schedule('0 0 1 * * *', () => {
+  analysisTrigger({});
+}, {
+  scheduled: false,
+  timezone: 'Asia/Kolkata',
+});
 
 export async function getTimeAnalysis(args, context) {
   const TimeAnalysis = await TimeAnalysisModel(context);
