@@ -168,7 +168,7 @@ export async function getSubjectTextbookTopic(args, context) {
     }
     return Subject.find(subjectQuery, {
       _id: 0, subject: 1, code: 1, isMandatory: 1,
-    }).then((subjects) => {
+    }).sort({ created_at: 1 }).then((subjects) => {
       const subjectcodes = subjects.map(x => x.code);
       const textbookQuery = {
         active: true,
