@@ -167,8 +167,8 @@ export async function getSubjectTextbookTopic(args, context) {
       }
     }
     return Subject.find(subjectQuery, {
-      _id: 0, subject: 1, code: 1, isMandatory: 1,
-    }).sort({ created_at: 1 }).then((subjects) => {
+      _id: 0, subject: 1, code: 1, isMandatory: 1, viewOrder: 1,
+    }).sort({ viewOrder: 1 }).then((subjects) => {
       const subjectcodes = subjects.map(x => x.code);
       const textbookQuery = {
         active: true,
@@ -187,8 +187,8 @@ export async function getSubjectTextbookTopic(args, context) {
         }
       }
       return Textbook.find(textbookQuery, {
-        _id: 0, name: 1, code: 1, 'refs.subject.code': 1, imageUrl: 1,
-      }).then((textbooks) => {
+        _id: 0, name: 1, code: 1, 'refs.subject.code': 1, imageUrl: 1, viewOrder: 1,
+      }).sort({ viewOrder: 1 }).then((textbooks) => {
         const textbookCodes = textbooks.map(x => x.code);
         const topicQuery = {
           active: true,
@@ -201,13 +201,21 @@ export async function getSubjectTextbookTopic(args, context) {
           const data = [];
           subjects.forEach((subject) => {
             const subjectData = {
-              subject: subject.subject, code: subject.code, next: [], isMandatory: subject.isMandatory,
+              subject: subject.subject,
+              code: subject.code,
+              next: [],
+              isMandatory: subject.isMandatory,
+              viewOrder: subject.viewOrder,
             };
             const textbooksData = textbooks.filter(x => x.refs.subject.code === subject.code);
             if (textbooksData.length) {
               textbooksData.forEach((textbook) => {
                 const textbookData = {
-                  name: textbook.name, code: textbook.code, next: [], imageUrl: textbook.imageUrl,
+                  name: textbook.name,
+                  code: textbook.code,
+                  next: [],
+                  imageUrl: textbook.imageUrl,
+                  viewOrder: textbook.viewOrder,
                 };
                 textbookData.next = topics.filter(x => x.refs.textbook.code === textbook.code);
                 subjectData.next.push(textbookData);

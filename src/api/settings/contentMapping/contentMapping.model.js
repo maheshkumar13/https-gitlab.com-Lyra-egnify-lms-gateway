@@ -39,6 +39,7 @@ const refsSchema = new mongoose.Schema({
 
 
 const contentMappingSchema = new mongoose.Schema({
+  assetId: { type: String },
   content: { type: contentSchema },
   resource: { type: resourceSchema },
   refs: { type: refsSchema, required: true },
