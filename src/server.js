@@ -15,7 +15,7 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
 import schema from './graphql/schema';
-
+const path = require('path');
 import { config } from './config/environment';
 import * as auth from './auth/auth.service';
 import seedDatabaseIfNeeded from './config/seed';
@@ -108,7 +108,6 @@ app.use('/api', auth.isAuthenticated())
 require('./api').default(app);
 
 app.get('/', (req, res) => res.send('Oh!! Yeah.'));
-
 // seedDatabaseIfNeeded();
 
 app.listen(config.port, () => {

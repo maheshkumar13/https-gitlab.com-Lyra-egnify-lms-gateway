@@ -158,7 +158,7 @@ export async function getDB(instituteId) {
   }
 
   const connection = await Connections.findOne({ instituteId });
-  console.log('instituteId', instituteId)
+  console.log('instituteId:', instituteId)
   dbStack[instituteId] = {};
   dbStack[instituteId].db = await mongoose.createConnection(connection.uri.setting, { poolsize: 20 });
   console.info('New Connection Created to', connection.uri.setting);

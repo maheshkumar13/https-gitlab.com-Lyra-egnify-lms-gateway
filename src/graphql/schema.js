@@ -35,6 +35,8 @@ import { addTimeseries } from './analysis/timeseries/timeseries.query';
 import { ListTest , UpcomingTests , ListSubjectWiseBooksAndTestCount, CompletedTests ,  HeaderCountForTextBookBasedTest , FetchInstruction  } from '../graphql/tests/upload/upload.query';
 import { ListMarkingSchema } from '../graphql/tests/markingShema/marking.shema.query';
 import { PublishTest, ParseAndValidateTest, updateTestInfo , SubmitTest , StartTest} from './tests/upload/upload.mutation';
+import { GetStudentAssets } from '../graphql/StudentAssets/GetStudentAssets.query';
+//import { getCoins } from '../graphql/coins/coins.query';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -80,7 +82,9 @@ const schema = new Schema({
       ListSubjectWiseBooksAndTestCount,
       CompletedTests,
       HeaderCountForTextBookBasedTest,
-      FetchInstruction
+      FetchInstruction,
+      GetStudentAssets,
+      
     },
   }),
   mutation: new ObjectType({
