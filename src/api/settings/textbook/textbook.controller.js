@@ -1,19 +1,37 @@
 /* eslint-disable */
-import { getModel as TextbookModel } from './textbook.model';
-import { getModel as InstituteHierarchyModel} from '../instituteHierarchy/instituteHierarchy.model'
-import { getModel as SubjectModel } from '../subject/subject.model'
-import { getModel as StudentModel } from '../student/student.model'
-import { getUniqueDataForValidation, getUniqueBranchesForValidation } from '../contentMapping/contentMapping.controller';
-import { config } from '../../../config/environment';
+import {
+  getModel as TextbookModel
+} from './textbook.model';
+import {
+  getModel as InstituteHierarchyModel
+} from '../instituteHierarchy/instituteHierarchy.model'
+import {
+  getModel as SubjectModel
+} from '../subject/subject.model'
+import {
+  getModel as StudentModel
+} from '../student/student.model'
+import {
+  getUniqueDataForValidation,
+  getUniqueBranchesForValidation
+} from '../contentMapping/contentMapping.controller';
+import {
+  config
+} from '../../../config/environment';
+import {
+  text
+} from 'body-parser';
 
 const crypto = require('crypto')
 const _ = require('lodash')
 const xlsx = require('xlsx');
 
 export async function getStudentData(context) {
-  const { studentId } = context;
+  const {
+    studentId
+  } = context;
   return StudentModel(context).then((Student) => {
-    if(!studentId) return false;
+    if (!studentId) return false;
     const project = {
       _id: 0,
       subjects: 1,
@@ -21,41 +39,51 @@ export async function getStudentData(context) {
       orientation: 1,
       active: true,
     }
-    return Student.findOne({ studentId }, project)
+    return Student.findOne({
+      studentId
+    }, project)
   })
 }
 
-function getTextbooksQuery(args){
-  const query = { active: true }
+function getTextbooksQuery(args) {
+  const query = {
+    active: true
+  }
   if (args.classCode) query['refs.class.code'] = args.classCode;
   if (args.subjectCode) query['refs.subject.code'] = args.subjectCode;
   if (args.orientation) {
-    query['orientations'] = {$in: [null, "", args.orientation]}
+    query['orientations'] = {
+      $in: [null, "", args.orientation]
+    }
   }
   if (args.branch) {
-    query['branches'] = {$in: [null, "", args.branch]}
+    query['branches'] = {
+      $in: [null, "", args.branch]
+    }
   }
   return query
 }
-export async function getTextbooks(args, context){
+export async function getTextbooks(args, context) {
   return getStudentData(context).then((obj) => {
-    if(obj && obj.orientation){
+    if (obj && obj.orientation) {
       args.orientation = obj.orientation
-      const { hierarchy } = obj;
+      const {
+        hierarchy
+      } = obj;
       if (hierarchy && hierarchy.length) {
         const branchData = hierarchy.find(x => x.level === 5);
-        if(branchData && branchData.child) args.branch = branchData.child;
+        if (branchData && branchData.child) args.branch = branchData.child;
       }
     }
     const query = getTextbooksQuery(args)
     console.log(query);
-    return TextbookModel(context).then( (Textbook) => {
+    return TextbookModel(context).then((Textbook) => {
       return Textbook.find(query)
     })
   })
 }
 
-export async function getHierarchyData(context, hierarchyCodes){
+export async function getHierarchyData(context, hierarchyCodes) {
   return InstituteHierarchyModel(context).then((InstituteHierarchy) => {
     const query = {
       active: true,
@@ -74,18 +102,18 @@ export async function getHierarchyData(context, hierarchyCodes){
   })
 }
 
-export async function getSubjectData(context, args){
+export async function getSubjectData(context, args) {
   const findQuery = {
     code: args.subjectCode,
     'refs.class.code': args.classCode,
     active: true
-  }  
+  }
   return SubjectModel(context).then((Subject) => {
     return Subject.findOne(findQuery);
   })
 }
 
-export async function validateTextbook(args, context){
+export async function validateTextbook(args, context) {
   const query = {
     active: true,
     name: args.name,
@@ -105,23 +133,23 @@ function validateUrl(value) {
   // return /^(?:(?:(?:https?|ftp):)?\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:[/?#]\S*)?$/i.test(value);
 }
 
-export async function createTextbook(args, context){
+export async function createTextbook(args, context) {
   args.name = args.name ? args.name.replace(/\s\s+/g, ' ').trim() : ''
   args.publisher = args.publisher ? args.publisher.replace(/\s\s+/g, ' ').trim() : ''
-  if(args.orientations) {
+  if (args.orientations) {
     const items = []
     args.orientations.forEach(element => {
-      if(element) items.push(element)
+      if (element) items.push(element)
     });
-    if(items.length) args.orientations = items;
+    if (items.length) args.orientations = items;
     else args.orientations = null;
   }
-  if(args.branches) {
+  if (args.branches) {
     const items = []
     args.branches.forEach(element => {
-      if(element) items.push(element)
+      if (element) items.push(element)
     });
-    if(items.length) args.branches = items;
+    if (items.length) args.branches = items;
     else args.branches = null;
   }
   if (
@@ -132,7 +160,7 @@ export async function createTextbook(args, context){
     throw new Error('Insufficient data');
   }
   return validateTextbook(args, context).then((isTextbookExist) => {
-    if(isTextbookExist) throw new Error('Textbook already exists')
+    if (isTextbookExist) throw new Error('Textbook already exists')
     return Promise.all([
       getHierarchyData(context, [args.classCode]),
       getSubjectData(context, args),
@@ -142,8 +170,8 @@ export async function createTextbook(args, context){
       subjectData,
       Textbook
     ]) => {
-      const classData = hierarchyData.find( x => x.levelName === 'Class' && x.childCode === args.classCode)
-      if(
+      const classData = hierarchyData.find(x => x.levelName === 'Class' && x.childCode === args.classCode)
+      if (
         !classData ||
         !subjectData
       ) {
@@ -159,7 +187,7 @@ export async function createTextbook(args, context){
         refs: {
           class: {
             name: classData.child,
-            code: classData.childCode,
+              code: classData.childCode,
           },
           subject: {
             name: subjectData.subject,
@@ -170,10 +198,10 @@ export async function createTextbook(args, context){
       return Textbook.create(obj)
     })
   })
-  
+
 }
 
-export async function validateTextbookForUpdate(args, context){
+export async function validateTextbookForUpdate(args, context) {
   let query = {
     active: true,
     code: args.code,
@@ -181,16 +209,18 @@ export async function validateTextbookForUpdate(args, context){
   return TextbookModel(context).then((Textbook) => {
     return Textbook.findOne(query).then((obj) => {
       if (!obj) throw new Error('Textbook not found with given code')
-      if (args.name){
+      if (args.name) {
         query = {
           active: true,
           name: args.name,
-          code: { $ne: args.code },
+          code: {
+            $ne: args.code
+          },
           'refs.class.code': obj.refs.class.code,
           'refs.subject.code': obj.refs.subject.code
         }
         return Textbook.findOne(query).then((doc) => {
-          if(doc) throw new Error('Textbook name already exists')
+          if (doc) throw new Error('Textbook name already exists')
           return Textbook;
         })
       }
@@ -200,48 +230,48 @@ export async function validateTextbookForUpdate(args, context){
 }
 
 
-export async function updateTextbook(args, context){
+export async function updateTextbook(args, context) {
   args.name = args.name ? args.name.replace(/\s\s+/g, ' ').trim() : ''
   args.publisher = args.publisher ? args.publisher.replace(/\s\s+/g, ' ').trim() : ''
   if (
-      !args.code ||
-     (!args.name && !args.imageUrl && !args.publisher && !args.orientations)
-     ){
+    !args.code ||
+    (!args.name && !args.imageUrl && !args.publisher && !args.orientations)
+  ) {
     throw new Error('Insufficient data')
   }
-  if (args.imageUrl && !validateUrl(args.imageUrl)){
+  if (args.imageUrl && !validateUrl(args.imageUrl)) {
     throw new Error('Invalid image url')
   }
 
-  if(args.orientations) {
+  if (args.orientations) {
     const items = []
     args.orientations.forEach(element => {
-      if(element) items.push(element)
+      if (element) items.push(element)
     });
-    if(items.length) args.orientations = items;
+    if (items.length) args.orientations = items;
     else args.orientations = null;
   }
 
-  if(args.branches) {
+  if (args.branches) {
     const items = []
     args.branches.forEach(element => {
-      if(element) items.push(element)
+      if (element) items.push(element)
     });
-    if(items.length) args.branches = items;
+    if (items.length) args.branches = items;
     else args.branches = null;
   }
-  
-  return validateTextbookForUpdate(args, context).then((Textbook) => { 
-    const matchQuery ={
+
+  return validateTextbookForUpdate(args, context).then((Textbook) => {
+    const matchQuery = {
       active: true,
       code: args.code,
     }
     const patch = {}
-    if(args.name) patch.name = args.name
-    if(args.imageUrl) patch.imageUrl = args.imageUrl
-    if(args.publisher) patch.publisher = args.publisher
-    if(args.orientations) patch.orientations = args.orientations;
-    if(args.branches) patch.branches = args.branches;
+    if (args.name) patch.name = args.name
+    if (args.imageUrl) patch.imageUrl = args.imageUrl
+    if (args.publisher) patch.publisher = args.publisher
+    if (args.orientations) patch.orientations = args.orientations;
+    if (args.branches) patch.branches = args.branches;
     return Textbook.updateOne(matchQuery, patch).then(() => {
       return Textbook.findOne(matchQuery)
     })
@@ -251,63 +281,106 @@ export async function updateTextbook(args, context){
 export async function deleteTextbook(args, context) {
   if (!args.code) throw new Error('Code is requried')
   return TextbookModel(context).then((Textbook) => {
-    const query = { active: true, code: args.code }
-    const patch = { active: false}
-    return Textbook.findOneAndUpdate(query,patch).then((doc) => {
-      if(!doc) throw new Error('Textbook not found with given code')
+    const query = {
+      active: true,
+      code: args.code
+    }
+    const patch = {
+      active: false
+    }
+    return Textbook.findOneAndUpdate(query, patch).then((doc) => {
+      if (!doc) throw new Error('Textbook not found with given code')
       return doc
     })
   })
 }
 
-export async function codeAndTextbooks(context){
+export async function codeAndTextbooks(context) {
   return TextbookModel(context).then((Textbook) => {
-    const query = {active : true};
+    const query = {
+      active: true
+    };
 
     const aggregateQuery = [{
-      $match : {'active' : true}} ,  
-      {"$group" : {"_id" : {"code" : "$code"  , "data" :  {"subject" : "$refs.subject.name" , "class" : "$refs.class.name", "name" : "$name" , "branches" : "$branches" , "orientations" : "$orientations"}} }} ,
-      {"$group" :{"_id" : null , "data" : {"$push" : {"k" : "$_id.code" , "v" : "$_id.data"}} } } , { "$replaceRoot": {"newRoot": { "$arrayToObject": "$data" }}} , 
+        $match: {
+          'active': true
+        }
+      },
+      {
+        "$group": {
+          "_id": {
+            "code": "$code",
+            "data": {
+              "subject": "$refs.subject.name",
+              "class": "$refs.class.name",
+              "name": "$name",
+              "branches": "$branches",
+              "orientations": "$orientations"
+            }
+          }
+        }
+      },
+      {
+        "$group": {
+          "_id": null,
+          "data": {
+            "$push": {
+              "k": "$_id.code",
+              "v": "$_id.data"
+            }
+          }
+        }
+      }, {
+        "$replaceRoot": {
+          "newRoot": {
+            "$arrayToObject": "$data"
+          }
+        }
+      },
     ]
 
-  return Textbook.aggregate(aggregateQuery).then((docs) => {
-    if(!docs || docs.length < 1){
-      return {};
-    }
-    return docs
-  })
-  
+    return Textbook.aggregate(aggregateQuery).then((docs) => {
+      if (!docs || docs.length < 1) {
+        return {};
+      }
+      return docs
+    })
+
   })
 }
 
 export async function getUniqueOrientationForValidation(context) {
-  return StudentModel(context).then(Student => Student.distinct('orientation', { active: true }));
+  return StudentModel(context).then(Student => Student.distinct('orientation', {
+    active: true
+  }));
 }
 
 function cleanUploadBranchAndOrientationiMappingTextbookData(data) {
-    // deleting empty string keys from all objects
-    data.forEach((v) => { delete v['']; }); // eslint-disable-line
+  // deleting empty string keys from all objects
+  data.forEach((v) => {
+    delete v[''];
+  }); // eslint-disable-line
 
-    // deleting all trailing empty rows
-    for (let i = data.length - 1; i >= 0; i -= 1) {
-      let values = Object.values(data[i]);
-      values = values.map(x => x.toString());
-      const vals = values.map(x => x.trim());
-      if (vals.every(x => x === '')) data.pop();
-      else break;
+  // deleting all trailing empty rows
+  for (let i = data.length - 1; i >= 0; i -= 1) {
+    let values = Object.values(data[i]);
+    values = values.map(x => x.toString());
+    const vals = values.map(x => x.trim());
+    if (vals.every(x => x === '')) data.pop();
+    else break;
+  }
+
+  // trim and remove whitespace and chaging keys to lower case
+  data.forEach((obj) => {
+    const keys = Object.keys(obj);
+    for (let i = 0; i < keys.length; i += 1) {
+      const key = keys[i];
+      const lowerKey = key.toLowerCase();
+      obj[lowerKey] = obj[key].toString().replace(/\s\s+/g, ' ').trim();
+      if (key !== lowerKey) delete obj[key];
     }
-
-    // trim and remove whitespace and chaging keys to lower case
-    data.forEach((obj) => {
-      const keys = Object.keys(obj);
-      for (let i = 0; i < keys.length; i += 1) {
-        const key = keys[i];
-        const lowerKey = key.toLowerCase();
-        obj[lowerKey] = obj[key].toString().replace(/\s\s+/g, ' ').trim();
-        if (key !== lowerKey) delete obj[key];
-      }
-    });
-    return data;
+  });
+  return data;
 }
 
 function validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, uniqueBranches, uniqueOrientations) {
@@ -318,33 +391,37 @@ function validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, un
   };
   const errors = [];
   const uniqueBranchesObj = {};
-  uniqueBranches.forEach(x => { uniqueBranchesObj[x.toLowerCase()] = x;})
+  uniqueBranches.forEach(x => {
+    uniqueBranchesObj[x.toLowerCase()] = x;
+  })
   const uniqueBranchesLower = Object.keys(uniqueBranchesObj);
 
   const uniqueOrientationsObj = {};
-  uniqueOrientations.forEach(x => { uniqueOrientationsObj[x.toLowerCase()] = x;}) 
+  uniqueOrientations.forEach(x => {
+    uniqueOrientationsObj[x.toLowerCase()] = x;
+  })
   const uniqueOrientationsLower = Object.keys(uniqueOrientationsObj);
 
   const mandetoryFields = [
     'class', 'subject', 'textbook', 'orientations', 'branches'
   ];
 
-  for(let i=0; i< data.length; i+=1) {
+  for (let i = 0; i < data.length; i += 1) {
     const row = i + 2;
     const obj = data[i];
     let isMandateAllExists = true;
-     mandetoryFields.forEach(x => {
-       if(!obj[x]) {
+    mandetoryFields.forEach(x => {
+      if (!obj[x]) {
         isMandateAllExists = false;
-         result.success = false,
-         result.message = `Row ${row}, No value found for ${x.toUpperCase()}`;
-         errors.push(result.message);
-       }
-     })
-     
-     if(!isMandateAllExists) continue; 
+        result.success = false,
+          result.message = `Row ${row}, No value found for ${x.toUpperCase()}`;
+        errors.push(result.message);
+      }
+    })
 
-     if (!dbData[obj.class.toLowerCase()]) {
+    if (!isMandateAllExists) continue;
+
+    if (!dbData[obj.class.toLowerCase()]) {
       result.success = false;
       result.message = `Row ${row}, Invalid CLASS (${obj.class})`;
       errors.push(result.message);
@@ -365,7 +442,7 @@ function validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, un
       errors.push(result.message);
       continue;
     }
-    
+
     obj.textbookCode = textbookCode;
 
     // validate and set branches
@@ -376,14 +453,14 @@ function validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, un
     })
     branches = Object.keys(insheetBranches);
 
-    if(!branches.length) {
+    if (!branches.length) {
       result.success = false;
       result.message = `Row ${row}, No Branches found`;
       errors.push(result.message);
       continue;
     }
     let diffBranches = _.difference(branches, uniqueBranchesLower);
-    if(diffBranches.length) {
+    if (diffBranches.length) {
       diffBranches = diffBranches.map(x => insheetBranches[x]);
       result.success = false;
       result.message = `Row ${row}, Invalid Branches (${diffBranches.toString()})`;
@@ -395,21 +472,23 @@ function validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, un
       finalBranches.push(uniqueBranchesObj[x]);
     })
     obj.branches = finalBranches;
-  
+
     // validate and set orientations
     let orientations = obj.orientations.split(',').map(x => x.toString().replace(/\s\s+/g, ' ').trim()).filter(x => x);
     const insheetOrientations = {};
-    orientations.forEach(x => { insheetOrientations[x.toLowerCase()] = x});
+    orientations.forEach(x => {
+      insheetOrientations[x.toLowerCase()] = x
+    });
     orientations = Object.keys(insheetOrientations);
 
-    if(!orientations.length) {
+    if (!orientations.length) {
       result.success = false;
       result.message = `Row ${row}, No Orientations found`;
       errors.push(result.message);
       continue;
     }
     let diffOrientations = _.difference(orientations, uniqueOrientationsLower);
-    if(diffOrientations.length) {
+    if (diffOrientations.length) {
       diffOrientations = diffOrientations.map(x => insheetOrientations[x]);
       result.success = false;
       result.message = `Row ${row}, Invalid Orientations (${diffOrientations.toString()})`;
@@ -423,55 +502,83 @@ function validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, un
     obj.orientations = finalOrientations;
   }
 
-  if(errors.length) result.errors = errors;
+  if (errors.length) result.errors = errors;
   return result;
 
 }
-export async function uploadBranchAndOrientationiMappingTextbook(req, res){
+export async function uploadBranchAndOrientationiMappingTextbook(req, res) {
   if (!req.file) return res.status(400).end('File required');
-  
-    // validate extension
-    const name = req.file.originalname.split('.');
-    const extname = name[name.length - 1];
-    if (extname !== 'xlsx') {
-      return res.status(400).end('Invalid extension, please upload .xlsx file');
+
+  // validate extension
+  const name = req.file.originalname.split('.');
+  const extname = name[name.length - 1];
+  if (extname !== 'xlsx') {
+    return res.status(400).end('Invalid extension, please upload .xlsx file');
+  }
+  const workbook = xlsx.read(req.file.buffer, {
+    type: 'buffer',
+    cellDates: true
+  });
+  // converting the sheet data to csv
+  let data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+  // console.log(data);
+  data = cleanUploadBranchAndOrientationiMappingTextbookData(data);
+
+  if (!data.length) return res.status(400).end('No Data found');
+  return Promise.all([
+    getUniqueDataForValidation(req.user_cxt),
+    getUniqueBranchesForValidation(req.user_cxt),
+    getUniqueOrientationForValidation(req.user_cxt),
+    TextbookModel(req.user_cxt),
+  ]).then(([dbData, uniqueBranches, uniqueOrientations, Textbook]) => {
+    const validate = validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, uniqueBranches, uniqueOrientations);
+    if (!validate.success) {
+      validate.message = 'Invalid data'
+      return res.send(validate);
     }
-    const workbook = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true });
-    // converting the sheet data to csv
-    let data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-    // console.log(data);
-    data = cleanUploadBranchAndOrientationiMappingTextbookData(data);
-    
-    if(!data.length) return res.status(400).end('No Data found');
-    return Promise.all([
-      getUniqueDataForValidation(req.user_cxt),
-      getUniqueBranchesForValidation(req.user_cxt),
-      getUniqueOrientationForValidation(req.user_cxt),
-      TextbookModel(req.user_cxt),
-    ]).then(([dbData, uniqueBranches, uniqueOrientations, Textbook]) => {
-        const validate = validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, uniqueBranches, uniqueOrientations);
-        if(!validate.success) {
-          validate.message = 'Invalid data'
-          return res.send(validate);
+    const bulk = Textbook.collection.initializeUnorderedBulkOp();
+    data.forEach(obj => {
+      const query = {
+        active: true,
+        code: obj.textbookCode
+      };
+      const patch = {
+        $set: {
+          branches: obj.branches,
+          orientations: obj.orientations
         }
-        const bulk = Textbook.collection.initializeUnorderedBulkOp();
-        data.forEach(obj => {
-          const query = { active: true, code: obj.textbookCode };
-          const patch = { $set: { branches: obj.branches, orientations: obj.orientations }};
-          bulk.find(query).updateOne(patch);
-        })
-        bulk.execute().then(() => {
-          return res.send({message: 'Succeccfully updated'})
-        }).catch(err => {
-          console.error(err);
-          return res.status(400).end('Something went wrong');
-        })
+      };
+      bulk.find(query).updateOne(patch);
+    })
+    bulk.execute().then(() => {
+      return res.send({
+        message: 'Succeccfully updated'
+      })
     }).catch(err => {
       console.error(err);
       return res.status(400).end('Something went wrong');
     })
+  }).catch(err => {
+    console.error(err);
+    return res.status(400).end('Something went wrong');
+  })
 }
 
-export default{
+export async function checkStudentHasTextbook(args, ctx) {
+  try {
+    const TextBookSchema = await TextbookModel(ctx);
+    let findQuery = {
+      code: args.textbookCode,
+      orientations: args.orientationOfStudent,
+      branches: args.branchOfStudent,
+      "refs.class.code": args.classOfStudent
+    };
+    const textBook = await TextBookSchema.findOne(findQuery).lean();
+    return textBook
+  } catch (err) {
+    throw err;
+  }
+}
+export default {
   getHierarchyData
 }
