@@ -55,6 +55,7 @@ const refsType = new ObjectType({
 export const ContentMappingType = new ObjectType({
   name: 'ContentMappingType',
   fields: {
+    assetId: { type: StringType, description: 'Asset Id'},
     content: { type: contentType, description: 'Content details' },
     resource: { type: resourceType, description: 'Resource details' },
     refs: { type: refsType, description: 'References to the object' },
