@@ -24,14 +24,14 @@ export async function creditCoin(req, res) {
       ]);
 
     //Check for if AssetId Is present in collection or not!!!
-    const confirmation = await contentMapping.findOne({ AssetId: assetId });
+    const confirmation = await contentMapping.findOne({ "assetId": assetId });
     if (!confirmation) {
       return res.status(404).send("this is invalid asset id...");
     }
 
     //validate assetId If this id is belong to studentId
     const getStudentOrientation = student.findOne({ studentId: req.user_cxt.studentId }).select({ hierarchy: 1, orientation: 1, _id: 0 });
-    const getTextBookCode = contentMapping.findOne({ AssetId: assetId }).select({ "content.category": 1, coins: 1, "refs.textbook.code": 1, _id: 0 });
+    const getTextBookCode = contentMapping.findOne({ "assetId": assetId }).select({ "content.category": 1, coins: 1, "refs.textbook.code": 1, _id: 0 });
     const promiseData = await Promise.all([getStudentOrientation, getTextBookCode]);
 
     const orientationName = promiseData[0].orientation;
@@ -46,7 +46,7 @@ export async function creditCoin(req, res) {
     }
 
     const studentQuery = studentLedger.findOne({ studentId: req.user_cxt.studentId, "assetId": assetId });
-    const contentMappingQuery = contentMapping.findOne({ AssetId: assetId }).select({ coins: 1, _id: 0 });
+    const contentMappingQuery = contentMapping.findOne({ "assetId": assetId }).select({ coins: 1, _id: 0 });
     const [studentLedgerResult, contentMappingResult] = await Promise.all([studentQuery, contentMappingQuery]);
 
     if (!contentMappingResult) {
@@ -85,14 +85,14 @@ export async function debitCoin(req, res) {
     const [studentLedger, contentMapping, student, textbook] = await Promise.all([studentLedgerModel(req.user_cxt), contentMappingModel(req.user_cxt), studentModel(req.user_cxt), textbookModel(req.user_cxt)]);
 
     //Check for if AssetId Is present in collection or not!!!
-    const confirmation = await contentMapping.findOne({ AssetId: assetId });
+    const confirmation = await contentMapping.findOne({ "assetId": assetId });
     if (!confirmation) {
       return res.status(404).send("this is invalid asset id...");
     }
 
     //validate assetId If this id is belong to studentId
     const getStudentOrientation = student.findOne({ studentId: req.user_cxt.studentId }).select({ hierarchy: 1, orientation: 1, _id: 0 });
-    const getTextBookCode = contentMapping.findOne({ AssetId: assetId }).select({ "content.category": 1, coins: 1, "refs.textbook.code": 1, _id: 0 });
+    const getTextBookCode = contentMapping.findOne({ "assetId": assetId }).select({ "content.category": 1, coins: 1, "refs.textbook.code": 1, _id: 0 });
     const promiseData = await Promise.all([getStudentOrientation, getTextBookCode]);
 
     const orientationName = promiseData[0].orientation;
@@ -108,7 +108,7 @@ export async function debitCoin(req, res) {
 
     const [studentLedgerResult, contentMappingResult, StudentAllCoins] = await Promise.all(
       [studentLedger.findOne({ studentId: req.user_cxt.studentId, "assetId": assetId }),
-      contentMapping.findOne({ "AssetId": assetId }, { coins: 1 }),
+      contentMapping.findOne({ "assetId": assetId }, { coins: 1 }),
       studentLedger.find({ "studentId": studentId }, { coins: 1 })]);
 
     if (!contentMappingResult) {
