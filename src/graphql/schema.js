@@ -35,7 +35,7 @@ import { ListTest, UpcomingTests, ListSubjectWiseBooksAndTestCount, CompletedTes
 import { ListMarkingSchema } from '../graphql/tests/markingShema/marking.shema.query';
 import { PublishTest, ParseAndValidateTest, updateTestInfo, SubmitTest, StartTest } from './tests/upload/upload.mutation';
 import { TimeAnalysis, TimeAnalysisHeaders } from './analysis/timeAnalysis/timeAnalysis.query';
-import { StudentCompletionStats } from './analysis/completion/completion.query';
+import { StudentCompletionStats, TeacherLevelCompletionStats } from './analysis/completion/completion.query';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -85,6 +85,7 @@ const schema = new Schema({
       TimeAnalysis,
       TimeAnalysisHeaders,
       StudentCompletionStats,
+      TeacherLevelCompletionStats,
     },
   }),
   mutation: new ObjectType({

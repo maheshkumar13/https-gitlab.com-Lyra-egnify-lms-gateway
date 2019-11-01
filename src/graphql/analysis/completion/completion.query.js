@@ -27,6 +27,22 @@ export const StudentCompletionStats = {
   },
 };
 
+export const TeacherLevelCompletionStats = {
+  args: {
+    className: { type: StringType, description: 'Class code' },
+    branch: { type: StringType, description: 'Branch name' },
+    orientation: { type: StringType, description: 'Orientation name' },
+    subjectName: { type: StringType, description: 'Subject code' },
+    textbookName: { type: StringType, description: 'Textbook code' },
+    chapterName: { type: StringType, description: 'Chapter code' },
+  },
+  type: GraphQLJSON,
+  async resolve(obj, args, context) {
+    return controller.getAssetCompletionHeaders(args, context);
+  },
+};
+
 export default {
   StudentCompletionStats,
+  TeacherLevelCompletionStats
 };
