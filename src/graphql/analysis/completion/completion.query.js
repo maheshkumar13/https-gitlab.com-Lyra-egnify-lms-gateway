@@ -27,7 +27,7 @@ export const StudentCompletionStats = {
   },
 };
 
-export const TeacherLevelCompletionStats = {
+export const TeacherLevelCompletionHeaders = {
   args: {
     className: { type: StringType, description: 'Class code' },
     branch: { type: StringType, description: 'Branch name' },
@@ -42,7 +42,23 @@ export const TeacherLevelCompletionStats = {
   },
 };
 
+export const TeacherLevelCompletionStats = {
+  args: {
+    className: { type: StringType, description: 'Class code' },
+    branch: { type: StringType, description: 'Branch name' },
+    orientation: { type: StringType, description: 'Orientation name' },
+    subjectName: { type: StringType, description: 'Subject code' },
+    textbookName: { type: StringType, description: 'Textbook code' },
+    chapterName: { type: StringType, description: 'Chapter code' },
+    studentsData: { type: BooleanType, description: 'default false, send true to get student wise category stats' },
+  },
+  type: GraphQLJSON,
+  async resolve(obj, args, context) {
+    return controller.getTeacherLevelCompletionStats(args, context);
+  },
+}
 export default {
   StudentCompletionStats,
-  TeacherLevelCompletionStats
+  TeacherLevelCompletionStats,
+  TeacherLevelCompletionHeaders
 };
