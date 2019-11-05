@@ -193,8 +193,8 @@ export async function debitCoin(req, res) {
     await Data.save();
     return res.status(200).json({
       status: "success",
-      message: `${parseFloat(assetData.coins)} debit from your account.`,
-      data: `${parseFloat(assetData.coins)}`,
+      message: `${Math.abs(parseFloat(assetData.coins))} debit from your account.`,
+      data: `${Math.abs(parseFloat(assetData.coins))}`,
     });
 
 
@@ -226,18 +226,14 @@ export async function studentCoinLog(req, res) {
       { $match: { studentId } },
       { $group: { _id: "$studentId", coins: { $sum: "$coins" } } }
     ])]);
-
-    if (!sumOfCoins.length) {
-      return res.status(404).json({
-        status: "failure",
-        message: "You have no created operation till now !!!",
-        data: ""
-      });
+    let coin=0
+    if (sumOfCoins.length) {
+      coin=sumOfCoins[0].coins
     }
     
     let resData={
       transaction: studentLedgerData,
-      finalBalance: sumOfCoins[0].coins
+      finalBalance: coin
     };
 
     
