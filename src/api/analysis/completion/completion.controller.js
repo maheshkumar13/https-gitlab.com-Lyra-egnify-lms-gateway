@@ -7,6 +7,7 @@ import { getModel as ConceptTaxonomyModel } from '../../settings/conceptTaxonomy
 import { getModel as InstituteHierarchyModel } from '../../settings/instituteHierarchy/instituteHierarchy.model';
 
 import { config } from '../../../config/environment';
+import { DynamoDBStreams } from 'aws-sdk';
 
 const _ = require('lodash');
 
@@ -315,5 +316,140 @@ export async function getAssetCompletionHeaders(args, context) {
       data[key] = data[key].sort();
     }  
     return data;
-    
+}
+
+export async function getTeacherLevelCompletionStats(args, context) {
+  if(!args.className || !args.branch || !args.orientation) {
+    throw new Error('className, branch and orientation required');
+  }
+  const [
+    StudentLedger,
+    Student,
+    Subject,
+    Textbook,
+    ConceptTaxonomy,
+    ContentMapping, ] = await Promise.all([
+    StudentLedgerModel(context),
+    StudentModel(context),
+    SubjectModel(context),
+    TextbookModel(context),
+    ConceptTaxonomyModel(context),
+    ContentMappingModel(context),
+  ]);
+
+  const studentsQuery = { active: true, 'hierarchyLevels.L_2': args.className, 'hierarchyLevels.L_5': args.branch, orientation: args.orientation }
+  const students = await Student.find(studentsQuery,{ _id: 0, studentId: 1, studentName: 1});
+  if(!students.length) return {};
+  const studentNames = {};
+  students.map(x => studentNames[x.studentId] = x.studentName);
+  const studentIds = Object.keys(studentNames);
+
+  const subjectQuery = { active: true, 'refs.class.name': args.className };
+  if (args.subjectName) subjectQuery.subject = args.subject;
+  const subjectCodes = await Subject.distinct('code', subjectQuery );
+  
+  const textbookQuery = { 
+    active: true,
+    'refs.subject.code': { $in: subjectCodes },
+    branches: { $in: ["", null, args.branch ]},
+    orientations: { $in: ["", null, args.orientation ]},
+  };
+  if(args.textbookName) textbookQuery.name = args.textbookName;
+  const textbookCodes = await Textbook.distinct('code', textbookQuery);
+  
+  const conceptQuery = { active: true, levelName: 'topic', 'refs.textbook.code': {$in: textbookCodes } };
+  if(args.chapterName) conceptQuery.child = args.chapterName;
+  const chapters = await ConceptTaxonomy.aggregate([
+    { $match: conceptQuery },
+    { $group: { _id: '$refs.textbook.code', chapters: {$push: { child: '$child', code: '$code' }}}},
+  ])
+  const chaptersObj = {};
+  chapters.forEach(x => { x.chapters.forEach(y => {
+    if(!args.chapterName || (args.chapterName && args.chapterName.length === y.child.length)) {
+      if(!chaptersObj[x._id]) chaptersObj[x._id] = {};
+      chaptersObj[x._id][y.code] = { code: y.code, child: y.child }
+    }
+  })});
+  
+  const contentAgrQuery = [];
+  const contentMatchQuery = { active: true };
+  for(let textbook in chaptersObj) {
+    if(!contentMatchQuery.$and) contentMatchQuery.$and = [{ '$or': []}];
+    contentMatchQuery.$and[0].$or.push({'refs.textbook.code': textbook, 'refs.topic.code': {$in: Object.keys(chaptersObj[textbook])}});
+  }
+  const contentTypeMatchOrData = getContentTypeMatchOrData("");
+  if(contentTypeMatchOrData.length) {
+    if(!contentMatchQuery.$and) contentMatchQuery.$and = [];
+    contentMatchQuery.$and.push({$or:contentTypeMatchOrData});
+  }
+  
+  contentAgrQuery.push({$match: contentMatchQuery});
+  contentAgrQuery.push({
+    $group: { 
+      _id: '$content.category', total: { $sum: 1 },
+  }})
+  
+  const [assetIds, categorywisecount ] = await Promise.all([
+    ContentMapping.distinct('assetId', contentMatchQuery),
+    ContentMapping.aggregate(contentAgrQuery)
+  ])
+
+  const categorywisecountObj = {}
+  categorywisecount.forEach(x => { categorywisecountObj[x._id] = x.total });
+
+  const stdLedgerAgrQuery = [
+    { $match: { studentId: { $in: studentIds }, assetId: { $in: assetIds }} },
+    {
+      $group: {
+        _id: { studentId: '$studentId', category: '$category' },
+        count: { $sum: 1 },
+      }
+    }
+  ]
+  let data = []
+  const overall = { completed: 0, total: 0 };
+  if(args.studentsData === true ) {
+    stdLedgerAgrQuery.push({
+      $group: {
+        _id: '$_id.studentId',
+        data: { $push: { category: '$_id.category', completed: '$count' } }
+      }
+    })
+    const ledgerData = await StudentLedger.aggregate(stdLedgerAgrQuery);
+    if(!ledgerData.length) return [];
+    ledgerData.forEach(obj => {
+      const temp = {
+        studentId: obj._id,
+        studentName: studentNames[obj._id] || 'N/A',
+        stats: []
+      }
+      obj.data.forEach(x => {
+        temp.stats.push({
+          category: x.category,
+          completed: x.completed,
+          total: categorywisecountObj[x.category] || 1,
+        })
+      })
+      data.push(temp);
+    })
+    return { data }
+  }
+
+  stdLedgerAgrQuery.push({
+    $group: {
+      _id: '$_id.category', completed: { $avg: '$count' },
+    }
+  })
+  const ledgerData = await StudentLedger.aggregate(stdLedgerAgrQuery);
+  ledgerData.forEach(obj => {
+    overall.completed += Math.round(obj.completed);
+    overall.total += categorywisecountObj[obj._id] || 1;
+    const temp = {
+      category: obj._id,
+      completed: Math.round(obj.completed),
+      total: categorywisecountObj[obj._id] || 1,
+    }
+    data.push(temp);
+  })
+  return {overall, data }
 }
