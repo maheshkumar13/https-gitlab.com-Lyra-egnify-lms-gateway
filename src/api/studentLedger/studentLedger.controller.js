@@ -61,8 +61,9 @@ export async function creditCoin(req, res) {
 
     const studentLedgerResult = await StudentLedger.findOne({ studentId: req.user_cxt.studentId, assetId });
     if (studentLedgerResult) {
-      return res.status(405).json({
-        status: "failure",
+      //208[Already reported]
+      return res.status(208).json({
+        status: "warning",
         message: "You have already earned coins for this Asset !!!",
         data: ""
       });
@@ -162,8 +163,9 @@ export async function debitCoin(req, res) {
     }
     if (checkUnlockAssetId) {
       //check for available coin or not 
-      return res.status(406).json({
-        status:"success",
+      //208[Already reported]
+      return res.status(208).json({
+        status:"warning",
         message: "You have already unlock this asset !!!",
         data:""
       });
@@ -172,7 +174,7 @@ export async function debitCoin(req, res) {
     let sumOfCoin = sumOfCoins[0].coins;
     if ((Math.abs(sumOfCoin) - Math.abs(assetData.coins) < 0)) {
       return res.status(299).json({
-        status: "failure",
+        status: "warning",
         message: "Sorry! But you have not sufficient ammount of coin to unlock this game !!!",
         data: ""
       });
@@ -239,7 +241,7 @@ export async function studentCoinLog(req, res) {
     };
 
     
-    return res.json(resData);
+    return res.status(200).json(resData);
 
   }
   catch (err) {
