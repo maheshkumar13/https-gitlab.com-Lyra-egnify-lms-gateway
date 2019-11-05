@@ -31,7 +31,7 @@ const studentLedgerSchema = new mongoose.Schema({
 export async function getModel(userCxt) {
     const { instituteId } = userCxt;
     const db = await getDB(instituteId);
-    return db.model('studentledgers', studentLedgerSchema);
+    return db.model('studentLedger', studentLedgerSchema);
 }
 
 export default {
