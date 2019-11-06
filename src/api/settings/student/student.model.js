@@ -28,6 +28,7 @@ const studentSchema = new mongoose.Schema(
     category: { type: String },
     hierarchy: { type: [hierarchySchema], required: true },
     hierarchyLevels: {},
+    prepSkill: { type: Boolean, default: false },
     active: { type: Boolean, default: true },
     avatarUrl: { type: String },
     userCreated: { type: Boolean, default: false },

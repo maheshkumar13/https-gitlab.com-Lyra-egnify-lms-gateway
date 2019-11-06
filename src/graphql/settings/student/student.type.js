@@ -44,6 +44,7 @@ export const StudentDetailsOutputType = new ObjectType({
     subjects: { type: GraphQLJSON },
     hierarchy: { type: GraphQLJSON },
     orientation: { type: StringType },
+    prepSkill: { type: BooleanType },
   },
 });
 
