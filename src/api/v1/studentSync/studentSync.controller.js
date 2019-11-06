@@ -149,6 +149,7 @@ export function student(req, res) {
         gender: args.gender || null,
         category: args.category || null,
         active: args.digital_content === 'yes',
+        prepSkill: args.prep_skill === 'yes',
         userCreated: true,
         orientation: args.orientation,
         hierarchyLevels,

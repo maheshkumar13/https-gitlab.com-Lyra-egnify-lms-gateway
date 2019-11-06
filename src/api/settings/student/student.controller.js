@@ -176,6 +176,7 @@ export async function getStudentDetailsById(args, context) { // eslint-disable-l
       subjects: 1,
       hierarchy: 1,
       orientation: 1,
+      prepSkill: 1,
     },
   ).then(student => student);
 }
