@@ -14,7 +14,7 @@ import {
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import controller from '../../../api/settings/student/student.controller';
-import { StudentType, StudentDetailsOutputType } from './student.type';
+import { StudentType, StudentDetailsOutputType,StudentListType } from './student.type';
 
 const pageInfoType = new ObjectType({
   name: 'StudentpageInfo',
@@ -168,10 +168,27 @@ export const StudentById = {
       .catch(err => err);
   },
 };
-
+export const StudentList = {
+  args: {
+    Class: { type: new List(StringType) },
+    Orientation: { type: new List(StringType) },
+    Branch: { type: new List(StringType) },
+  },
+  type: new List(StudentListType),
+  async resolve(obj, args, context) {
+    return controller.getStudentList(args, context)
+      .then(docs => docs)
+      .catch(err => {
+        console.error('err is', err);
+        throw new Error(err);
+      });
+  },
+};
 export default{
   StudentUniqueValues,
   Students,
   StudentsByLastNode,
   StudentById,
+  StudentList,
+
 };
