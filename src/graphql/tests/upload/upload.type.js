@@ -39,6 +39,9 @@ export const ListInputType = new InputType({
         },
         branch : {
             type : StringType
+        },
+        gaStatus : {
+            type : StringType
         }
     }
 });

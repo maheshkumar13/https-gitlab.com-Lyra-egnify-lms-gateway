@@ -58,6 +58,10 @@ function queryForListTest(args) {
     query["search"]["fields"] = ["mapping.subject.name", "test.name", "mapping.textbook.name", "mapping.class.name"]
   }
 
+  if(args.gaStatus){
+    query["find"]["gaStatus"] = args.gaStatus;
+  }
+
   if (args.sortOrder === "asc") {
     query["sort"] = {
       "test.date": 1
