@@ -253,15 +253,20 @@ export async function getStudentList(args, context) {
     }
   }
  
-  const Student = await getModel(context);
-  return Student.find(query, { _id: 0 })
-    .then(resultObjs => {
+  try{
+    const Student = await getModel(context);
+    return Student.find(query, { _id: 0 })
+      .then(resultObjs => {
 
-      
+
+
+        return resultObjs;
+
+      });
+  }catch (err)  {
     
-      return resultObjs;
-
-    });
+    return 'Failed to Query!';
+  }
 }
 export default{
   getStudents,

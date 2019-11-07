@@ -179,7 +179,6 @@ export const StudentList = {
     return controller.getStudentList(args, context)
       .then(docs => docs)
       .catch(err => {
-        console.error('err is', err);
         throw new Error(err);
       });
   },
