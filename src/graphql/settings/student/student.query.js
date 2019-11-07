@@ -176,11 +176,12 @@ export const StudentList = {
   },
   type: new List(StudentListType),
   async resolve(obj, args, context) {
-    return controller.getStudentList(args, context)
-      .then(docs => docs)
-      .catch(err => {
-        throw new Error(err);
-      });
+    try{
+      const docs = await controller.getStudentList(args, context);
+      return docs;
+    } catch (err) {
+      throw new Error("Internal Error");
+    } 
   },
 };
 export default{

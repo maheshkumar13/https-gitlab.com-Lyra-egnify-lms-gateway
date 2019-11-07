@@ -255,17 +255,13 @@ export async function getStudentList(args, context) {
  
   try{
     const Student = await getModel(context);
-    return Student.find(query, { _id: 0 })
-      .then(resultObjs => {
+    const resultObjs = await Student.find(query, { _id: 0 });
+    return resultObjs;
 
-
-
-        return resultObjs;
-
-      });
+      
   }catch (err)  {
+    throw new Error("Failed to Query");
     
-    return 'Failed to Query!';
   }
 }
 export default{
