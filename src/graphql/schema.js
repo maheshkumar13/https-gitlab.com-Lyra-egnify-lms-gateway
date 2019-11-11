@@ -19,6 +19,7 @@ import { Programs } from './settings/programs/programs.query';
 import { Textbooks, TextbooksInfo } from './settings/textbook/textbook.query';
 import { createTextbook, updateTextbook, deleteTextbook } from './settings/textbook/textbook.mutation';
 import { Students, StudentUniqueValues, StudentsByLastNode, StudentById } from './settings/student/student.query';
+import { studentHeader } from './settings/student/studentHeader.query';
 import { updateStudentAvatar, updateStudentSubjects } from './settings/student/student.mutation';
 import { ConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.query';
 import { ContentMapping, ContentMappingStats, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats, TextbookBasedQuiz, DashboardHeadersAssetCount } from './settings/contentMapping/contentMapping.query';
@@ -50,6 +51,7 @@ const schema = new Schema({
       Students,
       StudentUniqueValues,
       StudentsByLastNode,
+      studentHeader,
       Programs,
       ContentMapping,
       LaunchRequest,
