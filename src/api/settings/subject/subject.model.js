@@ -36,7 +36,8 @@ const SubjectSchema = new mongoose.Schema({
   isMandatory: { type: Boolean, default: true },
   subsubjects: [subSubjectSchema],
   refs: { type: refsSchema, required: true, description: 'Reference data for subject' },
-  active: { type: Boolean, default: true }
+  active: { type: Boolean, default: true },
+  viewOrder: { type: Number },
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 });
