@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import { getDB } from '../../../db';
 
 const TimeAnalysisSchema = new mongoose.Schema({
-  studentId: { type: String },
+  studentId: { type: String, index: true },
   studentName: { type: String },
   totalStudents: { type: Number },
   totalTimeSpent: { type: Number },
@@ -11,7 +11,7 @@ const TimeAnalysisSchema = new mongoose.Schema({
   subject: {},
   category: {},
   refs: {},
-  date: { type: Date },
+  date: { type: Date, index: true },
   active: { type: Boolean, default: true },
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
