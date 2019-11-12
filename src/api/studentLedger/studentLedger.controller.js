@@ -233,7 +233,7 @@ export async function studentCoinLog(req, res) {
     
     let resData={
       transaction: studentLedgerData,
-      finalBalance: coin
+      balance: coin
     };
 
     
@@ -249,4 +249,34 @@ export async function studentCoinLog(req, res) {
     });
   }
 }
-export default { creditCoin, debitCoin, studentCoinLog };
+export async function finalBalance(req, res) {
+  try {
+    const studentId = req.user_cxt.studentId;
+    const StudentLedger = await StudentLedgerModel(req.user_cxt);
+    const  sumOfCoins= await StudentLedger.aggregate([
+      { $match: { studentId } },
+      { $group: { _id: "$studentId", coins: { $sum: "$coins" } } }
+    ]);
+    let coin = 0
+    if (sumOfCoins.length) {
+      coin = sumOfCoins[0].coins
+    }
+
+    let resData = {
+      balance: coin
+    };
+
+
+    return res.status(200).json(resData);
+
+  }
+  catch (err) {
+    console.log(err)
+    return res.status(500).json({
+      status: "failure",
+      message: "Internal Server Error !!!",
+      data: ""
+    });
+  }
+}
+export default { creditCoin, debitCoin, studentCoinLog, finalBalance };
