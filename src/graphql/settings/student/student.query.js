@@ -14,7 +14,7 @@ import {
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import controller from '../../../api/settings/student/student.controller';
-import { StudentType, StudentDetailsOutputType } from './student.type';
+import { StudentType, StudentDetailsOutputType, StudentHeaderType } from './student.type';
 
 const pageInfoType = new ObjectType({
   name: 'StudentpageInfo',
@@ -168,10 +168,30 @@ export const StudentById = {
       .catch(err => err);
   },
 };
-
+export const studentHeader = {
+  args: {
+    className: { type: new List(StringType) },
+    branch: { type: new List(StringType) },
+    country: { type: new List(StringType) },
+    state: { type: new List(StringType) },
+    city: { type: new List(StringType) },
+    section: { type: new List(StringType) },
+    orientation: { type: new List(StringType) },
+  },
+  type: StudentHeaderType,
+  async resolve(obj, args, context) {
+    try {
+      const docs = await controller.getStudentHeader(args, context);
+      return docs;
+    } catch (err) {
+      throw new Error("Internal Error");
+    }
+  },
+};
 export default{
   StudentUniqueValues,
   Students,
   StudentsByLastNode,
   StudentById,
+  studentHeader
 };

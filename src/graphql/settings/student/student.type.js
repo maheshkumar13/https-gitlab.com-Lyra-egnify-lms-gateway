@@ -48,7 +48,17 @@ export const StudentDetailsOutputType = new ObjectType({
   },
 });
 
+export const StudentHeaderType = new ObjectType({
+  name: 'StudentHeaderType',
+  fields: {
+    headers: { type: GraphQLJSON },
+    summary: { type: GraphQLJSON },
+
+  },
+});
+
 export default {
   StudentType,
   StudentDetailsOutputType,
+  StudentHeaderType
 };
