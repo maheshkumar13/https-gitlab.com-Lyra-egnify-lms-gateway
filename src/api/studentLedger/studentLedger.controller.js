@@ -233,7 +233,7 @@ export async function studentCoinLog(req, res) {
     
     let resData={
       transaction: studentLedgerData,
-      Balance: coin
+      balance: coin
     };
 
     
@@ -263,7 +263,7 @@ export async function finalBalance(req, res) {
     }
 
     let resData = {
-      Balance: coin
+      balance: coin
     };
 
 
