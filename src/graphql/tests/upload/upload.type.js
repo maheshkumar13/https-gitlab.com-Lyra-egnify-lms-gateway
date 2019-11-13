@@ -39,6 +39,9 @@ export const ListInputType = new InputType({
         },
         branch : {
             type : StringType
+        },
+        gaStatus : {
+            type : StringType
         }
     }
 });
@@ -217,7 +220,8 @@ const Data = new ObjectType({
             type: Mapping
         },
         orientations : { type : new ListType(StringType) },
-        branches : { type : new ListType(StringType)}
+        branches : { type : new ListType(StringType)},
+        testId : { type : StringType }
     }
 })
 

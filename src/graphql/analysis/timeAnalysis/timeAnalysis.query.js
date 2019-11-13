@@ -53,6 +53,7 @@ export const TimeAnalysis = {
   args: {
     studentId: { type: StringType, description: 'Unique Identifier for the student' },
     isStudent: { type: BooleanType, description: 'true for students data' },
+    fullData: { type: BooleanType, description: 'full student analysis' },
     class: { type: StringType, description: 'Class name' },
     branch: { type: StringType, description: 'Branch name' },
     orientation: { type: StringType, description: 'Orientation' },

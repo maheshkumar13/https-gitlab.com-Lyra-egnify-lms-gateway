@@ -18,7 +18,7 @@ import { createSubject } from './settings/subject/subject.mutation';
 import { Programs } from './settings/programs/programs.query';
 import { Textbooks, TextbooksInfo } from './settings/textbook/textbook.query';
 import { createTextbook, updateTextbook, deleteTextbook } from './settings/textbook/textbook.mutation';
-import { Students, StudentUniqueValues, StudentsByLastNode, StudentById } from './settings/student/student.query';
+import { Students, StudentUniqueValues, StudentsByLastNode, StudentById, StudentList } from './settings/student/student.query';
 import { updateStudentAvatar, updateStudentSubjects } from './settings/student/student.mutation';
 import { ConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.query';
 import { ContentMapping, ContentMappingStats, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats, TextbookBasedQuiz, DashboardHeadersAssetCount } from './settings/contentMapping/contentMapping.query';
@@ -35,6 +35,7 @@ import { ListTest, UpcomingTests, ListSubjectWiseBooksAndTestCount, CompletedTes
 import { ListMarkingSchema } from '../graphql/tests/markingShema/marking.shema.query';
 import { PublishTest, ParseAndValidateTest, updateTestInfo, SubmitTest, StartTest } from './tests/upload/upload.mutation';
 import { TimeAnalysis, TimeAnalysisHeaders } from './analysis/timeAnalysis/timeAnalysis.query';
+import { StudentCompletionStats, TeacherLevelCompletionStats, TeacherLevelCompletionHeaders } from './analysis/completion/completion.query';
 
 const schema = new Schema({
   query: new ObjectType({
@@ -50,6 +51,7 @@ const schema = new Schema({
       Students,
       StudentUniqueValues,
       StudentsByLastNode,
+      StudentList,
       Programs,
       ContentMapping,
       LaunchRequest,
@@ -83,6 +85,9 @@ const schema = new Schema({
       FetchInstruction,
       TimeAnalysis,
       TimeAnalysisHeaders,
+      StudentCompletionStats,
+      TeacherLevelCompletionStats,
+      TeacherLevelCompletionHeaders,
     },
   }),
   mutation: new ObjectType({

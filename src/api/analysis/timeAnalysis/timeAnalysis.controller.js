@@ -98,6 +98,34 @@ export async function getTimeAnalysis(args, context) {
     if (!args.orientation) query['refs.orientation'] = { $exists: false };
   }
   const skip = (args.pageNumber - 1) * args.limit;
+  if(query.isStudent && !args.fullData) {
+    if(!args.limit) args.limit = 1;
+    const groupQuery = {
+      _id: '$studentId',
+      data: {$push: { 
+        studentId: '$studentId',
+        studentName: '$studentName',
+        date: '$date',
+        totalTimeSpent: '$totalTimeSpent',
+      }}
+    }
+    const agrCountQuery = [{$match: query},{$group: {_id: '$studentId' }},{$count: 'total'}];
+    const agrDataQuery = [
+      {$match: query},
+      {$group: groupQuery},
+      {$skip: skip},
+      {$limit: args.limit },
+      {$unwind: '$data'},
+      {$group: { _id: 'all', data: {$push: '$data'}}}
+    ];
+    const [ countData, objsData ] = await Promise.all([
+      TimeAnalysis.aggregate(agrCountQuery).allowDiskUse(true),
+      TimeAnalysis.aggregate(agrDataQuery).allowDiskUse(true),
+    ])
+    const count = countData && countData.length ? countData[0].total : 0;
+    const data = objsData && objsData.length ? objsData[0].data : [];
+    return [ count, data ];
+  }
   return Promise.all([
     TimeAnalysis.count(query),
     TimeAnalysis.find(query).skip(skip).limit(args.limit),
