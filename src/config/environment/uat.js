@@ -39,5 +39,4 @@ module.exports = {
   AWS_S3_SECRET: process.env.AWS_S3_SECRET || 'b3phrDHsFYBLJjGZY1CiMI8trwa2roJk3QSnzJ8N',
   AWS_S3_REGION: process.env.AWS_S3_REGION || 'ap-south-1',
   AWS_PUBLIC_BUCKET_FOLDER: 'samplefiles',
-  COUCH_DB_URL : process.env.COUCH_DB_URL || 'http://13.235.245.210:5984/'
 };
