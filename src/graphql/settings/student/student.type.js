@@ -35,16 +35,17 @@ export const StudentType = new ObjectType({
 });
 
 export const StudentDetailsOutputType = new ObjectType({
-    name: 'StudentDetailsOutputType',
-    fields: {
-        studentId: { type: StringType },
-        studentName: { type: StringType },
-        hierarchyLevels: { type: GraphQLJSON },
-        avatarUrl: { type: StringType },
-        subjects: { type: GraphQLJSON },
-        hierarchy: { type: GraphQLJSON },
-        orientation: { type: StringType },
-    },
+  name: 'StudentDetailsOutputType',
+  fields: {
+    studentId: { type: StringType },
+    studentName: { type: StringType },
+    hierarchyLevels: { type: GraphQLJSON },
+    avatarUrl: { type: StringType },
+    subjects: { type: GraphQLJSON },
+    hierarchy: { type: GraphQLJSON },
+    orientation: { type: StringType },
+    prepSkill: { type: BooleanType },
+  },
 });
 
 
