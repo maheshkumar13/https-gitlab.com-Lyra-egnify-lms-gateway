@@ -98,7 +98,7 @@ export async function getTimeAnalysis(args, context) {
     if (!args.orientation) query['refs.orientation'] = { $exists: false };
   }
   const skip = (args.pageNumber - 1) * args.limit;
-  if(query.isStudent) {
+  if(query.isStudent && !args.fullData) {
     if(!args.limit) args.limit = 1;
     const groupQuery = {
       _id: '$studentId',
