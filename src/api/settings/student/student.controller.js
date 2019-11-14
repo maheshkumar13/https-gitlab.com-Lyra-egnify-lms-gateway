@@ -448,6 +448,101 @@ export async function getStudentHeader(args, context) {
 }
 
 
+export async function getStudentListByFilters(args, context) {
+  //check if arguments are empty or not
+  if (!args &&
+      !args.className &&
+      !args.branch &&
+      !args.orientation &&
+      !args.country &&
+      !args.state &&
+      !args.city &&
+      !args.section
+      ) {
+    throw new Error("Nothing is Provided");
+   }
+  //Query Prepartion start here
+  const query = {};
+  if (args.country && args.country.length) {
+    const hierarchyLevelsKey = 'hierarchyLevels.L_1';
+    query[hierarchyLevelsKey] = {
+      $in: args.country
+    }
+  }
+  if (args.className && args.className.length) {
+    const hierarchyLevelsKey = 'hierarchyLevels.L_2';
+    query[hierarchyLevelsKey] = {
+      $in: args.className
+    }
+  }
+  if (args.state && args.state.length) {
+    const hierarchyLevelsKey = 'hierarchyLevels.L_3';
+    query[hierarchyLevelsKey] = {
+      $in: args.state
+    }
+  }
+  if (args.city && args.city.length) {
+    const hierarchyLevelsKey = 'hierarchyLevels.L_4';
+    query[hierarchyLevelsKey] = {
+      $in: args.city
+    }
+  }
+  if (args.branch && args.branch.length) {
+    const hierarchyLevelsKey = 'hierarchyLevels.L_5';
+    query[hierarchyLevelsKey] = {
+      $in: args.branch
+    }
+  }
+  if (args.section && args.section.length) {
+    const hierarchyLevelsKey = 'hierarchyLevels.L_6';
+    query[hierarchyLevelsKey] = {
+      $in: args.section
+    }
+  }
+  if (args.orientation && args.orientation.length) {
+    query.orientation = {
+      $in: args.orientation
+    }
+  }
+  //Query Prepartion ends here
+  try {
+    // Get Collection name from getModel
+    const Student = await getModel(context);
+    const data = {};
+    let headerData;
+
+    headerData = await Student.aggregate([{
+      $match: query
+    }, {
+      $group: {
+        _id: null,
+        studentIdList: { $addToSet: "$studentId" },
+      },
+    },
+    ]);
+   let confirmID = await getActiveStudents(context, headerData[0].studentIdList);
+    return Student.find(query)
+      .skip((args.pageNumber - 1) * args.limit)
+      .limit(args.limit)
+      .then(async result => Student.count(query).then(async (count) => {
+        const results = JSON.parse(JSON.stringify(result));
+        data.pageData = results;
+        data.pageData.forEach(element => {
+          if (confirmID.includes(element.studentId)){
+            element.userActive = true;
+          }else{
+            element.userActive = false;
+          }        
+        });
+          
+        data.count = count;
+        return data;
+      }));
+   }catch(err){
+    console.error("err : ", err)
+    throw new Error("Failed to Query");
+  }
+}
 export default{
   getStudents,
   getUniqueValues,
@@ -455,5 +550,6 @@ export default{
   getStudentDetailsById,
   updateStudentAvatar,
   updateStudentSubjects,
-  getStudentHeader
+  getStudentHeader,
+  getStudentListByFilters
 };

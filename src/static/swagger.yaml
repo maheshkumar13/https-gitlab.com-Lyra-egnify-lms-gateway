@@ -1,0 +1,344 @@
+swagger: "2.0"
+components:
+  schemas:
+    transactionTypeData:       # Schema name
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "5dc134ddece62606453ce0e7"
+        coins:
+          type: integer
+          example: -500
+        studentId:
+          type: string
+          example: "USER1010"
+        transactionType:
+          type: string
+          example: "credit"
+        assetId:
+          type: string
+          example: "C4Mathematicspdf100301"
+        category:
+          type: string
+          example: "Reading Material"
+        created_at: 
+          type: string
+          example: "2019-11-05T08:37:49.045Z"
+        updated_at:
+          type: string
+          example: "2019-11-05T08:37:49.045Z"
+        __v:
+          type: integer
+          example: 0
+
+
+      
+
+tags:
+  - name: StudentCoins
+    description: Everything about student coins
+    externalDocs:
+      url: #NoUrl
+  
+info:
+  title:  API LOGS
+  description: Find documentation of all apis here.
+  version: 1.0.0
+basePath: /api
+schemes:
+  - https
+  - http
+paths:
+  /studentLedger/finalBalance:
+    post: 
+      summary: Returns the final balance of student.
+      tags:
+        - StudentCoins
+      description: When you will hit finalBalance api, it will retuen final balance of student. If student have no credit, debit or net balance zero then return value will be 0 else the net balance which is sum of debit and credit coins.
+      responses:
+        '200':    # status code
+          description: Return final balance of the student
+          schema:
+            type: object
+            properties: 
+              balance:
+                type: integer
+                example: 250
+        '500':    # status code
+          description: Return Error if any.
+          schema:
+            type: object
+            properties:
+              status:                        
+                type: string
+                example: "failure"  
+              message: 
+                type: string
+                example: "Internal Server Error !!!"
+              data: 
+                type: string
+                example: ""                     
+      security:
+        - Authorization: []
+        - accessControlToken: []                 
+
+                
+  /studentLedger/coinLog:
+    post: 
+      summary:  return ledger and final balance
+      tags:
+        - StudentCoins
+      description:  When you will hit coinLog api, you will get all transactions done by student.If you pass "transactionType"="All" then it will return all transactions and final balance. If you pass "transactionType"="debit" or "transactionType"="credit". This api will return corresponding ledger and final balance.  
+      parameters:
+        - in: body
+          name: CoinLog
+          description: Send transactionType to fetch data
+          schema:
+            type: object
+            required:
+              - transactionType
+            properties:
+              transactionType:
+                type: string
+                example: "All"
+      responses:
+        '200':    # status code
+          description: Return student Ledger and Final Coins
+          schema: 
+            type: object
+            properties:
+              balance: 
+                type: integer
+                example: 290
+              transaction:                       
+                type: array
+                items:
+                  $ref: '#/components/schemas/transactionTypeData'
+        '500':    # status code
+          description: Return Error if any.
+          schema:
+            type: object
+            properties:
+              status:                        
+                type: string
+                example: "failure"  
+              message: 
+                type: string
+                example: "Internal Server Error !!!"
+              data: 
+                type: string
+                example: "" 
+      security:
+        - Authorization: []
+        - accessControlToken: []                         
+                
+  /studentLedger/credit/{assetId}:
+      post: 
+        summary:  return confirmation message
+        tags:
+          - StudentCoins
+        description:  extended description in CommonMark or HTML.
+        parameters:
+          - in: path
+            name: assetId
+            required: true
+            type: string
+            example: C4Mathematicspdf100301
+        responses:
+          '200':    # status code
+           description: Return confirmation message
+           schema: 
+             type: object
+             properties:
+               status: 
+                 type: string
+                 example: "success"
+               message:                       
+                 type: string
+                 example: "200 coins has been credited to your account."
+               date: 
+                 type: integer
+                 example: 200
+          '208':    # status code
+           description: Return warning messageif student already earn coins
+           schema: 
+             type: object
+             properties:
+               status: 
+                 type: string
+                 example: "warning"
+               message:                       
+                 type: string
+                 example: "You have already earned coins for this Asset !!!"
+               date: 
+                 type: integer
+                 example: ""
+          '400':    # status code
+           description: Return message if assetId is missing
+           schema: 
+             type: object
+             properties:
+               status: 
+                 type: string
+                 example: "failure"
+               message:                       
+                 type: string
+                 example: "assetId is missing !!!"
+               date: 
+                 type: integer
+                 example: ""
+          '404':    # status code
+           description: Return message if assetId is invalid 
+           schema: 
+             type: object
+             properties:
+               status: 
+                 type: string
+                 example: "failure"
+               message:                       
+                 type: string
+                 example: "this is invalid asset id !!!"
+               date: 
+                 type: integer
+                 example: ""
+          '400':    # status code
+           description: Return message if assetId is not belong to student course
+           schema: 
+             type: object
+             properties:
+               status: 
+                 type: string
+                 example: "failure"
+               message:                       
+                 type: string
+                 example: "This asset is not belong to your course!!!"
+               date: 
+                 type: integer
+                 example: ""
+          '500':    # status code
+           description: Return Error if any.
+           schema:
+             type: object
+             properties:
+               status:                        
+                 type: string
+                 example: "failure"  
+               message: 
+                 type: string
+                 example: "Internal Server Error !!!"
+               data: 
+                 type: string
+                 example: "" 
+        security:
+          - Authorization: []
+          - accessControlToken: []                 
+  /studentLedger/debit/{assetId}:
+      post: 
+        summary:  return confirmation message
+        tags:
+          - StudentCoins
+        description:  extended description in CommonMark or HTML.
+        parameters:
+          - in: path
+            name: assetId
+            required: true
+            type: string
+            example: C4Mathematicspdf100301
+        responses:
+          '200':    # status code
+           description: Return confirmation message 
+           schema: 
+             type: object
+             properties:
+               status: 
+                 type: string
+                 example: "success"
+               message:                       
+                 type: string
+                 example: "200 coins has been credited to your account."
+               date: 
+                 type: integer
+                 example: 200
+          '208':    # status code
+           description: Return warning message if student already earn coins
+           schema: 
+             type: object
+             properties:
+               status: 
+                 type: string
+                 example: "warning"
+               message:                       
+                 type: string
+                 example: "You have already unlock this asset !!!"
+               date: 
+                 type: integer
+                 example: ""
+          '400':    # status code
+           description: Return message if assetId is missing
+           schema: 
+             type: object
+             properties:
+               status: 
+                 type: string
+                 example: "failure"
+               message:                       
+                 type: string
+                 example: "assetId is missing !!!"
+               date: 
+                 type: integer
+                 example: ""
+          '404':    # status code
+           description: Return message if assetId is invalid 
+           schema: 
+             type: object
+             properties:
+               status: 
+                 type: string
+                 example: "failure"
+               message:                       
+                 type: string
+                 example: "this is invalid asset id !!!"
+               date: 
+                 type: integer
+                 example: ""
+          '400':    # status code
+           description: Return message if assetId is not belong to student course
+           schema: 
+             type: object
+             properties:
+               status: 
+                 type: string
+                 example: "failure"
+               message:                       
+                 type: string
+                 example: "This asset is not belong to your course!!!"
+               date: 
+                 type: integer
+                 example: ""
+          '500':    # status code
+           description: Return Error if any.
+           schema:
+             type: object
+             properties:
+               status:                        
+                 type: string
+                 example: "failure"  
+               message: 
+                 type: string
+                 example: "Internal Server Error !!!"
+               data: 
+                 type: string
+                 example: "" 
+        security:
+          - Authorization: []
+          - accessControlToken: []
+securityDefinitions:
+ Authorization:
+   type: apiKey
+   name: Authorization
+   in: header
+ accessControlToken:
+   type: apiKey
+   name: accesscontroltoken
+   in: header

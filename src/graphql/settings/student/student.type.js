@@ -9,6 +9,7 @@ import {
   GraphQLString as StringType,
   GraphQLBoolean as BooleanType,
   GraphQLInt as IntType,
+  GraphQLList as List,
 
   // GraphQLNonNull as NonNull,
 } from 'graphql';
@@ -56,9 +57,74 @@ export const StudentHeaderType = new ObjectType({
 
   },
 });
-
+// type for student list filter with pagination type
+    //student data return type
+export const StudentListByFiltersType = new ObjectType({
+  name: 'StudentListByFiltersType',
+  fields: {
+    studentId: { type: StringType,description: 'Unique Student Id' },
+    studentName: { type: StringType,description: 'Name of student' },
+    fatherName: { type: StringType,description: 'Name of father' },
+    dob: { type: StringType,description: 'dob of student' },
+    gender: { type: StringType,description: 'M -> male , F -> Female' },
+    active: { type: BooleanType,description: 'true/false' },
+    user: { type: BooleanType,description: 'user active status true/false' },
+    avatarUrl: { type: StringType,description: 'profile pic' },
+    hierarchy: { type: GraphQLJSON, description: 'data of student hierarchy' },
+    hierarchyLevels: { type: GraphQLJSON, description: 'data of student hierarchy' },
+    orientation: { type: StringType,description: 'orientation of student' },
+    phone: { type: StringType ,description: 'contact no student'},
+    prepSkill: { type: BooleanType,description: 'true/false' },
+  },
+});
+    //student pagination type
+export const StudentPageInfoType = new ObjectType({
+  name: 'StudentPageInfoType',
+  fields: {
+      pageNumber: {
+        type: IntType,
+        description:"current page number"
+      },
+      limit: {
+        type: IntType,
+        description: "per page limit"
+      },
+      nextPage: {
+        type: BooleanType,
+        description:"true/false"
+      },
+      prevPage: {
+        type: BooleanType,
+        description: "true/false"
+      },
+      totalPages: {
+        type: IntType,
+        description: "counting of total page which is totalpage/limit"
+      },
+      totalEntries: {
+        type: IntType,
+        description: "counting of total page"
+      },   
+  },
+});
+    //Student List By F"prevPage": false,ilters Output Type
+export const StudentListByFiltersOutputType = new ObjectType({
+  name: 'StudentListByFiltersOutputType',
+  fields: {
+      page: {
+        type: new List(StudentListByFiltersType),
+      description: "student data"
+      },
+      pageInfo: {
+        type: StudentPageInfoType,
+        description: "data of pagination"
+      },
+    }
+  
+}); 
 export default {
   StudentType,
   StudentDetailsOutputType,
-  StudentHeaderType
+  StudentHeaderType,
+  StudentListByFiltersOutputType
 };
