@@ -9,27 +9,40 @@ const cron = require('node-cron');
 export async function analysisTrigger(args) {
   return new Promise(async (resolve) => {
     console.info('triggering at', new Date(), args);
-    if (!args.timestamp) {
+    if (!args.startTime) {
       const tempDate = new Date();
       const date = new Date(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate());
       date.setDate(date.getDate() - 1);
-      args.timestamp = date.toISOString();  // eslint-disable-line
+      args.startTime = date.toLocaleString();
     }
+    if(new Date(args.startTime).toString() === 'Invalid Date') {
+      return resolve({
+        message: 'Invalid date or format',
+        validFormat: 'YYYY-MM-DD HH:MM:SS',
+      })
+    }
+    const tempDate = new Date(args.startTime);
+    tempDate.setDate(tempDate.getDate() +1)
+    args.endTime = tempDate.toLocaleString();
     const SchedulerTimeAnalysis = await SchedulerTimeAnalysisModel();
-    const isTriggered = await SchedulerTimeAnalysis.findOne({ date: new Date(args.timestamp) });
+    const isTriggered = await SchedulerTimeAnalysis.findOne({ date: new Date(args.startTime) }).catch(err => {
+      console.error(err)
+    })
+    console.info('isTriggered', isTriggered)
     if (isTriggered && !args.manualTrigger) {
       const message = `Alreday triggered for ${args.timestamp}`;
       console.info(message);
       return resolve({ message });
     }
     const triggeredType = args.manualTrigger ? 'manual' : 'auto';
-    await SchedulerTimeAnalysis.create({ date: new Date(args.timestamp), triggeredType });
+    await SchedulerTimeAnalysis.create({  date: new Date(args.startTime), triggeredType }).catch((err) => {
+      console.error(err);
+    })
     const broker = new celery.RedisHandler(config.celery.CELERY_BROKER_URL);
     const backend = new celery.RedisHandler(config.celery.CELERY_RESULT_BACKEND);
     const celeryClient = new celery.Client(broker, backend);
     console.info('celery config', config.celery);
-
-    const argsC = [{ dateString: args.timestamp }];
+    const argsC = [{ startTime: args.startTime, endTime: args.endTime}];
     const kwargs = {};
     const taskOptions = {
       eta: Date.now(),
