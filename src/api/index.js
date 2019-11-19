@@ -7,6 +7,8 @@ const instituteHierarchy = require('./settings/instituteHierarchy');
 const contentMapping = require('./settings/contentMapping');
 const textbook = require('./settings/textbook');
 const testUpload = require('./tests/questions');
+const studentLedger = require('./studentLedger');
+
 // Util modules
 const uploadFile = require('./v1/uploadFile');
 const downloadReports = require('./v1/downloadReports');
@@ -18,6 +20,7 @@ const studentSync = require('./v1/studentSync');
 const hierarchySync = require('./v1/hierarchySync');
 const elasticindexing = require('./indexelasticsearch/indexcontent/index');
 const test = require('./tests/upload');
+const timeAnalysis = require('./analysis/timeAnalysis');
 
 export default function (app) {
   //  Insert API below
@@ -27,6 +30,8 @@ export default function (app) {
   app.use('/api/textbook', textbook);
   app.use('/api/practice',testUpload);
   app.use('/api/test',test);
+  app.use('/api/studentLedger', studentLedger);
+
   // Util APIs
   app.use('/api/v1/converter', converter);
   app.use('/api/v1/uploadFile', uploadFile);
@@ -37,4 +42,5 @@ export default function (app) {
   app.use('/api/v1/studentSync', studentSync);
   app.use('/api/v1/hierarchySync', hierarchySync);
   app.use('/api/elastic', elasticindexing);
+  app.use('/api/timeAnalysis', timeAnalysis);
 }

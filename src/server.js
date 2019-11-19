@@ -9,17 +9,21 @@
 // require('newrelic');
 
 // import path from 'path';
-import express from 'express';
+import express from 'express'; 
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
 import schema from './graphql/schema';
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const swaggerDocument = YAML.load(`${__dirname}/static/swagger.yaml`);
 
 import { config } from './config/environment';
 import * as auth from './auth/auth.service';
 import seedDatabaseIfNeeded from './config/seed';
-import  client from './redis';
+import client from './redis';
+import { triggerTimeAnalysis } from './api/analysis/timeAnalysis/timeAnalysis.controller';
 
 const { ApolloEngine } = require('apollo-engine');
 const morgan = require('morgan');
@@ -54,6 +58,8 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '32mb' }));
 app.use(bodyParser.json({ limit: '32mb' }));
 
 app.use('/', express.static(`${__dirname}/public`));
+app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 app.get('/debug-sentry', function mainHandler(req, res) {
   throw new Error('My first Sentry error!');
 });
@@ -113,6 +119,7 @@ app.get('/', (req, res) => res.send('Oh!! Yeah.'));
 
 app.listen(config.port, () => {
   console.info(`The server is running at http://localhost:${config.port}/`);
+  triggerTimeAnalysis.start();
 });
 
 // Initialize engine with your API key. Alternatively,
