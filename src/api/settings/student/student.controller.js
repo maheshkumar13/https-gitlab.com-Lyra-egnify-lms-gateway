@@ -501,7 +501,7 @@ export async function getStudentListByFilters(args, context) {
       }
     });
     data.count = count;
-    console.log("count : ", count)
+    //console.log("count : ", count)
     return data;
   } catch (err) {
     console.error("err : ", err)
