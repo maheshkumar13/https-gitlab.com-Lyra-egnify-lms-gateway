@@ -5,7 +5,8 @@ import {
     GraphQLInt as IntType,
     GraphQLObjectType as ObjectType,
     GraphQLList as ListType,
-    GraphQLBoolean as BooleanType
+    GraphQLBoolean as BooleanType,
+    GraphQLEnumType as EnumType
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 
@@ -37,6 +38,9 @@ export const ListInputType = new InputType({
             type : StringType
         },
         branch : {
+            type : StringType
+        },
+        gaStatus : {
             type : StringType
         }
     }
@@ -216,7 +220,8 @@ const Data = new ObjectType({
             type: Mapping
         },
         orientations : { type : new ListType(StringType) },
-        branches : { type : new ListType(StringType)}
+        branches : { type : new ListType(StringType)},
+        testId : { type : StringType }
     }
 })
 
@@ -233,3 +238,34 @@ export const ListTestOutput = new ObjectType({
         }
     }
 })
+
+const TestHeaderEnumType = new EnumType({ // eslint-disable-line
+    name: 'TestHeaderEnumType',
+    values: {
+        class: {
+            value: 'class',
+        },
+        subject: {
+            value: 'subject',
+        },
+        textbook: {
+            value: 'textbook',
+        },
+        chapter: {
+            value: 'chapter',
+        },
+    },
+});
+
+export const TestHeadersAssetCountInputType = new InputType({
+    name: 'TestHeadersAssetCountInputType',
+    fields: {
+      classCode: { type: StringType, description: 'Code of the class' },
+      subjectCode: { type: StringType, description: 'Code of the subject' },
+      chapterCode: { type: StringType, description: 'Code of the chapter' },
+      textbookCode: { type: StringType, description: 'Code of the textBook' },
+      branch: { type: StringType, description: 'Branch name' },
+      orientation: { type: StringType, description: 'Orientaion name' },
+      header: { type: NonNull(TestHeaderEnumType), description: 'Header' }
+    },
+});

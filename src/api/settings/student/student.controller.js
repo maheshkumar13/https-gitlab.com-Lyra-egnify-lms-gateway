@@ -169,6 +169,7 @@ export async function getStudentDetailsById(args, context) { // eslint-disable-l
   return Student.findOne(
     { studentId: args.studentId },
     {
+      _id : 0,
       studentId: 1,
       studentName: 1,
       hierarchyLevels: 1,
@@ -234,6 +235,43 @@ export async function updateStudentSubjects(args, context) {
     return Student.update(query, patch).then(() => 'Subjects updated successfully');
   }));
 }
+
+export async function getStudentList(args, context) {
+  if (!args && !args.Class && !args.Branch && !args.Orientation) {
+    throw new Error("Nothing is Provided");
+  }
+  const { Class, Branch, Orientation } = args;
+  // eslint-disable-next-line no-console
+  const query = {};
+  if (Orientation && Orientation.length) {
+    query.orientation = {
+      $in: Orientation
+    }
+  }
+  if (Class && Class.length) {
+    const hierarchyLevelsKey = 'hierarchyLevels.L_2';
+    query[hierarchyLevelsKey] = {
+      $in: Class
+    }
+  }
+  if (Branch && Branch.length) {
+    const hierarchyLevelsKey = 'hierarchyLevels.L_5';
+    query[hierarchyLevelsKey] = {
+      $in: Branch
+    }
+  }
+ 
+  try{
+    const Student = await getModel(context);
+    const resultObjs = await Student.find(query, { _id: 0 });
+    return resultObjs;
+
+      
+  }catch (err)  {
+    throw new Error("Failed to Query");
+    
+  }
+}
 export default{
   getStudents,
   getUniqueValues,
@@ -241,4 +279,5 @@ export default{
   getStudentDetailsById,
   updateStudentAvatar,
   updateStudentSubjects,
+  getStudentList
 };
