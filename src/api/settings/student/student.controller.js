@@ -238,8 +238,8 @@ export async function updateStudentSubjects(args, context) {
 
 async function getActiveStudents(context, studentIdList) {
 
-  //const url = `${config.services.sso}/api/v1/users/getActiveStudents`;
- const url = `http://localhost:3002/api/v1/users/getActiveStudents`;
+  const url = `${config.services.sso}/api/v1/users/getActiveStudents`;
+ //const url = `http://localhost:3002/api/v1/users/getActiveStudents`;
   try {
     const response = await fetch(url, {
       method: 'POST',
