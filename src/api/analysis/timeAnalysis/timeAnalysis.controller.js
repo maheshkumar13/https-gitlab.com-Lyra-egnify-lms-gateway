@@ -11,19 +11,22 @@ export async function analysisTrigger(args) {
     console.info('triggering at', new Date(), args);
     if (!args.startTime) {
       const tempDate = new Date();
-      const date = new Date(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate());
+      const date = new Date(tempDate.getUTCFullYear(), tempDate.getUTCMonth(), tempDate.getUTCDate());
       date.setDate(date.getDate() - 1);
-      args.startTime = date.toLocaleString();
+      args.startTime = date;
     }
     if(new Date(args.startTime).toString() === 'Invalid Date') {
       return resolve({
         message: 'Invalid date or format',
-        validFormat: 'YYYY-MM-DD HH:MM:SS',
+        validFormat: 'YYYY-MM-DDTHH:MM:SS.SSSZ',
       })
-    }
+    } else args.startTime = new Date(args.startTime);
+
     const tempDate = new Date(args.startTime);
     tempDate.setDate(tempDate.getDate() +1)
-    args.endTime = tempDate.toLocaleString();
+    const startTime = args.startTime;
+    const endTime = tempDate;
+
     const SchedulerTimeAnalysis = await SchedulerTimeAnalysisModel();
     const isTriggered = await SchedulerTimeAnalysis.findOne({ date: new Date(args.startTime) }).catch(err => {
       console.error(err)
@@ -38,6 +41,10 @@ export async function analysisTrigger(args) {
     await SchedulerTimeAnalysis.create({  date: new Date(args.startTime), triggeredType }).catch((err) => {
       console.error(err);
     })
+
+    args.startTime = `${startTime.getUTCFullYear()}-${startTime.getUTCMonth()+1}-${startTime.getUTCDate()} ${startTime.getUTCHours()}:${startTime.getUTCMinutes()}:00`;
+    args.endTime =  `${endTime.getUTCFullYear()}-${endTime.getUTCMonth()+1}-${endTime.getUTCDate()} ${endTime.getUTCHours()}:${endTime.getUTCMinutes()}:00`;
+
     const broker = new celery.RedisHandler(config.celery.CELERY_BROKER_URL);
     const backend = new celery.RedisHandler(config.celery.CELERY_RESULT_BACKEND);
     const celeryClient = new celery.Client(broker, backend);
