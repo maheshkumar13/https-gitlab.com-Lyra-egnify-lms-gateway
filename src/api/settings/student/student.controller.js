@@ -255,7 +255,7 @@ async function getActiveStudents(context, studentIdList) {
     let json = await response.json();
     return json;
   } catch (err) {
-    console.log("Err", err)
+   // console.log("Err", err)
     return new Error(response.statusText);
   }
 }
@@ -420,7 +420,7 @@ export async function getStudentHeader(args, context) {
     }
     return returnData;
   } catch (err) {
-    console.error("err : ", err)
+    //console.error("err : ", err)
     throw new Error("Failed to Query");
 
   }
