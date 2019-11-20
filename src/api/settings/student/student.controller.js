@@ -7,7 +7,8 @@ import { getModel as SubjectModel } from '../subject/subject.model';
 import { getLastKLevels } from '../institute/institute.controller';
 import { config } from '../../../config/environment';
 import { StudentType } from '../../../graphql/settings/student/student.type';
-
+import { promises } from 'dns';
+const axios = require('axios');
 function getMongoQuery(args) {
   const query = {};
   query.active = true;
@@ -237,11 +238,10 @@ export async function updateStudentSubjects(args, context) {
   }));
 }
 
-
 async function getActiveStudents(context, studentIdList) {
 
-  // const url = `${config.services.sso}/api/v1/users/getActiveStudents`;
-  const url = `http://localhost:3002/api/v1/users/getActiveStudents`;
+   const url = `${config.services.sso}/api/v1/users/getActiveStudents`;
+  //const url = `http://localhost:3002/api/v1/users/getActiveStudents`;
   try {
     const response = await fetch(url, {
       method: 'POST',
@@ -259,8 +259,6 @@ async function getActiveStudents(context, studentIdList) {
     return new Error(response.statusText);
   }
 }
-
-
 
 export async function getStudentHeader(args, context) {
 
@@ -321,6 +319,22 @@ export async function getStudentHeader(args, context) {
 
   try {
     const Student = await getModel(context);
+    let returnData = {}
+    let headerReturnData = {}
+    headerReturnData["country"] = [];
+    headerReturnData["state"] = [];
+    headerReturnData["branch"] = [];
+    headerReturnData["city"] = [];
+    headerReturnData["className"] = [];
+    headerReturnData["section"] = [];
+    headerReturnData["orientation"] = [];
+    let summaryReturnData = {}
+    summaryReturnData["totalStudent"] = 0;
+    summaryReturnData["digitalContent"] = 0;
+    summaryReturnData["male"] = 0;
+    summaryReturnData["female"] = 0;
+    summaryReturnData["prepSkill"] = 0;
+    summaryReturnData["activation"] = 0;
     let headerData = await Student.aggregate([{
       $match: query
     }, {
@@ -337,18 +351,18 @@ export async function getStudentHeader(args, context) {
       },
     },
     ]);
-
+    //if query return null->[] then return empty array
+    if (!headerData.length){
+      returnData = {
+        "summary": summaryReturnData,
+        "headers": headerReturnData,
+      }
+      return returnData;
+    }
+   
     let activationsData = await getActiveStudents(context, headerData[0].studentIdList)
     activationsData = activationsData.length;
-    let returnData = {}
-    let headerReturnData = {}
-    headerReturnData["country"] = [];
-    headerReturnData["state"] = [];
-    headerReturnData["branch"] = [];
-    headerReturnData["city"] = [];
-    headerReturnData["className"] = [];
-    headerReturnData["section"] = [];
-    headerReturnData["orientation"] = [];
+   
     if (headerData.length) {
       if (!args.country) {
         headerReturnData["country"] = headerData[0].country;
@@ -391,13 +405,7 @@ export async function getStudentHeader(args, context) {
       }
     },
     ]);
-    let summaryReturnData = {}
-    summaryReturnData["totalStudent"] = 0;
-    summaryReturnData["digitalContent"] = 0;
-    summaryReturnData["male"] = 0;
-    summaryReturnData["female"] = 0;
-    summaryReturnData["prepSkill"] = 0;
-    summaryReturnData["activation"] = 0;
+    
     if (summaryData.length) {
       summaryReturnData["totalStudent"] = summaryData[0].total;
       summaryReturnData["digitalContent"] = summaryData[0].digitalContent;
@@ -482,15 +490,29 @@ export async function getStudentListByFilters(args, context) {
     const Student = await getModel(context);
     const data = {};
     let count = 0;
-    let  PromiseData  = await Promise.all([
-    Student.count(query),
-    Student.find(query, { studentId: 1 })]);
-    count = PromiseData[0];
-    let studentIdList = PromiseData[1];
-    let confirmID = await getActiveStudents(context, studentIdList);
-    let result = await Student.find(query)
-      .skip((args.pageNumber - 1) * args.limit)
-      .limit(args.limit);
+      let PromiseData = await Promise.all([
+        Student.aggregate([{
+          $match: query
+        }, {
+          $group: {
+            _id: null,
+            studentIdList: { $addToSet: "$studentId" },
+          },
+        },
+        ]),
+        Student.find(query)
+          .skip((args.pageNumber - 1) * args.limit)
+          .limit(args.limit)
+      ]);
+    if ( !PromiseData[0].length || !PromiseData[1].length){
+      data.pageData = [];
+      data.count = 0;
+      return data;
+    }
+    let studentIdListData = PromiseData[0];
+    count = studentIdListData[0].studentIdList.length;
+    let confirmID = await getActiveStudents(context, studentIdListData[0].studentIdList);
+    let result = PromiseData[1];
     const results = JSON.parse(JSON.stringify(result));
     data.pageData = results;
     data.pageData.forEach(element => {
@@ -501,10 +523,9 @@ export async function getStudentListByFilters(args, context) {
       }
     });
     data.count = count;
-    //console.log("count : ", count)
     return data;
   } catch (err) {
-    console.error("err : ", err)
+    // console.error("err : ", err)
     throw new Error("Failed to Query");
   }
 }

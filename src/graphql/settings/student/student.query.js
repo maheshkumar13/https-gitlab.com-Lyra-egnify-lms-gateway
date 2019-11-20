@@ -210,7 +210,8 @@ export const StudentListByFilters = {
         return new Error('Page Number must be positive');
       }
       const studentData = await controller.getStudentListByFilters(args, context);
-          const data = {};
+      console.log("studentData : ", studentData)
+      const data = {};
           data.page = studentData.pageData;
           const pageInfo = {};
           pageInfo.prevPage = true;
