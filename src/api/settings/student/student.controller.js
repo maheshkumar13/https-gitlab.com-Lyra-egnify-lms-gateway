@@ -5,10 +5,6 @@ import { uniqBy, filter } from 'lodash';
 import { getModel } from './student.model';
 import { getModel as SubjectModel } from '../subject/subject.model';
 import { getLastKLevels } from '../institute/institute.controller';
-import { config } from '../../../config/environment';
-import { StudentType } from '../../../graphql/settings/student/student.type';
-import { promises } from 'dns';
-const axios = require('axios');
 function getMongoQuery(args) {
   const query = {};
   query.active = true;
@@ -241,8 +237,8 @@ export async function updateStudentSubjects(args, context) {
 async function getActiveStudents(context, studentIdList) {
 
    const url = `${config.services.sso}/api/v1/users/getActiveStudents`;
-  //const url = `http://localhost:3002/api/v1/users/getActiveStudents`;
   try {
+  
     const response = await fetch(url, {
       method: 'POST',
       body: JSON.stringify({ studentIdList }),
@@ -255,68 +251,55 @@ async function getActiveStudents(context, studentIdList) {
     let json = await response.json();
     return json;
   } catch (err) {
-   // console.log("Err", err)
-    return new Error(response.statusText);
+    return new Error(err);
   }
 }
 
 export async function getStudentHeader(args, context) {
-
-  if (!args &&
-    !args.className &&
-    !args.branch &&
-    !args.orientation &&
-    !args.country &&
-    !args.state &&
-    !args.city &&
-    !args.section) {
-    throw new Error("Nothing is Provided");
-  }
-  //Query Prepartion
+   //Query Prepartion
   const query = {};
   query.active = true;
-  if (args.country && args.country.length) {
+  if (args && args.country && args.country.length) {
     const hierarchyLevelsKey = 'hierarchyLevels.L_1';
     query[hierarchyLevelsKey] = {
       $in: args.country
     }
   }
-  if (args.className && args.className.length) {
+  if (args && args.className && args.className.length) {
     const hierarchyLevelsKey = 'hierarchyLevels.L_2';
     query[hierarchyLevelsKey] = {
       $in: args.className
     }
   }
-  if (args.state && args.state.length) {
+  if (args && args.state && args.state.length) {
     const hierarchyLevelsKey = 'hierarchyLevels.L_3';
     query[hierarchyLevelsKey] = {
       $in: args.state
     }
   }
-  if (args.city && args.city.length) {
+  if (args && args.city && args.city.length) {
     const hierarchyLevelsKey = 'hierarchyLevels.L_4';
     query[hierarchyLevelsKey] = {
       $in: args.city
     }
   }
-  if (args.branch && args.branch.length) {
+  if (args && args.branch && args.branch.length) {
     const hierarchyLevelsKey = 'hierarchyLevels.L_5';
     query[hierarchyLevelsKey] = {
       $in: args.branch
     }
   }
-  if (args.section && args.section.length) {
+  if (args && args.section && args.section.length) {
     const hierarchyLevelsKey = 'hierarchyLevels.L_6';
     query[hierarchyLevelsKey] = {
       $in: args.section
     }
   }
-  if (args.orientation && args.orientation.length) {
+  if (args && args.orientation && args.orientation.length) {
     query.orientation = {
       $in: args.orientation
     }
   }
-
   try {
     const Student = await getModel(context);
     let returnData = {}
@@ -335,6 +318,8 @@ export async function getStudentHeader(args, context) {
     summaryReturnData["female"] = 0;
     summaryReturnData["prepSkill"] = 0;
     summaryReturnData["activation"] = 0;
+    console.log("query : ",query)
+
     let headerData = await Student.aggregate([{
       $match: query
     }, {
@@ -359,10 +344,11 @@ export async function getStudentHeader(args, context) {
       }
       return returnData;
     }
-   
+    console.log("headerData[0].studentIdList :", headerData[0].studentIdList)
+
     let activationsData = await getActiveStudents(context, headerData[0].studentIdList)
     activationsData = activationsData.length;
-   
+
     if (headerData.length) {
       if (!args.country) {
         headerReturnData["country"] = headerData[0].country;
@@ -376,16 +362,17 @@ export async function getStudentHeader(args, context) {
       if (!args.branch) {
         headerReturnData["branch"] = headerData[0].branch;
       }
-      if (!args.className) {
+      if ( !args.className) {
         headerReturnData["className"] = headerData[0].className;
       }
       if (!args.section) {
         headerReturnData["section"] = headerData[0].section;
       }
-      if (!args.orientation) {
+      if ( !args.orientation) {
         headerReturnData["orientation"] = headerData[0].orientation;
       }
     }
+
     const summaryData = await Student.aggregate([{
       $match: query
     }, {
@@ -405,7 +392,7 @@ export async function getStudentHeader(args, context) {
       }
     },
     ]);
-    
+
     if (summaryData.length) {
       summaryReturnData["totalStudent"] = summaryData[0].total;
       summaryReturnData["digitalContent"] = summaryData[0].digitalContent;
@@ -418,9 +405,9 @@ export async function getStudentHeader(args, context) {
       "summary": summaryReturnData,
       "headers": headerReturnData,
     }
+
     return returnData;
   } catch (err) {
-    //console.error("err : ", err)
     throw new Error("Failed to Query");
 
   }
@@ -428,58 +415,47 @@ export async function getStudentHeader(args, context) {
 
 
 export async function getStudentListByFilters(args, context) {
-  //check if arguments are empty or not
-  if (!args &&
-    !args.className &&
-    !args.branch &&
-    !args.orientation &&
-    !args.country &&
-    !args.state &&
-    !args.city &&
-    !args.section
-  ) {
-    throw new Error("Nothing is Provided");
-  }
+ 
   //Query Prepartion start here
   const query = {};
   query.active=true;
-  if (args.country && args.country.length) {
+  if (args && args.country && args.country.length) {
     const hierarchyLevelsKey = 'hierarchyLevels.L_1';
     query[hierarchyLevelsKey] = {
       $in: args.country
     }
   }
-  if (args.className && args.className.length) {
+  if (args && args.className && args.className.length) {
     const hierarchyLevelsKey = 'hierarchyLevels.L_2';
     query[hierarchyLevelsKey] = {
       $in: args.className
     }
   }
-  if (args.state && args.state.length) {
+  if (args && args.state && args.state.length) {
     const hierarchyLevelsKey = 'hierarchyLevels.L_3';
     query[hierarchyLevelsKey] = {
       $in: args.state
     }
   }
-  if (args.city && args.city.length) {
+  if (args && args.city && args.city.length) {
     const hierarchyLevelsKey = 'hierarchyLevels.L_4';
     query[hierarchyLevelsKey] = {
       $in: args.city
     }
   }
-  if (args.branch && args.branch.length) {
+  if (args && args.branch && args.branch.length) {
     const hierarchyLevelsKey = 'hierarchyLevels.L_5';
     query[hierarchyLevelsKey] = {
       $in: args.branch
     }
   }
-  if (args.section && args.section.length) {
+  if (args && args.section && args.section.length) {
     const hierarchyLevelsKey = 'hierarchyLevels.L_6';
     query[hierarchyLevelsKey] = {
       $in: args.section
     }
   }
-  if (args.orientation && args.orientation.length) {
+  if (args && args.orientation && args.orientation.length) {
     query.orientation = {
       $in: args.orientation
     }
@@ -525,7 +501,6 @@ export async function getStudentListByFilters(args, context) {
     data.count = count;
     return data;
   } catch (err) {
-    // console.error("err : ", err)
     throw new Error("Failed to Query");
   }
 }
