@@ -5,6 +5,7 @@ import { uniqBy, filter } from 'lodash';
 import { getModel } from './student.model';
 import { getModel as SubjectModel } from '../subject/subject.model';
 import { getLastKLevels } from '../institute/institute.controller';
+import { config } from "../../../config/environment/index";
 function getMongoQuery(args) {
   const query = {};
   query.active = true;
