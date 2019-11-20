@@ -229,7 +229,8 @@ export async function updateStudentSubjects(args, context) {
 
 async function getActiveStudents(context, studentIdList) {
 
-   const url = `${config.services.sso}/api/v1/users/getActiveStudents`;
+   //const url = `${config.services.sso}/api/v1/users/getActiveStudents`;
+  const url = "http://localhost:3002/api/v1/users/getActiveStudents";
 
   try {
   
@@ -254,38 +255,32 @@ export async function getStudentHeader(args, context) {
   const query = {};
   query.active = true;
   if (args && args.country && args.country.length) {
-    const hierarchyLevelsKey = 'hierarchyLevels.L_1';
-    query[hierarchyLevelsKey] = {
+    query['hierarchyLevels.L_1'] = {
       $in: args.country
     }
   }
   if (args && args.className && args.className.length) {
-    const hierarchyLevelsKey = 'hierarchyLevels.L_2';
-    query[hierarchyLevelsKey] = {
+    query['hierarchyLevels.L_2'] = {
       $in: args.className
     }
   }
   if (args && args.state && args.state.length) {
-    const hierarchyLevelsKey = 'hierarchyLevels.L_3';
-    query[hierarchyLevelsKey] = {
+    query['hierarchyLevels.L_3'] = {
       $in: args.state
     }
   }
   if (args && args.city && args.city.length) {
-    const hierarchyLevelsKey = 'hierarchyLevels.L_4';
-    query[hierarchyLevelsKey] = {
+    query['hierarchyLevels.L_4'] = {
       $in: args.city
     }
   }
   if (args && args.branch && args.branch.length) {
-    const hierarchyLevelsKey = 'hierarchyLevels.L_5';
-    query[hierarchyLevelsKey] = {
+    query['hierarchyLevels.L_5'] = {
       $in: args.branch
     }
   }
   if (args && args.section && args.section.length) {
-    const hierarchyLevelsKey = 'hierarchyLevels.L_6';
-    query[hierarchyLevelsKey] = {
+    query['hierarchyLevels.L_6'] = {
       $in: args.section
     }
   }
@@ -312,7 +307,8 @@ export async function getStudentHeader(args, context) {
     summaryReturnData["female"] = 0;
     summaryReturnData["prepSkill"] = 0;
     summaryReturnData["activation"] = 0;
-  
+    
+
     let headerData = await Student.aggregate([{
       $match: query
     }, {
@@ -412,38 +408,32 @@ export async function getStudentListByFilters(args, context) {
   const query = {};
   query.active=true;
   if (args && args.country && args.country.length) {
-    const hierarchyLevelsKey = 'hierarchyLevels.L_1';
-    query[hierarchyLevelsKey] = {
+    query['hierarchyLevels.L_1'] = {
       $in: args.country
     }
   }
   if (args && args.className && args.className.length) {
-    const hierarchyLevelsKey = 'hierarchyLevels.L_2';
-    query[hierarchyLevelsKey] = {
+    query['hierarchyLevels.L_2'] = {
       $in: args.className
     }
   }
   if (args && args.state && args.state.length) {
-    const hierarchyLevelsKey = 'hierarchyLevels.L_3';
-    query[hierarchyLevelsKey] = {
+    query['hierarchyLevels.L_3'] = {
       $in: args.state
     }
   }
   if (args && args.city && args.city.length) {
-    const hierarchyLevelsKey = 'hierarchyLevels.L_4';
-    query[hierarchyLevelsKey] = {
+    query['hierarchyLevels.L_4'] = {
       $in: args.city
     }
   }
   if (args && args.branch && args.branch.length) {
-    const hierarchyLevelsKey = 'hierarchyLevels.L_5';
-    query[hierarchyLevelsKey] = {
+    query['hierarchyLevels.L_5'] = {
       $in: args.branch
     }
   }
   if (args && args.section && args.section.length) {
-    const hierarchyLevelsKey = 'hierarchyLevels.L_6';
-    query[hierarchyLevelsKey] = {
+    query['hierarchyLevels.L_6'] = {
       $in: args.section
     }
   }
