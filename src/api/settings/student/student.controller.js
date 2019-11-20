@@ -469,15 +469,14 @@ export async function getStudentListByFilters(args, context) {
     let studentIdListData = PromiseData[0];
     count = studentIdListData[0].studentIdList.length;
     let confirmID = await getActiveStudents(context, studentIdListData[0].studentIdList);
-    console.log("confirmID :", confirmID)
     let result = PromiseData[1];
     const results = JSON.parse(JSON.stringify(result));
     data.pageData = results;
     data.pageData.forEach(element => {
-      element.userActive = false;
-      if (confirmID.includes(element.studentId)) {
-        element.userActive = true;
-      } 
+      element.user = false;
+      if (confirmID.includes(element.studentId)){
+        element.user = true;
+      }
     });
     data.count = count;
     return data;
