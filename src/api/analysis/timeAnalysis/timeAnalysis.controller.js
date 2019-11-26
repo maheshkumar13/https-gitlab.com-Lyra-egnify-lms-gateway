@@ -10,8 +10,9 @@ export async function analysisTrigger(args) {
   return new Promise(async (resolve) => {
     console.info('triggering at', new Date(), args);
     if (!args.startTime) {
-      const tempDate = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}))
-      const date = new Date(tempDate.getUTCFullYear(), tempDate.getUTCMonth(), tempDate.getUTCDate());
+      const tempDate = new Date()
+      let date = new Date(tempDate.getUTCFullYear(), tempDate.getUTCMonth(), tempDate.getUTCDate());
+      date = new Date(date - (330 * 60000));
       date.setDate(date.getDate() - 1);
       args.startTime = date;
     }
