@@ -1,9 +1,8 @@
 import {listTest , listTextBooksWithTestSubectWise , listUpcomingTestTextBookWise,listOfCompletedTestTextBookWise , headerCount , fetchInstructions  } from '../../../api/tests/upload/test.upload.controller';
 import {ListInputType,ListTestOutput , TestHeadersAssetCountInputType} from './upload.type';
 import {getStudentDetailsById} from '../../../api/settings/student/student.controller';
-import {checkStudentHasTextbook} from '../../../api/settings/textbook/textbook.controller';
+import {checkStudentHasTextbook, getTextbooks} from '../../../api/settings/textbook/textbook.controller';
 import {GraphQLString as StringType,GraphQLNonNull as NonNull } from 'graphql';
-import {getSubjects} from '../../../api/settings/subject/subject.controller';
 import GraphQLJSON from 'graphql-type-json';
 export const ListTest = {
     args: {
@@ -63,21 +62,15 @@ export const ListSubjectWiseBooksAndTestCount = {
     type: GraphQLJSON,
     async resolve(object, args, context) {
         try{
-            const subjectsListOfStudent = await getSubjects(args,context);
-            const  subjectIndex = subjectsListOfStudent.findIndex((obj)=> obj.code === args.subjectCode);
-            if(subjectIndex == -1){
-                throw "Invalid Subject"
-            }
             let studentInfo = await getStudentDetailsById({studentId: context.studentId}, context);
             if(!studentInfo){
                 throw "Invalid Student";
             }
-            let branchOfStudent = context.rawHierarchy[4]["child"];
-            let orientationOfStudent = studentInfo["orientation"];
-            let classOfStudent = context.rawHierarchy[1]["childCode"];
-            args.branchOfStudent = branchOfStudent;
-            args.classOfStudent = classOfStudent;
-            args.orientationOfStudent = orientationOfStudent;
+            args.branch = studentInfo["hierarchyLevels"]["L_5"];
+            args.classCode = studentInfo["hierarchy"][1]["childCode"];
+            args.orientation = studentInfo["orientation"];
+            const textbooks = await getTextbooks(args, context);
+            args.textbookCodes = textbooks.map( textbook => textbook.code)
             return await listTextBooksWithTestSubectWise(args,context);
         }catch(err){
             throw new Error(err);
