@@ -1,7 +1,4 @@
-/**
- @author Nikhil Kumar
- @date    23/01/2018
-*/
+
 import { getModel as StudentLedgerModel } from './studentLedger.model';
 import { getModel as ContentMappingModel } from '../settings/contentMapping/contentMapping.model';
 import { getModel as TextbookModel } from '../settings/textbook/textbook.model';
@@ -279,4 +276,5 @@ export async function finalBalance(req, res) {
     });
   }
 }
-export default { creditCoin, debitCoin, studentCoinLog, finalBalance };
+
+export default { creditCoin, debitCoin, studentCoinLog, finalBalance};

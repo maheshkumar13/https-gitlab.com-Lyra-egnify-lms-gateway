@@ -6,6 +6,8 @@ import { getModel } from './student.model';
 import { getModel as SubjectModel } from '../subject/subject.model';
 import { getLastKLevels } from '../institute/institute.controller';
 import { config } from '../../../config/environment';
+import { getModel as instituteHierarchyModel} from '../instituteHierarchy/instituteHierarchy.model';
+const xlsx = require('xlsx');
 
 function getMongoQuery(args) {
   const query = {};
@@ -272,6 +274,112 @@ export async function getStudentList(args, context) {
     
   }
 }
+
+export async function updateUserV1(req, res){
+  if(!req){
+    console.log("No requests");
+  }
+  const result = {
+    success : true,
+    message : '',
+  };
+  if(!req.file.buffer){
+    throw { statusMessage: 'invalid error occurred'};
+  }
+  const name = req.file.originalname.split('.');
+  const extname = name[name.length - 1];
+  if(extname !== 'xlsx'){
+    throw { statusMessage: 'invalid extension'};
+  }
+  const dataSheet = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true });
+  const data = xlsx.utils.sheet_to_json(dataSheet.Sheets[dataSheet.SheetNames[0]], {defval : ""});
+    
+  if(!data.length){
+    result.success = false;
+    result.message = 'Data not found in the sheet';
+    res.status(404).send(result);
+  }
+  //removing trailing empty rows
+  for(let itr = data.length - 1; itr >= 0; itr -= 1){
+    let values = Object.values(data[itr]);
+    values = values.map(x => x.toString());
+    if(values.every(x => x === '')) data.pop();
+    else break;
+  }
+  data.forEach((v) => { delete v['']; }); // eslint-disable-line
+  const mandetoryFields = [
+    "branches",
+    "role",
+    "class",
+    "orientations",
+    "user id"
+  ];
+
+  const headers = Object.keys(data[0]);
+  const sheetHeaders = headers.map(x => x.toLowerCase());
+  const commonData = mandetoryFields.filter(x => sheetHeaders.includes(x));
+  if(commonData.length !== mandetoryFields.length){
+    result.success = false;
+    result.message = 'Headers mismatch';
+    res.status(500).send(result);
+   }
+  const masterArray = [];
+  let indexof = headers.indexOf("Class");
+  let indexof2 = headers.indexOf("Branches");
+  for(let k = 0; k < data.length; k += 1){
+    const dataValues = Object.values(data[k]);
+    const classNames = dataValues[indexof].split(', ');
+    for(let i = 0; i < classNames.length; i += 1){
+      const obj = {};
+      obj['className'] = classNames[i];
+      obj['branch'] = dataValues[indexof2];
+      obj['row'] = k;
+      masterArray.push(obj);
+    }  
+  }
+  //db query
+  const instituteHierarchy = await instituteHierarchyModel(req.user_cxt);
+    const dbData =  await instituteHierarchy.aggregate([{$match: { level: 5}},
+    {$project: { branchName: '$child', 
+    branchCode: '$childCode', branchLevel: '$level', 
+    classData: { $filter: {input: "$anscetors", as: "item", cond: 
+    { $eq: [ "$$item.level", 2] }}}}},
+    {$unwind: '$classData'},{$group: { _id: '$classData.childCode', 
+    className: { $first: '$classData.child'}, 
+    branches: { $push: { child: '$branchName', 
+    childCode: '$branchCode', level: '$branchLevel'}}}}]);
+    const response = [];
+
+    for (let i = 0; i < masterArray.length; i += 1) {
+      let flag1 = 1;
+      for (let k = 0; k < dbData.length; k++) {
+        if(dbData && dbData[k].className && masterArray[i] && masterArray[i].className){
+          flag1 = 0;
+          if (dbData[k].className.toLowerCase() === masterArray[i].className.toLowerCase()) {
+            let flag = 1;
+            if(dbData[k].branches && dbData[k].branches.length){
+              for(let n = 0; n < dbData[k].branches.length; n += 1){
+                if(dbData[k].branches[n].child === masterArray[i].branch){
+                  flag = 0;
+                  break;
+                }
+              }
+              if(flag === 1){
+                let respon = masterArray[i].className + " with " + masterArray[i].branch + " not found at Row number " + (parseInt(masterArray[i].row) + parseInt(2));
+                response.push(respon);
+              }
+            }
+         }
+        }
+      }
+      if(flag1 === 1){
+        response.push(masterArray[i].className + " not found at Row number " + (parseInt(masterArray[i].row) + parseInt(2)));
+      }
+      
+    }
+    console.log(response);
+    res.send(response);  
+}
 export default{
   getStudents,
   getUniqueValues,
@@ -279,5 +387,6 @@ export default{
   getStudentDetailsById,
   updateStudentAvatar,
   updateStudentSubjects,
-  getStudentList
+  getStudentList,
+  updateUserV1
 };
