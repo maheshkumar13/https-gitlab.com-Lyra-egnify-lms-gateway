@@ -33,23 +33,18 @@ export const TimeAnalysisHeadersType = new ObjectType({
     subject: { type: new List(StringType), description: 'List of available subjects by search condition' },
   },
 });
-export const TimeAnalysisFilterType = new ObjectType({
-  name: 'TimeAnalysisFilterType',
+export const TimeAnalysisListType = new ObjectType({
+  name: 'TimeAnalysisListType',
   fields: {
-    studentId: { type: StringType, description: 'Student Id' },
-    studentName: { type: StringType, description: 'Student Name' },
-    date: { type: GraphQLDate, description: 'date in UTC' },
-    totalStudents: { type: IntType, description: 'Number of students' },
-    totalTimeSpent: { type: IntType, description: 'Total time spent' },
-    isStudent: { type: BooleanType, description: 'if needs students data send it as true' },
-    subject: { type: GraphQLJSON, description: 'subject level analysis' },
-    category: { type: GraphQLJSON, description: 'category wise analysis' },
-    refs: { type: GraphQLJSON, description: 'references' },
+     studentId: { type: StringType, description: 'Student Id' },
+     studentName: { type: StringType, description: 'Student Name' },
+     data:{type:new List(GraphQLJSON)}
+   
   },
 });
 export default {
   TimeAnalysisType,
   TimeAnalysisHeadersType,
-  TimeAnalysisFilterType
+  TimeAnalysisListType
 };
 

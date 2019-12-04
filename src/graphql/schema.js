@@ -34,7 +34,7 @@ import { autoComplete, searchResult } from './search/searchRequest/search.query'
 import { ListTest, UpcomingTests, ListSubjectWiseBooksAndTestCount, CompletedTests, HeaderCountForTextBookBasedTest, FetchInstruction } from '../graphql/tests/upload/upload.query';
 import { ListMarkingSchema } from '../graphql/tests/markingShema/marking.shema.query';
 import { PublishTest, ParseAndValidateTest, updateTestInfo, SubmitTest, StartTest } from './tests/upload/upload.mutation';
-import { TimeAnalysis, TimeAnalysisHeaders } from './analysis/timeAnalysis/timeAnalysis.query';
+import { TimeAnalysis, TimeAnalysisStudentsList,TimeAnalysisHeaders } from './analysis/timeAnalysis/timeAnalysis.query';
 import { StudentCompletionStats, TeacherLevelCompletionStats, TeacherLevelCompletionHeaders } from './analysis/completion/completion.query';
 
 const schema = new Schema({
@@ -85,6 +85,7 @@ const schema = new Schema({
       FetchInstruction,
       TimeAnalysis,
       TimeAnalysisHeaders,
+      TimeAnalysisStudentsList,
       StudentCompletionStats,
       TeacherLevelCompletionStats,
       TeacherLevelCompletionHeaders,

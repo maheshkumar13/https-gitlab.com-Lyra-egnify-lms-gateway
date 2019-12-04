@@ -4,11 +4,12 @@ import {
   GraphQLInt as IntType,
   GraphQLBoolean as BooleanType,
   GraphQLList as List,
-  // GraphQLNonNull as NonNull,
+  GraphQLEnumType as EnumType,
+  GraphQLNonNull as NonNull,
 } from 'graphql';
 import GraphQLDate from 'graphql-date';
 
-import { TimeAnalysisType, TimeAnalysisHeadersType, TimeAnalysisFilterType } from './timeAnalysis.type';
+import { TimeAnalysisType, TimeAnalysisHeadersType, TimeAnalysisListType } from './timeAnalysis.type';
 
 const controller = require('../../../api/analysis/timeAnalysis/timeAnalysis.controller');
 
@@ -108,7 +109,7 @@ export const TimeAnalysisHeaders = {
   },
 };
 
-const pageInfoFilterType = new ObjectType({
+const pageInfoListType = new ObjectType({
   name: 'TimeAnalysisgFilterPageInfoType',
   fields() {
     return {
@@ -131,25 +132,42 @@ const pageInfoFilterType = new ObjectType({
   },
 });
 
-const TimeAnalysisPaginatedFilterType = new ObjectType({
-  name: 'TimeAnalysisPaginatedFilterType',
+const TimeAnalysisPaginatedListType = new ObjectType({
+  name: 'TimeAnalysisPaginatedListType',
   fields() {
     return {
       data: {
-        type: new List(TimeAnalysisFilterType),
+        type: new List (TimeAnalysisListType),
       },
       pageInfo: {
-        type: pageInfoFilterType,
+        type: pageInfoListType,
       },
     };
   },
 });
 
-export const TimeAnalysisFilter = {
+export const SortEnumType = new EnumType({ // eslint-disable-line
+  name: 'SortEnumType',
+  values: {
+    ASC: {
+      value:1,
+    },
+    DESC: {
+      value: -1,
+    },
+  },
+});
+
+export const SortByEnumType = new EnumType({ // eslint-disable-line
+  name: 'SortByEnumType',
+  values: {
+    studentName:{},
+    date:{}
+  },
+});
+
+export const TimeAnalysisStudentsList = {
   args: {
-    studentId: { type: StringType, description: 'Unique Identifier for the student' },
-    isStudent: { type: BooleanType, description: 'true for students data' },
-    fullData: { type: BooleanType, description: 'full student analysis' },
     class: { type: StringType, description: 'Class name' },
     branch: { type: StringType, description: 'Branch name' },
     orientation: { type: StringType, description: 'Orientation' },
@@ -157,14 +175,17 @@ export const TimeAnalysisFilter = {
     endDate: { type: GraphQLDate, description: 'End date' },
     pageNumber: { type: IntType, description: 'Page number' },
     limit: { type: IntType, description: 'Number of docs per page' },
+    sortBy: { type: SortByEnumType, description: 'Sort By' },
+    sortType:{type: SortEnumType , description: 'Sort Type' },
+    sortValue: { type: GraphQLDate, description: 'Sort Value' },
   },
-  type: TimeAnalysisPaginatedFilterType,
+  type: TimeAnalysisPaginatedListType,
   async resolve(obj, args, context) {
     if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
     if (!args.limit) args.limit = 0; // eslint-disable-line
     if (args.pageNumber < 1) throw new Error('Page Number is invalid');
     if (args.limit < 0) throw new Error('Invalid limit');
-    return controller.getTimeAnalysisFilter(args, context).then(([count, data]) => {
+    return controller.getTimeAnalysisStudentsList(args, context).then(([count, data]) => {
       const pageInfo = {};
       const resp = {};
       pageInfo.prevPage = true;
@@ -173,7 +194,7 @@ export const TimeAnalysisFilter = {
       pageInfo.totalPages = args.limit && count ? Math.ceil(count / args.limit) : 1;
       pageInfo.totalEntries = count;
       resp.data = data;
-
+      //console.log("datann : ",data)
       if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
         throw new Error('Page Number is invalid');
       }
@@ -184,6 +205,7 @@ export const TimeAnalysisFilter = {
         pageInfo.prevPage = false;
       }
       resp.pageInfo = pageInfo;
+     // console.log("resp : ", resp)
       return resp;
     });
   },
@@ -192,5 +214,5 @@ export const TimeAnalysisFilter = {
 export default {
   TimeAnalysis,
   TimeAnalysisHeaders,
-  TimeAnalysisFilter,
+  TimeAnalysisStudentsList,
 };
