@@ -192,3 +192,61 @@ export async function getTimeAnalysisHeaders(args, context) {
   if (!data || !data.length) return {};
   return data[0];
 }
+
+
+export async function getTimeAnalysisFilter(args, context) {
+  const TimeAnalysis = await TimeAnalysisModel(context);
+  const query = { active: true };
+  if (args.studentId) query.studentId = args.studentId;
+  if (args.class) query['refs.class.name'] = args.class;
+  if (args.branch) query['refs.branch.name'] = args.branch;
+  if (args.orientation) query['refs.orientation.name'] = args.orientation;
+  if (args.startDate) {
+    query.date = { $gte: args.startDate };
+  }
+  if (args.endDate) {
+    if (!query.date) query.date = {};
+    query.date.$lte = args.endDate;
+  }
+  query.isStudent = (args.isStudent === true);
+  if (!query.isStudent) {
+    if (!args.class) query['refs.class'] = { $exists: false };
+    if (!args.branch) query['refs.branch'] = { $exists: false };
+    if (!args.orientation) query['refs.orientation'] = { $exists: false };
+  }
+  const skip = (args.pageNumber - 1) * args.limit;
+  if (query.isStudent && !args.fullData) {
+    if (!args.limit) args.limit = 1;
+    const groupQuery = {
+      _id: '$studentId',
+      data: {
+        $push: {
+          studentId: '$studentId',
+          studentName: '$studentName',
+          date: '$date',
+          totalTimeSpent: '$totalTimeSpent',
+        }
+      }
+    }
+    const agrCountQuery = [{ $match: query }, { $group: { _id: '$studentId' } }, { $count: 'total' }];
+    const agrDataQuery = [
+      { $match: query },
+      { $group: groupQuery },
+      { $skip: skip },
+      { $limit: args.limit },
+      { $unwind: '$data' },
+      { $group: { _id: 'all', data: { $push: '$data' } } }
+    ];
+    const [countData, objsData] = await Promise.all([
+      TimeAnalysis.aggregate(agrCountQuery).allowDiskUse(true),
+      TimeAnalysis.aggregate(agrDataQuery).allowDiskUse(true),
+    ])
+    const count = countData && countData.length ? countData[0].total : 0;
+    const data = objsData && objsData.length ? objsData[0].data : [];
+    return [count, data];
+  }
+  return Promise.all([
+    TimeAnalysis.count(query),
+    TimeAnalysis.find(query).skip(skip).limit(args.limit),
+  ]);
+}
