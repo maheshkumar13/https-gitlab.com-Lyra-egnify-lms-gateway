@@ -16,6 +16,7 @@ import {
 } from 'graphql';
 
 import GraphQLJSON from 'graphql-type-json';
+import { validateAccess } from '../../../utils/validator';
 
 import {
   ContentMappingType,
@@ -128,6 +129,8 @@ export const CmsCategoryStats = {
   },
   type: new List(CmsCategoryStatsOutputType),
   async resolve(obj, args, context) {
+    const validRoles = ['LEARN_VIEW', 'PRACTICE_VIEW'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     return controller.getCMSCategoryStatsV2(args.input, context)
       .then(async json => json);
   },
@@ -139,6 +142,8 @@ export const CategoryWiseFiles = {
   },
   type: CategoryWiseFilesOutputType,
   async resolve(obj, args, context) {
+    const validRoles = ['LEARN_VIEW', 'PRACTICE_VIEW'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     return controller.getCategoryWiseFilesPaginatedV2(args.input, context)
       .then(async json => json);
   },
@@ -151,6 +156,8 @@ export const DashboardHeadersAssetCount = {
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) {
+    const validRoles = ['LEARN_VIEW', 'PRACTICE_VIEW'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     return controller.getDashboardHeadersAssetCountV2(args.input, context)
       .then(async json => json);
   },

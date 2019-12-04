@@ -9,7 +9,7 @@ import {
 import GraphQLDate from 'graphql-date';
 
 import { TimeAnalysisType, TimeAnalysisHeadersType } from './timeAnalysis.type';
-
+import { validateAccess } from '../../../utils/validator';
 const controller = require('../../../api/analysis/timeAnalysis/timeAnalysis.controller');
 
 const pageInfoType = new ObjectType({
@@ -64,6 +64,8 @@ export const TimeAnalysis = {
   },
   type: TimeAnalysisPaginatedType,
   async resolve(obj, args, context) {
+    const validRoles = ['STUDENT', 'TEACHER-CORNER_VIEW'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
     if (!args.limit) args.limit = 0; // eslint-disable-line
     if (args.pageNumber < 1) throw new Error('Page Number is invalid');
@@ -104,6 +106,8 @@ export const TimeAnalysisHeaders = {
   },
   type: TimeAnalysisHeadersType,
   async resolve(obj, args, context) {
+    const validRoles = ['TEACHER-CORNER_VIEW3'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     return controller.getTimeAnalysisHeaders(args, context);
   },
 };

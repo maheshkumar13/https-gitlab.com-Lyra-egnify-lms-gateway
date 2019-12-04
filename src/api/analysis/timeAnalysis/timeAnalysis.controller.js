@@ -99,6 +99,7 @@ export const triggerTimeAnalysis = cron.schedule('0 0 1 * * *', () => {
 });
 
 export async function getTimeAnalysis(args, context) {
+  console.log(context);
   const TimeAnalysis = await TimeAnalysisModel(context);
   const query = { active: true };
   if (args.studentId) query.studentId = args.studentId;

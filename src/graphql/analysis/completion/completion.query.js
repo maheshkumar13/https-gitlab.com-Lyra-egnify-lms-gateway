@@ -7,7 +7,7 @@ import {
   // GraphQLNonNull as NonNull,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
-
+import { validateAccess } from '../../../utils/validator';
 
 const controller = require('../../../api/analysis/completion/completion.controller');
 
@@ -23,6 +23,8 @@ export const StudentCompletionStats = {
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) {
+    const validRoles = ['STUDENT'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     return controller.getStudentLevelCompletionStats(args, context);
   },
 };
@@ -38,6 +40,8 @@ export const TeacherLevelCompletionHeaders = {
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) {
+    const validRoles = ['TEACHER-CORNER_VIEW'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     return controller.getAssetCompletionHeaders(args, context);
   },
 };
@@ -54,6 +58,8 @@ export const TeacherLevelCompletionStats = {
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) {
+    const validRoles = ['TEACHER-CORNER_VIEW'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     return controller.getTeacherLevelCompletionStats(args, context);
   },
 }
