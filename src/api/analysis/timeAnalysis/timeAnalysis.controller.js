@@ -143,9 +143,7 @@ export async function getTimeAnalysis(args, context) {
       TimeAnalysis.aggregate(agrCountQuery).allowDiskUse(true),
       TimeAnalysis.aggregate(agrDataQuery).allowDiskUse(true),
     ])
-   
-    console.log("objsData: ", objsData)
-    console.log("countData: ", countData)
+
     const count = countData && countData.length ? countData[0].total : 0;
     const data = objsData && objsData.length ? objsData[0].data : [];
     return [ count, data ];
