@@ -225,7 +225,6 @@ async function createOrUpdateUsers(context, data) {
 }
 
 export async function getClassBranchData(context) {
-  console.log('asdfasd')
   return InstituteHierarchyModel(context).then((InstituteHierarchy) => {
     return InstituteHierarchy.aggregate([
       { $match: { level: 5 } },
@@ -437,9 +436,8 @@ export async function uploadUsers(req, res) {
     getClassBranchData(req.user_cxt),
     getListOfOrientations(req.user_cxt),
   ]).catch(err => {
-    console.log(err)
+    console.error(err)
   });  
-  console.log('got data...')
   const validate = validateSheetAndGetData(req, classBranchData, dbOrientations);
   if (!validate.success) {
     const obj = { message: validate.message };
@@ -451,10 +449,8 @@ export async function uploadUsers(req, res) {
     return res.send(obj);
   }
   const data = req.data;
-  console.log('&&&&&&&***********',data)
   return createOrUpdateUsers(req.user_cxt,data).then((doc) => {
-    console.log()
-    return res.send({da: doc});
+    return res.send({status: doc});
   })
   
 }
