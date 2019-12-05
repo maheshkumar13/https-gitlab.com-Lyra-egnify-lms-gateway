@@ -143,6 +143,7 @@ export async function getTimeAnalysis(args, context) {
       TimeAnalysis.aggregate(agrCountQuery).allowDiskUse(true),
       TimeAnalysis.aggregate(agrDataQuery).allowDiskUse(true),
     ])
+
     const count = countData && countData.length ? countData[0].total : 0;
     const data = objsData && objsData.length ? objsData[0].data : [];
     return [ count, data ];
@@ -191,4 +192,59 @@ export async function getTimeAnalysisHeaders(args, context) {
   const data = await TimeAnalysis.aggregate(aggregateQuery);
   if (!data || !data.length) return {};
   return data[0];
+}
+
+
+export async function getTimeAnalysisStudentsList(args, context) {
+  const TimeAnalysis = await TimeAnalysisModel(context);
+  const query = { studentId: { $nin: [ null, ""]}, active: true };
+  if (args.class) query['refs.class.name'] = args.class;
+  if (args.branch) query['refs.branch.name'] = args.branch;
+  if (args.orientation) query['refs.orientation.name'] = args.orientation;
+  if (args.startDate) {
+    query.date = { $gte: args.startDate };
+  }
+  if (args.endDate) {
+    if (!query.date) query.date = {};
+    query.date.$lte = args.endDate;
+  }
+  
+  const skip = (args.pageNumber - 1) * args.limit;
+  if (!args.limit) args.limit = 1;
+  if (!args.sortBy) args.sortBy = 'studentName';
+  
+  let  groupQuery = {
+      _id: '$studentId', studentName: { $first: '$studentName' },
+      data: { $push: { date: '$date', totalTimeSpent: '$totalTimeSpent' } }
+    }
+  let sortQuery = { studentName: args.sortType }
+  if (args.sortBy === 'date' && args.sortValue ) {
+    groupQuery.dateTotalTimeSpent = {
+      $max: {
+        $cond: {
+          if: { $eq: ['$date', args.sortValue] },
+          then: '$totalTimeSpent', else: 0
+        }
+      }
+    }
+    sortQuery = { dateTotalTimeSpent: args.sortType }
+  }  
+  
+    const agrCountQuery = [{ $match: query }, { $group: { _id: '$studentId' } }, { $count: 'total' }];
+    const agrDataQuery = [
+      { $match: query },
+      { $group: groupQuery }, 
+      { $sort: sortQuery },
+      { $project: { _id: 0, studentId: '$_id', studentName: 1, data: 1 } }, 
+      { $skip: skip }, 
+      { $limit: args.limit }
+    ];
+    const [countData, objsData] = await Promise.all([
+      TimeAnalysis.aggregate(agrCountQuery).allowDiskUse(true),
+      TimeAnalysis.aggregate(agrDataQuery).allowDiskUse(true),
+    ])
+
+    const count = countData && countData.length ? countData[0].total : 0;
+    const data = objsData && objsData.length ? objsData : [];
+    return [count, data];
 }

@@ -33,9 +33,18 @@ export const TimeAnalysisHeadersType = new ObjectType({
     subject: { type: new List(StringType), description: 'List of available subjects by search condition' },
   },
 });
-
+export const TimeAnalysisListType = new ObjectType({
+  name: 'TimeAnalysisListType',
+  fields: {
+     studentId: { type: StringType, description: 'Student Id' },
+     studentName: { type: StringType, description: 'Student Name' },
+     data:{type:new List(GraphQLJSON)}
+   
+  },
+});
 export default {
   TimeAnalysisType,
   TimeAnalysisHeadersType,
+  TimeAnalysisListType
 };
 
