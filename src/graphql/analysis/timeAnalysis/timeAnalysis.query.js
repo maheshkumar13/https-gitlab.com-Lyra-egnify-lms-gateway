@@ -168,6 +168,7 @@ export const SortByEnumType = new EnumType({ // eslint-disable-line
 
 export const TimeAnalysisStudentsList = {
   args: {
+    isStudent: { type: BooleanType, description: 'true for students data' },
     class: { type: StringType, description: 'Class name' },
     branch: { type: StringType, description: 'Branch name' },
     orientation: { type: StringType, description: 'Orientation' },
@@ -178,6 +179,7 @@ export const TimeAnalysisStudentsList = {
     sortBy: { type: SortByEnumType, description: 'Sort By' },
     sortType:{type: SortEnumType , description: 'Sort Type' },
     sortValue: { type: GraphQLDate, description: 'Sort Value' },
+    
   },
   type: TimeAnalysisPaginatedListType,
   async resolve(obj, args, context) {

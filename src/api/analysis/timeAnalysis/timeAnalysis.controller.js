@@ -208,7 +208,8 @@ export async function getTimeAnalysisStudentsList(args, context) {
     if (!query.date) query.date = {};
     query.date.$lte = args.endDate;
   }
-  
+  //query.isStudent = (args.isStudent === true);
+  console.log(" args.sortBy : ", args.sortBy)
   const skip = (args.pageNumber - 1) * args.limit;
   if (!args.limit) args.limit = 1;
   if (!args.sortBy) args.sortBy = 'studentName';
@@ -242,9 +243,13 @@ export async function getTimeAnalysisStudentsList(args, context) {
     const [countData, objsData] = await Promise.all([
       TimeAnalysis.aggregate(agrCountQuery).allowDiskUse(true),
       TimeAnalysis.aggregate(agrDataQuery).allowDiskUse(true),
-    ])
-
+    ]);
+  console.log("count : ", countData)
+  console.log("data : ", objsData)
     const count = countData && countData.length ? countData[0].total : 0;
     const data = objsData && objsData.length ? objsData : [];
+    console.log("count : ",count)
+    console.log("data : ",data)
     return [count, data];
+  
 }
