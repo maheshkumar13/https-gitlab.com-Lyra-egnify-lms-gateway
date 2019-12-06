@@ -42,9 +42,20 @@ export const TimeAnalysisListType = new ObjectType({
    
   },
 });
+export const TimeAnalysisListByDayType = new ObjectType({
+  name: 'TimeAnalysisListByDayType',
+  fields: {
+    studentId: { type: StringType, description: 'Student Id' },
+    studentName: { type: StringType, description: 'Student Name' },
+    overAllTime: { type: StringType, description: 'Over All Time' },
+    data: { type: new List(GraphQLJSON) }
+
+  },
+});
 export default {
   TimeAnalysisType,
   TimeAnalysisHeadersType,
-  TimeAnalysisListType
+  TimeAnalysisListType,
+  TimeAnalysisListByDayType
 };
 
