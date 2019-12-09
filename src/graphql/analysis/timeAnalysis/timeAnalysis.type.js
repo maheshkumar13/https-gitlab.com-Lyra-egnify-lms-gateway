@@ -48,7 +48,7 @@ export const TimeAnalysisListByDayType = new ObjectType({
   fields: {
     studentId: { type: StringType, description: 'Student Id' },
     studentName: { type: StringType, description: 'Student Name' },
-    totalTimeSpent: { type: IntType, description: 'Student Name' },
+    totalTimeSpent: { type: IntType, description: 'Total Time Spent' },
     data: { type: new List(GraphQLJSON) }
 
   },
