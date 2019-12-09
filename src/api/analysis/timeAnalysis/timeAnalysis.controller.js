@@ -250,7 +250,6 @@ export async function getTimeAnalysisStudentsList(args, context) {
   const data = objsData && objsData.length ? objsData : [];
   return [count, data];
 }
-/*********************************************************************************/
 
 export async function getTimeAnalysisStudentsListByDay(args, context) {
   const TimeAnalysis = await TimeAnalysisModel(context);
@@ -266,16 +265,15 @@ export async function getTimeAnalysisStudentsListByDay(args, context) {
     query.date.$lte = args.endDate;
   }
   const skip = (args.pageNumber - 1) * args.limit;
-  if (!args.limit) args.limit = 1;
+  if (!args.limit) args.limit = 10;
   let groupQuery = {
     _id: '$_id.studentId', studentName: { $first: '$studentName' },
     totalTimeSpent: { $sum: '$totalTimeSpent' },
     data: { $push: { weekDay: '$_id.weekDay', totalTimeSpent: '$totalTimeSpent' } },
   }
-  let sortQuery
-  if (args.sortBy === 'studentName') {
-    sortQuery = { studentName: args.sortType }
-  }
+  if (!args.sortType) args.sortType=1
+  let sortQuery = { studentName: args.sortType }
+  
   if (args.sortBy === 'totalTimeSpent') {
     sortQuery = { totalTimeSpent: args.sortType }
   }
@@ -304,7 +302,7 @@ export async function getTimeAnalysisStudentsListByDay(args, context) {
       $group: groupQuery
     },
     { $sort: sortQuery},
-    { $project: { _id: 0, studentId: '$_id', studentName: 1, totalTimeSpent: 1, day:1,data: 1 } },
+    { $project: { _id: 0, studentId: '$_id', studentName: 1, totalTimeSpent: 1,data: 1 } },
     { $skip: skip },
     { $limit: args.limit }
   ];
