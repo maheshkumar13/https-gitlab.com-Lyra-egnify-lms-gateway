@@ -17,7 +17,6 @@ function getMongoQuery(args) {
     query['hierarchy.childCode'] = args.childCode;
   }
   if (args.filters !== undefined && args.filters !== '') {
-    // console.log('filters are', args.filters);
     let filters = {};
     try {
       filters = JSON.parse(args.filters);
@@ -25,8 +24,7 @@ function getMongoQuery(args) {
       return false;
     }
     const allKeys = Object.keys(filters);
-    // console.log('allKeys are', allKeys);
-    // console.log('filters are', filters);
+   
     for (let i = 0; i < allKeys.length; i += 1) {
       if (allKeys[i] === 'hierarchy') {
         const hierarchy = filters.hierarchy; // eslint-disable-line
@@ -38,7 +36,6 @@ function getMongoQuery(args) {
           tmp2['hierarchy.level'] = hierarchy[j].level;
           tmp2['hierarchy.child'] = {};
           tmp2['hierarchy.child'].$in = hierarchy[j].child;
-          // console.log('tmp2 is', tmp2);
           tmp.$and.push(tmp2);
           query.$and.push(tmp);
         }
@@ -139,7 +136,6 @@ export async function getUniqueValues(args, context) {
 }
 
 export async function numberOfStudentsByLastNode(args, context) { // eslint-disable-line
-  // console.log('args', args);
   const Student = await getModel(context);
 
   let list = [];
