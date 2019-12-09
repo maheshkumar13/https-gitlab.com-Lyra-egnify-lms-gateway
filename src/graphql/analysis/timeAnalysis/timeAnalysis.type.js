@@ -49,7 +49,6 @@ export const TimeAnalysisListByDayType = new ObjectType({
     studentId: { type: StringType, description: 'Student Id' },
     studentName: { type: StringType, description: 'Student Name' },
     totalTimeSpent: { type: IntType, description: 'Student Name' },
-    day: { type: IntType, description: 'Student Name' },
     data: { type: new List(GraphQLJSON) }
 
   },

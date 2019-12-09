@@ -271,6 +271,7 @@ export async function getTimeAnalysisStudentsListByDay(args, context) {
     totalTimeSpent: { $sum: '$totalTimeSpent' },
     data: { $push: { weekDay: '$_id.weekDay', totalTimeSpent: '$totalTimeSpent' } },
   }
+  if (!args.sortType) args.sortType=1
   let sortQuery = { studentName: args.sortType }
   
   if (args.sortBy === 'totalTimeSpent') {
@@ -301,7 +302,7 @@ export async function getTimeAnalysisStudentsListByDay(args, context) {
       $group: groupQuery
     },
     { $sort: sortQuery},
-    { $project: { _id: 0, studentId: '$_id', studentName: 1, totalTimeSpent: 1, day:1,data: 1 } },
+    { $project: { _id: 0, studentId: '$_id', studentName: 1, totalTimeSpent: 1,data: 1 } },
     { $skip: skip },
     { $limit: args.limit }
   ];
