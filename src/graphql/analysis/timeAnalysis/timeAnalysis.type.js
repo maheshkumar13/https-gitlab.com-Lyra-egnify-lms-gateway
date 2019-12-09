@@ -36,18 +36,20 @@ export const TimeAnalysisHeadersType = new ObjectType({
 export const TimeAnalysisListType = new ObjectType({
   name: 'TimeAnalysisListType',
   fields: {
-     studentId: { type: StringType, description: 'Student Id' },
-     studentName: { type: StringType, description: 'Student Name' },
-     data:{type:new List(GraphQLJSON)}
-   
+    studentId: { type: StringType, description: 'Student Id' },
+    studentName: { type: StringType, description: 'Student Name' },
+    data: { type: new List(GraphQLJSON) }
+
   },
 });
+
 export const TimeAnalysisListByDayType = new ObjectType({
   name: 'TimeAnalysisListByDayType',
   fields: {
     studentId: { type: StringType, description: 'Student Id' },
     studentName: { type: StringType, description: 'Student Name' },
-    overAllTime: { type: StringType, description: 'Over All Time' },
+    totalTimeSpent: { type: IntType, description: 'Student Name' },
+    day: { type: IntType, description: 'Student Name' },
     data: { type: new List(GraphQLJSON) }
 
   },

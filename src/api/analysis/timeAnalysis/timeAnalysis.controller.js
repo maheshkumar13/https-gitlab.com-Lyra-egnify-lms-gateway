@@ -210,6 +210,7 @@ export async function getTimeAnalysisStudentsList(args, context) {
     if (!query.date) query.date = {};
     query.date.$lte = args.endDate;
   }
+
   const skip = (args.pageNumber - 1) * args.limit;
   if (!args.limit) args.limit = 1;
   if (!args.sortBy) args.sortBy = 'studentName';
@@ -230,7 +231,7 @@ export async function getTimeAnalysisStudentsList(args, context) {
     }
     sortQuery = { dateTotalTimeSpent: args.sortType }
   }
-
+ 
   const agrCountQuery = [{ $match: query }, { $group: { _id: '$studentId' } }, { $count: 'total' }];
   const agrDataQuery = [
     { $match: query },
@@ -243,15 +244,13 @@ export async function getTimeAnalysisStudentsList(args, context) {
   const [countData, objsData] = await Promise.all([
     TimeAnalysis.aggregate(agrCountQuery).allowDiskUse(true),
     TimeAnalysis.aggregate(agrDataQuery).allowDiskUse(true),
-  ]);
+  ])
 
   const count = countData && countData.length ? countData[0].total : 0;
   const data = objsData && objsData.length ? objsData : [];
-
   return [count, data];
-
 }
-
+/*********************************************************************************/
 
 export async function getTimeAnalysisStudentsListByDay(args, context) {
   const TimeAnalysis = await TimeAnalysisModel(context);
@@ -269,98 +268,51 @@ export async function getTimeAnalysisStudentsListByDay(args, context) {
   const skip = (args.pageNumber - 1) * args.limit;
   if (!args.limit) args.limit = 1;
   let groupQuery = {
-    _id: '$studentId', studentName: { $first: '$studentName' },
-    data: { $push: { date: '$date', totalTimeSpent: '$totalTimeSpent' } }
+    _id: '$_id.studentId', studentName: { $first: '$studentName' },
+    totalTimeSpent: { $sum: '$totalTimeSpent' },
+    data: { $push: { weekDay: '$_id.weekDay', totalTimeSpent: '$totalTimeSpent' } },
   }
-  let sortQuery = { studentName: args.sortType }
+  let sortQuery
+  if (args.sortBy === 'studentName') {
+    sortQuery = { studentName: args.sortType }
+  }
+  if (args.sortBy === 'totalTimeSpent') {
+    sortQuery = { totalTimeSpent: args.sortType }
+  }
+  if (args.sortBy === 'day' && args.sortValue) {
+    groupQuery.day={
+     $max: { $cond: { if: { $eq: ['$_id.weekDay', args.sortValue] }, then: '$totalTimeSpent', else: 0 }  },
+    }
+    sortQuery = { day: args.sortType }
+  }
   const agrCountQuery = [{ $match: query }, { $group: { _id: '$studentId' } }, { $count: 'total' }];
   const agrDataQuery = [
     { $match: query },
-    { $group: groupQuery },
-    { $sort: sortQuery },
-    { $project: { _id: 0, studentId: '$_id', studentName: 1, data: 1 } },
+    {
+      $project: {
+        studentId: 1, studentName: 1, totalTimeSpent: 1,
+        weekDay: { $dayOfWeek: { date: '$date', timezone: "Asia/Kolkata" } }, _id: 0
+      }
+    },
+    {
+      $group: {
+        _id: { studentId: '$studentId', weekDay: '$weekDay' },
+        studentName: { $first: '$studentName' }, totalTimeSpent: { $sum: '$totalTimeSpent' }
+      }
+    },
+    {
+      $group: groupQuery
+    },
+    { $sort: sortQuery},
+    { $project: { _id: 0, studentId: '$_id', studentName: 1, totalTimeSpent: 1, day:1,data: 1 } },
+    { $skip: skip },
+    { $limit: args.limit }
   ];
   const [countData, objsData] = await Promise.all([
     TimeAnalysis.aggregate(agrCountQuery).allowDiskUse(true),
     TimeAnalysis.aggregate(agrDataQuery).allowDiskUse(true),
-  ]);
+  ])
   const count = countData && countData.length ? countData[0].total : 0;
   const data = objsData && objsData.length ? objsData : [];
-  let globalResData = [];
-  let dayArray = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  data.forEach(Data => {
-    let studentId = Data.studentId;
-    let studentName = Data.studentName;
-    let overAllTime = 0
-    let sunTotal = 0, monTotal = 0, tueTotal = 0, wedTotal = 0, thuTotal = 0, friTotal = 0, satTotal = 0;
-    Data.data.forEach(dateWise => {
-      if (dayArray[dateWise.date.getDay() - 1] === "Sun") {
-        sunTotal = sunTotal + dateWise.totalTimeSpent;
-      }
-      if (dayArray[dateWise.date.getDay() - 1] === "Mon") {
-        monTotal = monTotal + dateWise.totalTimeSpent;
-      }
-      if (dayArray[dateWise.date.getDay() - 1] === "Tue") {
-        tueTotal = tueTotal + dateWise.totalTimeSpent;
-      }
-      if (dayArray[dateWise.date.getDay() - 1] === "Wed") {
-        wedTotal = wedTotal + dateWise.totalTimeSpent;
-      }
-      if (dayArray[dateWise.date.getDay() - 1] === "Thu") {
-        thuTotal = thuTotal + dateWise.totalTimeSpent;
-      }
-      if (dayArray[dateWise.date.getDay() - 1] === "Fri") {
-        friTotal = friTotal + dateWise.totalTimeSpent;
-      }
-      if (dayArray[dateWise.date.getDay() - 1] === "Sat") {
-        satTotal = satTotal + dateWise.totalTimeSpent;
-      }
-    });
-    overAllTime = sunTotal + monTotal + tueTotal + wedTotal + thuTotal + friTotal + satTotal;
-    let studentObject = {
-      studentName: studentName,
-      studentId: studentId,
-      overAllTime: overAllTime,
-      data: [
-        { day: "Sun", "totalTimeSpent": sunTotal },
-        { day: "Mon", "totalTimeSpent": monTotal },
-        { day: "Tue", "totalTimeSpent": tueTotal },
-        { day: "Wed", "totalTimeSpent": wedTotal },
-        { day: "Thu", "totalTimeSpent": thuTotal },
-        { day: "Fri", "totalTimeSpent": friTotal },
-        { day: "Sat", "totalTimeSpent": satTotal },
-      ]
-    }
-    globalResData.push(studentObject)
-  });
-
-  function GetAscSortOrder(prop) {
-    return function (a, b) {
-      if (a.data[prop].totalTimeSpent > b.data[prop].totalTimeSpent) {
-        return 1;
-      } else if (a.data[prop].totalTimeSpent < b.data[prop].totalTimeSpent) {
-        return -1;
-      }
-      return 0;
-    }
-  }
-  function GetDescSortOrder(prop) {
-    return function (a, b) {
-      if (a.data[prop].totalTimeSpent < b.data[prop].totalTimeSpent) {
-        return 1;
-      } else if (a.data[prop].totalTimeSpent > b.data[prop].totalTimeSpent) {
-        return -1;
-      }
-      return 0;
-    }
-  }
-  if (args.sortValue && args.sortBy === "day") {
-    let dayNum = dayArray.indexOf(args.sortValue)
-    if (args.sortType > 0) {
-      globalResData.sort(GetAscSortOrder(dayNum));
-    } else {
-      globalResData.sort(GetDescSortOrder(dayNum));
-    }
-  }
-  return [count, globalResData.slice(skip, skip + args.limit)];
+  return [count, data];
 }

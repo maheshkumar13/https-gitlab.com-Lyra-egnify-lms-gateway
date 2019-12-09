@@ -109,8 +109,8 @@ export const TimeAnalysisHeaders = {
   },
 };
 
-const pageInfoListType = new ObjectType({
-  name: 'TimeAnalysisgFilterPageInfoType',
+const pageInfoListByDayType = new ObjectType({
+  name: 'pageInfoListByDayType',
   fields() {
     return {
       pageNumber: {
@@ -137,10 +137,10 @@ const TimeAnalysisPaginatedListType = new ObjectType({
   fields() {
     return {
       data: {
-        type: new List (TimeAnalysisListType),
+        type: new List(TimeAnalysisListType),
       },
       pageInfo: {
-        type: pageInfoListType,
+        type: pageInfoListByDayType,
       },
     };
   },
@@ -150,7 +150,7 @@ export const SortEnumType = new EnumType({ // eslint-disable-line
   name: 'SortEnumType',
   values: {
     ASC: {
-      value:1,
+      value: 1,
     },
     DESC: {
       value: -1,
@@ -161,14 +161,13 @@ export const SortEnumType = new EnumType({ // eslint-disable-line
 export const SortByEnumType = new EnumType({ // eslint-disable-line
   name: 'SortByEnumType',
   values: {
-    studentName:{},
-    date:{}
+    studentName: {},
+    date: {}
   },
 });
 
 export const TimeAnalysisStudentsList = {
   args: {
-    isStudent: { type: BooleanType, description: 'true for students data' },
     class: { type: StringType, description: 'Class name' },
     branch: { type: StringType, description: 'Branch name' },
     orientation: { type: StringType, description: 'Orientation' },
@@ -177,9 +176,8 @@ export const TimeAnalysisStudentsList = {
     pageNumber: { type: IntType, description: 'Page number' },
     limit: { type: IntType, description: 'Number of docs per page' },
     sortBy: { type: SortByEnumType, description: 'Sort By' },
-    sortType:{type: SortEnumType , description: 'Sort Type' },
+    sortType: { type: SortEnumType, description: 'Sort Type' },
     sortValue: { type: GraphQLDate, description: 'Sort Value' },
-    
   },
   type: TimeAnalysisPaginatedListType,
   async resolve(obj, args, context) {
@@ -207,15 +205,18 @@ export const TimeAnalysisStudentsList = {
         pageInfo.prevPage = false;
       }
       resp.pageInfo = pageInfo;
-     // console.log("resp : ", resp)
+      
       return resp;
     });
   },
 };
 
 
-const pageInfoListByDayType = new ObjectType({
-  name: 'TimeAnalysisStudentByDayPageInfoType',
+/************************TimeAnalysisStudentsListByDay****************************/
+
+
+const pageInfoListType = new ObjectType({
+  name: 'TimeAnalysisgFilterPageInfoType',
   fields() {
     return {
       pageNumber: {
@@ -245,9 +246,46 @@ const TimeAnalysisPaginatedListByDayType = new ObjectType({
         type: new List(TimeAnalysisListByDayType),
       },
       pageInfo: {
-        type: pageInfoListByDayType,
+        type: pageInfoListType,
       },
     };
+  },
+});
+export const SortByDayValueType = new EnumType({ // eslint-disable-line
+  name: 'SortByDayValueType',
+  values: {
+    Sun: {
+      value: 1,
+    },
+    Mon: {
+      value: 2,
+    },
+    Tue: {
+      value: 3,
+    },
+    Wed: {
+      value: 4,
+    },
+    Thu: {
+      value: 5,
+    },
+    Fri: {
+      value: 6,
+    },
+    Sat: {
+      value: 7,
+    },
+  },
+});
+export const SortTypeByDayEnumType = new EnumType({ // eslint-disable-line
+  name: 'SortTypeByDayEnumType',
+  values: {
+    ASC: {
+      value: 1,
+    },
+    DESC: {
+      value: -1,
+    },
   },
 });
 
@@ -255,14 +293,13 @@ export const SortByDayEnumType = new EnumType({ // eslint-disable-line
   name: 'SortByDayEnumType',
   values: {
     studentName: {},
-    day: {}
+    day: {},
+    totalTimeSpent: {},
+  
   },
 });
-
-
 export const TimeAnalysisStudentsListByDay = {
   args: {
-    isStudent: { type: BooleanType, description: 'true for students data' },
     class: { type: StringType, description: 'Class name' },
     branch: { type: StringType, description: 'Branch name' },
     orientation: { type: StringType, description: 'Orientation' },
@@ -271,9 +308,8 @@ export const TimeAnalysisStudentsListByDay = {
     pageNumber: { type: IntType, description: 'Page number' },
     limit: { type: IntType, description: 'Number of docs per page' },
     sortBy: { type: SortByDayEnumType, description: 'Sort By' },
-    sortType: { type: SortEnumType, description: 'Sort Type' },
-    sortValue: { type: StringType, description: 'Sort Value' },
-
+    sortType: { type: SortTypeByDayEnumType, description: 'Sort Type' },
+    sortValue: { type: SortByDayValueType, description: 'Sort Value' },
   },
   type: TimeAnalysisPaginatedListByDayType,
   async resolve(obj, args, context) {
@@ -301,14 +337,21 @@ export const TimeAnalysisStudentsListByDay = {
         pageInfo.prevPage = false;
       }
       resp.pageInfo = pageInfo;
-      
+
       return resp;
     });
   },
 };
+/*******************************************************************************/
 export default {
   TimeAnalysis,
   TimeAnalysisHeaders,
   TimeAnalysisStudentsList,
-  TimeAnalysisStudentsListByDay,
+  TimeAnalysisStudentsListByDay
 };
+
+
+
+
+
+
