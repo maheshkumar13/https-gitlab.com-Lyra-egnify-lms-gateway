@@ -579,6 +579,42 @@ export async function checkStudentHasTextbook(args, ctx) {
     throw err;
   }
 }
+
+export async function getTextbookForTeachers(args, context) {
+  try{
+    console.log(context)
+    let hierarchy = context.hierarchy.map(obj=> obj.child);
+    console.log(hierarchy)
+    let orientations = context.orientations;
+    const Textbook = await TextbookModel(context);
+    const textbooks = await Textbook.find({
+      branches : {$in : hierarchy},
+      orientation : {$in : orientations}
+    }).lean();
+    let textbookCodes = textbooks.map(obj => obj.code);
+    return textbookCodes;
+  }catch(err){
+    throw err;
+  }
+  return getStudentData(context).then((obj) => {
+    if (obj && obj.orientation) {
+      args.orientation = obj.orientation
+      const {
+        hierarchy
+      } = obj;
+      if (hierarchy && hierarchy.length) {
+        let branchData = context.hierarchy.map(obj=> obj.childCode);
+        if (branchData && branchData.child) args.branch = branchData.child;
+      }
+    }
+    const query = getTextbooksQuery(args)
+    console.log(query);
+    return TextbookModel(context).then((Textbook) => {
+      return Textbook.find(query)
+    })
+  })
+}
+
 export default {
   getHierarchyData
 }

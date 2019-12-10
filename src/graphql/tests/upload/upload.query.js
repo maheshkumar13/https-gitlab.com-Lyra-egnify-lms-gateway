@@ -1,9 +1,11 @@
 import {listTest , listTextBooksWithTestSubectWise , listUpcomingTestTextBookWise,listOfCompletedTestTextBookWise , headerCount , fetchInstructions  } from '../../../api/tests/upload/test.upload.controller';
 import {ListInputType,ListTestOutput , TestHeadersAssetCountInputType} from './upload.type';
 import {getStudentDetailsById} from '../../../api/settings/student/student.controller';
-import {checkStudentHasTextbook, getTextbooks} from '../../../api/settings/textbook/textbook.controller';
+import {checkStudentHasTextbook, getTextbooks,getTextbookForTeachers} from '../../../api/settings/textbook/textbook.controller';
 import {GraphQLString as StringType,GraphQLNonNull as NonNull } from 'graphql';
+import { validateAccess } from '../../../utils/validator';
 import GraphQLJSON from 'graphql-type-json';
+
 export const ListTest = {
     args: {
         input: {
@@ -13,6 +15,21 @@ export const ListTest = {
     type: ListTestOutput,
     async resolve(object, args, context) {
         try {
+            const validRoles = ['CMS_PERFORMANCE_VIEWER'];
+            if (!validateAccess(validRoles, context)){
+                throw new Error('Access Denied');
+            }
+            const textbookCode = await getTextbookForTeachers(args, context);
+            console.log(textbookCode);
+            if(!args.input.textbookCode){
+                args.input.textbookCode = textbookCode
+            }else{
+                if(!textbookCode.includes(args.input.textbookCode)){
+                    throw new Error("Invalid textbook selection");
+                }else{
+                    args.input.textbookCode = [args.input.textbookCode]
+                }
+            }
             return await listTest(args.input, context);
         } catch (err) {
             throw new Error(err);
@@ -62,6 +79,10 @@ export const ListSubjectWiseBooksAndTestCount = {
     type: GraphQLJSON,
     async resolve(object, args, context) {
         try{
+            const validRoles = ['LMS_PERFORMANCE_VIEWER'];
+            if (!validateAccess(validRoles, context)){
+                throw new Error('Access Denied');
+            }
             let studentInfo = await getStudentDetailsById({studentId: context.studentId}, context);
             if(!studentInfo){
                 throw "Invalid Student";

@@ -39,7 +39,7 @@ function queryForListTest(args) {
     query["find"]["mapping.class.code"] = args.classCode;
   }
   if (args.textbookCode) {
-    query["find"]["mapping.textbook.code"] = args.textbookCode;
+    query["find"]["mapping.textbook.code"] = { "$in": args.textbookCode };
   }
   if (args.subjectCode) {
     query["find"]["mapping.subject.code"] = args.subjectCode;
