@@ -36,23 +36,33 @@ export async function getMasterResults(args, context) {
 }
 
 export async function getStudentList(req, res){
+  // res.send(req.query);
   if(!req.params || !req.params.paperId){
       throw new Error('Please provide questionPaperId');
   }
-  const branchName = req.user_cxt.rawHierarchy[4].child;
+  const branchName = req.user_cxt.hierarchy[0].child;
+  // const branchName = [];
   if(!branchName){
       throw new Error('branchName is not available');
   }
+  const orientations = req.user_cxt.orientations;
+  // const orientations = [];
+  // console.log(req.query.skip, req.query.limit);
   const Student = await StudentModel(req.user_cxt);
   const masterresults = await MasterResultModel(req.user_cxt);
+  let query = {};
+  if(branchName.length && orientations.length){
+    query = {"hierarchy.child" : branchName, orientation : {$in : orientations}};
+  }
   const studentInfo = await Student.aggregate([{
-  $match : {"hierarchy.child" : branchName}},
+  $match : query},
    {$group : {_id : {studentId : "$studentId", 
    studentName : "$studentName"}}}]);
   const studentIdArray = studentInfo.map(x => x._id.studentId);
   if(!studentIdArray.length){
       console.error("No practice data is available");
   }
+  // res.send(studentIdArray);
   const studentNameArray = studentInfo.map(x => x._id.studentName);
   if(studentNameArray.length !== studentIdArray.length){
       throw new Error('Data is missing');
@@ -60,21 +70,22 @@ export async function getStudentList(req, res){
   const masterresultData = await masterresults
    .aggregate([{$match : {questionPaperId : req.params.paperId,
    studentId : {$in : studentIdArray}}} 
-   ,{$sort : {"updated_at" : -1}},  
+   ,{$sort : {"updated_at" : -1}},
+   {$project : {"cwuAnalysis._id" : 0}},  
    {"$group": {"_id": "$studentId", 
    "cwuAnalysis" : {"$first" : "$cwuAnalysis"}, 
-   "obtainedMarks": {"$first" : "$obtainedMarks"}}}]);
-  //res.send(masterresultData);
+   "obtainedMarks": {"$first" : "$obtainedMarks"}}},
+   {$skip : Number(req.query.skip)} ,
+   {$limit : Number(req.query.limit)}]);
+  // res.send(masterresultData);
   for(let i = 0; i < masterresultData.length; i += 1){
       let index = 0;
-      if(studentIdArray.includes(masterresultData[i]._id)){
+      if(studentIdArray.indexOf(masterresultData[i]._id)){
           index = studentIdArray.indexOf(masterresultData[i]._id);
           masterresultData[i].studentName = studentNameArray[index];
       }
   }
   res.send(masterresultData);
 }
-
-
 
 export default { getMasterResults, getStudentList };
