@@ -14,4 +14,13 @@ router.post('/', controller.create);
 router.post('/resetpassword', controller.resetpassword);
 router.post('/validateForgotPassSecureHash', controller.validateForgotPassSecureHash);
 
+const Multer = require('multer');
+
+const multer = Multer({
+  storage: Multer.MemoryStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // no larger than 5mb
+  },
+});
+router.post('/upload', multer.single('file'), controller.uploadUsers)
 module.exports = router;

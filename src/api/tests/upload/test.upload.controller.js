@@ -75,16 +75,15 @@ export async function listTest(args, ctx) {
   try {
     const queries = queryForListTest(args);
     const TestSchema = await Tests(ctx);
-    let limit = args.limit ? args.limit : 0;
+    let limit = args.limit ? args.limit : 100;
     let skip = args.pageNumber ? args.pageNumber - 1 : 0;
     let data = await TestSchema.dataTables({
       limit: limit,
       skip: skip * limit,
-      find: queries.find,
+      find: {"mapping.textbook.code":{"$in": args.textbookCode}},
       search: queries.search,
       sort: queries.sort,
     });
-
     data["pageInfo"] = {
       pageNumber: args.pageNumber,
       recordsShown: data["data"].length,

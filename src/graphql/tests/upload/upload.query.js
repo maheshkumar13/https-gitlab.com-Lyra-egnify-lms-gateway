@@ -5,6 +5,7 @@ import {checkStudentHasTextbook, getTextbooks,getTextbookForTeachers} from '../.
 import {GraphQLString as StringType,GraphQLNonNull as NonNull } from 'graphql';
 import { validateAccess } from '../../../utils/validator';
 import GraphQLJSON from 'graphql-type-json';
+import {fetchNodesWithContext} from '../../../api/settings/instituteHierarchy/instituteHierarchy.controller'
 
 export const ListTest = {
     args: {
@@ -19,8 +20,49 @@ export const ListTest = {
             if (!validateAccess(validRoles, context)){
                 throw new Error('Access Denied');
             }
+            const branchOfTeacher = context.hierarchy.map(x => x.child);
+            const orientationOfTeacher = context.orientations;
+            const Nodes = await fetchNodesWithContext({},context); //class name and class code
+            const classCodes = Nodes.map(obj=>obj.childCode)
+            
+            if(args.input.classCode){
+                if(classCodes.includes(args.input.classCode)){
+                    args.classCode = [args.input.classCode]
+                }else{
+                    throw new Error("Invalid class selection.");
+                }
+            }else{
+                args.classCode = classCodes;
+            }
+
+            if(args.input.branch){
+                if(!branchOfTeacher.includes(args.input.branch)){
+                    throw new Error("Invalid branch selection.")
+                }else{
+                    args.branch = [args.input.branch]
+                }
+            }else{
+                args.branch = branchOfTeacher.length ? Array.from(new Set(branchOfTeacher)) : []
+            }
+            if(args.input.orientation){
+                if(!orientationOfTeacher.includes(args.input.orientation)){
+                    throw new Error("Invalid orientation selection.")
+                }else{
+                    args.orientation = [args.input.orientation]    
+                }
+            }else{
+                args.orientation = orientationOfTeacher
+            }
+
+            if(args.input.subjectCode){
+                args["subjectCode"] = [args.input.subjectCode]
+            }
+
             const textbookCode = await getTextbookForTeachers(args, context);
-            console.log(textbookCode);
+            if(!textbookCode.length){
+                throw new Error("Invalid filter selection.");
+            }
+
             if(!args.input.textbookCode){
                 args.input.textbookCode = textbookCode
             }else{
@@ -30,7 +72,7 @@ export const ListTest = {
                     args.input.textbookCode = [args.input.textbookCode]
                 }
             }
-            return await listTest(args.input, context);
+            return listTest(args.input, context);
         } catch (err) {
             throw new Error(err);
         }
