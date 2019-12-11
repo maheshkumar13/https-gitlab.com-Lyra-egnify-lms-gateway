@@ -145,7 +145,7 @@ export async function getTimeAnalysis(args, context) {
     ])
     const count = countData && countData.length ? countData[0].total : 0;
     const data = objsData && objsData.length ? objsData[0].data : [];
-    return [ count, data ];
+    return [count, data];
   }
   return Promise.all([
     TimeAnalysis.count(query),

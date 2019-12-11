@@ -238,7 +238,7 @@ export async function updateStudentSubjects(args, context) {
 
 export async function getStudentList(args, context) {
   if (!args && !args.Class && !args.Branch && !args.Orientation) {
-    throw new Error("Nothing is Provided");
+    throw new Error('Nothing is Provided');
   }
   const { Class, Branch, Orientation } = args;
   // eslint-disable-next-line no-console

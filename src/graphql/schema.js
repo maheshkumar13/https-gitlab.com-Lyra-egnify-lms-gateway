@@ -16,7 +16,7 @@ import { InstituteHierarchyGrid } from './settings/instituteHierarchy/instituteH
 import { updateCategory } from './settings/instituteHierarchy/instituteHierarchy.mutaion';
 import { createSubject } from './settings/subject/subject.mutation';
 import { Programs } from './settings/programs/programs.query';
-import { Textbooks, TextbooksInfo } from './settings/textbook/textbook.query';
+import { Textbooks, TextbooksInfo, ChapterWiseTextbookList } from './settings/textbook/textbook.query';
 import { createTextbook, updateTextbook, deleteTextbook } from './settings/textbook/textbook.mutation';
 import { Students, StudentUniqueValues, StudentsByLastNode, StudentById, StudentList } from './settings/student/student.query';
 import { updateStudentAvatar, updateStudentSubjects } from './settings/student/student.mutation';
@@ -46,6 +46,7 @@ const schema = new Schema({
       Institute,
       InstituteHierarchyGrid,
       Textbooks,
+      ChapterWiseTextbookList,
       ConceptTaxonomy,
       InstituteHierarchyPaginated,
       Students,
@@ -112,7 +113,7 @@ const schema = new Schema({
       ParseAndValidateTest,
       updateTestInfo,
       SubmitTest,
-      StartTest
+      StartTest,
     },
   }),
 });

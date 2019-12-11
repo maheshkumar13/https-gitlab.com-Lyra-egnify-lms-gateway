@@ -16,6 +16,7 @@ import {
 import GraphQLJSON from 'graphql-type-json';
 
 import { ConceptTaxonomyType } from '../conceptTaxonomy/conceptTaxonomy.type';
+
 const ConceptTaxonomyTypeController = require('../../../api/settings/conceptTaxonomy/concpetTaxonomy.controller');
 
 
@@ -31,11 +32,9 @@ export const refsType = new ObjectType({
   name: 'TextbookRefsType',
   fields: {
     class: { type: nameCodeType, description: 'Class' },
-    subject: { type: nameCodeType, description: 'Subject' }
+    subject: { type: nameCodeType, description: 'Subject' },
   },
 });
-
-
 
 export const TextbookType = new ObjectType({
   name: 'TextbookType',
@@ -43,9 +42,9 @@ export const TextbookType = new ObjectType({
     name: { type: StringType, description: 'Name of the textbook' },
     code: { type: StringType, description: 'Interal code of the subject' },
     imageUrl: { type: StringType, description: 'image url' },
-    publisher:{ type: StringType, description: 'Publisher name' },
-    orientations: { type: GraphQLJSON, description: 'List of Orientations'},
-    branches: { type: new List(StringType), description: 'List of Branches'},
+    publisher: { type: StringType, description: 'Publisher name' },
+    orientations: { type: GraphQLJSON, description: 'List of Orientations' },
+    branches: { type: new List(StringType), description: 'List of Branches' },
     refs: { type: refsType, description: 'refs' },
     next: {
       type: new List(ConceptTaxonomyType),
@@ -76,16 +75,28 @@ export const updateTextbookInputType = new InputType({
   fields: {
     name: { type: StringType, description: 'Name of the textbook' },
     imageUrl: { type: StringType, description: 'image url' },
-    publisher:{ type: StringType, description: 'Publisher name' },
+    publisher: { type: StringType, description: 'Publisher name' },
     code: { type: new NonNull(StringType), description: 'Internal code of textbook' },
-    orientations: { type: new List(StringType), description: 'List Of Orientations'},
+    orientations: { type: new List(StringType), description: 'List Of Orientations' },
     branches: { type: new List(StringType), description: 'List of branches name' },
-  }
-})
+  },
+});
+export const ChapterWiseTextbookListOutputType = new ObjectType({
+  name: 'ChapterWiseTextbookListOutputType',
+  fields: {
+    name: { type: StringType, description: 'Name of the textbook' },
+    imageUrl: { type: StringType, description: 'image url' },
+    publisher: { type: StringType, description: 'Publisher name' },
+    code: { type: new NonNull(StringType), description: 'Internal code of textbook' },
+    orientations: { type: new List(StringType), description: 'List Of Orientations' },
+    branches: { type: new List(StringType), description: 'List of branches name' },
+  },
+});
 
 export default {
   TextbookType,
   TextbookInputType,
   updateTextbookInputType,
   nameCodeType,
+  ChapterWiseTextbookListOutputType,
 };

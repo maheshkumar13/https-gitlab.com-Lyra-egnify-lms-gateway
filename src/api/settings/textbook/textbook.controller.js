@@ -1,4 +1,7 @@
 /* eslint-disable */
+import { 
+  getModel as ConcpetTaxonomyModel 
+} from '../conceptTaxonomy/concpetTaxonomy.model';
 import {
   getModel as TextbookModel
 } from './textbook.model';
@@ -579,6 +582,62 @@ export async function checkStudentHasTextbook(args, ctx) {
     throw err;
   }
 }
+
+export async function getChapterWiseTextbookList(args, context) {
+  const Textbook = await TextbookModel(context);
+  const ConcpetTaxonomy = await ConcpetTaxonomyModel(context);
+  if (!args && !args.className && !args.subjectName && !args.bookName) {
+    throw new Error('Nothing is Provided');
+  }
+  const { className, subjectName, bookName } = args;
+  const query = {active:true}  
+    if (className && className.length) {
+    const classSearchKey = "refs.class.name";
+    query[classSearchKey] = {
+      $in: className
+    }
+  }
+  if (subjectName && subjectName.length) {
+    const subjectSearchKey = "refs.class.name";
+    query[subjectSearchKey] = {
+      $in: className
+    }
+  }
+  if (bookName && bookName.length) {
+    query.name = {
+      $in: bookName
+    }
+  }
+  console.log("query: ",query)
+  const skip = (args.pageNumber - 1) * args.limit;
+  if (!args.limit) args.limit = 10;
+  const projection={
+    name:1,
+    _id:0,
+     code:1,
+    'refs.class.name':1,
+    //'refs.subject':1
+
+  }
+  let resArray=[];
+  const textbookData = await Textbook.find(query, projection).sort({'refs.class.name':1});
+  textbookData.forEach(async textbook => {
+    let concpetTaxonomyQuery = { "refs.textbook.code":textbook.code,active:true}
+    let chapterData = await ConcpetTaxonomy.find(concpetTaxonomyQuery);
+   
+  });
+  console.log("textbookData", textbookData.length);
+
+  // const [countData, objsData] = await Promise.all([
+  //   TimeAnalysis.aggregate(agrCountQuery).allowDiskUse(true),
+  //   TimeAnalysis.aggregate(agrDataQuery).allowDiskUse(true),
+  // ])
+  // const count = countData && countData.length ? countData[0].total : 0;
+  // const data = objsData && objsData.length ? objsData : [];
+  // return [count, data];
+}
+
+
 export default {
   getHierarchyData
 }
