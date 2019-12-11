@@ -39,7 +39,7 @@ export async function getStudentList(req, res) {
   try{
   // res.send(req.user_cxt);
   if (!req.params || !req.params.paperId) {
-    throw new Error('Please provide questionPaperId');
+        return res.status(404).send('Please provide questionPaperId');
   }
   const branchName = req.user_cxt.hierarchy.map(x => x.childCode);
   // const branchName = [];
@@ -136,8 +136,7 @@ export async function getStudentList(req, res) {
   res.send(masterHandlers);
 }
 catch(err){
-  console.log(err);
-  return;
+    return res.status(500).send('Internal server err');
 }
 }
 
