@@ -37,16 +37,11 @@ export async function getMasterResults(args, context) {
 
 export async function getStudentList(req, res) {
   try{
-  // res.send(req.user_cxt);
   if (!req.params || !req.params.paperId) {
-    throw new Error('Please provide questionPaperId');
+    return res.status(404).send('Please provide questionPaperId');
   }
   const branchName = req.user_cxt.hierarchy.map(x => x.childCode);
-  // const branchName = [];
-  // console.log(branchName);
   const orientations = req.user_cxt.orientations;
-  // const orientations = [];
-  // console.log(orientations);
   let skips = 0;
   let limits = 100;
   if (Number(req.query.skip)){
@@ -77,7 +72,6 @@ export async function getStudentList(req, res) {
       }
     }
   }]);
-  // res.send(studentInfo);
   const studentIdArray = studentInfo.map(x => x._id.studentId);
   if (!studentIdArray.length) {
     res.status(404).send("studentId not found");
@@ -136,8 +130,7 @@ export async function getStudentList(req, res) {
   res.send(masterHandlers);
 }
 catch(err){
-  console.log(err);
-  return;
+  return res.status(404).send("Inetrnal Server Err.")
 }
 }
 
