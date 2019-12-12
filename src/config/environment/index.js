@@ -84,6 +84,8 @@ const all = {
     QUEUE_NS: process.env.QUEUE_NS || 'lms-dev-mq',
   },
 
+  COUCH_DB_URL : process.env.COUCH_DB_URL || 'http://13.235.245.210:5984/'
+
 };
 
 // Export the config object based on the NODE_ENV
