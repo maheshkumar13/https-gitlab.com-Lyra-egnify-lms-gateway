@@ -7,13 +7,13 @@ module.exports = {
   mongo: {
     uri: process.env.MONGODB_URI ||
     process.env.MONGODB_URL ||
-    'mongodb://localhost/tenantregistry-lms-uat',
+    'mongodb://localhost/tenantregistry-lms-dev',
   },
   // Seed database on startup
   seedDB: false,
   services: {
     // sso: 'http://localhost:3002',
-    sso: process.env.SVC_SSO || 'https://accounts.uat.rankguru.com',
+    sso: process.env.SVC_SSO || 'https://accounts.dev.rankguru.com',
     // egnifyAccountsURL: process.env.SVC_SSO || 'http://localhost:3002',
     egnifyAccountsURL: process.env.SVC_SSO || 'https://accounts.dev.rankguru.com',
   },
