@@ -10,6 +10,7 @@ import {
 import GraphQLDate from 'graphql-date';
 
 import { TimeAnalysisType, TimeAnalysisHeadersType, TimeAnalysisListType, TimeAnalysisListByDayType } from './timeAnalysis.type';
+import { validateAccess } from '../../../utils/validator';
 
 const controller = require('../../../api/analysis/timeAnalysis/timeAnalysis.controller');
 
@@ -63,6 +64,8 @@ export const StudentLevelTimeAnalysis = {
   },
   type: TimeAnalysisPaginatedType,
   async resolve(obj, args, context) {
+    const validRoles = ['LMS_ENGAGEMENT_VIEWER'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
     if (!args.limit) args.limit = 0; // eslint-disable-line
     if (args.pageNumber < 1) throw new Error('Page Number is invalid');
@@ -104,6 +107,8 @@ export const TeacherLevelTimeAnalysis = {
   },
   type: TimeAnalysisPaginatedType,
   async resolve(obj, args, context) {
+    const validRoles = ['CMS_ENGAGEMENT_VIEWER'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
     if (!args.limit) args.limit = 0; // eslint-disable-line
     if (args.pageNumber < 1) throw new Error('Page Number is invalid');
@@ -187,6 +192,8 @@ export const TimeAnalysisHeaders = {
   },
   type: TimeAnalysisHeadersType,
   async resolve(obj, args, context) {
+    const validRoles = ['CMS_ENGAGEMENT_VIEWER'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     return controller.getTimeAnalysisHeaders(args, context);
   },
 };
@@ -263,6 +270,8 @@ export const TimeAnalysisStudentsList = {
   },
   type: TimeAnalysisPaginatedListType,
   async resolve(obj, args, context) {
+    const validRoles = ['CMS_ENGAGEMENT_VIEWER'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
     if (!args.limit) args.limit = 0; // eslint-disable-line
     if (args.pageNumber < 1) throw new Error('Page Number is invalid');
@@ -395,6 +404,8 @@ export const TimeAnalysisStudentsListByDay = {
   },
   type: TimeAnalysisPaginatedListByDayType,
   async resolve(obj, args, context) {
+    const validRoles = ['CMS_ENGAGEMENT_VIEWER'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
     if (!args.limit) args.limit = 0; // eslint-disable-line
     if (args.pageNumber < 1) throw new Error('Page Number is invalid');
