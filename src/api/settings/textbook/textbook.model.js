@@ -8,6 +8,7 @@
  */
 import mongoose from 'mongoose';
 import { getDB } from '../../../db';
+import { fetchNodesWithContext } from '../../../api/settings/instituteHierarchy/instituteHierarchy.controller';
 
 const nameCodeSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -33,11 +34,49 @@ const TextbookSchema = new mongoose.Schema({
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 });
 
+TextbookSchema.plugin(schemaHooks);
+
 export async function getModel(userCxt) {
   const { instituteId } = userCxt;
   const db = await getDB(instituteId);
+  TextbookSchema._customUserContext = userCxt
   return db.model('Textbook', TextbookSchema);
 }
+
+async function getPreMatchQuery(context){
+  const hierarchyData = await fetchNodesWithContext({ levelNames: ['Class', 'Branch'] }, context);
+  const contextClassCodes = Array.from(new Set(hierarchyData.filter(x => x.levelName === 'Class').map(x => x.childCode)));
+  const contextBranches = Array.from(new Set(hierarchyData.filter(x => x.levelName === 'Branch').map(x => x.child)));
+  contextBranches.push(null);
+  let contextOrientations = []
+  if(context.hierarchy && context.orientations && context.orientations.length){
+      contextOrientations = context.orientations;
+    contextOrientations.push(null);
+  }
+  const preMatchQuery = {};
+  preMatchQuery['refs.class.code'] = {$in: contextClassCodes };
+  preMatchQuery['branches'] = { $in: contextBranches };
+  if(contextOrientations.length) preMatchQuery['orientations'] = { $in: contextOrientations };
+  return preMatchQuery;
+}
+
+async function schemaHooks (schema, options) {
+  schema.pre(['find', 'count'], async function(next) {
+    const context = schema._customUserContext;
+    const preMatchQuery = await getPreMatchQuery(context)
+    const query = { $and: [preMatchQuery, this._conditions] }
+    this._conditions = query;
+    next();
+  });
+
+  TextbookSchema.pre('aggregate', async function(next) {
+    const context = schema._customUserContext;
+    const preMatchQuery = await getPreMatchQuery(context)
+    this.pipeline().unshift({ $match: preMatchQuery });
+    next();
+  });
+}
+
 
 export default {
   getModel,

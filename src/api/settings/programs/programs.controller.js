@@ -5,6 +5,11 @@ export async function fetchProgramsBasedOnBoard(body, context) {
   // console.log('body', body);
   const args = body.input;
   const query = {};
+  if(context.orientations && context.orientations.length){
+    query.$and = [{
+      orientation: { $in: context.orientations }
+    }]
+  }
   const programWiseStudentCount = [];
   if (args && args.class && args.class.length) {
     query['hierarchyLevels.L_2'] = { $in: args.class };
