@@ -45,7 +45,10 @@ function getMongoQuery(fltrs, regex) {
 }
 
 export async function fetchNodesWithContext(args, context){
-  const { hierarchy } = context;
+  let { hierarchy } = context;
+  if(context.userType === "STUDENT") {
+    hierarchy = hierarchy.filter(x => x.level === 6);
+  }
   if(!args.levelNames || !args.levelNames.length) args.levelNames = ['Class'];
   const agrQuery = [];
   const matchQuery = { level: 6 };
