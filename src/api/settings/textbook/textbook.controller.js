@@ -605,23 +605,6 @@ export async function getTextbookForTeachers(args, context) {
   }catch(err){
     throw err;
   }
-  return getStudentData(context).then((obj) => {
-    if (obj && obj.orientation) {
-      args.orientation = obj.orientation
-      const {
-        hierarchy
-      } = obj;
-      if (hierarchy && hierarchy.length) {
-        let branchData = context.hierarchy.map(obj=> obj.childCode);
-        if (branchData && branchData.child) args.branch = branchData.child;
-      }
-    }
-    const query = getTextbooksQuery(args)
-    console.log(query);
-    return TextbookModel(context).then((Textbook) => {
-      return Textbook.find(query)
-    })
-  })
 }
 
 export default {

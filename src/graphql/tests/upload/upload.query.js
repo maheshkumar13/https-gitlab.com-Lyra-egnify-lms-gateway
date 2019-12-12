@@ -20,11 +20,18 @@ export const ListTest = {
             if (!validateAccess(validRoles, context)){
                 throw new Error('Access Denied');
             }
-            const branchOfTeacher = context.hierarchy.map(x => x.child);
             const orientationOfTeacher = context.orientations;
-            const Nodes = await fetchNodesWithContext({},context); //class name and class code
-            const classCodes = Nodes.map(obj=>obj.childCode)
-            
+            const levelNames = ["Branch","Class"]
+            const Nodes = await fetchNodesWithContext({levelNames},context); //class name and class code
+            let classCodes = []
+            let branchOfTeacher = [];
+            Nodes.forEach((obj)=>{
+                if(obj["levelName"]==="Branch"){
+                    branchOfTeacher.push(obj.child)
+                }else{
+                    classCodes.push(obj.childCode)
+                }
+            })
             if(args.input.classCode){
                 if(classCodes.includes(args.input.classCode)){
                     args.classCode = [args.input.classCode]
