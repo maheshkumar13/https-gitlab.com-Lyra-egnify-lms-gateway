@@ -16,7 +16,7 @@ export async function analysisTrigger(args) {
       date.setDate(date.getDate() - 1);
       args.startTime = date;
     }
-    if(new Date(args.startTime).toString() === 'Invalid Date') {
+    if (new Date(args.startTime).toString() === 'Invalid Date') {
       return resolve({
         message: 'Invalid date or format',
         validFormat: 'YYYY-MM-DDTHH:MM:SS.SSSZ',
@@ -24,7 +24,7 @@ export async function analysisTrigger(args) {
     } else args.startTime = new Date(args.startTime);
 
     const tempDate = new Date(args.startTime);
-    tempDate.setDate(tempDate.getDate() +1)
+    tempDate.setDate(tempDate.getDate() + 1)
     const startTime = args.startTime;
     const endTime = tempDate;
 
@@ -39,18 +39,18 @@ export async function analysisTrigger(args) {
       return resolve({ message });
     }
     const triggeredType = args.manualTrigger ? 'manual' : 'auto';
-    await SchedulerTimeAnalysis.create({  date: new Date(args.startTime), triggeredType }).catch((err) => {
+    await SchedulerTimeAnalysis.create({ date: new Date(args.startTime), triggeredType }).catch((err) => {
       console.error(err);
     })
 
-    args.startTime = `${startTime.getUTCFullYear()}-${startTime.getUTCMonth()+1}-${startTime.getUTCDate()} ${startTime.getUTCHours()}:${startTime.getUTCMinutes()}:00`;
-    args.endTime =  `${endTime.getUTCFullYear()}-${endTime.getUTCMonth()+1}-${endTime.getUTCDate()} ${endTime.getUTCHours()}:${endTime.getUTCMinutes()}:00`;
+    args.startTime = `${startTime.getUTCFullYear()}-${startTime.getUTCMonth() + 1}-${startTime.getUTCDate()} ${startTime.getUTCHours()}:${startTime.getUTCMinutes()}:00`;
+    args.endTime = `${endTime.getUTCFullYear()}-${endTime.getUTCMonth() + 1}-${endTime.getUTCDate()} ${endTime.getUTCHours()}:${endTime.getUTCMinutes()}:00`;
 
     const broker = new celery.RedisHandler(config.celery.CELERY_BROKER_URL);
     const backend = new celery.RedisHandler(config.celery.CELERY_RESULT_BACKEND);
     const celeryClient = new celery.Client(broker, backend);
     console.info('celery config', config.celery);
-    const argsC = [{ startTime: args.startTime, endTime: args.endTime}];
+    const argsC = [{ startTime: args.startTime, endTime: args.endTime }];
     const kwargs = {};
     const taskOptions = {
       eta: Date.now(),
@@ -119,33 +119,36 @@ export async function getTimeAnalysis(args, context) {
     if (!args.orientation) query['refs.orientation'] = { $exists: false };
   }
   const skip = (args.pageNumber - 1) * args.limit;
-  if(query.isStudent && !args.fullData) {
-    if(!args.limit) args.limit = 1;
+  if (query.isStudent && !args.fullData) {
+    if (!args.limit) args.limit = 1;
     const groupQuery = {
       _id: '$studentId',
-      data: {$push: { 
-        studentId: '$studentId',
-        studentName: '$studentName',
-        date: '$date',
-        totalTimeSpent: '$totalTimeSpent',
-      }}
+      data: {
+        $push: {
+          studentId: '$studentId',
+          studentName: '$studentName',
+          date: '$date',
+          totalTimeSpent: '$totalTimeSpent',
+        }
+      }
     }
-    const agrCountQuery = [{$match: query},{$group: {_id: '$studentId' }},{$count: 'total'}];
+    const agrCountQuery = [{ $match: query }, { $group: { _id: '$studentId' } }, { $count: 'total' }];
     const agrDataQuery = [
-      {$match: query},
-      {$group: groupQuery},
-      {$skip: skip},
-      {$limit: args.limit },
-      {$unwind: '$data'},
-      {$group: { _id: 'all', data: {$push: '$data'}}}
+      { $match: query },
+      { $group: groupQuery },
+      { $skip: skip },
+      { $limit: args.limit },
+      { $unwind: '$data' },
+      { $group: { _id: 'all', data: { $push: '$data' } } }
     ];
-    const [ countData, objsData ] = await Promise.all([
+    const [countData, objsData] = await Promise.all([
       TimeAnalysis.aggregate(agrCountQuery).allowDiskUse(true),
       TimeAnalysis.aggregate(agrDataQuery).allowDiskUse(true),
     ])
+
     const count = countData && countData.length ? countData[0].total : 0;
     const data = objsData && objsData.length ? objsData[0].data : [];
-    return [ count, data ];
+    return [count, data];
   }
   return Promise.all([
     TimeAnalysis.count(query),
@@ -191,4 +194,123 @@ export async function getTimeAnalysisHeaders(args, context) {
   const data = await TimeAnalysis.aggregate(aggregateQuery);
   if (!data || !data.length) return {};
   return data[0];
+}
+
+
+export async function getTimeAnalysisStudentsList(args, context) {
+  const TimeAnalysis = await TimeAnalysisModel(context);
+  const query = { studentId: { $nin: [null, ""] }, active: true };
+  if (args.class) query['refs.class.name'] = args.class;
+  if (args.branch) query['refs.branch.name'] = args.branch;
+  if (args.orientation) query['refs.orientation.name'] = args.orientation;
+  if (args.startDate) {
+    query.date = { $gte: args.startDate };
+  }
+  if (args.endDate) {
+    if (!query.date) query.date = {};
+    query.date.$lte = args.endDate;
+  }
+
+  const skip = (args.pageNumber - 1) * args.limit;
+  if (!args.limit) args.limit = 1;
+  if (!args.sortBy) args.sortBy = 'studentName';
+
+  let groupQuery = {
+    _id: '$studentId', studentName: { $first: '$studentName' },
+    data: { $push: { date: '$date', totalTimeSpent: '$totalTimeSpent' } }
+  }
+  let sortQuery = { studentName: args.sortType }
+  if (args.sortBy === 'date' && args.sortValue) {
+    groupQuery.dateTotalTimeSpent = {
+      $max: {
+        $cond: {
+          if: { $eq: ['$date', args.sortValue] },
+          then: '$totalTimeSpent', else: 0
+        }
+      }
+    }
+    sortQuery = { dateTotalTimeSpent: args.sortType }
+  }
+ 
+  const agrCountQuery = [{ $match: query }, { $group: { _id: '$studentId' } }, { $count: 'total' }];
+  const agrDataQuery = [
+    { $match: query },
+    { $group: groupQuery },
+    { $sort: sortQuery },
+    { $project: { _id: 0, studentId: '$_id', studentName: 1, data: 1 } },
+    { $skip: skip },
+    { $limit: args.limit }
+  ];
+  const [countData, objsData] = await Promise.all([
+    TimeAnalysis.aggregate(agrCountQuery).allowDiskUse(true),
+    TimeAnalysis.aggregate(agrDataQuery).allowDiskUse(true),
+  ])
+
+  const count = countData && countData.length ? countData[0].total : 0;
+  const data = objsData && objsData.length ? objsData : [];
+  return [count, data];
+}
+
+export async function getTimeAnalysisStudentsListByDay(args, context) {
+  const TimeAnalysis = await TimeAnalysisModel(context);
+  const query = { studentId: { $nin: [null, ""] }, active: true };
+  if (args.class) query['refs.class.name'] = args.class;
+  if (args.branch) query['refs.branch.name'] = args.branch;
+  if (args.orientation) query['refs.orientation.name'] = args.orientation;
+  if (args.startDate) {
+    query.date = { $gte: args.startDate };
+  }
+  if (args.endDate) {
+    if (!query.date) query.date = {};
+    query.date.$lte = args.endDate;
+  }
+  const skip = (args.pageNumber - 1) * args.limit;
+  if (!args.limit) args.limit = 10;
+  let groupQuery = {
+    _id: '$_id.studentId', studentName: { $first: '$studentName' },
+    totalTimeSpent: { $sum: '$totalTimeSpent' },
+    data: { $push: { weekDay: '$_id.weekDay', totalTimeSpent: '$totalTimeSpent' } },
+  }
+  if (!args.sortType) args.sortType=1
+  let sortQuery = { studentName: args.sortType }
+  
+  if (args.sortBy === 'totalTimeSpent') {
+    sortQuery = { totalTimeSpent: args.sortType }
+  }
+  if (args.sortBy === 'day' && args.sortValue) {
+    groupQuery.day={
+     $max: { $cond: { if: { $eq: ['$_id.weekDay', args.sortValue] }, then: '$totalTimeSpent', else: 0 }  },
+    }
+    sortQuery = { day: args.sortType }
+  }
+  const agrCountQuery = [{ $match: query }, { $group: { _id: '$studentId' } }, { $count: 'total' }];
+  const agrDataQuery = [
+    { $match: query },
+    {
+      $project: {
+        studentId: 1, studentName: 1, totalTimeSpent: 1,
+        weekDay: { $dayOfWeek: { date: '$date', timezone: "Asia/Kolkata" } }, _id: 0
+      }
+    },
+    {
+      $group: {
+        _id: { studentId: '$studentId', weekDay: '$weekDay' },
+        studentName: { $first: '$studentName' }, totalTimeSpent: { $sum: '$totalTimeSpent' }
+      }
+    },
+    {
+      $group: groupQuery
+    },
+    { $sort: sortQuery},
+    { $project: { _id: 0, studentId: '$_id', studentName: 1, totalTimeSpent: 1,data: 1 } },
+    { $skip: skip },
+    { $limit: args.limit }
+  ];
+  const [countData, objsData] = await Promise.all([
+    TimeAnalysis.aggregate(agrCountQuery).allowDiskUse(true),
+    TimeAnalysis.aggregate(agrDataQuery).allowDiskUse(true),
+  ])
+  const count = countData && countData.length ? countData[0].total : 0;
+  const data = objsData && objsData.length ? objsData : [];
+  return [count, data];
 }
