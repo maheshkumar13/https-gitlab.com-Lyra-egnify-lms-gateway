@@ -447,11 +447,8 @@ export async function listTextBooksWithTestSubectWise(args, ctx) {
     const TestSchema = await Tests(ctx);
     const list = await TestSchema.aggregate([{
       $match: {
-        "mapping.subject.code": args.subjectCode,
         "active": true,
-        "branches" : args.branchOfStudent,
-        "orientations" : args.orientationOfStudent,
-        "mapping.class.code" : args.classOfStudent
+        "mapping.textbook.code" : { "$in" : args.textbookCodes }
       }
     }, {
       $group: {

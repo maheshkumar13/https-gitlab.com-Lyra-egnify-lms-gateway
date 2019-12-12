@@ -23,7 +23,7 @@ function getMongoQuery(args) {
       return false;
     }
     const allKeys = Object.keys(filters);
-    
+   
     for (let i = 0; i < allKeys.length; i += 1) {
       if (allKeys[i] === 'hierarchy') {
         const hierarchy = filters.hierarchy; // eslint-disable-line
@@ -131,7 +131,6 @@ export async function getUniqueValues(args, context) {
 }
 
 export async function numberOfStudentsByLastNode(args, context) { // eslint-disable-line
-
   const Student = await getModel(context);
 
   let list = [];

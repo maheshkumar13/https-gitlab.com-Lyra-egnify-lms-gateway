@@ -47,11 +47,11 @@
           },
           {
             "name":"CELERY_BROKER_URL",
-            "value":"redis://:vvqfBAUfPI@redis-master.dev.svc.cluster.local:6379/0"
+            "value":"redis://:rQsVPF2gbiHi@15.206.191.200:6379/0"
           },
           {
             "name":"CELERY_RESULT_BACKEND",
-            "value":"redis://:vvqfBAUfPI@redis-master.dev.svc.cluster.local:6379/0"
+            "value":"redis://:rQsVPF2gbiHi@15.206.191.200:6379/0"
           },
           {
             "name":"AWS_S3_KEY",
@@ -112,6 +112,10 @@
           {
             "name":"AWS_PRIVATE_BUCKET",
             "value":"rankguru-uat-private"
+          },
+          {
+            "name":"QUEUE_NS",
+            "value":"lms-uat-mq"
           }
         ],
         "logConfiguration": {
