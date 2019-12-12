@@ -39,7 +39,7 @@ export const InstituteHierarchy = {
   },
   type: new List(InstituteHierarchyType),
   async resolve(obj, args, context) {
-    return controller.fetchNodes(args, context).then(nodesArray => nodesArray).catch(err => err);
+    return controller.fetchNodesv2(args.input, context).then(nodesArray => nodesArray).catch(err => err);
   },
 };
 

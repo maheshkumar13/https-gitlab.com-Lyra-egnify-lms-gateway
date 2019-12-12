@@ -47,7 +47,7 @@ export async function getStudentData(context) {
 
 function getTextbooksQuery(args) {
   const query = {
-    active: true
+    active: true,
   }
   if (args.classCode) query['refs.class.code'] = args.classCode;
   if (args.subjectCode) query['refs.subject.code'] = args.subjectCode;
