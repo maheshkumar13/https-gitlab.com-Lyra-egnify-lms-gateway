@@ -98,10 +98,82 @@ export const triggerTimeAnalysis = cron.schedule('0 0 1 * * *', () => {
   timezone: 'Asia/Kolkata',
 });
 
+export async function getStudentLevelTimeAnalysis(args, context) {
+  const TimeAnalysis = await TimeAnalysisModel(context);
+  const query = { active: true, isStudent: true };
+  if (args.studentId) query.studentId = args.studentId;
+  if (args.startDate) {
+    query.date = { $gte: args.startDate };
+  }
+  if (args.endDate) {
+    if (!query.date) query.date = {};
+    query.date.$lte = args.endDate;
+  }
+  const skip = (args.pageNumber - 1) * args.limit;
+  return Promise.all([
+    TimeAnalysis.count(query),
+    TimeAnalysis.find(query).skip(skip).limit(args.limit),
+  ]);
+}
+
+export async function getTeacherLevelTimeAnalysis(args, context) {
+  const TimeAnalysis = await TimeAnalysisModel(context);
+  const query = { active: true, isStudent: true };
+  if (args.class) query['refs.class.name'] = args.class;
+  if (args.branch) query['refs.branch.name'] = args.branch;
+  if (args.orientation) query['refs.orientation.name'] = args.orientation;
+  if (args.startDate) {
+    query.date = { $gte: args.startDate };
+  }
+  if (args.endDate) {
+    if (!query.date) query.date = {};
+    query.date.$lte = args.endDate;
+  }
+  const skip = (args.pageNumber - 1) * args.limit;
+  const agrQuery = [ 
+    { $match: query },
+    { $project: { date: 1, category: { $map: { input: { $objectToArray: "$category" }, as: "temp6", in: { k: { $concat: [ "category", "<>", "$$temp6.k" ] }, v: "$$temp6.v.totalTimeSpent" } } }, subject: { $map: { input: { $objectToArray: "$subject" }, as: "temp", in: { k: { $concat: [ "subject", "<>", "$$temp.k" ] }, v: "$$temp.v.totalTimeSpent", category: { $map: { input: { $objectToArray: "$$temp.v.category" }, as: "temp2", in: { k: { $concat: [ "subject", "<>", "$$temp.k", "<>", "category", "<>", "$$temp2.k" ] }, v: "$$temp2.v.totalTimeSpent" } } } } } } } },
+    { $project: { category: 1, date: 1, subWiseCategory:{ $reduce: { input: { $map: { input: "$subject", as: "temp3", in: { $map: { input: "$$temp3.category", as: "temp4", in: { k: "$$temp4.k", v: "$$temp4.v" } } } } }, initialValue: [ ], in: { $concatArrays: [ "$$value", "$$this" ] } } },'subject.k': 1, 'subject.v': 1 } },
+    { $project: { date: 1, allValues: { $concatArrays: ["$category", "$subject", "$subWiseCategory"]}}},
+    { $unwind: "$allValues"},
+    { $group: { _id: { date: "$date", value: '$allValues.k'}, totalTimeSpent: { $sum: "$allValues.v"}}},
+    { $group: { _id: "$_id.date", values: { $push: { key: "$_id.value", value: "$totalTimeSpent" }}}},
+    { $skip: skip },
+  ]
+  if(args.limit > 0) agrQuery.push({ $limit: args.limit });
+  return Promise.all([
+    TimeAnalysis.aggregate(agrQuery).allowDiskUse(true),
+    TimeAnalysis.aggregate([{$match: query},{$group: { _id: '$date', totalStudents: { $sum: 1 }, totalTimeSpent: { $sum: '$totalTimeSpent'}}}]).allowDiskUse(true),
+  ]).then(([data, countData]) => {
+    const countObj = {};
+    countData.forEach(x => { countObj[x._id] = { totalStudents: x.totalStudents, totalTimeSpent: x.totalTimeSpent }})
+    const docs = [];
+    data.forEach(obj => {
+      const temp = { date: obj._id, subject: {}, category: {}, totalStudents: countObj[obj._id].totalStudents, totalTimeSpent: countObj[obj._id].totalTimeSpent };
+      obj.values.forEach(x => {
+        const keys = x.key.split('<>');
+        obj = temp;
+        while(keys.length){
+          const sl = keys.splice(0,2);
+          const key = sl[0];
+          const value = sl[1];
+          if(!obj[key]) obj[key] = {}
+          if(!obj[key][value]) obj[key][value] = {}
+          obj = obj[key][value];
+        }
+        obj.totalTimeSpent = x.value;
+      })
+      docs.push(temp);
+    })
+    return [docs.length, docs];
+  })
+
+}
+
 export async function getTimeAnalysis(args, context) {
   const TimeAnalysis = await TimeAnalysisModel(context);
   const query = { active: true };
-  if (args.studentId) query.studentId = args.studentId;
+  
   if (args.class) query['refs.class.name'] = args.class;
   if (args.branch) query['refs.branch.name'] = args.branch;
   if (args.orientation) query['refs.orientation.name'] = args.orientation;
