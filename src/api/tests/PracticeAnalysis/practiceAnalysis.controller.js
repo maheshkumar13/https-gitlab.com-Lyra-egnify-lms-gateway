@@ -10,7 +10,7 @@ export async function getPracticeAnalysis(req, res) {
         const { questionPaperId } = req.params;
         //check for if questionPaperId will missing.
         if (!questionPaperId) {
-            return res.status(204).json({
+            return res.status(400).json({
                 status: "failure",
                 message: "questionPaperId is missing !!!",
                 data: ""
@@ -20,7 +20,7 @@ export async function getPracticeAnalysis(req, res) {
         //Check for if questionPaperId Is present in collection or not and fetch data!!!
         const resData = await PracticeAnalysis.findOne({questionPaperId});
         if (!resData) {
-            return res.status(400).json({
+            return res.status(204).json({
                 status: "failure",
                 message: "this is invalid question paper id !!!",
                 data: ""
