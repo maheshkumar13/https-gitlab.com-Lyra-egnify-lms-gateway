@@ -40,7 +40,7 @@ release:
   stage: release
   image: docker:stable
   services:
-    - docker:18.09.7-dind
+    - docker:dind
   variables:
     DOCKER_DRIVER: overlay2
     DOCKER_HOST: tcp://localhost:2375
@@ -103,7 +103,7 @@ deploy-dev:
   stage: deploy
   image: docker:latest
   services:
-    - docker:18.09.7-dind
+    - docker:dind
   before_script:
     # Install python requirements
     - apk update
