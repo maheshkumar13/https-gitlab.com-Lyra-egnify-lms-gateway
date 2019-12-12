@@ -44,6 +44,127 @@ function getMongoQuery(fltrs, regex) {
   return query;
 }
 
+export async function fetchNodesWithContext(args, context){
+  const { hierarchy } = context;
+  if(!args.levelNames || !args.levelNames.length) args.levelNames = ['Class'];
+  const agrQuery = [];
+  const matchQuery = { level: 6 };
+  if(hierarchy && hierarchy.length){
+    const codes = hierarchy.map(x => x.childCode);
+    matchQuery.$and = [{ $or:  [
+      { childCode: { $in: codes } },
+      { 'anscetors.childCode': { $in: codes } }
+    ]}]
+  }
+  agrQuery.push({ $match: matchQuery });
+  agrQuery.push({
+    $group: { _id: '$childCode', as: {$push: { child: '$child', childCode: '$childCode', parent: '$parent', parentCode: '$parentCode', level: '$level', levelName: '$levelName'}}, nodes: {$first: '$anscetors'}}
+  })
+  agrQuery.push({
+    $project: { nodes: { $concatArrays: ["$as","$nodes"]}}
+  })
+  agrQuery.push({
+    $project: { 
+      nodes: { 
+        $filter: { 
+          input: '$nodes', 
+          as: 'node',
+          cond: {
+            $in: ["$$node.levelName", args.levelNames]
+          }
+        }
+      }}
+  })
+  agrQuery.push({$unwind: '$nodes'})
+  agrQuery.push({$group: { _id: '$nodes'}});
+  agrQuery.push({
+    $project: {
+      child: '$_id.child',
+      childCode: '$_id.childCode',
+      parent: '$_id.parent',
+      parentCode: '$_id.parentCode',
+      level: '$_id.level',
+      levelName: '$_id.levelName',
+      _id: 0
+  }})
+  const InstituteHierarchy = await getModel(context);
+  return InstituteHierarchy.aggregate(agrQuery);
+}
+
+export async function fetchNodesv2(args, context) {
+  const { hierarchy } = context;
+  const agrQuery = [];
+  if(!args.levelName) args.levelName = 'Class';
+  
+  const matchQuery1 = {};
+  if(args.levelName === 'Section') {
+    if (args.parentCode) matchQuery1.parentCode = args.parentCode;
+    if (args.childCode) matchQuery1.childCode = args.childCode;
+  }
+  
+  if (args.ancestorCode) {
+    matchQuery1.$or = [
+      { childCode: args.ancestorCode },
+      { anscetors: { $elemMatch: { childCode: args.ancestorCode } } },
+    ]
+  }
+  
+  if(Object.keys(matchQuery1).length) agrQuery.push({$match: matchQuery1})
+
+  const matchQuery2 = { level: 6 };
+  if(hierarchy && hierarchy.length){
+    const codes = hierarchy.map(x => x.childCode);
+    matchQuery2.$or = [
+      { childCode: { $in: codes } },
+      { 'anscetors.childCode': { $in: codes } }
+    ]
+  }
+  agrQuery.push({$match:matchQuery2});
+  if(args.levelName !== 'Section') {
+    const projQuery = { $project: { 
+      nodes: { 
+        $filter: { 
+          input: '$anscetors', 
+          as: 'node',
+          cond: {
+            $eq: ["$$node.levelName", args.levelName]
+          }
+        }
+      }}};
+    if(args.level){
+      projQuery.$project.nodes.$filter.cond.$eq = ["$$node.level", args.level];
+    }
+    agrQuery.push(projQuery);
+    agrQuery.push({$unwind: '$nodes'})
+    agrQuery.push({$group: { _id: {
+      child: '$nodes.child',
+      childCode: '$nodes.childCode',
+      parent: '$nodes.parent',
+      parentCode: 'nodes.parentCode',
+      level: '$nodes.level',
+      levelName: '$nodes.levelName',
+    }}});
+    if(args.childCode || args.parentCode){
+      const matchQuery3 = {};
+      if(args.childCode) matchQuery3['_id.childCode'] = args.childCode;
+      if(args.parentCode) matchQuery3['_id.parentCode'] = args.parentCode;
+      agrQuery.push({$match: matchQuery3});
+    }
+    agrQuery.push({
+      $project: {
+        child: '$_id.child',
+        childCode: '$_id.childCode',
+        parent: '$_id.parent',
+        parentCode: '$_id.parentCode',
+        level: '$_id.level',
+        levelName: '$_id.levelName',
+        _id: 0
+      }})
+  }
+  const InstituteHierarchy = await getModel(context);
+  return InstituteHierarchy.aggregate(agrQuery);
+}
+
 export function fetchNodes(args, context) {
   const filters = args.input;
   // console.log(filters);
@@ -63,7 +184,6 @@ async function filterNodes(fltrs, context) {
   if (fltrs) {
     filters = fltrs;
   }
-
   const query = {};
 
   // filter nodes on levels
