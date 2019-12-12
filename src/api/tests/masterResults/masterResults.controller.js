@@ -38,7 +38,7 @@ export async function getMasterResults(args, context) {
 export async function getStudentList(req, res) {
   try{
   if (!req.params || !req.params.paperId) {
-    return res.status(404).send('Please provide questionPaperId');
+    return res.status(400).send('Please provide questionPaperId');
   }
   const branchName = req.user_cxt.hierarchy.map(x => x.childCode);
   const orientations = req.user_cxt.orientations;
@@ -76,7 +76,6 @@ export async function getStudentList(req, res) {
   if (!studentIdArray.length) {
     res.status(404).send("studentId not found");
   }
-  //  res.send(studentIdArray);
   const studentNameArray = studentInfo.map(x => x._id.studentName);
 
   const aggregationquery1 = [{
@@ -130,7 +129,7 @@ export async function getStudentList(req, res) {
   res.send(masterHandlers);
 }
 catch(err){
-  return res.status(404).send("Inetrnal Server Err.")
+  return res.status(500).send("Inetrnal Server Err.")
 }
 }
 
