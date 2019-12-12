@@ -14,7 +14,7 @@ import {
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import controller from '../../../api/settings/student/student.controller';
-import { StudentType, StudentDetailsOutputType,StudentListType } from './student.type';
+import { StudentType, StudentDetailsOutputType, StudentHeaderType, StudentListByFiltersOutputType} from './student.type';
 
 const pageInfoType = new ObjectType({
   name: 'StudentpageInfo',
@@ -55,7 +55,6 @@ const studentDetailsType = new ObjectType({
     };
   },
 });
-
 
 export const Students = {
   args: {
@@ -168,27 +167,83 @@ export const StudentById = {
       .catch(err => err);
   },
 };
-export const StudentList = {
+export const studentHeader = {
   args: {
-    Class: { type: new List(StringType) },
-    Orientation: { type: new List(StringType) },
-    Branch: { type: new List(StringType) },
+    className: { type: new List(StringType) },
+    branch: { type: new List(StringType) },
+    country: { type: new List(StringType) },
+    state: { type: new List(StringType) },
+    city: { type: new List(StringType) },
+    section: { type: new List(StringType) },
+    orientation: { type: new List(StringType) },
   },
-  type: new List(StudentListType),
+  type: StudentHeaderType,
   async resolve(obj, args, context) {
-    try{
-      const docs = await controller.getStudentList(args, context);
+    try {
+      const docs = await controller.getStudentHeader(args, context);
       return docs;
     } catch (err) {
       throw new Error("Internal Error");
-    } 
+    }
   },
 };
+//studentlistbyfilters api start here
+export const StudentListByFilters = {
+  //argument list
+  args: {
+    pageNumber: { type: NonNull(IntType) },
+    limit: { type: NonNull(IntType) },
+    className: { type: new List(StringType) },
+    branch: { type: new List(StringType) },
+    country: { type: new List(StringType) },
+    state: { type: new List(StringType) },
+    city: { type: new List(StringType) },
+    section: { type: new List(StringType) },
+    orientation: { type: new List(StringType) },
+  },
+  //return type
+  type: StudentListByFiltersOutputType,
+  async resolve(obj, args, context) {
+    try {
+      if (!args.pageNumber) args.pageNumber = 1;
+      if (args.pageNumber < 1) {
+        return new Error('Page Number must be positive');
+      }
+      const studentData = await controller.getStudentListByFilters(args, context);
+      const data = {};
+          data.page = studentData.pageData;
+          const pageInfo = {};
+          pageInfo.prevPage = true;
+          pageInfo.nextPage = true;
+          pageInfo.pageNumber = args.pageNumber;
+          pageInfo.limit = args.limit;
+          pageInfo.totalPages = Math.ceil(studentData.count / args.limit)
+            ? Math.ceil(studentData.count / args.limit)
+            : 1;
+          pageInfo.totalEntries = studentData.count;
+          if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+            return new Error('Page Number is invalid');
+          }
+          if (args.pageNumber === pageInfo.totalPages) {
+            pageInfo.nextPage = false;
+          }
+          if (args.pageNumber === 1) {
+            pageInfo.prevPage = false;
+          }
+          data.pageInfo = pageInfo;
+          return data;
+      }
+     catch (err) {
+      throw new Error("Internal Error");
+    }
+  },
+};
+//studentlistbyfilters api ends here
 export default{
   StudentUniqueValues,
   Students,
   StudentsByLastNode,
   StudentById,
-  StudentList,
-
+  studentHeader,
+  StudentListByFilters
 };
