@@ -4,7 +4,7 @@
 */
 import mongoose from 'mongoose';
 import { getDB } from '../../../db';
-const generateAnalysisSchema = new mongoose.Schema({
+const practiceanalysisSchema = new mongoose.Schema({
     questionPaperId: { type: String, index: true, required: true },
     totalQuestion: { type: Number, required: true },
     totalMarks: { type: Number, required: true },
@@ -14,14 +14,14 @@ const generateAnalysisSchema = new mongoose.Schema({
     
 }, {
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
-        collection: 'generateAnalysis'
+        collection: 'practiceanalysis'
 });
 
 
 export async function getModel(userCxt) {
     const { instituteId } = userCxt;
     const db = await getDB(instituteId);
-    return db.model('generateAnalysis', generateAnalysisSchema);
+    return db.model('practiceanalysis',practiceanalysisSchema);
 }
 
 export default {

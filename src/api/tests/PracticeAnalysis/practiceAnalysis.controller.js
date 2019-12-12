@@ -2,28 +2,25 @@
  @author Nikhil Kumar
  @date    12/12/2019
 */
-import { getModel as generateAnalysisModel } from './getAnalysis.model';
+import { getModel as practiceanalysisModel } from './practiceanalysis.model';
 
 
-export async function getAnalysis(req, res) {
+export async function getPracticeAnalysis(req, res) {
     try {
         const { questionPaperId } = req.params;
         //check for if questionPaperId will missing.
         if (!questionPaperId) {
-            return res.status(400).json({
+            return res.status(204).json({
                 status: "failure",
                 message: "questionPaperId is missing !!!",
                 data: ""
             });
         }
-
-        const [GenerateAnalysis] = 
-        await Promise.all([generateAnalysisModel(req.user_cxt)]);
-
+        const PracticeAnalysis = await practiceanalysisModel(req.user_cxt);
         //Check for if questionPaperId Is present in collection or not and fetch data!!!
-        const resData = await GenerateAnalysis.findOne({questionPaperId});
+        const resData = await PracticeAnalysis.findOne({questionPaperId});
         if (!resData) {
-            return res.status(404).json({
+            return res.status(400).json({
                 status: "failure",
                 message: "this is invalid question paper id !!!",
                 data: ""
@@ -39,4 +36,4 @@ export async function getAnalysis(req, res) {
         });
     };
 }
-export default {getAnalysis};
+export default { getPracticeAnalysis};

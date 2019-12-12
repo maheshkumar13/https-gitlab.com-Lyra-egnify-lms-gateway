@@ -9,7 +9,8 @@ const textbook = require('./settings/textbook');
 const testUpload = require('./tests/questions');
 const studentLedger = require('./studentLedger');
 const practiceStudent = require('./tests/masterResults');
-const getAnalysis = require('./tests/getAnalysis');
+const practiceAnalysis = require('./tests/PracticeAnalysis');
+const updateAnalysis = require('./tests/PracticeAnalysis');
 // Util modules
 const uploadFile = require('./v1/uploadFile');
 const downloadReports = require('./v1/downloadReports');
@@ -45,5 +46,6 @@ export default function (app) {
   app.use('/api/elastic', elasticindexing);
   app.use('/api/timeAnalysis', timeAnalysis);
   app.use('/api/practiceStudent', practiceStudent);
-  app.use('/api/getAnalysis', getAnalysis);
+  app.use('/api/practiceAnalysis', practiceAnalysis);
+  app.use('/api/updateAnalysis',updateAnalysis);
 }
