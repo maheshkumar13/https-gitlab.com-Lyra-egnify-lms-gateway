@@ -39,7 +39,7 @@
           },
           {
             "name":"SVC_SSO",
-            "value":"https://accounts.uat.rankguru.com"
+            "value":"https://accounts.dev.rankguru.com"
           },
           {
             "name":"PARSER_QUEUE_NS",
