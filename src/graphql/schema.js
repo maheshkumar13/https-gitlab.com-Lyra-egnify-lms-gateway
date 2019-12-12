@@ -18,7 +18,7 @@ import { createSubject } from './settings/subject/subject.mutation';
 import { Programs } from './settings/programs/programs.query';
 import { Textbooks, TextbooksInfo } from './settings/textbook/textbook.query';
 import { createTextbook, updateTextbook, deleteTextbook } from './settings/textbook/textbook.mutation';
-import { Students, StudentUniqueValues, StudentsByLastNode, StudentById, StudentList } from './settings/student/student.query';
+import { Students, StudentUniqueValues, StudentsByLastNode, StudentById, studentHeader,StudentListByFilters} from './settings/student/student.query';
 import { updateStudentAvatar, updateStudentSubjects } from './settings/student/student.mutation';
 import { ConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.query';
 import { ContentMapping, ContentMappingStats, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats, TextbookBasedQuiz, DashboardHeadersAssetCount } from './settings/contentMapping/contentMapping.query';
@@ -34,7 +34,7 @@ import { autoComplete, searchResult } from './search/searchRequest/search.query'
 import { ListTest, UpcomingTests, ListSubjectWiseBooksAndTestCount, CompletedTests, HeaderCountForTextBookBasedTest, FetchInstruction } from '../graphql/tests/upload/upload.query';
 import { ListMarkingSchema } from '../graphql/tests/markingShema/marking.shema.query';
 import { PublishTest, ParseAndValidateTest, updateTestInfo, SubmitTest, StartTest } from './tests/upload/upload.mutation';
-import { TimeAnalysis, TimeAnalysisStudentsList, TimeAnalysisHeaders, TimeAnalysisStudentsListByDay } from './analysis/timeAnalysis/timeAnalysis.query';
+import { TimeAnalysis, TimeAnalysisStudentsList, TimeAnalysisHeaders, TimeAnalysisStudentsListByDay, StudentLevelTimeAnalysis, TeacherLevelTimeAnalysis } from './analysis/timeAnalysis/timeAnalysis.query';
 import { StudentCompletionStats, TeacherLevelCompletionStats, TeacherLevelCompletionHeaders } from './analysis/completion/completion.query';
 
 const schema = new Schema({
@@ -51,7 +51,8 @@ const schema = new Schema({
       Students,
       StudentUniqueValues,
       StudentsByLastNode,
-      StudentList,
+      studentHeader,
+      StudentListByFilters,
       Programs,
       ContentMapping,
       LaunchRequest,
@@ -90,6 +91,8 @@ const schema = new Schema({
       StudentCompletionStats,
       TeacherLevelCompletionStats,
       TeacherLevelCompletionHeaders,
+      StudentLevelTimeAnalysis,
+      TeacherLevelTimeAnalysis,
     },
   }),
   mutation: new ObjectType({

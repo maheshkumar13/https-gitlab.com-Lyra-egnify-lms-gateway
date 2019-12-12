@@ -5,8 +5,7 @@ import { uniqBy, filter } from 'lodash';
 import { getModel } from './student.model';
 import { getModel as SubjectModel } from '../subject/subject.model';
 import { getLastKLevels } from '../institute/institute.controller';
-import { config } from '../../../config/environment';
-
+import { config } from "../../../config/environment/index";
 function getMongoQuery(args) {
   const query = {};
   query.active = true;
@@ -67,7 +66,6 @@ function getMongoQuery(args) {
 
 export async function getStudents(args, context) { // eslint-disable-line
   const Student = await getModel(context);
-  console.info('args', args);
   const query = getMongoQuery(args);
   if (query === false) {
     return false;
@@ -93,7 +91,7 @@ export async function getStudents(args, context) { // eslint-disable-line
       for (let i = 0; i < modResults.length; i += 1) {
         let temp = modResults[i].hierarchy[0];
         if (temp.level === hierarchy[0].level) {
-            continue;    // eslint-disable-line
+          continue;    // eslint-disable-line
         }
         for (let j = 0; j < 0; j += 1) {
           if (temp.level !== hierarchy[j].level) {
@@ -115,9 +113,6 @@ export async function getStudents(args, context) { // eslint-disable-line
 
 export async function getUniqueValues(args, context) {
   const Student = await getModel(context);
-
-  // const args = args.body;
-  console.info(args);
   const { childCode } = args;
   const query = childCode ? { 'hierarchy.childCode': { $in: childCode } } : {};
 
@@ -189,7 +184,7 @@ export async function updateStudentAvatar(args, context) { // eslint-disable-lin
     }
     return `StudentId ${args.studentId} Not found `;
   }).catch((err) => {
-    console.info(err);
+    
     return 'AvatarUrl updation is FAILED';
   });
 }
@@ -232,48 +227,270 @@ export async function updateStudentSubjects(args, context) {
   }));
 }
 
-export async function getStudentList(args, context) {
-  if (!args && !args.Class && !args.Branch && !args.Orientation) {
-    throw new Error("Nothing is Provided");
-  }
-  const { Class, Branch, Orientation } = args;
-  // eslint-disable-next-line no-console
-  const query = {};
-  if (Orientation && Orientation.length) {
-    query.orientation = {
-      $in: Orientation
-    }
-  }
-  if (Class && Class.length) {
-    const hierarchyLevelsKey = 'hierarchyLevels.L_2';
-    query[hierarchyLevelsKey] = {
-      $in: Class
-    }
-  }
-  if (Branch && Branch.length) {
-    const hierarchyLevelsKey = 'hierarchyLevels.L_5';
-    query[hierarchyLevelsKey] = {
-      $in: Branch
-    }
-  }
- 
-  try{
-    const Student = await getModel(context);
-    const resultObjs = await Student.find(query, { _id: 0 });
-    return resultObjs;
+async function getActiveStudents(context, studentIdList) {
 
-      
-  }catch (err)  {
-    throw new Error("Failed to Query");
-    
+   const url = `${config.services.sso}/api/v1/users/getActiveStudents`;
+
+  try {
+  
+    const response = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify({ studentIdList }),
+      headers: {
+        'Content-Type': 'application/json',
+        "authorization": context.token.authorization,
+        "accesscontrolToken": context.token.accesscontroltoken,
+      },
+    });
+    let json = await response.json();
+    return json;
+  } catch (err) {
+    return new Error(err);
   }
 }
-export default{
+
+export async function getStudentHeader(args, context) {
+   //Query Prepartion
+  const query = {};
+  query.active = true;
+  if (args && args.country && args.country.length) {
+    query['hierarchyLevels.L_1'] = {
+      $in: args.country
+    }
+  }
+  if (args && args.className && args.className.length) {
+    query['hierarchyLevels.L_2'] = {
+      $in: args.className
+    }
+  }
+  if (args && args.state && args.state.length) {
+    query['hierarchyLevels.L_3'] = {
+      $in: args.state
+    }
+  }
+  if (args && args.city && args.city.length) {
+    query['hierarchyLevels.L_4'] = {
+      $in: args.city
+    }
+  }
+  if (args && args.branch && args.branch.length) {
+    query['hierarchyLevels.L_5'] = {
+      $in: args.branch
+    }
+  }
+  if (args && args.section && args.section.length) {
+    query['hierarchyLevels.L_6'] = {
+      $in: args.section
+    }
+  }
+  if (args && args.orientation && args.orientation.length) {
+    query.orientation = {
+      $in: args.orientation
+    }
+  }
+  try {
+    const Student = await getModel(context);
+    let returnData = {}
+    let headerReturnData = {}
+    headerReturnData["country"] = [];
+    headerReturnData["state"] = [];
+    headerReturnData["branch"] = [];
+    headerReturnData["city"] = [];
+    headerReturnData["className"] = [];
+    headerReturnData["section"] = [];
+    headerReturnData["orientation"] = [];
+    let summaryReturnData = {}
+    summaryReturnData["totalStudent"] = 0;
+    summaryReturnData["digitalContent"] = 0;
+    summaryReturnData["male"] = 0;
+    summaryReturnData["female"] = 0;
+    summaryReturnData["prepSkill"] = 0;
+    summaryReturnData["activation"] = 0;
+    
+
+    let headerData = await Student.aggregate([{
+      $match: query
+    }, {
+      $group: {
+        _id: null,
+        orientation: { $addToSet: "$orientation" },
+        country: { $addToSet: "$hierarchyLevels.L_1" },
+        className: { $addToSet: "$hierarchyLevels.L_2" },
+        state: { $addToSet: "$hierarchyLevels.L_3" },
+        city: { $addToSet: "$hierarchyLevels.L_4" },
+        branch: { $addToSet: "$hierarchyLevels.L_5" },
+        section: { $addToSet: "$hierarchyLevels.L_6" },
+        studentIdList: { $addToSet: "$studentId" },
+      },
+    },
+    ]);
+    //if query return null->[] then return empty array
+    if (!headerData.length){
+      returnData = {
+        "summary": summaryReturnData,
+        "headers": headerReturnData,
+      }
+      return returnData;
+    }
+
+    let activationsData = await getActiveStudents(context, headerData[0].studentIdList)
+    activationsData = activationsData.length;
+
+    if (headerData.length) {
+      if (!args.country) {
+        headerReturnData["country"] = headerData[0].country;
+      }
+      if (!args.state) {
+        headerReturnData["state"] = headerData[0].state;
+      }
+      if (!args.city) {
+        headerReturnData["city"] = headerData[0].city;
+      }
+      if (!args.branch) {
+        headerReturnData["branch"] = headerData[0].branch;
+      }
+      if ( !args.className) {
+        headerReturnData["className"] = headerData[0].className;
+      }
+      if (!args.section) {
+        headerReturnData["section"] = headerData[0].section;
+      }
+      if ( !args.orientation) {
+        headerReturnData["orientation"] = headerData[0].orientation;
+      }
+    }
+
+    const summaryData = await Student.aggregate([{
+      $match: query
+    }, {
+      $project: {
+        male: { $cond: [{ $eq: ["$gender", "M"] }, 1, 0] },
+        female: { $cond: [{ $eq: ["$gender", "F"] }, 1, 0] },
+        prepSkill: { $cond: [{ $eq: ["$prepSkill", true] }, 1, 0] },
+      }
+    },
+    {
+      $group: {
+        _id: null, male: { $sum: "$male" },
+        female: { $sum: "$female" },
+        prepSkill: { $sum: "$prepSkill" },
+        total: { $sum: 1 },
+        digitalContent: { $sum: 1 },
+      }
+    },
+    ]);
+
+    if (summaryData.length) {
+      summaryReturnData["totalStudent"] = summaryData[0].total;
+      summaryReturnData["digitalContent"] = summaryData[0].digitalContent;
+      summaryReturnData["male"] = summaryData[0].male;
+      summaryReturnData["female"] = summaryData[0].female;
+      summaryReturnData["prepSkill"] = summaryData[0].prepSkill;
+      summaryReturnData["activation"] = activationsData;
+    }
+    returnData = {
+      "summary": summaryReturnData,
+      "headers": headerReturnData,
+    }
+
+    return returnData;
+  } catch (err) {
+    throw new Error("Failed to Query");
+
+  }
+}
+
+
+export async function getStudentListByFilters(args, context) {
+ 
+  //Query Prepartion start here
+  const query = {};
+  query.active=true;
+  if (args && args.country && args.country.length) {
+    query['hierarchyLevels.L_1'] = {
+      $in: args.country
+    }
+  }
+  if (args && args.className && args.className.length) {
+    query['hierarchyLevels.L_2'] = {
+      $in: args.className
+    }
+  }
+  if (args && args.state && args.state.length) {
+    query['hierarchyLevels.L_3'] = {
+      $in: args.state
+    }
+  }
+  if (args && args.city && args.city.length) {
+    query['hierarchyLevels.L_4'] = {
+      $in: args.city
+    }
+  }
+  if (args && args.branch && args.branch.length) {
+    query['hierarchyLevels.L_5'] = {
+      $in: args.branch
+    }
+  }
+  if (args && args.section && args.section.length) {
+    query['hierarchyLevels.L_6'] = {
+      $in: args.section
+    }
+  }
+  if (args && args.orientation && args.orientation.length) {
+    query.orientation = {
+      $in: args.orientation
+    }
+  }
+  //Query Prepartion ends here
+  try {
+    // Get Collection name from getModel
+    const Student = await getModel(context);
+    const data = {};
+    let count = 0;
+      let PromiseData = await Promise.all([
+        Student.aggregate([{
+          $match: query
+        }, {
+          $group: {
+            _id: null,
+            studentIdList: { $addToSet: "$studentId" },
+          },
+        },
+        ]),
+        Student.find(query)
+          .skip((args.pageNumber - 1) * args.limit)
+          .limit(args.limit)
+      ]);
+    if ( !PromiseData[0].length || !PromiseData[1].length){
+      data.pageData = [];
+      data.count = 0;
+      return data;
+    }
+    let studentIdListData = PromiseData[0];
+    count = studentIdListData[0].studentIdList.length;
+    let confirmID = await getActiveStudents(context, studentIdListData[0].studentIdList);
+    let result = PromiseData[1];
+    const results = JSON.parse(JSON.stringify(result));
+    data.pageData = results;
+    data.pageData.forEach(element => {
+      element.user = false;
+      if (confirmID.includes(element.studentId)){
+        element.user = true;
+      }
+    });
+    data.count = count;
+    return data;
+  } catch (err) {
+    throw new Error("Failed to Query");
+  }
+}
+export default {
   getStudents,
   getUniqueValues,
   numberOfStudentsByLastNode,
   getStudentDetailsById,
   updateStudentAvatar,
   updateStudentSubjects,
-  getStudentList
+  getStudentHeader,
+  getStudentListByFilters
 };
