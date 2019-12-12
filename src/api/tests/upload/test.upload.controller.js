@@ -39,7 +39,7 @@ function queryForListTest(args) {
     query["find"]["mapping.class.code"] = args.classCode;
   }
   if (args.textbookCode) {
-    query["find"]["mapping.textbook.code"] = args.textbookCode;
+    query["find"]["mapping.textbook.code"] = { "$in": args.textbookCode };
   }
   if (args.subjectCode) {
     query["find"]["mapping.subject.code"] = args.subjectCode;
@@ -80,7 +80,7 @@ export async function listTest(args, ctx) {
     let data = await TestSchema.dataTables({
       limit: limit,
       skip: skip * limit,
-      find: queries.find,
+      find: {"mapping.textbook.code":{"$in": args.textbookCode}},
       search: queries.search,
       sort: queries.sort,
     });
