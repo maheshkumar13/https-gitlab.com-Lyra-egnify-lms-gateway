@@ -3,6 +3,8 @@ import {ListInputType,ListTestOutput , TestHeadersAssetCountInputType} from './u
 import {getStudentDetailsById} from '../../../api/settings/student/student.controller';
 import {checkStudentHasTextbook, getTextbooks, getTextbookForTeachers} from '../../../api/settings/textbook/textbook.controller';
 import {GraphQLString as StringType,GraphQLNonNull as NonNull } from 'graphql';
+import { validateAccess } from '../../../utils/validator';
+import {fetchNodesWithContext} from '../../../api/settings/instituteHierarchy/instituteHierarchy.controller'
 import GraphQLJSON from 'graphql-type-json';
 export const ListTest = {
     args: {
@@ -14,9 +16,9 @@ export const ListTest = {
     async resolve(object, args, context) {
         try {
             const validRoles = ['CMS_PERFORMANCE_VIEWER'];
-            // if (!validateAccess(validRoles, context)){
-            //     throw new Error('Access Denied');
-            // }
+            if (!validateAccess(validRoles, context)){
+                throw new Error('Access Denied');
+            }
             const orientationOfTeacher = context.orientations;
             const levelNames = ["Branch","Class"]
             const Nodes = await fetchNodesWithContext({levelNames},context); //class name and class code
@@ -30,15 +32,15 @@ export const ListTest = {
                 }
             })
 
-            if(!classCodes.includes(args.input.classCode)){
+            if(args.input.classCode && !classCodes.includes(args.input.classCode)){
                 throw new Error("Invalid class selection.");
             }
 
-            if(!branchOfTeacher.includes(args.input.branch)){
+            if(args.input.branch && !branchOfTeacher.includes(args.input.branch)){
                 throw new Error("Invalid branch selection.")
             }
 
-            if(!orientationOfTeacher.includes(args.input.orientation)){
+            if(args.input.orientation && !orientationOfTeacher.includes(args.input.orientation)){
                 throw new Error("Invalid orientation selection.")
             }
 
