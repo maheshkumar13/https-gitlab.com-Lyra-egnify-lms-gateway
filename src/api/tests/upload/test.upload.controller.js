@@ -84,7 +84,7 @@ export async function listTest(args, ctx) {
     let data = await TestSchema.dataTables({
       limit: limit,
       skip: skip * limit,
-      find: {"mapping.textbook.code":{"$in": args.textbookCode}},
+      find: find,
       search: queries.search,
       sort: queries.sort,
     });
