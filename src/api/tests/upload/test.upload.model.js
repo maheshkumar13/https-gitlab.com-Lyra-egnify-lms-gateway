@@ -45,7 +45,8 @@ const TestSchema = new mongoose.Schema({
     orientations : { type : Array , deffault : []},
     type : { type : String , default : "textbookbasedtest"}, // [textbookbasedtest , mocktest]
     testId: {type: String},
-    gaStatus: {type : String ,default: null}
+    gaStatus: {type : String ,default: null},
+    coins : { type : Number ,default : 0}
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
   minimize : false
