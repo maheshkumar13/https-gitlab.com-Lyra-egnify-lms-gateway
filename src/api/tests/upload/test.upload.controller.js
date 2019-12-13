@@ -74,6 +74,10 @@ function queryForListTest(args) {
 export async function listTest(args, ctx) {
   try {
     const queries = queryForListTest(args);
+    let find = {"mapping.textbook.code":{"$in": args.textbookCode}};
+    if(args.gaStatus){
+      find["gaStatus"] = args.gaStatus
+    }
     const TestSchema = await Tests(ctx);
     let limit = args.limit ? args.limit : 0;
     let skip = args.pageNumber ? args.pageNumber - 1 : 0;
