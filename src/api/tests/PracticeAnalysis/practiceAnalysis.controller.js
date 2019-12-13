@@ -23,7 +23,7 @@ export async function getPracticeAnalysis(req, res) {
             return res.status(204).json({
                 status: "failure",
                 message: "this is invalid question paper id !!!",
-                data: ""
+                data:[]
             });
         }
         return res.status(200).json(resData);
