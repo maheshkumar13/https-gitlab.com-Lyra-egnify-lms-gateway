@@ -2,16 +2,19 @@
  @author Nikhil Kumar
  @date    12/12/2019
 */
+const cron = require('node-cron');
 import { getModel as generateAnalysisModel } from './practiceanalysis.model';
+import { getModel as schedulerPracticeAnalysisModel } from './schedulerPracticeAnalysis.model';
 import { getModel as MasterResultModel } from '../masterResults/masterResults.model';
-
-export async function updatePracticeAnalysis(req, res) {
+const instituteId = "Egni_u001"
+async function updatePracticeAnalysis() {
     try {
+        
         const 
         [GenerateAnalysis,
         MasterResult] =await Promise.all([
-                            generateAnalysisModel(req.user_cxt),
-                            MasterResultModel(req.user_cxt)]);
+            generateAnalysisModel({ instituteId}),
+            MasterResultModel({ instituteId })]);
         const masterResultData = await MasterResult.aggregate([
             { $sort: { updated_at: -1 } }, 
             { $group: { _id: { studentId: '$studentId', 
@@ -62,19 +65,47 @@ export async function updatePracticeAnalysis(req, res) {
             }
     bulk.find({ questionPaperId: PaperId }).upsert().update({ $set: myobj });
      }
-
+        var today = new Date();
+        var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+        const query = {
+            data: date
+        }
         bulk.execute(function (err, result) {
-            console.dir(err);
-            console.dir(result);  
+            if(err){
+                collection.updateOne({ a : 2 }
+    , { $set: { b : 1 } }
+            }
+             
         });
-        return res.status(200).send("ok");
     } catch (err) {
         console.log(err)
-        return res.status(500).json({
-            status: "failure",
-            message: "Internal Server Error !!!",
-            data: ""
-        });
     };
 }
-export default { updatePracticeAnalysis };
+
+
+export async function scheduleforUpdatePracticeAnalysis() {
+    
+    const SchedulerPracticeAnalysis  = await schedulerPracticeAnalysisModel({ instituteId });
+    var today = new Date();
+    var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+    const query={
+        date: date
+    }
+    const confirmation = await SchedulerPracticeAnalysis.findOne(query);
+    
+    cron.schedule('0 1 * * *', () => {
+       
+        if (!confirmation) {
+        SchedulerPracticeAnalysis.insert({date: date, trigger: true,status: "started"});
+            updatePracticeAnalysis();
+
+        }
+        
+    }, {
+        scheduled: true,
+        timezone: "Asia/Kolkata"
+    });
+
+}
+scheduleforUpdatePracticeAnalysis()
+export default { updatePracticeAnalysis, scheduleforUpdatePracticeAnalysis };
