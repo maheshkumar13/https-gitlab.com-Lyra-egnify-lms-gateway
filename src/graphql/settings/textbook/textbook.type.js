@@ -81,15 +81,44 @@ export const updateTextbookInputType = new InputType({
     branches: { type: new List(StringType), description: 'List of branches name' },
   },
 });
+export const classType = new ObjectType({
+  name: 'classType',
+  fields: {
+    name: { type: StringType, description: 'class name' },
+    code: { type: StringType, description: 'class code' },
+  },
+});
+export const subjectType = new ObjectType({
+  name: 'subjectType',
+  fields: {
+    name: { type: StringType, description: 'subject name' },
+    code: { type: StringType, description: 'subject code' },
+    viewOrder: { type: StringType, description: 'subject viewOrder' },
+  },
+});
+export const textbookType = new ObjectType({
+  name: 'textbookType',
+  fields: {
+    name: { type: StringType, description: 'textbook name' },
+    code: { type: StringType, description: 'textbook code' },
+    viewOrder: { type: StringType, description: 'textbook viewOrder' },
+  },
+});
+export const chapterType = new ObjectType({
+  name: 'chapterType',
+  fields: {
+    name: { type: StringType, description: 'chapter name' },
+    code: { type: StringType, description: 'chapter code' },
+    viewOrder: { type: StringType, description: 'chapter viewOrder' },
+  },
+});
 export const ChapterWiseTextbookListOutputType = new ObjectType({
   name: 'ChapterWiseTextbookListOutputType',
   fields: {
-    name: { type: StringType, description: 'Name of the textbook' },
-    imageUrl: { type: StringType, description: 'image url' },
-    publisher: { type: StringType, description: 'Publisher name' },
-    code: { type: new NonNull(StringType), description: 'Internal code of textbook' },
-    orientations: { type: new List(StringType), description: 'List Of Orientations' },
-    branches: { type: new List(StringType), description: 'List of branches name' },
+    class: { type: classType, description: 'class details' },
+    subject: { type: subjectType, description: 'subject details' },
+    textbook: { type: textbookType, description: 'textbook details' },
+    chapter: { type: chapterType, description: 'chapter details' },
   },
 });
 

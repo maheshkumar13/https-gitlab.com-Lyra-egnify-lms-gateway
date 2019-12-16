@@ -79,7 +79,6 @@ export async function getTextbooks(args, context) {
       }
     }
     const query = getTextbooksQuery(args)
-    console.log(query);
     return TextbookModel(context).then((Textbook) => {
       return Textbook.find(query)
     })
@@ -524,7 +523,6 @@ export async function uploadBranchAndOrientationiMappingTextbook(req, res) {
   });
   // converting the sheet data to csv
   let data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-  // console.log(data);
   data = cleanUploadBranchAndOrientationiMappingTextbookData(data);
 
   if (!data.length) return res.status(400).end('No Data found');
@@ -590,109 +588,108 @@ export async function getChapterWiseTextbookList(args, context) {
   if (!args && !args.className && !args.subjectName && !args.bookName) {
     throw new Error('Nothing is Provided');
   }
-  const { className, subjectName, bookName } = args;
-  const subjectQuery = { active: true, viewOrder:{$ne:null}}  
-  const textbookQuery = { active: true, viewOrder: { $ne: null }}  
-  const conceptTaxonomyQuery = { active: true,viewOrder: { $ne: null },levelName:"topic"}  
-    if (className && className.length) {
-    const classSearchKey = "refs.class.name";
-      subjectQuery[classSearchKey] = {
-      $in: className
-    }
-  }
-  if (subjectName && subjectName.length) {
-    subjectQuery.subject = {
-      $in: subjectName
-    }
-  }
-  if (bookName && bookName.length) {
-    textbookQuery.name = {
-      $in: bookName
-    }
-  }
-
   const skip = (args.pageNumber - 1) * args.limit;
   if (!args.limit) args.limit = 10;
+  const { classCode, subjectCode, textbookCode } = args;
+  const subjectQuery = { active: true, viewOrder:{$ne:null}}  
+  const textbookQuery = { active: true, viewOrder: { $ne: null }}  
+  const conceptTaxonomyQuery = { active: true,viewOrder: { $ne: null },levelName:"topic"} 
+  const classSearchKey = "refs.class.code"; 
+  const textbookSearchKey = "refs.subject.code"; 
+
+  if (classCode && classCode.length) {
+      subjectQuery[classSearchKey] = {
+      $in: classCode
+    }
+    textbookQuery[classSearchKey]={
+      $in: classCode
+    }
+  }
+  if (subjectCode && subjectCode.length) {
+    subjectQuery.code = {
+      $in: subjectCode
+    }
+    textbookQuery[classSearchKey] = {
+      $in: classCode
+    }
+  }
+  if (textbookCode && textbookCode.length) {
+    textbookQuery.code = {
+      $in: textbookCode
+    }
+    conceptTaxonomyQuery[textbookSearchKey] = {
+      $in: classCode
+    }
+  }
   const projectionForSubject = {
     subject: 1,
     _id: 0,
     code: 1,
     viewOrder: 1,
+    refs:1
   }
   const projectionForTextbook={
     name:1,
     _id:0,
      code:1,
     viewOrder:1,
-    'refs.class.name':1,
-    'refs.class.code':1,
+    refs:1
   }
-  const projectionForChapter={
+  const projectionForConceptTaxonomies={
     viewOrder:1,
     code:1,
-    child:1
+    child:1,
+    refs:1
   }
   let resArray=[];
-  // console.log("subjectQuery", subjectQuery)
-  const subjectData = await Subject.find(subjectQuery, projectionForSubject);
-  subjectData.forEach(async subject => {
-    textbookQuery["refs.subject.code"] = subject.code;
-    const textbookData = await Textbook.find(textbookQuery, projectionForTextbook).sort({ 'refs.class.name': 1 });
-    textbookData.forEach(async textbook => {
-      conceptTaxonomyQuery["refs.textbook.code"] =textbook.code;
-      let chapterData = await ConcpetTaxonomy.find(conceptTaxonomyQuery, projectionForChapter).sort({ viewOrder: 1 });
-    chapterData.forEach(chapterdata=>{
-      // console.log(chapterdata)
-      const data = {
-        class: {
-          name: textbook.refs.class.name,
-          code: textbook.refs.class.code,
-        },
-        subject: {
-          name: subject.subject,
-          code: subject.code,
-          viewOrder:subject.viewOrder,
-        },
-        textbook: {
-          name: textbook.name,
-          code: textbook.code,
-          viewOrder: textbook.viewOrder,
-        },
-        chapter: {
-          name: chapterdata.child,
-          code: chapterdata.code,
-          viewOrder: chapterdata.viewOrder,
-        }
+  const [subjectData, concpetTaxonomyData, textbookData] = await Promise.all([
+    Subject.find(subjectQuery, projectionForSubject).sort({"refs.class.name":1}),
+    ConcpetTaxonomy.find(conceptTaxonomyQuery, projectionForConceptTaxonomies).sort({"viewOrder":1}),
+    Textbook.find(textbookQuery, projectionForTextbook)
+   ]) ;
+  subjectData.forEach(subject => {
+    let subjectClassCode=subject.refs.class.code
+    let subjectCode=subject.code
+    textbookData.forEach(textbook => {
+      let textbookClassCode=textbook.refs.class.code
+      let textbookSubjectCode=textbook.refs.subject.code
+      let textbookCode =textbook.code
+      if (subjectClassCode === textbookClassCode && subjectCode === textbookSubjectCode){
+        concpetTaxonomyData.forEach(concpetTaxonomy => {
+          let concpetTaxonomyTextbookcode = concpetTaxonomy.refs.textbook.code
+          if (textbookCode === concpetTaxonomyTextbookcode){
+              const data = {
+              class: {
+                name: textbook.refs.class.name,
+                code: textbook.refs.class.code,
+              },
+              subject: {
+                name: subject.subject,
+                code: subject.code,
+                viewOrder:subject.viewOrder,
+              },
+              textbook: {
+                name: textbook.name,
+                code: textbook.code,
+                viewOrder: textbook.viewOrder,
+              },
+              chapter: {
+                name: concpetTaxonomy.child,
+                code: concpetTaxonomy.code,
+                viewOrder: concpetTaxonomy.viewOrder,
+              }
+           }
+      resArray.push(data)
+          }
+       });
       }
-      //console.log("data :",data)
-      return data;
-      resArray.push(data);
-    })
     });
   });
-  console.log("dataay : ",resArray)
-  // const textbookData = await Textbook.find(query, projectionForTextbook).sort({'refs.class.name':1});
-  // textbookData.forEach(async textbook => {
-  //     let className={
-  //       name: textbook.refs.class.name,
-  //       code: textbook.refs.class.code
-  //     }
-  //   let concpetTaxonomyQuery = { "refs.textbook.code": textbook.code, active: true, levelName: "topic", viewOrder:{$ne:null}}
-  //   let chapterData = await ConcpetTaxonomy.find(concpetTaxonomyQuery, projectionForChapter).sort({viewOrder:1});
-  //   chapterData.forEach(chapterdata=>{
-  //     console.log(chapterdata)
-  //   })
-   
-  // });
-  //console.log("textbookData", textbookData.length);
-
-  // const [countData, objsData] = await Promise.all([
-  //   TimeAnalysis.aggregate(agrCountQuery).allowDiskUse(true),
-  //   TimeAnalysis.aggregate(agrDataQuery).allowDiskUse(true),
-  // ])
-  // const count = countData && countData.length ? countData[0].total : 0;
-  // const data = objsData && objsData.length ? objsData : [];
-  // return [count, data];
+        
+  const count = resArray && resArray.length ? resArray.length : 0;
+  const data = resArray && resArray.length ? resArray.slice(skip, skip + args.limit) : [];
+  
+ return [count, data];
 }
 
 

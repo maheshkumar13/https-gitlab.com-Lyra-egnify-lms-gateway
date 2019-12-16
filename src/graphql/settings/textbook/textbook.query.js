@@ -84,9 +84,9 @@ const ChapterWiseTextbookOutputType = new ObjectType({
 
 export const ChapterWiseTextbookList = {
   args: {
-    className: { type: new List(StringType), description: 'Class name' },
-    subjectName: { type: new List(StringType), description: 'Subject name' },
-    bookName: { type: new List(StringType), description: 'Book Name' },
+    classCode: { type: new List(StringType), description: 'Class code' },
+    subjectCode: { type: new List(StringType), description: 'Subject code' },
+    textbookCode: { type: new List(StringType), description: 'textbook code' },
     pageNumber: { type: IntType, description: 'Page number' },
     limit: { type: IntType, description: 'Number of docs per page' },
   },
@@ -94,8 +94,8 @@ export const ChapterWiseTextbookList = {
   async resolve(obj, args, context) {
     if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
     if (!args.limit) args.limit = 0; // eslint-disable-line
-    if (args.pageNumber < 1) throw new Error('Page Number is invalid');
-    if (args.limit < 0) throw new Error('Invalid limit');
+    if (args.pageNumber < 1) args.pageNumber =1;
+    if (args.limit < 0) args.limit=5;
     return controller.getChapterWiseTextbookList(args, context).then(([count, data]) => {
       const pageInfo = {};
       const resp = {};
@@ -104,6 +104,7 @@ export const ChapterWiseTextbookList = {
       pageInfo.pageNumber = args.pageNumber;
       pageInfo.totalPages = args.limit && count ? Math.ceil(count / args.limit) : 1;
       pageInfo.totalEntries = count;
+     
       resp.data = data;
       if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
         throw new Error('Page Number is invalid');
