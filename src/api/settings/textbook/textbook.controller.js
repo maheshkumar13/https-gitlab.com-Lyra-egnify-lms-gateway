@@ -383,7 +383,7 @@ function cleanUploadBranchAndOrientationiMappingTextbookData(data) {
   return data;
 }
 
-function validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, uniqueBranches, uniqueOrientations) {
+function  validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, uniqueBranches, uniqueOrientations) {
   const result = {
     success: true,
     message: 'Invalid data',
@@ -500,6 +500,15 @@ function validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, un
       finalOrientations.push(uniqueOrientationsObj[x]);
     })
     obj.orientations = finalOrientations;
+
+    if(obj['view order']) {
+      obj['view order'] = Number(obj['view order'])
+      if(!obj['view order']) {
+        result.success = false;
+        result.message = `Row ${row}, Invalid VIEW ORDER (${obj['view order']})`;
+        errors.push(result.message);
+      }
+    }
   }
 
   if (errors.length) result.errors = errors;
@@ -548,6 +557,9 @@ export async function uploadBranchAndOrientationiMappingTextbook(req, res) {
           orientations: obj.orientations
         }
       };
+      if(obj['view order']) {
+        patch.$set.viewOrder = obj['view order'];
+      }
       bulk.find(query).updateOne(patch);
     })
     bulk.execute().then(() => {
