@@ -585,7 +585,7 @@ export async function getChapterWiseTextbookList(args, context) {
   const Textbook = await TextbookModel(context);
   const ConcpetTaxonomy = await ConcpetTaxonomyModel(context);
   const Subject = await SubjectModel(context);
-  if (!args && !args.className && !args.subjectName && !args.bookName) {
+  if (!args && !args.classCode && !args.subjectCode && !args.textbookCode) {
     throw new Error('Nothing is Provided');
   }
   const skip = (args.pageNumber - 1) * args.limit;
