@@ -1,4 +1,4 @@
-import {listTest , listTextBooksWithTestSubectWise , listUpcomingTestTextBookWise,listOfCompletedTestTextBookWise , headerCount , fetchInstructions  } from '../../../api/tests/upload/test.upload.controller';
+import {listTest , listTextBooksWithTestSubectWise , listUpcomingTestTextBookWise,listOfCompletedTestTextBookWise , headerCount , fetchInstructions ,getDashboardHeadersAssetCountV2 } from '../../../api/tests/upload/test.upload.controller';
 import {ListInputType,ListTestOutput , TestHeadersAssetCountInputType} from './upload.type';
 import {getStudentDetailsById} from '../../../api/settings/student/student.controller';
 import {checkStudentHasTextbook, getTextbooks, getTextbookForTeachers} from '../../../api/settings/textbook/textbook.controller';
@@ -163,7 +163,7 @@ export const HeaderCountForTextBookBasedTest = {
     type : GraphQLJSON,
     async resolve (object , args , context){
         try{
-          return await headerCount(args.input,context);
+          return await getDashboardHeadersAssetCountV2(args.input,context);
         }catch(err){
             throw new Error(err);
         }
