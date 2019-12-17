@@ -76,7 +76,6 @@ export async function getTextbooks(args, context) {
       }
     }
     const query = getTextbooksQuery(args)
-    console.log(query);
     return TextbookModel(context).then((Textbook) => {
       return Textbook.find(query)
     })
@@ -96,17 +95,18 @@ export async function getTextbooksByPagination(args, context) {
       }
     }
     const query = getTextbooksQuery(args)
-    console.log("args :",args)
+    const skip = (args.pageNumber - 1) * args.limit;
     return TextbookModel(context).then((Textbook) => {
-      
-
-      Promise.all([Textbook.count(query), Textbook.find(query)]).then(function (values) {
-        console.log("i am in controller")
-        return [values[0],values[1]]
-
-      });
+      return Promise.all([Textbook.count(query), Textbook.find(query).skip(skip).limit(args.limit)]).then(([count, data]) => {
+         count = count ? count: 0;
+         data = data && data.length ? data:[];
+      return {
+        data,
+        count
+      }
     })
   })
+})
 }
 
 export async function getHierarchyData(context, hierarchyCodes) {

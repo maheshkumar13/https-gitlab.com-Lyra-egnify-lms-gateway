@@ -84,35 +84,37 @@ export const TextbookByPagination = {
   type: TextbookOutputType,
   async resolve(obj, args, context) {
     if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
-    if (!args.limit) args.limit = 0; // eslint-disable-line
+    if (!args.limit) args.limit = 5; // eslint-disable-line
     if (args.pageNumber < 1) args.pageNumber = 1;
     if (args.limit < 0) args.limit = 5;
-    return controller.getTextbooksByPagination(args, context).then(([count, data]) => {
+    return controller.getTextbooksByPagination(args, context)
+    .then(async (json) => {
       console.log("i am inside query")
-      const pageInfo = {};
-      const resp = {};
-      pageInfo.prevPage = true;
-      pageInfo.nextPage = true;
-      pageInfo.pageNumber = args.pageNumber;
-      pageInfo.totalPages = args.limit && count ? Math.ceil(count / args.limit) : 1;
-      pageInfo.totalEntries = count;
 
-      resp.data = data;
-      if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
-        throw new Error('Page Number is invalid');
+      if (json && json.data) {
+        const pageInfo = {};
+        const resp = {};
+        pageInfo.prevPage = true;
+        pageInfo.nextPage = true;
+        pageInfo.pageNumber = args.pageNumber;
+        pageInfo.totalPages = args.limit ? Math.ceil(json.count / args.limit) : 1;
+        pageInfo.totalEntries = json.count;
+        resp.data = json.data;
+
+        if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+          throw new Error('Page Number is invalid');
+        }
+        if (args.pageNumber === pageInfo.totalPages) {
+          pageInfo.nextPage = false;
+        }
+        if (args.pageNumber === 1) {
+          pageInfo.prevPage = false;
+        }
+        resp.pageInfo = pageInfo;
+        return resp;
       }
-      if (args.pageNumber === pageInfo.totalPages) {
-        pageInfo.nextPage = false;
-      }
-      if (args.pageNumber === 1) {
-        pageInfo.prevPage = false;
-      }
-      resp.pageInfo = pageInfo;
-
-      return resp;
-
-
-    });
+      return json;
+    })
   },
 };
 
