@@ -65,6 +65,7 @@ async function updatePracticeAnalysis() {
             }
     bulk.find({ questionPaperId: PaperId }).upsert().update({ $set: myobj });
      }
+        const SchedulerPracticeAnalysis  = await schedulerPracticeAnalysisModel({ instituteId }); 
         var today = new Date();
         var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
         const query = {
@@ -72,35 +73,33 @@ async function updatePracticeAnalysis() {
         }
         bulk.execute(function (err, result) {
             if(err){
-                collection.updateOne({ a : 2 }
-    , { $set: { b : 1 } }
-            }
-             
-        });
+                SchedulerPracticeAnalysis.updateOne(query, { $set: { status: "failed" } })
+             }
+            SchedulerPracticeAnalysis.updateOne(query, { $set: { status: "completed" } })
+            });
     } catch (err) {
         console.log(err)
     };
 }
 
 
-export async function scheduleforUpdatePracticeAnalysis() {
-    
-    const SchedulerPracticeAnalysis  = await schedulerPracticeAnalysisModel({ instituteId });
-    var today = new Date();
-    var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
-    const query={
-        date: date
-    }
-    const confirmation = await SchedulerPracticeAnalysis.findOne(query);
-    
-    cron.schedule('0 1 * * *', () => {
-       
-        if (!confirmation) {
-        SchedulerPracticeAnalysis.insert({date: date, trigger: true,status: "started"});
-            updatePracticeAnalysis();
 
+
+export async function scheduleforUpdatePracticeAnalysis() {
+    const SchedulerPracticeAnalysis = await schedulerPracticeAnalysisModel({ instituteId });
+     cron.schedule('0 1 * * *', () => {
+        var today = new Date();
+        var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+        const query = {
+            date: date
         }
-        
+         SchedulerPracticeAnalysis.findOne(query).then(confirmation=>{
+             console.log
+             if (!confirmation) {
+                 SchedulerPracticeAnalysis.insert({ date: date, trigger: true, status: "started" });
+                 updatePracticeAnalysis();
+             }
+        });    
     }, {
         scheduled: true,
         timezone: "Asia/Kolkata"
