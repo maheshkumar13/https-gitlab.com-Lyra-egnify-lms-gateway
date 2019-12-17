@@ -245,6 +245,7 @@ function getClassBranchCombo(obj){
   const branches = obj.branches.split(',').map( x => x.toString().trim())
   const data = [];
   branches.forEach(branchName => {
+    branchName = branchName.replace(/-/g, ' ');
     classes.forEach(className => {
       data.push({ branchName, className })
     })

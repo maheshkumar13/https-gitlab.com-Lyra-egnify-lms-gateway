@@ -7,15 +7,15 @@ module.exports = {
   mongo: {
     uri: process.env.MONGODB_URI ||
     process.env.MONGODB_URL ||
-    'mongodb://localhost/tenantregistry-lms-dev',
+    'mongodb://lms:WQPVnRNtXY7CqKGUYR2qg23RPItVXf5mGs9twASm@uat.db.rankguru.com:27017/tenantregistry-lms-uat',
   },
   // Seed database on startup
   seedDB: false,
   services: {
     // sso: 'http://localhost:3002',
-    sso: process.env.SVC_SSO || 'https://accounts.dev.rankguru.com',
-    //egnifyAccountsURL: process.env.SVC_SSO || 'http://localhost:3002',
-    egnifyAccountsURL: process.env.SVC_SSO || 'https://accounts.dev.rankguru.com',
+    sso: process.env.SVC_SSO || 'https://accounts.uat.rankguru.com',
+    // egnifyAccountsURL: process.env.SVC_SSO || 'http://localhost:3002',
+    egnifyAccountsURL: process.env.SVC_SSO || 'https://accounts.uat.rankguru.com',
   },
   apolloEngineKey: 'service:egnify-jeet-dev:-aBvwR1LrRIp5ym1C6gVPQ',
   cacheTimeOut: {
