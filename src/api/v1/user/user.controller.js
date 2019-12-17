@@ -317,7 +317,7 @@ function validateSheetAndGetData(req, classBranchData, dbOrientations) {
     return result;
   }
 
-  if(data.length >= 1000) {
+  if(data.length > 1000) {
     result.success = false;
     result.message = 'Limit exceeded, maximum 1000 users at a time.'
     return result;
