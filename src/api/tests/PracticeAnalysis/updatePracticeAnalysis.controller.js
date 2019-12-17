@@ -68,15 +68,23 @@ async function updatePracticeAnalysis() {
         const SchedulerPracticeAnalysis  = await schedulerPracticeAnalysisModel({ instituteId }); 
         var today = new Date();
         var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+        
         const query = {
-            data: date
+            date: date
         }
         bulk.execute(function (err, result) {
             if(err){
-                SchedulerPracticeAnalysis.updateOne(query, { $set: { status: "failed" } })
-             }
-            SchedulerPracticeAnalysis.updateOne(query, { $set: { status: "completed" } })
+                SchedulerPracticeAnalysis.update(query, { $set: { status: "failed" } }).then(res=>{
+                    console.log("failed")
+                });
+  
+
+             }            
+            SchedulerPracticeAnalysis.update(query, { $set: { status: "completed" } }).then(res=>{
+                console.log("completed")
             });
+            
+        });
     } catch (err) {
         console.log(err)
     };
@@ -86,20 +94,28 @@ async function updatePracticeAnalysis() {
 
 
 export async function scheduleforUpdatePracticeAnalysis() {
-    const SchedulerPracticeAnalysis = await schedulerPracticeAnalysisModel({ instituteId });
-     cron.schedule('0 1 * * *', () => {
-        var today = new Date();
-        var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
-        const query = {
-            date: date
-        }
-         SchedulerPracticeAnalysis.findOne(query).then(confirmation=>{
-             console.log
-             if (!confirmation) {
-                 SchedulerPracticeAnalysis.insert({ date: date, trigger: true, status: "started" });
-                 updatePracticeAnalysis();
-             }
-        });    
+    cron.schedule('10 * * * * *', () => {
+           schedulerPracticeAnalysisModel({ instituteId }).then(SchedulerPracticeAnalysis => {
+             var today = new Date();
+             var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+             const query = {
+                 date: date
+             }   
+             SchedulerPracticeAnalysis.findOne(query).then(confirmation => {
+                 if (!confirmation) {
+                     let Data = new SchedulerPracticeAnalysis({ 
+                         date: date, 
+                         trigger: true, 
+                         status: "started" });
+                      Data.save().then(res=>{
+                          console.log("Trigger Started!!!")
+                          updatePracticeAnalysis()
+                          
+                      });                    
+                 }
+             });    
+         });
+        
     }, {
         scheduled: true,
         timezone: "Asia/Kolkata"

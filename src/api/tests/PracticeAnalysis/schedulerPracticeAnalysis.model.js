@@ -5,9 +5,9 @@
 import mongoose from 'mongoose';
 import { getDB } from '../../../db';
 const schedulerPracticeAnalysisSchema = new mongoose.Schema({
-    date: { type: Date, unique:true, required: true },
+    date: { type: String, unique:true, required: true },
     trigger: { type: Boolean,default :false ,required: true },
-    status: {type: String,enum: ['started', 'completed','failed']},
+    status: { type: String, enum: ['started', 'completed','failed']},
 }, {
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
         collection: 'schedulerPracticeAnalysis'
