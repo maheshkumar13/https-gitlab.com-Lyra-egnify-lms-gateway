@@ -103,7 +103,7 @@ deploy-dev:
   stage: deploy
   image: docker:latest
   services:
-    - docker:18.09.7-dind
+    - docker:dind
   before_script:
     # Install python requirements
     - apk update

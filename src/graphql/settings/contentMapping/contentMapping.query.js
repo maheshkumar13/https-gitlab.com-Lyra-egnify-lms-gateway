@@ -30,6 +30,7 @@ import {
   TextbookBasedQuizOutputType,
   DashboardHeadersAssetCountInputType,
 } from './contentMapping.type';
+import { validateAccess } from '../../../utils/validator';
 
 const controller = require('../../../api/settings/contentMapping/contentMapping.controller');
 
@@ -118,6 +119,8 @@ export const ContentMapping = {
 export const ContentMappingStats = {
   type: GraphQLJSON,
   async resolve(obj, args, context) {
+    const validRoles = ['LMS_LEARN_VIEWER'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     return controller.getContentMappingStats(args, context);
   }
 }
@@ -128,6 +131,8 @@ export const CmsCategoryStats = {
   },
   type: new List(CmsCategoryStatsOutputType),
   async resolve(obj, args, context) {
+    const validRoles = ['CMS_LEARN_VIEWER', 'CMS_PRACTICE_VIEWER'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     return controller.getCMSCategoryStatsV2(args.input, context)
       .then(async json => json);
   },
@@ -139,6 +144,8 @@ export const CategoryWiseFiles = {
   },
   type: CategoryWiseFilesOutputType,
   async resolve(obj, args, context) {
+    const validRoles = ['CMS_LEARN_VIEWER', 'CMS_PRACTICE_VIEWER'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     return controller.getCategoryWiseFilesPaginatedV2(args.input, context)
       .then(async json => json);
   },
@@ -151,6 +158,8 @@ export const DashboardHeadersAssetCount = {
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) {
+    const validRoles = ['CMS_LEARN_VIEWER', 'CMS_PRACTICE_VIEWER', 'CMS_TEST_VIEWER'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     return controller.getDashboardHeadersAssetCountV2(args.input, context)
       .then(async json => json);
   },
