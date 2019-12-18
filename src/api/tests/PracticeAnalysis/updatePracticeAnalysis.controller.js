@@ -94,7 +94,7 @@ async function updatePracticeAnalysis() {
 
 
 export async function scheduleforUpdatePracticeAnalysis() {
-    cron.schedule('10 * * * * *', () => {
+    cron.schedule('0 1 * * * *', () => {
            schedulerPracticeAnalysisModel({ instituteId }).then(SchedulerPracticeAnalysis => {
              var today = new Date();
              var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
