@@ -1,7 +1,4 @@
-/**
- @author Nikhil Kumar
- @date    12/12/2019
-*/
+
 import { getModel as practiceanalysisModel } from './practiceanalysis.model';
 
 
