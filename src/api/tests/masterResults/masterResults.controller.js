@@ -34,6 +34,7 @@ export async function getMasterResults(args, context) {
     return {};
   }));
 }
+//question paperId wise studentList
 
 export async function getStudentList(req, res) {
   try{
