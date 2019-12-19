@@ -16,7 +16,7 @@ import {
 
 import GraphQLJSON from 'graphql-type-json';
 
-import { TextbookType , textbookCode } from './textbook.type';
+import { TextbookType, ChapterWiseTextbookListOutputType} from './textbook.type';
 const controller = require('../../../api/settings/textbook/textbook.controller');
 
 export const Textbooks = {
@@ -125,9 +125,61 @@ export const TextbooksInfo = {
   },
 };
 
+const ChapterWiseTextbookOutputType = new ObjectType({
+  name: 'ChapterWiseTextbookOutputType',
+  fields() {
+    return {
+      data: {
+        type: new List(ChapterWiseTextbookListOutputType),
+      },
+      pageInfo: {
+        type: pageInfoListType,
+      },
+    };
+  },
+});
+
+export const ChapterWiseTextbookList = {
+  args: {
+    classCode: { type: new List(StringType), description: 'Class code' },
+    subjectCode: { type: new List(StringType), description: 'Subject code' },
+    textbookCode: { type: new List(StringType), description: 'textbook code' },
+    pageNumber: { type: IntType, description: 'Page number' },
+    limit: { type: IntType, description: 'Number of docs per page' },
+  },
+  type: ChapterWiseTextbookOutputType,
+  async resolve(obj, args, context) {
+    if (args.pageNumber < 1 || !args.pageNumber) args.pageNumber = 1;
+    if (args.limit < 0 || !args.limit) args.limit = 10;
+    return controller.getChapterWiseTextbookList(args, context).then(([count, data]) => {
+      const pageInfo = {};
+      const resp = {};
+      pageInfo.prevPage = true;
+      pageInfo.nextPage = true;
+      pageInfo.pageNumber = args.pageNumber;
+      pageInfo.totalPages = args.limit && count ? Math.ceil(count / args.limit) : 1;
+      pageInfo.totalEntries = count;
+
+      resp.data = data;
+      if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+        throw new Error('Page Number is invalid');
+      }
+      if (args.pageNumber === pageInfo.totalPages) {
+        pageInfo.nextPage = false;
+      }
+      if (args.pageNumber === 1) {
+        pageInfo.prevPage = false;
+      }
+      resp.pageInfo = pageInfo;
+
+      return resp;
+    });
+  },
+};
 
 export default{
   Textbooks,
   TextbookByPagination,
   TextbooksInfo,
+  ChapterWiseTextbookList,
 };
