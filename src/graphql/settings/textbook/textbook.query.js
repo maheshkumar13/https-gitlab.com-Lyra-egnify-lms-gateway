@@ -8,6 +8,9 @@ import {
   GraphQLList as List,
   GraphQLNonNull as NonNull,
   GraphQLString as StringType,
+  GraphQLObjectType as ObjectType,
+  GraphQLBoolean as BooleanType,
+  GraphQLInt as IntType,
 
 } from 'graphql';
 
@@ -30,6 +33,91 @@ export const Textbooks = {
   },
 };
 
+const pageInfoListType = new ObjectType({
+  name: 'pageInfoListType',
+  fields() {
+    return {
+      pageNumber: {
+        type: IntType,
+      },
+      nextPage: {
+        type: BooleanType,
+      },
+      prevPage: {
+        type: BooleanType,
+      },
+      totalPages: {
+        type: IntType,
+      },
+      totalEntries: {
+        type: IntType,
+      },
+    };
+  },
+});
+
+
+const TextbookOutputType = new ObjectType({
+  name: 'TextbookOutputType',
+  fields() {
+    return {
+      data: {
+        type: new List(TextbookType),
+      },
+      pageInfo: {
+        type: pageInfoListType,
+      },
+    };
+  },
+});
+
+export const TextbookByPagination = {
+  args: {
+    code: { type: StringType, description: 'Internal code of textbook' },
+    classCode: { type: StringType, description: 'childCode code of class' },
+    subjectCode: { type: StringType, description: 'Internal code of subject' },
+    branch: { type: StringType, description: 'Branch name' },
+    orientation: { type: StringType, description: 'Orientaion name' },
+    pageNumber: { type: IntType, description: 'Page Number' },
+    limit: { type: IntType, description: 'Records per page' },
+  },
+  type: TextbookOutputType,
+  async resolve(obj, args, context) {
+    if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
+    if (!args.limit) args.limit = 5; // eslint-disable-line
+    if (args.pageNumber < 1) args.pageNumber = 1;
+    if (args.limit < 0) args.limit = 5;
+    return controller.getTextbooksByPagination(args, context)
+    .then(async (json) => {
+      console.log("i am inside query")
+
+      if (json && json.data) {
+        const pageInfo = {};
+        const resp = {};
+        pageInfo.prevPage = true;
+        pageInfo.nextPage = true;
+        pageInfo.pageNumber = args.pageNumber;
+        pageInfo.totalPages = args.limit ? Math.ceil(json.count / args.limit) : 1;
+        pageInfo.totalEntries = json.count;
+        resp.data = json.data;
+
+        if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+          throw new Error('Page Number is invalid');
+        }
+        if (args.pageNumber === pageInfo.totalPages) {
+          pageInfo.nextPage = false;
+        }
+        if (args.pageNumber === 1) {
+          pageInfo.prevPage = false;
+        }
+        resp.pageInfo = pageInfo;
+        return resp;
+      }
+      return json;
+    })
+  },
+};
+
 export const TextbooksInfo = {
   type: GraphQLJSON,
   async resolve(obj , args , context){ //eslint-disable-line
@@ -40,5 +128,6 @@ export const TextbooksInfo = {
 
 export default{
   Textbooks,
+  TextbookByPagination,
   TextbooksInfo,
 };

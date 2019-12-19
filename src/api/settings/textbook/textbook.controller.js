@@ -76,11 +76,37 @@ export async function getTextbooks(args, context) {
       }
     }
     const query = getTextbooksQuery(args)
-    console.log(query);
     return TextbookModel(context).then((Textbook) => {
       return Textbook.find(query)
     })
   })
+}
+
+export async function getTextbooksByPagination(args, context) {
+  return getStudentData(context).then((obj) => {
+    if (obj && obj.orientation) {
+      args.orientation = obj.orientation
+      const {
+        hierarchy
+      } = obj;
+      if (hierarchy && hierarchy.length) {
+        const branchData = hierarchy.find(x => x.level === 5);
+        if (branchData && branchData.child) args.branch = branchData.child;
+      }
+    }
+    const query = getTextbooksQuery(args)
+    const skip = (args.pageNumber - 1) * args.limit;
+    return TextbookModel(context).then((Textbook) => {
+      return Promise.all([Textbook.count(query), Textbook.find(query).skip(skip).limit(args.limit)]).then(([count, data]) => {
+         count = count ? count: 0;
+         data = data && data.length ? data:[];
+      return {
+        data,
+        count
+      }
+    })
+  })
+})
 }
 
 export async function getHierarchyData(context, hierarchyCodes) {
