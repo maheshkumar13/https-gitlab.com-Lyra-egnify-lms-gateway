@@ -88,37 +88,22 @@ export const classType = new ObjectType({
     code: { type: StringType, description: 'class code' },
   },
 });
-export const subjectType = new ObjectType({
-  name: 'subjectType',
+
+export const jsonDataType = new ObjectType({
+  name: 'jsonDataType',
   fields: {
-    name: { type: StringType, description: 'subject name' },
-    code: { type: StringType, description: 'subject code' },
-    viewOrder: { type: StringType, description: 'subject viewOrder' },
-  },
-});
-export const textbookType = new ObjectType({
-  name: 'textbookType',
-  fields: {
-    name: { type: StringType, description: 'textbook name' },
-    code: { type: StringType, description: 'textbook code' },
-    viewOrder: { type: StringType, description: 'textbook viewOrder' },
-  },
-});
-export const chapterType = new ObjectType({
-  name: 'chapterType',
-  fields: {
-    name: { type: StringType, description: 'chapter name' },
-    code: { type: StringType, description: 'chapter code' },
-    viewOrder: { type: StringType, description: 'chapter viewOrder' },
+    name: { type: StringType, description: 'name' },
+    code: { type: StringType, description: 'code' },
+    viewOrder: { type: IntType, description: 'viewOrder' },
   },
 });
 export const ChapterWiseTextbookListOutputType = new ObjectType({
   name: 'ChapterWiseTextbookListOutputType',
   fields: {
     class: { type: classType, description: 'class details' },
-    subject: { type: subjectType, description: 'subject details' },
-    textbook: { type: textbookType, description: 'textbook details' },
-    chapter: { type: chapterType, description: 'chapter details' },
+    subject: { type: jsonDataType, description: 'subject details' },
+    textbook: { type: jsonDataType, description: 'textbook details' },
+    chapter: { type: jsonDataType, description: 'chapter details' },
   },
 });
 

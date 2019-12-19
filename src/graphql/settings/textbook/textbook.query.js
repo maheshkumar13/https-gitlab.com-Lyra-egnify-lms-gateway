@@ -92,10 +92,8 @@ export const ChapterWiseTextbookList = {
   },
   type: ChapterWiseTextbookOutputType,
   async resolve(obj, args, context) {
-    if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
-    if (!args.limit) args.limit = 0; // eslint-disable-line
-    if (args.pageNumber < 1) args.pageNumber =1;
-    if (args.limit < 0) args.limit=5;
+    if (args.pageNumber < 1 || !args.pageNumber) args.pageNumber =1;
+    if (args.limit < 0 || !args.limit) args.limit=10;
     return controller.getChapterWiseTextbookList(args, context).then(([count, data]) => {
       const pageInfo = {};
       const resp = {};
