@@ -1240,6 +1240,7 @@ export async function getFileData(args, context){
               textBookName: tbookRefsElement && tbookRefsElement.name ? tbookRefsElement.name : null,
               topicName: topicObjElement && topicObjElement.child ? topicObjElement.child : null,
               coins: finalObjElement && finalObjElement.coins ? finalObjElement.coins : null,
+                timgPath: finalObjElement && finalObjElement.timgPath ? finalObjElement.timgPath : null,
               filePath: finalObjElement &&
                         finalObjElement.resource &&
                         finalObjElement.resource.key ? finalObjElement.resource.key : null,
