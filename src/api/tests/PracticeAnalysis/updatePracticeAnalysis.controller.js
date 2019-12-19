@@ -68,7 +68,6 @@ async function updatePracticeAnalysis() {
         const SchedulerPracticeAnalysis  = await schedulerPracticeAnalysisModel({ instituteId }); 
         var today = new Date();
         var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
-        
         const query = {
             date: date
         }
@@ -77,13 +76,10 @@ async function updatePracticeAnalysis() {
                 SchedulerPracticeAnalysis.update(query, { $set: { status: "failed" } }).then(res=>{
                     console.log("failed")
                 });
-  
-
              }            
             SchedulerPracticeAnalysis.update(query, { $set: { status: "completed" } }).then(res=>{
                 console.log("completed")
-            });
-            
+            });  
         });
     } catch (err) {
         console.log(err)
