@@ -16,7 +16,7 @@ import { InstituteHierarchyGrid } from './settings/instituteHierarchy/instituteH
 import { updateCategory } from './settings/instituteHierarchy/instituteHierarchy.mutaion';
 import { createSubject } from './settings/subject/subject.mutation';
 import { Programs } from './settings/programs/programs.query';
-import { Textbooks, TextbooksInfo,TextbookByPagination } from './settings/textbook/textbook.query';
+import { Textbooks, TextbooksInfo, TextbookByPagination, ChapterWiseTextbookList} from './settings/textbook/textbook.query';
 import { createTextbook, updateTextbook, deleteTextbook } from './settings/textbook/textbook.mutation';
 import { Students, StudentUniqueValues, StudentsByLastNode, StudentById, studentHeader,StudentListByFilters} from './settings/student/student.query';
 import { updateStudentAvatar, updateStudentSubjects } from './settings/student/student.mutation';
@@ -47,6 +47,7 @@ const schema = new Schema({
       InstituteHierarchyGrid,
       Textbooks,
       TextbookByPagination,
+      ChapterWiseTextbookList,
       ConceptTaxonomy,
       InstituteHierarchyPaginated,
       Students,
