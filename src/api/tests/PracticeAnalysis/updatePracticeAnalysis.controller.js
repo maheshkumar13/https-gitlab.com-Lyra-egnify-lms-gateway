@@ -118,5 +118,4 @@ export async function scheduleforUpdatePracticeAnalysis() {
     });
 
 }
-scheduleforUpdatePracticeAnalysis()
 export default { updatePracticeAnalysis, scheduleforUpdatePracticeAnalysis };
