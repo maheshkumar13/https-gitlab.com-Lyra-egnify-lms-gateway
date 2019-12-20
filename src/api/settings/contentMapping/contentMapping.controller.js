@@ -920,6 +920,7 @@ export async function getCategoryWiseFilesPaginatedV2(args, context) {
     branch,
     orientation,
     category,
+    gaStatus
   } = args;
   const pageNumber = args.pageNumber || 1;
   const limit = args.limit || 0;
@@ -967,6 +968,7 @@ export async function getCategoryWiseFilesPaginatedV2(args, context) {
     active: true,
     'refs.textbook.code': { $in: textbookCodes },
   }
+  if (category === 'Practice') contentQuery.gaStatus=gaStatus;
   const contentTypeMatchOrData = getContentTypeMatchOrData(category);
   contentQuery['$or'] = contentTypeMatchOrData;
   if (chapterCode) contentQuery['refs.topic.code'] = chapterCode;
