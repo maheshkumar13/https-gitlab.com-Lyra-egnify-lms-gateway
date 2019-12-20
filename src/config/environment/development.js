@@ -7,7 +7,9 @@ module.exports = {
   mongo: {
     uri: process.env.MONGODB_URI ||
     process.env.MONGODB_URL ||
-    'mongodb://localhost:27017/tenantregistry-lms-dev',
+      'mongodb://lms:QlrzUq4mG4GzypJuiXc54JtKRm40ac7e3UWozWhN@dev.db.rankguru.com:27017/tenantregistry-lms-dev',
+    // 'mongodb://localhost:27017/tenantregistry-lms-uat',
+    
   },
   // Seed database on startup
   seedDB: false,

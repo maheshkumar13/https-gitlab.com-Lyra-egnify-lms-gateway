@@ -66,6 +66,7 @@ async function schemaHooks (schema, options) {
     const preMatchQuery = await getPreMatchQuery(context)
     const query = { $and: [preMatchQuery, this._conditions] }
     this._conditions = query;
+    console.log("query: ",query)
     next();
   });
 
