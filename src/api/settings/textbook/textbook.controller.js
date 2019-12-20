@@ -660,7 +660,8 @@ export async function getChapterWiseTextbookList(args, context) {
   const textbookQuery = { active: true, viewOrder: { $ne: null } }
   const conceptTaxonomyQuery = { active: true, viewOrder: { $ne: null }, levelName: "topic" }
   const classSearchKey = "refs.class.code";
-  const textbookSearchKey = "refs.subject.code";
+  const subjectSearchKey = "refs.subject.code";
+  const textbookSearchKey = "refs.textbook.code";
 
   if (classCode) {
     subjectQuery[classSearchKey]=classCode
@@ -669,10 +670,10 @@ export async function getChapterWiseTextbookList(args, context) {
   }
   if (subjectCode) {
     subjectQuery.code =  subjectCode
-    textbookQuery[classSearchKey] = subjectCode
+    textbookQuery[subjectSearchKey] = subjectCode
     
   }
-  if (textbookCode && textbookCode.length) {
+  if (textbookCode) {
     textbookQuery.code = textbookCode
     conceptTaxonomyQuery[textbookSearchKey] =  textbookCode
   }
