@@ -18,7 +18,7 @@ import schema from './graphql/schema';
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const swaggerDocument = YAML.load(`${__dirname}/static/swagger.yaml`);
-
+import { scheduleforUpdatePracticeAnalysis } from './api/tests/PracticeAnalysis/updatePracticeAnalysis.controller';
 import { config } from './config/environment';
 import * as auth from './auth/auth.service';
 import seedDatabaseIfNeeded from './config/seed';
@@ -120,6 +120,7 @@ app.get('/', (req, res) => res.send('Oh!! Yeah.'));
 app.listen(config.port, () => {
   console.info(`The server is running at http://localhost:${config.port}/`);
   triggerTimeAnalysis.start();
+  scheduleforUpdatePracticeAnalysis();
 });
 
 // Initialize engine with your API key. Alternatively,
