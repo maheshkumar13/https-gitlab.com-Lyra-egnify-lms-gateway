@@ -245,6 +245,7 @@ function getClassBranchCombo(obj){
   const branches = obj.branches.split(',').map( x => x.toString().trim())
   const data = [];
   branches.forEach(branchName => {
+    branchName = branchName.replace(/-/g, ' ');
     classes.forEach(className => {
       data.push({ branchName, className })
     })
@@ -317,7 +318,7 @@ function validateSheetAndGetData(req, classBranchData, dbOrientations) {
     return result;
   }
 
-  if(data.length >= 1000) {
+  if(data.length > 1000) {
     result.success = false;
     result.message = 'Limit exceeded, maximum 1000 users at a time.'
     return result;

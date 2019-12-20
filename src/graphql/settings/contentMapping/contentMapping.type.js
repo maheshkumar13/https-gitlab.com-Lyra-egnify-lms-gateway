@@ -218,6 +218,7 @@ export const FileDataOutputType = new ObjectType({
     subject: { type: StringType, description: 'subject to which the file belongs to' },
     textBookName: { type: StringType, description: 'Name of the textBook' },
     topicName: { type: StringType, description: 'Name of the topic' },
+    timgPath: { type: StringType, description: 'thumbnail path' },
     coins:{type:StringType},
     filePath :{type:StringType, description:'path of the file'},
     fileSize: {type:StringType,description: 'size of the file'},

@@ -1,5 +1,9 @@
 /* eslint-disable */
 import {
+  getModel as ConcpetTaxonomyModel
+} from '../conceptTaxonomy/concpetTaxonomy.model';
+
+import {
   getModel as TextbookModel
 } from './textbook.model';
 import {
@@ -76,11 +80,37 @@ export async function getTextbooks(args, context) {
       }
     }
     const query = getTextbooksQuery(args)
-    console.log(query);
     return TextbookModel(context).then((Textbook) => {
       return Textbook.find(query)
     })
   })
+}
+
+export async function getTextbooksByPagination(args, context) {
+  return getStudentData(context).then((obj) => {
+    if (obj && obj.orientation) {
+      args.orientation = obj.orientation
+      const {
+        hierarchy
+      } = obj;
+      if (hierarchy && hierarchy.length) {
+        const branchData = hierarchy.find(x => x.level === 5);
+        if (branchData && branchData.child) args.branch = branchData.child;
+      }
+    }
+    const query = getTextbooksQuery(args)
+    const skip = (args.pageNumber - 1) * args.limit;
+    return TextbookModel(context).then((Textbook) => {
+      return Promise.all([Textbook.count(query), Textbook.find(query).skip(skip).limit(args.limit)]).then(([count, data]) => {
+         count = count ? count: 0;
+         data = data && data.length ? data:[];
+      return {
+        data,
+        count
+      }
+    })
+  })
+})
 }
 
 export async function getHierarchyData(context, hierarchyCodes) {
@@ -383,7 +413,7 @@ function cleanUploadBranchAndOrientationiMappingTextbookData(data) {
   return data;
 }
 
-function validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, uniqueBranches, uniqueOrientations) {
+function  validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, uniqueBranches, uniqueOrientations) {
   const result = {
     success: true,
     message: 'Invalid data',
@@ -500,6 +530,15 @@ function validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, un
       finalOrientations.push(uniqueOrientationsObj[x]);
     })
     obj.orientations = finalOrientations;
+
+    if(obj['view order']) {
+      obj['view order'] = Number(obj['view order'])
+      if(!obj['view order']) {
+        result.success = false;
+        result.message = `Row ${row}, Invalid VIEW ORDER (${obj['view order']})`;
+        errors.push(result.message);
+      }
+    }
   }
 
   if (errors.length) result.errors = errors;
@@ -548,6 +587,9 @@ export async function uploadBranchAndOrientationiMappingTextbook(req, res) {
           orientations: obj.orientations
         }
       };
+      if(obj['view order']) {
+        patch.$set.viewOrder = obj['view order'];
+      }
       bulk.find(query).updateOne(patch);
     })
     bulk.execute().then(() => {
@@ -605,6 +647,117 @@ export async function getTextbookForTeachers(args, context) {
     throw err;
   }
 }
+export async function getChapterWiseTextbookList(args, context) {
+  const Textbook = await TextbookModel(context);
+  const ConcpetTaxonomy = await ConcpetTaxonomyModel(context);
+  const Subject = await SubjectModel(context);
+  if (!args && !args.classCode && !args.subjectCode && !args.textbookCode) {
+    throw new Error('Nothing is Provided');
+  }
+  const skip = (args.pageNumber - 1) * args.limit;
+  if (!args.limit) args.limit = 10;
+  const { classCode, subjectCode, textbookCode } = args;
+  const subjectQuery = { active: true, viewOrder: { $ne: null } }
+  const textbookQuery = { active: true, viewOrder: { $ne: null } }
+  const conceptTaxonomyQuery = { active: true, viewOrder: { $ne: null }, levelName: "topic" }
+  const classSearchKey = "refs.class.code";
+  const textbookSearchKey = "refs.subject.code";
+
+  if (classCode && classCode.length) {
+    subjectQuery[classSearchKey] = {
+      $in: classCode
+    }
+    textbookQuery[classSearchKey] = {
+      $in: classCode
+    }
+  }
+  if (subjectCode && subjectCode.length) {
+    subjectQuery.code = {
+      $in: subjectCode
+    }
+    textbookQuery[classSearchKey] = {
+      $in: classCode
+    }
+  }
+  if (textbookCode && textbookCode.length) {
+    textbookQuery.code = {
+      $in: textbookCode
+    }
+    conceptTaxonomyQuery[textbookSearchKey] = {
+      $in: classCode
+    }
+  }
+  const projectionForSubject = {
+    subject: 1,
+    _id: 0,
+    code: 1,
+    viewOrder: 1,
+    refs: 1
+  }
+  const projectionForTextbook = {
+    name: 1,
+    _id: 0,
+    code: 1,
+    viewOrder: 1,
+    refs: 1
+  }
+  const projectionForConceptTaxonomies = {
+    viewOrder: 1,
+    code: 1,
+    child: 1,
+    refs: 1
+  }
+  let resArray = [];
+  const [subjectData, concpetTaxonomyData, textbookData] = await Promise.all([
+    Subject.find(subjectQuery, projectionForSubject).sort({ "refs.class.name": 1 }),
+    ConcpetTaxonomy.find(conceptTaxonomyQuery, projectionForConceptTaxonomies).sort({ "viewOrder": 1 }),
+    Textbook.find(textbookQuery, projectionForTextbook)
+  ]);
+  subjectData.forEach(subject => {
+    let subjectClassCode = subject.refs.class.code
+    let subjectCode = subject.code
+    textbookData.forEach(textbook => {
+      let textbookClassCode = textbook.refs.class.code
+      let textbookSubjectCode = textbook.refs.subject.code
+      let textbookCode = textbook.code
+      if (subjectClassCode === textbookClassCode && subjectCode === textbookSubjectCode) {
+        concpetTaxonomyData.forEach(concpetTaxonomy => {
+          let concpetTaxonomyTextbookcode = concpetTaxonomy.refs.textbook.code
+          if (textbookCode === concpetTaxonomyTextbookcode) {
+            const data = {
+              class: {
+                name: textbook.refs.class.name,
+                code: textbook.refs.class.code,
+              },
+              subject: {
+                name: subject.subject,
+                code: subject.code,
+                viewOrder: subject.viewOrder,
+              },
+              textbook: {
+                name: textbook.name,
+                code: textbook.code,
+                viewOrder: textbook.viewOrder,
+              },
+              chapter: {
+                name: concpetTaxonomy.child,
+                code: concpetTaxonomy.code,
+                viewOrder: concpetTaxonomy.viewOrder,
+              }
+            }
+            resArray.push(data)
+          }
+        });
+      }
+    });
+  });
+
+  const count = resArray && resArray.length ? resArray.length : 0;
+  const data = resArray && resArray.length ? resArray.slice(skip, skip + args.limit) : [];
+
+  return [count, data];
+}
+
 
 export default {
   getHierarchyData
