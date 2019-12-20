@@ -86,9 +86,6 @@ async function updatePracticeAnalysis() {
     };
 }
 
-
-
-
 export async function scheduleforUpdatePracticeAnalysis() {
     cron.schedule('0 1 * * * *', () => {
            schedulerPracticeAnalysisModel({ instituteId }).then(SchedulerPracticeAnalysis => {
