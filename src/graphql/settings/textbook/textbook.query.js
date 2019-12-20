@@ -138,12 +138,11 @@ const ChapterWiseTextbookOutputType = new ObjectType({
     };
   },
 });
-
 export const ChapterWiseTextbookList = {
   args: {
-    classCode: { type: new List(StringType), description: 'Class code' },
-    subjectCode: { type: new List(StringType), description: 'Subject code' },
-    textbookCode: { type: new List(StringType), description: 'textbook code' },
+    classCode: { type:StringType, description: 'Class code' },
+    subjectCode: { type:StringType, description: 'Subject code' },
+    textbookCode: { type:StringType, description: 'textbook code' },
     pageNumber: { type: IntType, description: 'Page number' },
     limit: { type: IntType, description: 'Number of docs per page' },
   },

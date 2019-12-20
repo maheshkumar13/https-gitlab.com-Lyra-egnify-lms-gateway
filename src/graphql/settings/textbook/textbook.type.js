@@ -98,12 +98,21 @@ export const generalDataType = new ObjectType({
     viewOrder: { type: IntType, description: 'viewOrder' },
   },
 });
+export const textbookType = new ObjectType({
+  name: 'textbookType',
+  fields: {
+    name: { type: StringType, description: 'name' },
+    code: { type: StringType, description: 'code' },
+    viewOrder: { type: IntType, description: 'viewOrder' },
+    imageUrl: { type: StringType, description: 'ImageUrl' },
+  },
+});
 export const ChapterWiseTextbookListOutputType = new ObjectType({
   name: 'ChapterWiseTextbookListOutputType',
   fields: {
     class: { type: classType, description: 'class details' },
     subject: { type: generalDataType, description: 'subject details' },
-    textbook: { type: generalDataType, description: 'textbook details' },
+    textbook: { type: textbookType, description: 'textbook details' },
     chapter: { type: generalDataType, description: 'chapter details' },
   },
 });
