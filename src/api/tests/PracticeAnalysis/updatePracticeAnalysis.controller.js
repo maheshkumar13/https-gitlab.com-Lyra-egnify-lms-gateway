@@ -108,11 +108,7 @@ export async function scheduleforUpdatePracticeAnalysis() {
                  date: date
              }   
              SchedulerPracticeAnalysis.findOne(query).then(confirmation => {
-                 console.log("before")
-                 console.log("confirmation: ", confirmation)
                  if (!confirmation) {
-                 console.log("after")
-
                      let Data = new SchedulerPracticeAnalysis({ 
                          date: date, 
                          trigger: true, 
