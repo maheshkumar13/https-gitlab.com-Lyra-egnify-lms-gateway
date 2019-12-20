@@ -560,7 +560,6 @@ export async function uploadBranchAndOrientationiMappingTextbook(req, res) {
   });
   // converting the sheet data to csv
   let data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-  // console.log(data);
   data = cleanUploadBranchAndOrientationiMappingTextbookData(data);
 
   if (!data.length) return res.status(400).end('No Data found');
@@ -663,29 +662,19 @@ export async function getChapterWiseTextbookList(args, context) {
   const classSearchKey = "refs.class.code";
   const textbookSearchKey = "refs.subject.code";
 
-  if (classCode && classCode.length) {
-    subjectQuery[classSearchKey] = {
-      $in: classCode
-    }
-    textbookQuery[classSearchKey] = {
-      $in: classCode
-    }
+  if (classCode) {
+    subjectQuery[classSearchKey]=classCode
+    textbookQuery[classSearchKey] =  classCode
+    
   }
-  if (subjectCode && subjectCode.length) {
-    subjectQuery.code = {
-      $in: subjectCode
-    }
-    textbookQuery[classSearchKey] = {
-      $in: classCode
-    }
+  if (subjectCode) {
+    subjectQuery.code =  subjectCode
+    textbookQuery[classSearchKey] = subjectCode
+    
   }
   if (textbookCode && textbookCode.length) {
-    textbookQuery.code = {
-      $in: textbookCode
-    }
-    conceptTaxonomyQuery[textbookSearchKey] = {
-      $in: classCode
-    }
+    textbookQuery.code = textbookCode
+    conceptTaxonomyQuery[textbookSearchKey] =  textbookCode
   }
   const projectionForSubject = {
     subject: 1,
@@ -699,7 +688,8 @@ export async function getChapterWiseTextbookList(args, context) {
     _id: 0,
     code: 1,
     viewOrder: 1,
-    refs: 1
+    refs: 1,
+    imageUrl:1
   }
   const projectionForConceptTaxonomies = {
     viewOrder: 1,
@@ -713,7 +703,7 @@ export async function getChapterWiseTextbookList(args, context) {
     ConcpetTaxonomy.find(conceptTaxonomyQuery, projectionForConceptTaxonomies).sort({ "viewOrder": 1 }),
     Textbook.find(textbookQuery, projectionForTextbook)
   ]);
-  subjectData.forEach(subject => {
+   subjectData.forEach(subject => {
     let subjectClassCode = subject.refs.class.code
     let subjectCode = subject.code
     textbookData.forEach(textbook => {
@@ -738,6 +728,7 @@ export async function getChapterWiseTextbookList(args, context) {
                 name: textbook.name,
                 code: textbook.code,
                 viewOrder: textbook.viewOrder,
+                imageUrl: textbook.imageUrl,
               },
               chapter: {
                 name: concpetTaxonomy.child,
@@ -751,13 +742,11 @@ export async function getChapterWiseTextbookList(args, context) {
       }
     });
   });
-
   const count = resArray && resArray.length ? resArray.length : 0;
   const data = resArray && resArray.length ? resArray.slice(skip, skip + args.limit) : [];
 
   return [count, data];
 }
-
 
 export default {
   getHierarchyData
