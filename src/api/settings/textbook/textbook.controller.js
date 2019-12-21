@@ -660,21 +660,22 @@ export async function getChapterWiseTextbookList(args, context) {
   const textbookQuery = { active: true, viewOrder: { $ne: null } }
   const conceptTaxonomyQuery = { active: true, viewOrder: { $ne: null }, levelName: "topic" }
   const classSearchKey = "refs.class.code";
-  const textbookSearchKey = "refs.subject.code";
+  const subjectSearchKey = "refs.subject.code";
+  const textbookSearchKey = "refs.textbook.code";
 
   if (classCode) {
-    subjectQuery[classSearchKey]=classCode
-    textbookQuery[classSearchKey] =  classCode
-    
+    subjectQuery[classSearchKey] = classCode
+    textbookQuery[classSearchKey] = classCode
+
   }
   if (subjectCode) {
-    subjectQuery.code =  subjectCode
-    textbookQuery[classSearchKey] = subjectCode
-    
+    subjectQuery.code = subjectCode
+    textbookQuery[subjectSearchKey] = subjectCode
+
   }
-  if (textbookCode && textbookCode.length) {
+  if (textbookCode) {
     textbookQuery.code = textbookCode
-    conceptTaxonomyQuery[textbookSearchKey] =  textbookCode
+    conceptTaxonomyQuery[textbookSearchKey] = textbookCode
   }
   const projectionForSubject = {
     subject: 1,
@@ -689,7 +690,7 @@ export async function getChapterWiseTextbookList(args, context) {
     code: 1,
     viewOrder: 1,
     refs: 1,
-    imageUrl:1
+    imageUrl: 1
   }
   const projectionForConceptTaxonomies = {
     viewOrder: 1,
@@ -703,7 +704,7 @@ export async function getChapterWiseTextbookList(args, context) {
     ConcpetTaxonomy.find(conceptTaxonomyQuery, projectionForConceptTaxonomies).sort({ "viewOrder": 1 }),
     Textbook.find(textbookQuery, projectionForTextbook)
   ]);
-   subjectData.forEach(subject => {
+  subjectData.forEach(subject => {
     let subjectClassCode = subject.refs.class.code
     let subjectCode = subject.code
     textbookData.forEach(textbook => {
