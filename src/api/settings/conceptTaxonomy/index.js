@@ -30,4 +30,6 @@ router.post(
 controller.downloadSample,
 );
 
+router.post('/upload', multer.single('file'), controller.uploadTextbookChapters)
+
 module.exports = router
