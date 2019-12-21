@@ -13,7 +13,7 @@ export async function analysisTrigger(args) {
       const tempDate = new Date()
       let date = new Date(tempDate.getUTCFullYear(), tempDate.getUTCMonth(), tempDate.getUTCDate());
       date = new Date(date - (330 * 60000));
-      date.setDate(date.getDate() - 1);
+      // date.setDate(date.getDate() - 1);
       args.startTime = date;
     }
     if(new Date(args.startTime).toString() === 'Invalid Date') {
