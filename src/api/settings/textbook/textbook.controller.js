@@ -662,16 +662,13 @@ export async function getChapterWiseTextbookList(args, context) {
   const classSearchKey = "refs.class.code";
   const subjectSearchKey = "refs.subject.code";
   const textbookSearchKey = "refs.textbook.code";
-
   if (classCode) {
     subjectQuery[classSearchKey]=classCode
     textbookQuery[classSearchKey] =  classCode
-  
   }
   if (subjectCode) {
     subjectQuery.code = subjectCode
     textbookQuery[subjectSearchKey] = subjectCode
-
   }
     if (textbookCode) {
       textbookQuery.code = textbookCode
@@ -699,70 +696,68 @@ export async function getChapterWiseTextbookList(args, context) {
       refs: 1
     }
     let resArray = [];
-          let subjectObject = {}
-          let textbookObject = {}
-          let textbookCodes = []
-          let classCodes = []
-          let subjectCodes = []
-          let subjectData = await Subject.find(subjectQuery, projectionForSubject).sort({ "refs.class.name": 1 });
-          subjectData.forEach(subject => {
+    let subjectObject = {}
+    let textbookObject = {}
+    let textbookCodes = []
+    let classCodes = []
+    let subjectCodes = []
+    let subjectData = await Subject.find(subjectQuery, projectionForSubject).sort({ "refs.class.name": 1 });
+    subjectData.forEach(subject => {
             subjectObject[subject.code] = subject
             classCodes.push(subject.refs.class.code)
             subjectCodes.push(subject.code)
           })
-          if (!classCode) {
-            textbookQuery[classSearchKey] = {
-              $in: classCodes
-            }
-            textbookQuery[subjectSearchKey] = {
-              $in: subjectCodes
-            }
-          }
-          let textbookData = await Textbook.find(textbookQuery, projectionForTextbook);
-          textbookData.forEach(textbook => {
-            textbookObject[textbook.code] = textbook
-            textbookCodes.push(textbook.code)
-          })
-          if (!textbookCode) {
-            conceptTaxonomyQuery[textbookSearchKey] = {
-              $in: textbookCodes
-            }
-          }
-          let concpetTaxonomyData = await ConcpetTaxonomy.find(conceptTaxonomyQuery, projectionForConceptTaxonomies).sort({ "viewOrder": 1 }).skip(skip).limit(args.limit);
-          let count = await ConcpetTaxonomy.count(conceptTaxonomyQuery);
-          concpetTaxonomyData.forEach(concpetTaxonomy => {
-            let textbookCode = concpetTaxonomy.refs.textbook.code
-            let tempTextbookObj = textbookObject[textbookCode];
-            let tempSujectCode = tempTextbookObj.refs.subject.code
-            let tempSubjectObj = subjectObject[tempSujectCode];
-            const data = {
-              class: {
-                name: tempTextbookObj.refs.class.name,
-                code: tempTextbookObj.refs.class.code,
-              },
-              subject: {
-
-                name: tempSubjectObj.subject,
-                code: tempSubjectObj.code,
-                viewOrder: tempSubjectObj.viewOrder,
-              },
-              textbook: {
-                name: tempTextbookObj.name,
-                code: tempTextbookObj.code,
-                viewOrder: tempTextbookObj.viewOrder,
-                imageUrl: tempTextbookObj.imageUrl,
-              },
-              chapter: {
-                name: concpetTaxonomy.child,
-                code: concpetTaxonomy.code,
-                viewOrder: concpetTaxonomy.viewOrder,
-              }
-            }
+    if (!classCode) {
+      textbookQuery[classSearchKey] = {
+        $in: classCodes
+      }
+      textbookQuery[subjectSearchKey] = {
+        $in: subjectCodes
+      }
+    }
+    let textbookData = await Textbook.find(textbookQuery, projectionForTextbook);
+    textbookData.forEach(textbook => {
+      textbookObject[textbook.code] = textbook
+      textbookCodes.push(textbook.code)
+    })
+    if (!textbookCode) {
+      conceptTaxonomyQuery[textbookSearchKey] = {
+        $in: textbookCodes
+      }
+    }
+    let concpetTaxonomyData = await ConcpetTaxonomy.find(conceptTaxonomyQuery, projectionForConceptTaxonomies).sort({ "viewOrder": 1 }).skip(skip).limit(args.limit);
+    let count = await ConcpetTaxonomy.count(conceptTaxonomyQuery);
+    concpetTaxonomyData.forEach(concpetTaxonomy => {
+      let textbookCode = concpetTaxonomy.refs.textbook.code
+      let tempTextbookObj = textbookObject[textbookCode];
+      let tempSujectCode = tempTextbookObj.refs.subject.code
+      let tempSubjectObj = subjectObject[tempSujectCode];
+      const data = {
+        class: {
+          name: tempTextbookObj.refs.class.name,
+          code: tempTextbookObj.refs.class.code,
+        },
+        subject: {
+          name: tempSubjectObj.subject,
+          code: tempSubjectObj.code,
+          viewOrder: tempSubjectObj.viewOrder,
+        },
+        textbook: {
+          name: tempTextbookObj.name,
+          code: tempTextbookObj.code,
+          viewOrder: tempTextbookObj.viewOrder,
+          imageUrl: tempTextbookObj.imageUrl,
+        },
+        chapter: {
+          name: concpetTaxonomy.child,
+          code: concpetTaxonomy.code,
+          viewOrder: concpetTaxonomy.viewOrder,
+        }
+      }
     resArray.push(data)
   })
   count = count ? count : 0;
   const data = resArray && resArray.length ? resArray : [];
-
   return [count, data];
 }
 
