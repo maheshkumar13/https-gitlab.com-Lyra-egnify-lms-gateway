@@ -76,12 +76,12 @@ async function updatePracticeAnalysis() {
             date: date
         }
         bulk.execute(function (err, result) {
-            if (err) {
-                SchedulerPracticeAnalysis.update(query, { $set: { status: "failed" } }).then(res => {
+            if(err) {
+                SchedulerPracticeAnalysis.update(query, { $set: { status: "failed" } }).then(res=> {
                     console.log("failed")
                 });
             }
-            SchedulerPracticeAnalysis.update(query, { $set: { status: "completed" } }).then(res => {
+            SchedulerPracticeAnalysis.update(query, { $set: { status: "completed" } }).then(res=> {
                 console.log("completed")
                 bulkForContentMapping.execute(function (err, result) {
                     if (err) {
@@ -99,7 +99,7 @@ async function updatePracticeAnalysis() {
 }
 
 export async function scheduleforUpdatePracticeAnalysis() {
-    cron.schedule('10 * * * * * *', () => {
+    cron.schedule('0 1 * * * *', () => {
            schedulerPracticeAnalysisModel({ instituteId }).then(SchedulerPracticeAnalysis => {
              var today = new Date();
              var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
