@@ -666,7 +666,7 @@ export async function getChapterWiseTextbookList(args, context) {
   if (classCode) {
     subjectQuery[classSearchKey]=classCode
     textbookQuery[classSearchKey] =  classCode
-     
+  
   }
   if (subjectCode) {
     subjectQuery.code = subjectCode
