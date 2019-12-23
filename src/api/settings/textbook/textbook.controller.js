@@ -664,8 +664,9 @@ export async function getChapterWiseTextbookList(args, context) {
   const textbookSearchKey = "refs.textbook.code";
 
   if (classCode) {
-    subjectQuery[classSearchKey] =classCode
-    textbookQuery[classSearchKey] = classCode
+    subjectQuery[classSearchKey]=classCode
+    textbookQuery[classSearchKey] =  classCode
+
   }
   if (subjectCode) {
     subjectQuery.code = subjectCode
