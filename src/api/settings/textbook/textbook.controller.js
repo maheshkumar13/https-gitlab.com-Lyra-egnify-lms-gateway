@@ -102,8 +102,8 @@ export async function getTextbooksByPagination(args, context) {
     const skip = (args.pageNumber - 1) * args.limit;
     return TextbookModel(context).then((Textbook) => {
       return Promise.all([Textbook.count(query), Textbook.find(query).skip(skip).limit(args.limit)]).then(([count, data]) => {
-        count = count ? count : 0;
-        data = data && data.length ? data : [];
+          count = count ? count : 0;
+          data = data && data.length ? data : [];
         return {
           data,
           count
@@ -533,7 +533,7 @@ function  validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, u
 
     if(obj['view order']) {
       obj['view order'] = Number(obj['view order'])
-      if (!obj['view order']) {
+      if(!obj['view order']) {
         result.success = false;
         result.message = `Row ${row}, Invalid VIEW ORDER (${obj['view order']})`;
         errors.push(result.message);
@@ -626,23 +626,23 @@ export async function getTextbookForTeachers(args, context) {
   try{
     const Textbook = await TextbookModel(context);
     let findQuery = {}
-    if(args.branch) {
+    if(args.branch ){
       findQuery["branches"] = args.branch
     }
-    if(args.orientation) {
+    if(args.orientation){
       findQuery["orientations"] = args.orientation
     }
-    if(args.classCode) {
+    if(args.classCode){
       findQuery["refs.class.code"] = args.classCode
     }
-    if(args.subjectCode) {
+    if(args.subjectCode){
       findQuery["refs.subject.code"] = args.subjectCode
     }
 
     const textbooks = await Textbook.find(findQuery).lean();
     const textbookCodes = textbooks.map(obj => obj.code);
     return textbookCodes;
-  } catch(err) {
+  } catch(err){
     throw err;
   }
 }
@@ -675,7 +675,7 @@ export async function getChapterWiseTextbookList(args, context) {
   }
   if (textbookCode) {
     textbookQuery.code =  textbookCode
-    conceptTaxonomyQuery[textbookSearchKey] = textbookCode
+    conceptTaxonomyQuery[textbookSearchKey] =  textbookCode
   }
   const projectionForSubject = {
     subject: 1,
