@@ -76,7 +76,7 @@ async function updatePracticeAnalysis() {
             date: date
         }
         bulk.execute(function (err, result) {
-            if(err) {
+            if(err){
                 SchedulerPracticeAnalysis.update(query, { $set: { status: "failed" } }).then(res=> {
                     console.log("failed")
                 });
