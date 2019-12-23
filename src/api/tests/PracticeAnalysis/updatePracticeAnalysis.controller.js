@@ -77,11 +77,11 @@ async function updatePracticeAnalysis() {
         }
         bulk.execute(function (err, result) {
             if(err){
-                SchedulerPracticeAnalysis.update(query, { $set: { status: "failed" } }).then(res=> {
+                SchedulerPracticeAnalysis.update(query, { $set: { status: "failed" } }).then(res=>{
                     console.log("failed")
                 });
             }
-            SchedulerPracticeAnalysis.update(query, { $set: { status: "completed" } }).then(res=> {
+            SchedulerPracticeAnalysis.update(query, { $set: { status: "completed" } }).then(res=>{
                 console.log("completed")
                 bulkForContentMapping.execute(function (err, result) {
                     if (err) {
