@@ -971,7 +971,7 @@ export async function getCategoryWiseFilesPaginatedV2(args, context) {
   const contentTypeMatchOrData = getContentTypeMatchOrData(category);
   contentQuery['$or'] = contentTypeMatchOrData;
   if (chapterCode) contentQuery['refs.topic.code'] = chapterCode;
-  if (category === 'Practice') contentQuery.gaStatus = gaStatus || false;
+  if (category === 'Practice' && gaStatus) contentQuery.gaStatus = gaStatus;
   const skip = (pageNumber - 1) * limit;
   const [assets, count] = await Promise.all([
     ContentMapping.find(contentQuery).skip(skip).limit(limit),
