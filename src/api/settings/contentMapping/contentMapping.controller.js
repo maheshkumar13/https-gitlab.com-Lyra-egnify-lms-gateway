@@ -438,8 +438,8 @@ export async function uploadContentMappingv2(req, res) {
   
   if(errors.length) {
     return res.send({
+      success: false,
       message: 'Invalid data',
-      count: errors.length,
       errors,
     })
   }
@@ -458,8 +458,8 @@ export async function uploadContentMappingv2(req, res) {
   for(let i=0; i < data.length; i+=1) {
     if(errors.length > maxLimit) {
       return res.send({
+        success: false,
         message: 'Invalid data',
-        count: errors.length,
         errors,
       })
     }
@@ -588,8 +588,8 @@ export async function uploadContentMappingv2(req, res) {
 if(errors.length) {
   console.info('sending errors..')
   return res.send({
+    success: false,
     message: 'Invalid data',
-    count: errors.length,
     errors,
   })
 }
