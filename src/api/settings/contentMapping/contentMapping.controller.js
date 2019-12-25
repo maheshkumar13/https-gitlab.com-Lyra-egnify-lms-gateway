@@ -602,6 +602,95 @@ console.info('bulk executing..')
     return res.status(400).end('Error occured');
   });
 }
+function validateHeadersReadingMaterialAudioMapping(data, errors, maxLimit) {
+  const mandetoryFields = [
+    'pdf file path', 'audio file path', 'audio file name',
+  ];
+  const headers  = [
+    'pdf file path', 'audio file path', 'audio file name',
+  ]
+  const sheetHeaders = Object.keys(data[0]);
+  let diffHeaders = _.difference(headers,sheetHeaders);
+
+  if(diffHeaders.length) {
+    errors.push(`${diffHeaders.toString()} headers not found`);
+    return errors;
+  }
+
+  for(let i = 0; i < data.length; i += 1){
+    const obj = data[i];
+    for (let j = 0; j < mandetoryFields.length; j += 1) {
+      if (!obj[mandetoryFields[j]]) {
+        errors.push(`${mandetoryFields[j].toUpperCase()} value not found for row ${i + 2}`);
+        if(errors.length > maxLimit) return errors;
+      }
+    }
+  }
+  return errors;
+}
+
+export async function uploadReadingMaterialAudioMapping(req, res) {
+  if (!req.file) return res.status(400).end('File required');
+  // validate extension
+  const name = req.file.originalname.split('.');
+  const extname = name[name.length - 1];
+  if (extname !== 'xlsx') {
+    return res.status(400).end('Invalid extension, please upload .xlsx file');
+  }
+  let data = getCleanFileData(req);
+  if(!data.length) {
+    return res.status(400).end('No data found');
+  }
+  if(data.length > 10000) {
+    return res.status(400).end('Limit exceeded, max rows 10k');
+  }
+  let errors = [];
+  const maxLimit = 1000;
+  errors = validateHeadersReadingMaterialAudioMapping(data, errors, maxLimit);
+
+  if(errors.length) {
+    return res.send({
+      success: false,
+      message: 'Invalid data',
+      errors,
+    })
+  }
+  const ContentMapping = await ContentMappingModel(req.user_cxt);
+  const bulk = await ContentMapping.collection.initializeUnorderedBulkOp();
+
+  const docs = {};
+  data.forEach(x => {
+    const audioPath = upath.toUnix(x['audio file path'])
+    const pdfPath = upath.toUnix(x['pdf file path'])
+    if(!docs[pdfPath]) docs[pdfPath] = { audios: [] }
+    docs[pdfPath].audios.push({ key: audioPath, name: x['audio file name']});
+  })
+  
+  Object.keys(docs).forEach(x => {
+    const pdfPath = x;
+    const audioFiles = docs[pdfPath].audios;
+    const findQuery = {
+      'content.category': 'Reading Material',
+      'resource.key': pdfPath,
+    }
+    const patch = {};//{ metaData: { audioFiles: [] } } 
+    patch['metaData.audioFiles'] = audioFiles
+
+    bulk.find(findQuery).update({
+      $set: patch,
+    })
+  })
+
+  console.info('bulk..executing...')
+  return bulk.execute().then((resp) => {
+    console.info(resp);
+    console.info(req.file.originalname, 'Uploaded successfully....')
+    return res.send('Data inserted/updated successfully')
+  }).catch((err) => {
+    console.error(err);
+    return res.status(400).end('Error occured');
+  });
+}
 
 export async function uploadContentMapping(req, res) {
   if (!req.file) return res.status(400).end('File required');
