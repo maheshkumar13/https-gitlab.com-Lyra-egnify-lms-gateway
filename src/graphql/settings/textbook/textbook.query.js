@@ -16,7 +16,7 @@ import {
 
 import GraphQLJSON from 'graphql-type-json';
 
-import { TextbookType, ChapterWiseTextbookListOutputType} from './textbook.type';
+import { TextbookType, ChapterWiseListOutputType} from './textbook.type';
 const controller = require('../../../api/settings/textbook/textbook.controller');
 
 export const Textbooks = {
@@ -125,12 +125,12 @@ export const TextbooksInfo = {
   },
 };
 
-const ChapterWiseTextbookOutputType = new ObjectType({
-  name: 'ChapterWiseTextbookOutputType',
+const ChapterWiseOutputType = new ObjectType({
+  name: 'ChapterWiseOutputType',
   fields() {
     return {
       data: {
-        type: new List(ChapterWiseTextbookListOutputType),
+        type: new List(ChapterWiseListOutputType),
       },
       pageInfo: {
         type: pageInfoListType,
@@ -138,7 +138,7 @@ const ChapterWiseTextbookOutputType = new ObjectType({
     };
   },
 });
-export const ChapterWiseTextbookList = {
+export const ChapterWiseList = {
   args: {
     classCode: { type:StringType, description: 'Class code' },
     subjectCode: { type:StringType, description: 'Subject code' },
@@ -146,11 +146,11 @@ export const ChapterWiseTextbookList = {
     pageNumber: { type: IntType, description: 'Page number' },
     limit: { type: IntType, description: 'Number of docs per page' },
   },
-  type: ChapterWiseTextbookOutputType,
+  type: ChapterWiseOutputType,
   async resolve(obj, args, context) {
     if (args.pageNumber < 1 || !args.pageNumber) args.pageNumber = 1;
-    if (args.limit < 0 || !args.limit) args.limit = 10;
-    return controller.getChapterWiseTextbookList(args, context).then(([count, data]) => {
+    if (args.limit < 0 || !args.limit) args.limit = 0;
+    return controller.getChapterWiseList(args, context).then(([count, data]) => {
       const pageInfo = {};
       const resp = {};
       pageInfo.prevPage = true;
@@ -180,5 +180,5 @@ export default{
   Textbooks,
   TextbookByPagination,
   TextbooksInfo,
-  ChapterWiseTextbookList,
+  ChapterWiseList,
 };

@@ -107,8 +107,8 @@ export const textbookType = new ObjectType({
     imageUrl: { type: StringType, description: 'ImageUrl' },
   },
 });
-export const ChapterWiseTextbookListOutputType = new ObjectType({
-  name: 'ChapterWiseTextbookListOutputType',
+export const ChapterWiseListOutputType = new ObjectType({
+  name: 'ChapterWiseListOutputType',
   fields: {
     class: { type: classType, description: 'class details' },
     subject: { type: generalDataType, description: 'subject details' },
@@ -122,5 +122,5 @@ export default {
   TextbookInputType,
   updateTextbookInputType,
   nameCodeType,
-  ChapterWiseTextbookListOutputType,
+  ChapterWiseListOutputType,
 };
