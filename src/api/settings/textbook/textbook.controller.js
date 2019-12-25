@@ -646,7 +646,7 @@ export async function getTextbookForTeachers(args, context) {
     throw err;
   }
 }
-export async function getChapterWiseTextbookList(args, context) {
+export async function getChapterWiseList(args, context) {
   const [Textbook, ConcpetTaxonomy, Subject] = await Promise.all([
     TextbookModel(context),
     ConcpetTaxonomyModel(context),
