@@ -10,7 +10,6 @@ import { config } from '../../../config/environment';
 import { getStudentData } from '../textbook/textbook.controller';
 
 
-
 const xlsx = require('xlsx');
 const upath = require('upath');
 const crypto = require('crypto');
@@ -296,6 +295,312 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
 
   req.data = data;
   return result;
+}
+
+function getCleanFileData(req){
+	const workbook = xlsx.read(req.file.buffer, {
+		type: 'buffer',
+		cellDates: true
+	  });
+
+	// converting the sheet data to array of of objects
+	const data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]],{defval:""});
+	// deleting empty string keys from all objects
+	data.forEach((v) => {
+		delete v[''];
+	}); // eslint-disable-line
+
+	// deleting all trailing empty rows
+	for (let i = data.length - 1; i >= 0; i -= 1) {
+		let values = Object.values(data[i]);
+		values = values.map(x => x.toString());
+		const vals = values.map(x => x.trim());
+		if (vals.every(x => x === '')) data.pop();
+		else break;
+	}
+
+	// trim and remove whitespace and chaging keys to lower case
+	data.forEach((obj) => {
+		const keys = Object.keys(obj);
+		for (let i = 0; i < keys.length; i += 1) {
+			const key = keys[i];
+			const lowerKey = key.toLowerCase();
+			obj[lowerKey] = obj[key].toString().replace(/\s\s+/g, ' ').trim();
+			if (key !== lowerKey) delete obj[key];
+		}
+	});
+	return data;
+}
+
+export async function getDbDataForValidation(context) {
+  const [
+    InstituteHierarchy,
+    Subject,
+    Textbook,
+    ConceptTaxonomy,
+  ] = await Promise.all([
+    InstituteHierarchyModel(context),
+    SubjectModel(context),
+    TextbookModel(context),
+    ConceptTaxonomyModel(context),
+  ]).catch( err => {
+    console.error(err);
+  })
+  const [
+    classData,
+    subjectData,
+    textbookData,
+    chaptersData,
+  ] = await Promise.all([
+    InstituteHierarchy.aggregate([{$match: { active: true, levelName: 'Class'}},{$project: { name: { $toLower: '$child' }, code: '$childCode',_id: 0 }}]),
+    Subject.aggregate([{$match: { active: true, 'refs.class.code': {$exists: true }}},{$project: { name: { $toLower: '$subject' }, code: '$code',_id: 0, refs: 1 }}]),
+    Textbook.aggregate([{$match: { active: true, 'refs.subject.code': { $exists: true }}},{$project: { name: { $toLower: '$name' }, code: '$code',_id: 0, refs: 1 }}]),
+    ConceptTaxonomy.aggregate([
+      { $match: { active: true, levelName: 'topic' }},
+      { $group: { _id: '$refs.textbook.code', chapters: { $push: { name: { $toLower: '$child' }, code: '$code' }}}}, 
+    ]),
+  ]).catch(err => {
+    console.error(err)
+  })
+  const dbData = {};
+  classData.forEach( classObj => {
+    dbData[classObj.name] = {};
+    subjectData.filter(x => x.refs.class.code === classObj.code).forEach( subjectObj => {
+      dbData[classObj.name][subjectObj.name] = {}
+      textbookData.filter( x => x.refs.subject.code === subjectObj.code).forEach( textbookObj => {
+        dbData[classObj.name][subjectObj.name][textbookObj.name] = {}
+        const textbookChapters = chaptersData.find( x => x._id === textbookObj.code);
+        if(textbookChapters) {
+          textbookChapters.chapters.forEach(chapterObj => {
+            dbData[classObj.name][subjectObj.name][textbookObj.name][chapterObj.name] = {
+              topicCode: chapterObj.code,
+              textbookCode: textbookObj.code,
+            }
+          })
+        }
+      })
+    })
+  })
+ return dbData;
+}
+
+function validateHeaders(data, errors, maxLimit) {
+  const mandetoryFields = [
+    'class', 'subject', 'textbook', 'chapter',
+    'content name', 'content category',
+    'file path', 'media type',
+    'view order'
+  ];
+  const headers  = [
+    'class', 'subject', 'textbook', 'chapter',
+    'content name', 'content category', 'content type',
+    'file path', 'file size', 'media type',
+    'timg path', 'coins', 'view order',
+    'category', 'publish year', 'publisher',
+  ]
+  const sheetHeaders = Object.keys(data[0]);
+  let diffHeaders = _.difference(headers,sheetHeaders);
+
+  if(diffHeaders.length) {
+    errors.push(`${diffHeaders.toString()} headers not found`);
+    return errors;
+  }
+
+  for(let i = 0; i < data.length; i += 1){
+    const obj = data[i];
+    for (let j = 0; j < mandetoryFields.length; j += 1) {
+      if (!obj[mandetoryFields[j]]) {
+        errors.push(`${mandetoryFields[j].toUpperCase()} value not found for row ${i + 2}`);
+        if(errors.length > maxLimit) return errors;
+      }
+    }
+  }
+  return errors;
+}
+export async function uploadContentMappingv2(req, res) {
+  if (!req.file) return res.status(400).end('File required');
+  	// validate extension
+	const name = req.file.originalname.split('.');
+	const extname = name[name.length - 1];
+	if (extname !== 'xlsx') {
+	  return res.status(400).end('Invalid extension, please upload .xlsx file');
+	}
+  let data = getCleanFileData(req);
+  if(!data.length) {
+    return res.status(400).end('No data found');
+  }
+  if(data.length > 10000) {
+    return res.status(400).end('Limit exceeded, max rows 10k');
+  }
+  let errors = [];
+  const maxLimit = 1000;
+  errors = validateHeaders(data, errors, maxLimit);
+  
+  if(errors.length) {
+    return res.send({
+      message: 'Invalid data',
+      count: errors.length,
+      errors,
+    })
+  }
+  const dbData = await getDbDataForValidation(req.user_cxt)
+  const ContentMapping = await ContentMappingModel(req.user_cxt);
+  const bulk = ContentMapping.collection.initializeUnorderedBulkOp();
+  const validContentCategories = [ 
+    'Reading Material',
+    'Activity',
+    'Animation',
+    'Slide Show',
+    'Games',
+    'Audio' ]
+  const contentTypes = config.CONTENT_TYPES || {};
+
+  for(let i=0; i < data.length; i+=1) {
+    if(errors.length > maxLimit) {
+      return res.send({
+        message: 'Invalid data',
+        count: errors.length,
+        errors,
+      })
+    }
+
+    const row = i+2;
+    const obj = data[i];
+
+
+    // VALIDATING CONTENT CATEGORY
+    const contentCategory = validContentCategories.find(x => x.toLowerCase() === obj['content category'].toLowerCase());
+    if(!contentCategory) {
+      errors.push(`Invalid CONTENT CATEGORY at row ${row} (${obj['content category']})`);
+    }
+
+    // VALIDATING CONTENT MEDIA TYPE
+    if( contentTypes && 
+        contentTypes[contentCategory] && 
+        !contentTypes[contentCategory].includes(obj['media type'].toLowerCase())
+      ) {
+      errors.push(`Invalid MEDIA TYPE at row ${row} (${obj['media type']}) for CONTENT CATEGORY (${obj['content category']})`);
+    }
+
+    // VALIDATING CATEGORY
+    const categories = ['A', 'B', 'C'];
+    if (obj.category && !categories.includes(obj.category)) {
+      errors.push(`Invalid CATEGORY at row ${row} (${obj.category})`);
+    }
+    
+    // VALIDATING COINS
+    const coins = parseInt(obj['coins']);
+    if(obj['coins']) {
+      if (!Number.isInteger(coins) || coins < 0) {
+        errors.push(`Invalid coins at row ${row} (${obj['coins']})`);
+      }
+    }
+
+    // VALIDATING VIEW ORDER
+    const viewOrder = parseInt(obj['view order']);
+    if (!Number.isInteger(viewOrder) || viewOrder < 1) {
+      errors.push(`Invalid view order at row ${row}`);
+    }
+
+    const className = obj.class.toLowerCase();
+    const subjectName = obj.subject.toLowerCase();
+    const textbookName = obj.textbook.toLowerCase();
+    const chapterName = obj.chapter.toLowerCase();
+    
+    // VALIDATING CLASS
+    if(!dbData[className]) {
+      errors.push(`Invalid CLASS at row ${row} (${obj.class})`);
+      continue;
+    }
+
+    // VALIDATING SUBJECT
+    if(!dbData[className][subjectName]) {
+      errors.push(`Invalid SUBJECT at row ${row} (${obj.class}->${obj.subject})`);
+      continue;
+    }
+
+    // VALIDATING TEXTBOOK
+    if(!dbData[className][subjectName][textbookName]) {
+      errors.push(`Invalid TEXTBOOK at row ${row} (${obj.class}->${obj.subject}->${obj.textbook})`);
+      continue;
+    }
+    
+    // VALIDATING CHAPTER
+    const chapterObj = dbData[className][subjectName][textbookName][chapterName];
+    if(!chapterObj) {
+      errors.push(`Invalid CHAPTER at row ${row} (${obj.class}->${obj.subject}->${obj.textbook}->${obj.chapter})`);
+      continue;
+    }
+
+    if(errors.length) continue;
+
+    // PREPARING DATA OBJECT
+    const temp = {
+      content: {
+        name: obj['content name'],
+        category: contentCategory,
+        type: obj['content type'],
+      },
+      resource: {
+        key: upath.toUnix(obj['file path']),
+        size: obj['file size'],
+        type: obj['media type'].toLowerCase(),
+      },
+      publication: {
+        publisher: obj.publisher,
+        year: obj['publish year'],
+      },
+      timgPath: obj['timg path'] ? upath.toUnix(obj['timg path']) : '',
+      category: obj.category,
+      coins: coins ? coins : 0,
+      viewOrder: viewOrder,
+      refs: {
+        topic: {
+          code: chapterObj.topicCode,
+        },
+        textbook : {
+          code: chapterObj.textbookCode,
+        },
+      },
+      active: true,
+    };
+    if(obj['asset id']) {
+      temp.assetId = obj['asset id'];
+      const findQuery = {
+        assetId: temp.assetId,
+      }
+      bulk.find(findQuery).updateOne(temp)
+    } else {
+      temp.assetId = crypto.randomBytes(10).toString('hex');
+      const findQuery = {
+        active: true,
+        'refs.textbook.code': chapterObj.textbookCode,
+        'refs.topic.code': chapterObj.topicCode,
+        'content.name': temp.content.name,
+        'content.category': temp.content.category,
+        'content.type': temp.content.type,
+        'resource.key': temp.resource.key,
+      };
+      bulk.find(findQuery).upsert().updateOne(temp);
+    }
+  }
+
+if(errors.length) {
+  console.info('sending errors..')
+  return res.send({
+    message: 'Invalid data',
+    count: errors.length,
+    errors,
+  })
+}
+console.info('bulk executing..')
+  return bulk.execute().then(() => {
+    console.info(req.file.originalname, 'Uploaded successfully....')
+    return res.send('Data inserted/updated successfully')
+  }).catch((err) => {
+    console.error(err);
+    return res.status(400).end('Error occured');
+  });
 }
 
 export async function uploadContentMapping(req, res) {
