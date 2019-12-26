@@ -83,15 +83,11 @@ export const TextbookByPagination = {
   },
   type: TextbookOutputType,
   async resolve(obj, args, context) {
-    if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
-    if (!args.limit) args.limit = 5; // eslint-disable-line
-    if (args.pageNumber < 1) args.pageNumber = 1;
-    if (args.limit < 0) args.limit = 5;
+    if (args.pageNumber < 1 || !args.pageNumber) args.pageNumber = 1;
+    if (args.limit < 0 || !args.limit) args.limit = 0;
     return controller.getTextbooksByPagination(args, context)
     .then(async (json) => {
-      console.log("i am inside query")
-
-      if (json && json.data) {
+        if (json && json.data) {
         const pageInfo = {};
         const resp = {};
         pageInfo.prevPage = true;
