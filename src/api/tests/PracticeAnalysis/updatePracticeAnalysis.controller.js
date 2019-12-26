@@ -64,8 +64,10 @@ async function updatePracticeAnalysis() {
                 max: max,
                 min: min,
                 average: average,
-                totalStudent:studentCounter
+                totalStudent:studentCounter,
+                updated_at: new Date()
             }
+         console.log("myobj:", myobj)
     bulk.find({ questionPaperId: PaperId }).upsert().update({ $set: myobj });
          bulkForContentMapping.find({ "resource.key": PaperId }).upsert().update({ $set: { gaStatus: true } });
      }
@@ -99,7 +101,7 @@ async function updatePracticeAnalysis() {
 }
 
 export async function scheduleforUpdatePracticeAnalysis() {
-    cron.schedule('0 1 * * * *', () => {
+    cron.schedule('10 * * * * * *', () => {
            schedulerPracticeAnalysisModel({ instituteId }).then(SchedulerPracticeAnalysis => {
              var today = new Date();
              var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
