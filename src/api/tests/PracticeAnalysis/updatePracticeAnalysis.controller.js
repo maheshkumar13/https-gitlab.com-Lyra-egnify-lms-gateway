@@ -64,7 +64,8 @@ async function updatePracticeAnalysis() {
                 max: max,
                 min: min,
                 average: average,
-                totalStudent:studentCounter
+                totalStudent:studentCounter,
+                updated_at: new Date()
             }
     bulk.find({ questionPaperId: PaperId }).upsert().update({ $set: myobj });
          bulkForContentMapping.find({ "resource.key": PaperId }).upsert().update({ $set: { gaStatus: true } });

@@ -11,9 +11,8 @@ const practiceanalysisSchema = new mongoose.Schema({
     max: { type: Number, required: true },
     min: { type: Number, required: true },
     average: { type: Number, required: true },
-    
+    updated_at: { type: Date,default:new Date() }
 }, {
-    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
         collection: 'practiceanalysis'
 });
 
