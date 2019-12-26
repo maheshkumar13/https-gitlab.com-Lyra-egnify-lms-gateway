@@ -31,9 +31,7 @@ import { TestType } from './settings/testType/testType.query';
 import { PackageList, PackageDetails } from './settings/package/package.query';
 import { CreatePackage, UpdatePackage, FeedbackPackage } from './settings/package/package.mutation';
 import { autoComplete, searchResult } from './search/searchRequest/search.query';
-import { ListTest, UpcomingTests, ListSubjectWiseBooksAndTestCount, CompletedTests, HeaderCountForTextBookBasedTest, FetchInstruction } from '../graphql/tests/upload/upload.query';
-import { ListMarkingSchema } from '../graphql/tests/markingShema/marking.shema.query';
-import { PublishTest, ParseAndValidateTest, updateTestInfo, SubmitTest, StartTest } from './tests/upload/upload.mutation';
+import { ListTest, ListSubjectWiseBooksAndTestCount, HeaderCountForTextBookBasedTest } from '../graphql/tests/upload/upload.query';
 import { TimeAnalysis, TimeAnalysisStudentsList, TimeAnalysisHeaders, TimeAnalysisStudentsListByDay, StudentLevelTimeAnalysis, TeacherLevelTimeAnalysis } from './analysis/timeAnalysis/timeAnalysis.query';
 import { StudentCompletionStats, TeacherLevelCompletionStats, TeacherLevelCompletionHeaders } from './analysis/completion/completion.query';
 
@@ -80,12 +78,8 @@ const schema = new Schema({
       autoComplete,
       searchResult,
       ListTest,
-      ListMarkingSchema,
-      UpcomingTests,
       ListSubjectWiseBooksAndTestCount,
-      CompletedTests,
       HeaderCountForTextBookBasedTest,
-      FetchInstruction,
       TimeAnalysis,
       TimeAnalysisHeaders,
       TimeAnalysisStudentsList,
@@ -114,12 +108,7 @@ const schema = new Schema({
       DeleteTestType,
       CreatePackage,
       UpdatePackage,
-      FeedbackPackage,
-      PublishTest,
-      ParseAndValidateTest,
-      updateTestInfo,
-      SubmitTest,
-      StartTest
+      FeedbackPackage
     },
   }),
 });
