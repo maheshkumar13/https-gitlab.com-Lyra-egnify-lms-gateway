@@ -9,7 +9,7 @@ import {
 } from 'graphql';
 import GraphQLDate from 'graphql-date';
 
-import { TimeAnalysisType, TimeAnalysisHeadersType, TimeAnalysisListType, TimeAnalysisListByDayType } from './timeAnalysis.type';
+import { TimeAnalysisType, TimeAnalysisHeadersType, TimeAnalysisListType, TimeAnalysisListByDayType, TimeAnalysisHeadersTypev2 } from './timeAnalysis.type';
 import { validateAccess } from '../../../utils/validator';
 
 const controller = require('../../../api/analysis/timeAnalysis/timeAnalysis.controller');
@@ -195,6 +195,23 @@ export const TimeAnalysisHeaders = {
     const validRoles = ['CMS_ENGAGEMENT_VIEWER'];
     if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     return controller.getTimeAnalysisHeaders(args, context);
+  },
+};
+
+export const TimeAnalysisHeadersv2 = {
+  args: {
+    class: { type: StringType, description: 'Class name' },
+    branch: { type: StringType, description: 'Branch name' },
+    orientation: { type: StringType, description: 'Orientation' },
+    section: { type: StringType, description: 'Section' },
+    startDate: { type: GraphQLDate, description: 'Start date' },
+    endDate: { type: GraphQLDate, description: 'End date' },
+  },
+  type: TimeAnalysisHeadersTypev2,
+  async resolve(obj, args, context) {
+    const validRoles = ['CMS_ENGAGEMENT_VIEWER'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
+    return controller.getTimeAnalysisHeadersv2(args, context);
   },
 };
 
@@ -440,7 +457,8 @@ export default {
   TimeAnalysis,
   TimeAnalysisHeaders,
   TimeAnalysisStudentsList,
-  TimeAnalysisStudentsListByDay
+  TimeAnalysisStudentsListByDay,
+  TimeAnalysisHeadersv2
 };
 
 

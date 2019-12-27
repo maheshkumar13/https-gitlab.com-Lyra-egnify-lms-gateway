@@ -2,6 +2,9 @@ import celery from 'celery-client';
 
 import { config } from '../../../config/environment';
 import { getModel as TimeAnalysisModel } from './timeAnalysis.model';
+import { getModel as StudentModel } from '../../settings/student/student.model';
+import { getStudentIdsByContext } from '../../settings/student/student.controller';
+
 import { getModel as SchedulerTimeAnalysisModel } from './schedulerTimeAnalysis.model';
 
 const cron = require('node-cron');
@@ -118,10 +121,8 @@ export async function getStudentLevelTimeAnalysis(args, context) {
 
 export async function getTeacherLevelTimeAnalysis(args, context) {
   const TimeAnalysis = await TimeAnalysisModel(context);
-  const query = { active: true, isStudent: true };
-  if (args.class) query['refs.class.name'] = args.class;
-  if (args.branch) query['refs.branch.name'] = args.branch;
-  if (args.orientation) query['refs.orientation.name'] = args.orientation;
+  const contextStudentIds = await getStudentIdsByContext(context, args);
+  const query = { active: true, isStudent: true, studentId: { $in: contextStudentIds } };
   if (args.startDate) {
     query.date = { $gte: args.startDate };
   }
@@ -226,6 +227,35 @@ export async function getTimeAnalysis(args, context) {
     TimeAnalysis.count(query),
     TimeAnalysis.find(query).skip(skip).limit(args.limit),
   ]);
+}
+
+export async function getTimeAnalysisHeadersv2(args, context){
+  const [Student, TimeAnalysis] = await Promise.all([
+    StudentModel(context),
+    TimeAnalysisModel(context)
+  ])
+  const contextStudentIds = await getStudentIdsByContext(context,args);
+  const timeQuery = { active: true, isStudent: true, studentId: { $in: contextStudentIds } };
+  if (args.startDate) {
+    timeQuery.date = { $gte: args.startDate };
+  }
+  if (args.endDate) {
+    if (!timeQuery.date) timeQuery.date = {};
+    timeQuery.date.$lte = args.endDate;
+  }
+  const studentIds = await TimeAnalysis.distinct('studentId', timeQuery);
+  const data = await Student.aggregate([
+    {$match: {active: true, studentId: {$in: studentIds}}},
+    {$group: {
+      _id: null,
+      class: {$addToSet: '$hierarchyLevels.L_2'},
+      branch: {$addToSet: '$hierarchyLevels.L_5'},
+      section: {$addToSet: '$hierarchyLevels.L_6'},
+      orientation: {$addToSet: '$orientation'}
+    }}
+  ])
+  if(data && data.length) return data[0];
+  return {};
 }
 
 export async function getTimeAnalysisHeaders(args, context) {

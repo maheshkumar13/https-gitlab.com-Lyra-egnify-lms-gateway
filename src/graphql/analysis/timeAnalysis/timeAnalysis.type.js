@@ -30,9 +30,21 @@ export const TimeAnalysisHeadersType = new ObjectType({
     class: { type: new List(StringType), description: 'List of available classes by search condition' },
     branch: { type: new List(StringType), description: 'List of available branches by search condition' },
     orientation: { type: new List(StringType), description: 'List of available orientations by search condition' },
+    section: { type: new List(StringType), description: 'List of available sections' },
     subject: { type: new List(StringType), description: 'List of available subjects by search condition' },
   },
 });
+
+export const TimeAnalysisHeadersTypev2 = new ObjectType({
+  name: 'TimeAnalysisHeadersTypev2',
+  fields: {
+    class: { type: new List(StringType), description: 'List of available classes by search condition' },
+    branch: { type: new List(StringType), description: 'List of available branches by search condition' },
+    orientation: { type: new List(StringType), description: 'List of available orientations by search condition' },
+    section: { type: new List(StringType), description: 'List of available sections' },
+  },
+});
+
 export const TimeAnalysisListType = new ObjectType({
   name: 'TimeAnalysisListType',
   fields: {
