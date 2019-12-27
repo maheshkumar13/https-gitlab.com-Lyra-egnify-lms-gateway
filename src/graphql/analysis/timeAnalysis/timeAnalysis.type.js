@@ -66,8 +66,8 @@ export const TimeAnalysisListByDayType = new ObjectType({
   },
 });
 
-export const TimeAnalysisListByDayTypev2 = new ObjectType({
-  name: 'TimeAnalysisListByDayTypev2',
+export const TimeAnalysisViewStudentsListType = new ObjectType({
+  name: 'TimeAnalysisViewStudentsListType',
   fields: {
     studentId: { type: StringType, description: 'Student Id' },
     studentName: { type: StringType, description: 'Student Name' },
