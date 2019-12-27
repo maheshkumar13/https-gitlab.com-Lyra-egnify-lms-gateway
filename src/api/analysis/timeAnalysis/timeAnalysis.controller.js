@@ -416,3 +416,101 @@ export async function getTimeAnalysisStudentsListByDay(args, context) {
   const data = objsData && objsData.length ? objsData : [];
   return [count, data];
 }
+
+function getDaysCount(startDate, endDate) {
+  const dayCounts = [0,0,0,0,0,0,0,0]
+  const start = new Date(startDate.toLocaleString("en-US", {timeZone: "Asia/Kolkata"})).getDay()+1;
+  let st = start
+  let days = 0;
+  const value = endDate - startDate;
+  if(value>=0) {
+    days = (value/(1000 * 3600 * 24)) + 1
+  }
+  while(true && days){
+      days--;
+      dayCounts[st] = Math.floor(days/7)+1;
+      st++;
+      if(st > 7) st=1;
+      if(st === start || !days) break;
+  }
+  return dayCounts;
+}
+
+export async function getTimeAnalysisStudentsListByDayv2(args,context) {
+  if(!args.sortBy) args.sortBy = 'studentName';
+  if(args.sortBy === 'day') {
+    if(!args.sortValue) throw new Error('sortValue required if sortBy is day');
+    if(args.sortValue < 1 || args.sortValue > 7) throw new Error('Invalid sortValue, range is 1-7');
+  }
+  if(!args.sortType) args.sortType = 1;
+  const [
+    contextStudentIds,
+    TimeAnalysis
+  ] = await Promise.all([
+    getStudentIdsByContext(context,args),
+    TimeAnalysisModel(context),
+  ])
+  // return contextStudentIds;
+  const dayCounts = getDaysCount(args.startDate, args.endDate);
+  const matchQuery = {
+    active: true,
+    isStudent: true,
+    studentId: { $in: contextStudentIds },
+    date: {
+      $gte: args.startDate,
+      $lte: args.endDate,
+    }
+  }
+  const agrQuery = [];
+  // try {
+  agrQuery.push({
+    $match: matchQuery,
+  })
+  agrQuery.push({
+    $project: { _id: 0, day: { $dayOfWeek: { date: '$date', timezone: "Asia/Kolkata" } }, studentId: 1, studentName: 1,totalTimeSpent: 1 }
+  })
+  agrQuery.push({
+    $group: { _id: { studentId: '$studentId', day: '$day'}, totalTimeSpent: { $sum: '$totalTimeSpent'}}
+  })
+  agrQuery.push({
+    $project: { _id: 1, avg: { $divide:['$totalTimeSpent',{ $arrayElemAt: [dayCounts, '$_id.day']}]}}
+  })
+  const groupQuery = {
+    _id: '$_id.studentId',
+    totalTimeSpent: { $sum: '$avg'},
+    data: { $push: { day: '$_id.day', totalTimeSpent: '$avg'}}
+  }
+  if (args.sortBy === 'day') {
+    groupQuery.day = {
+     $max: { $cond: { if: { $eq: ['$_id.day', args.sortValue] }, then: '$avg', else: 0 }  },
+    }
+  }
+  agrQuery.push({
+    $group: groupQuery,
+  })
+
+  agrQuery.push({
+    $lookup: { from: 'studentInfo', localField: '_id', foreignField: 'studentId', as: 'docs'}
+  })
+  agrQuery.push({$unwind: '$docs'});
+  agrQuery.push({
+    $project: { studentId: '$_id', studentName: '$docs.studentName', totalTimeSpent: 1, day: 1, class: '$docs.hierarchyLevels.L_2', branch: '$docs.hierarchyLevels.L_5', section: '$docs.hierarchyLevels.L_6', orientation: '$docs.orientation',_id: 0,data: 1}
+  })
+  const sortQuery = {};
+  sortQuery[args.sortBy] = args.sortType;
+  agrQuery.push({ $sort: sortQuery })
+  const skip = (args.pageNumber - 1) * args.limit;
+  agrQuery.push({ $skip: skip })
+  if(args.limit) agrQuery.push({$limit: args.limit })
+// } catch(err) {
+//   console.error(err);
+// }
+  const agrCountQuery = [{ $match: matchQuery }, { $group: { _id: '$studentId' } }, { $count: 'total' }];
+  const [countData, objsData] = await Promise.all([
+    TimeAnalysis.aggregate(agrCountQuery).allowDiskUse(true),
+    TimeAnalysis.aggregate(agrQuery).allowDiskUse(true),
+  ])
+  const count = countData && countData.length ? countData[0].total : 0;
+  const data = objsData && objsData.length ? objsData : [];
+  return [count, data];
+}
