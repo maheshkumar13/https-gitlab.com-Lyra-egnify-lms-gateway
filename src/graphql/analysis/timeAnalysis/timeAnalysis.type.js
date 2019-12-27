@@ -65,6 +65,20 @@ export const TimeAnalysisListByDayType = new ObjectType({
 
   },
 });
+
+export const TimeAnalysisListByDayTypev2 = new ObjectType({
+  name: 'TimeAnalysisListByDayTypev2',
+  fields: {
+    studentId: { type: StringType, description: 'Student Id' },
+    studentName: { type: StringType, description: 'Student Name' },
+    class: { type: StringType, description: 'Class Name' },
+    branch: { type: StringType, description: 'Branch Name' },
+    orientation: { type: StringType, description: 'Orientation Name' },
+    section: { type: StringType, description: 'Section Name' },
+    totalTimeSpent: { type: GraphQLJSON, description: 'Total time spent' },
+    data: { type: new List(GraphQLJSON) }
+  },
+});
 export default {
   TimeAnalysisType,
   TimeAnalysisHeadersType,

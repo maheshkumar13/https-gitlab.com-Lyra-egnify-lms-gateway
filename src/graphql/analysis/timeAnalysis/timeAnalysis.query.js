@@ -8,8 +8,9 @@ import {
   GraphQLNonNull as NonNull,
 } from 'graphql';
 import GraphQLDate from 'graphql-date';
+import GraphQLJSON from 'graphql-type-json';
 
-import { TimeAnalysisType, TimeAnalysisHeadersType, TimeAnalysisListType, TimeAnalysisListByDayType, TimeAnalysisHeadersTypev2 } from './timeAnalysis.type';
+import { TimeAnalysisType, TimeAnalysisHeadersType, TimeAnalysisListType, TimeAnalysisListByDayType, TimeAnalysisHeadersTypev2, TimeAnalysisListByDayTypev2 } from './timeAnalysis.type';
 import { validateAccess } from '../../../utils/validator';
 
 const controller = require('../../../api/analysis/timeAnalysis/timeAnalysis.controller');
@@ -453,12 +454,114 @@ export const TimeAnalysisStudentsListByDay = {
   },
 };
 /*******************************************************************************/
+
+const TimeAnalysisPaginatedListByDayTypev2 = new ObjectType({
+  name: 'TimeAnalysisPaginatedListByDayTypev2',
+  fields() {
+    return {
+      data: {
+        type: new List(TimeAnalysisListByDayTypev2),
+      },
+      pageInfo: {
+        type: pageInfoListType,
+      },
+    };
+  },
+});
+
+// export const WeekDayEnumType = new EnumType({ // eslint-disable-line
+//   name: 'WeekDayEnumType',
+//   values: {
+//     1: {},
+//     2: {},
+//     3: {},
+//     4: {},
+//     5: {},
+//     6: {},
+//     7: {},
+//   },
+// });
+export const SortingOrderEnumType = new EnumType({ // eslint-disable-line
+  name: 'SortingOrderEnumType',
+  values: {
+    ASC: {
+      value: 1,
+    },
+    DESC: {
+      value: -1,
+    },
+  },
+});
+
+export const SortByEnumTypev2 = new EnumType({ // eslint-disable-line
+  name: 'SortByEnumTypev2',
+  values: {
+    studentName: {},
+    studentId: {},
+    day: {},
+    totalTimeSpent: {},
+    class:{},
+    branch:{},
+    orientation:{},
+    section: {},
+  },
+});
+
+export const TimeAnalysisStudentsListByDayv2 = {
+  args: {
+    class: { type: StringType, description: 'Class name' },
+    branch: { type: StringType, description: 'Branch name' },
+    orientation: { type: StringType, description: 'Orientation' },
+    section: { type: StringType, description: 'Section' },
+    startDate: { type: new NonNull(GraphQLDate), description: 'Start date' },
+    endDate: { type: new NonNull(GraphQLDate), description: 'End date' },
+    pageNumber: { type: IntType, description: 'Page number' },
+    limit: { type: IntType, description: 'Number of docs per page' },
+    sortBy: { type: SortByEnumTypev2, description: 'Sort By' },
+    sortType: { type: SortingOrderEnumType, description: 'Sort Type' },
+    sortValue: { type: IntType, description: 'Sort Value' },
+  },
+  type: TimeAnalysisPaginatedListByDayTypev2,
+  async resolve(obj, args, context) {
+    const validRoles = ['CMS_ENGAGEMENT_VIEWER'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
+    if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
+    if (!args.limit) args.limit = 0; // eslint-disable-line
+    if (args.pageNumber < 1) throw new Error('Page Number is invalid');
+    if (args.limit < 0) throw new Error('Invalid limit');
+    return controller.getTimeAnalysisStudentsListByDayv2(args, context).then(([count, data]) => {
+      const pageInfo = {};
+      const resp = {};
+      pageInfo.prevPage = true;
+      pageInfo.nextPage = true;
+      pageInfo.pageNumber = args.pageNumber;
+      pageInfo.totalPages = args.limit && count ? Math.ceil(count / args.limit) : 1;
+      pageInfo.totalEntries = count;
+      resp.data = data;
+      //console.log("datann : ",data)
+      if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+        throw new Error('Page Number is invalid');
+      }
+      if (args.pageNumber === pageInfo.totalPages) {
+        pageInfo.nextPage = false;
+      }
+      if (args.pageNumber === 1) {
+        pageInfo.prevPage = false;
+      }
+      resp.pageInfo = pageInfo;
+
+      return resp;
+    });
+  },
+};
+
 export default {
   TimeAnalysis,
   TimeAnalysisHeaders,
   TimeAnalysisStudentsList,
   TimeAnalysisStudentsListByDay,
-  TimeAnalysisHeadersv2
+  TimeAnalysisHeadersv2,
+  TimeAnalysisStudentsListByDayv2
 };
 
 
