@@ -16,21 +16,17 @@ const dataTables = require('mongoose-datatables');
 const TestInfo = new mongoose.Schema({
   name: {
     type: String,
-    index: true
   },
   startTime: {
     type: Date,
-    index: true,
     default: Date.now()
   },
   endTime: {
     type: Date,
-    index: true,
     default: Date.now()
   },
   date: {
     type: Date,
-    index: true,
     default: Date.now()
   },
   duration: {
@@ -98,7 +94,7 @@ const TestSchema = new mongoose.Schema({
     }
   },
   testType: {
-    type: Object,
+    type: Schema.Types.Mixed,
     default: {
       "name": "Textbook Test",
       "patternCode": "TT",
@@ -213,7 +209,7 @@ const TestSchema = new mongoose.Schema({
     type: TestInfo
   },
   markingScheme: {
-    type: Object,
+    type: Schema.Types.Mixed,
     default: {
       "totalQuestions": null,
       "totalMarks": null,

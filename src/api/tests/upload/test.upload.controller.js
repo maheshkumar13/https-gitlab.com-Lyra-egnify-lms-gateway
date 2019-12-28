@@ -5,6 +5,16 @@ import {
 import {
   getModel as TextBook
 } from '../../settings/textbook/textbook.model';
+const xlsx = require('xlsx');
+
+import {
+  getModel as Chapter
+} from '../../settings/conceptTaxonomy/concpetTaxonomy.model'
+const uuidv4 = require("uuid/v4");
+import {getModel as Hierarchy} from '../../settings/instituteHierarchy/instituteHierarchy.model';
+import {getModel as Subject} from '../../settings/subject/subject.model';
+const MAPPING_HEADERS = ["class","subject","textbook","chapter","content name","media type","view order"]
+const SUPPORTED_MEDIA_TYPE = ["docx","xlsx","xml"];
 
 function queryForListTest(args) {
   let query = {
@@ -26,6 +36,41 @@ function queryForListTest(args) {
   }
   return query;
 
+}
+
+function getFileData(req){
+	const workbook = xlsx.read(req.file.buffer, {
+		type: 'buffer',
+		cellDates: true
+	  });
+
+	// converting the sheet data to array of of objects
+	const data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]],{defval:""});
+	// deleting empty string keys from all objects
+	data.forEach((v) => {
+		delete v[''];
+	}); // eslint-disable-line
+
+	// deleting all trailing empty rows
+	for (let i = data.length - 1; i >= 0; i -= 1) {
+		let values = Object.values(data[i]);
+		values = values.map(x => x.toString());
+		const vals = values.map(x => x.trim());
+		if (vals.every(x => x === '')) data.pop();
+		else break;
+	}
+
+	// trim and remove whitespace and changing keys to lower case
+	data.forEach((obj) => {
+		const keys = Object.keys(obj);
+		for (let i = 0; i < keys.length; i += 1) {
+			const key = keys[i];
+			const lowerKey = key.toLowerCase();
+			obj[lowerKey] = obj[key].toString().replace(/\s\s+/g, ' ').trim();
+			if (key !== lowerKey) delete obj[key];
+		}
+	});
+	return data;
 }
 
 export async function listTest(args, ctx) {
@@ -60,6 +105,7 @@ export async function listTest(args, ctx) {
     throw err;
   }
 }
+
 export async function listTextBooksWithTestSubectWise(args, ctx) {
   try {
     const TestSchema = await Tests(ctx);
@@ -103,6 +149,7 @@ export async function listTextBooksWithTestSubectWise(args, ctx) {
     throw err;
   }
 }
+
 export async function getDashboardHeadersAssetCountV2(args, context) {
   const {
     classCode,
@@ -187,4 +234,360 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
     });
   });
   return finalData;
+}
+
+export async function uploadTestMapping(req, res){
+  try{
+    if (!req.file) {
+      return res.status(400).send({message: 'File required', error: true});
+    }
+    
+    const fileName = req.file.originalname.split('.');
+    const extname = fileName.pop()
+    
+    if (extname !== 'xlsx') {
+      return res.status(400).send({message:'Invalid file extension, only xlsx is supported',error: true});
+    }
+    
+    let data = getFileData(req);
+    
+    if(!data.length){
+      return res.status(400).send({error: true,message:"Empty file."});
+    }
+    
+    const headersInSheet = Object.keys(data[0]);
+    const notFoundHeader = validateHeaders(headersInSheet, MAPPING_HEADERS)
+    
+    if(notFoundHeader.length){
+      return res.status(400).send({error: true,message:"Invalid Headers",data: notFoundHeader});
+    }
+    const validateMappingSheet = validateMappingRows(data);
+    
+    if(validateMappingSheet.length){
+      return res.status(400).send(
+        {message: "Invalid row in the sheet",data: validateMappingSheet,error: true}
+        );
+    }
+    const TestSchema = await Tests(req.user_cxt);
+    
+    const promiseSchema = await Promise.all([
+      Chapter(req.user_cxt),TextBook(req.user_cxt),
+      Hierarchy(req.user_cxt),Subject(req.user_cxt)
+    ]);
+    
+    const ChapterSchema = promiseSchema[0];
+    const TextBookSchema = promiseSchema[1];
+    const HierarchySchema = promiseSchema[2];
+    const SubjectSchema = promiseSchema[3];
+
+    let textbook = new Set();
+    let classs = new Set()
+    let subject = new Set();
+    let chapter = new Set();
+    
+    for(let i = 0 ; i < data.length ; i++){
+      textbook.add(data[i]["textbook"]);
+      classs.add(data[i]["class"]);
+      subject.add(data[i]["subject"]);
+      chapter.add(data[i]["chapter"]);
+    }
+    
+    const textbooks = Array.from(textbook);
+    const classes = Array.from(classs);
+    const subjects = Array.from(subject);
+    const chapters = Array.from(chapter);
+    
+    const promiseGetIndependentData = await Promise.all([
+      HierarchySchema.find({levelName:"Class",child:{$in:classes},active:true})
+      .select({_id:0,childCode:1,child: 1}).lean(),
+      TextBookSchema.find({"refs.class.name":{$in: classes},"name":{$in: textbooks},"refs.subject.name":{$in: subjects}, active: true})
+      .select({_id:0, orientations: 1, branches: 1,code:1, refs: 1,name: 1}).lean()
+    ]);
+
+    const classData = promiseGetIndependentData[0];
+    const textbookData = promiseGetIndependentData[1];
+
+    let classCodes = [];
+
+    classData.forEach(obj => classCodes.push(obj.childCode));
+
+    let textbookCodes = [];
+    
+    textbookData.forEach(textbook => {textbookCodes.push(textbook["code"]);});
+    
+    const promiseGetDependentData = await Promise.all([
+      SubjectSchema.find({subject:{$in:subjects},active:true,"refs.class.code":{$in:classCodes}})
+      .select({_id: 0, subject: 1,code: 1, "refs.class.code": 1}).lean(),
+      ChapterSchema.find({"refs.textbook.code":{$in:textbookCodes},"child": {$in : chapters} , "levelName":"topic",active:true})
+      .select({_id: 0, childCode: 1, child: 1, refs: 1}).lean()
+    ]);
+
+    const subjectsData = promiseGetDependentData[0];
+    const chapterData = promiseGetDependentData[1];
+    const validationCheck = await validateMappingDataFromDbDataAndCreateMap(data, chapterData, textbookData, classData, subjectsData);
+    
+    if(validationCheck.error){
+      return res.status(400).send({message: "Invalid row in the sheet",data: validationCheck.erroredRow});
+    }
+
+    await TestSchema.bulkWrite(validationCheck.mapping);
+    
+    return res.status(200).send(validationCheck.retMap);
+  }catch(err){
+    console.log(err)
+    return res.status(500).send("internal server error");
+  }
+}
+
+function validateHeaders(headersInSheet, _MAPPING_HEADERS){
+  let obj = {}
+  for(let i = 0; i < headersInSheet.length; i++){
+      obj[headersInSheet[i]] = true
+  }
+  let headersNotFound = [];
+  for(let j = 0 ; j < _MAPPING_HEADERS.length; j ++ ){
+    if(!obj.hasOwnProperty(_MAPPING_HEADERS[j])){
+      headersNotFound.push(_MAPPING_HEADERS[j].toUpperCase())
+    }
+  }
+  return headersNotFound;
+}
+//["class","subject","textbook","chapter","content name","media type"]
+function validateMappingRows (data){
+  let errors = []
+  let length = data.length
+  for(let i = 0 ; i < length ; i++){
+    let rowNumber = i+2;
+    let errorDetails = [];
+    if(!data[i]["class"]){
+      errorDetails.push("CLASS not present")
+    }
+    if(!data[i]["subject"]){
+      errorDetails.push("SUBJECT not present")
+    }
+
+    if(!data[i]["textbook"]){
+      errorDetails.push("TEXTBOOK not present")
+    }
+
+    if(!data[i]["chapter"]){
+      errorDetails.push("CHAPTER not present")
+    }
+
+    if(!data[i]["content name"]){
+      errorDetails.push("CONTENT NAME not present")
+    }
+
+    if(!data[i]["media type"]){
+      errorDetails.push("MEDIA TYPE not present")
+    }
+
+    if(data[i]["media type"] && SUPPORTED_MEDIA_TYPE.indexOf(data[i]["media type"].toLowerCase()) === -1){
+      errorDetails.push("Invalid MEDIA TYPE. Supported media types are :",SUPPORTED_MEDIA_TYPE.join(","));
+    }
+
+    if(errorDetails.length){
+      errors.push("Row "+ rowNumber+ " : "+errorDetails.join(","))
+    }
+  }
+  return errors;
+}
+
+async function validateMappingDataFromDbDataAndCreateMap(data, chapterData, textBookData, classData, subjectsData){
+  try{
+    const length = data.length;
+    let error = false;
+    let mapping = [];
+    let erroredRow = [];
+    let retMap = []
+    const promise = await Promise.all([
+      convertArrayOfChapterToObject(chapterData),
+      convertArrayOfTextbookToObject(textBookData),
+      classMapWithClassName(classData),
+      subjectMapWithClassName(subjectsData, classData)
+    ])
+    const indexed_chapter = promise[0]
+    const indexed_textbook = promise[1]
+    const indexed_class = promise[2]
+    const indexed_subject = promise[3]
+    for (let i = 0 ; i< length ; i++){
+      let rowNumber = i+2;
+      if(!indexed_class.hasOwnProperty(data[i]["class"])){
+        erroredRow.push("Row "+ rowNumber+ " : Invalid class")
+        error = true;
+        continue;
+      }
+  
+      let _subjectKey = data[i]["subject"]+"_"+data[i]["class"];
+  
+      if(!indexed_subject.hasOwnProperty(_subjectKey)){
+        erroredRow.push("Row "+ rowNumber+ " : Invalid subject")
+        error = true;
+        continue;
+      }
+  
+      let _textbookKey = data[i]["textbook"]+"_"+data[i]["class"]+"_"+data[i]["subject"];
+      if(!indexed_textbook.hasOwnProperty(_textbookKey)){
+        erroredRow.push("Row "+ rowNumber+ " : Invalid textbook")
+        error = true;
+        continue;
+      }
+  
+      let _chapterKey = data[i]["chapter"]+"_"+indexed_textbook[_textbookKey]["code"];
+      
+      if(!indexed_chapter.hasOwnProperty(_chapterKey)){
+        erroredRow.push("Row "+ rowNumber+ " : Invalid chapter")
+        error = true;
+        continue;
+      }
+      if(!error){
+        let testMapping = createTestMappingObject(data[i],indexed_class[data[i]["class"]],
+        indexed_subject[_subjectKey],indexed_textbook[_textbookKey],
+        indexed_chapter[_chapterKey])
+        mapping.push(testMapping);
+        retMap.push(testMapping["updateOne"]["update"]["$set"])
+      }
+    }
+    return {error, mapping,retMap, erroredRow}
+  }catch(err){
+    throw err;
+  }
+  
+}
+
+async function convertArrayOfTextbookToObject(textbook){
+  let textbookObj = {};
+  let length = textbook.length;
+  for(let i = 0 ; i < length ;i++){
+    let textbookKey = textbook[i]["name"]+"_"+textbook[i]["refs"]["class"]["name"]+"_"+textbook[i]["refs"]["subject"]["name"];
+    textbookObj[textbookKey] = textbook[i]
+  }
+  return textbookObj;
+}
+
+async function convertArrayOfChapterToObject(chapters){
+  let chapterObj = {};
+  let length = chapters.length;
+  for(let i = 0 ; i < length ; i++){
+    let chapterKey = chapters[i]["child"]+"_"+chapters[i]["refs"]["textbook"]["code"];
+    chapterObj[chapterKey] = chapters[i];
+  }
+  return chapterObj;
+}
+
+async function classMapWithClassCode(classes){
+  let classObj = {};
+  let length = classes.length;
+  for(let i = 0 ; i< length; i++){
+    classObj[classes[i]["childCode"]] = classes[i];
+  }
+  return classObj;
+}
+
+async function classMapWithClassName(classes){
+  let classObj = {};
+  let length = classes.length;
+  for(let i = 0 ; i< length; i++){
+    classObj[classes[i]["child"]] = classes[i];
+  }
+  return classObj;
+}
+
+async function subjectMapWithClassName(subjects,classes){
+  let subjectObj ={};
+  const classMap = await classMapWithClassCode(classes);
+  let length = subjects.length;
+  for (let i = 0 ; i < length ; i++){
+    let subjectKey = subjects[i]["subject"]+ "_" + classMap[subjects[i]["refs"]["class"]["code"]]["child"];
+    subjectObj[subjectKey] = subjects[i];
+  }
+  return subjectObj;
+}
+
+function createTestMappingObject(data, classData, subjectData, textBookData, chapterData){
+  let mapping = {
+    "testId" : data["asset id"] || uuidv4(),
+    "testName" : data["content name"],
+    "subjects" : [
+        {
+            "totalQuestions" : null,
+            "qmapCompletion" : null,
+            "code" : subjectData.code,
+            "parentCode" : textBookData.code,
+            "subject" : data["subject"],
+            "subjectCode" : subjectData.code
+        }
+    ],
+
+    "markingSchema" : {
+        "totalQuestions" : null,
+        "totalMarks" : null,
+        "subjects" : [
+            {
+                "tieBreaker" : 1,
+                "start" : 1,
+                "end" : null,
+                "subject" : data["subject"],
+                "totalQuestions" : null,
+                "totalMarks" : null,
+                "marks" : [
+                    {
+                        "noOfOptions" : 4,
+                        "numberOfSubQuestions" : null,
+                        "P" : 0,
+                        "ADD" : 1,
+                        "questionType" : "Single Answer",
+                        "egnifyQuestionType" : "Single answer type",
+                        "numberOfQuestions" : null,
+                        "section" : null,
+                        "C" : 1,
+                        "W" : 0,
+                        "U" : 0,
+                        "start" : 1,
+                        "end" : null,
+                        "totalMarks" : null
+                    }
+                ]
+            }
+        ]
+    },
+    "mapping" : {
+        "class" : {
+            "code" : classData["childCode"],
+            "name" : data["class"]
+        },
+        "subject" : {
+            "code" : subjectData["code"],
+            "name" : data["subject"]
+        },
+        "textbook" : {
+            "code" : textBookData["code"],
+            "name" : data["textbook"]
+        },
+        "chapter" : {
+            "code" : chapterData["code"],
+            "name" : data["chapter"]
+        }
+    },
+    "branches" : textBookData["branches"],
+    "orientations" : textBookData["orientations"],
+    "test" : {
+        "startTime" : new Date(),
+        "endTime" : new Date(),
+        "date" : new Date(),
+        "duration" : null,
+        "questionPaperId" : null,
+        "name" : data["content name"]
+    },
+    "viewOrder" : data["view order"] || null
+  }
+  let upsertObj = {
+    updateOne: {
+        filter: {"testId":mapping["testId"] },
+        update: {"$set": mapping},
+        upsert: true,
+        setDefaultsOnInsert: true
+    }
+}
+  return upsertObj;
 }
