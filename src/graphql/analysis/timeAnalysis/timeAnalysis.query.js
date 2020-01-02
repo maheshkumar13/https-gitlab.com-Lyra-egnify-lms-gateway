@@ -621,6 +621,72 @@ export const TimeAnalysisStudentsListBySubjects = {
   },
 };
 
+//************************************************************************** */
+
+
+export const TimeAnalysisStudentsListByCategorySortByEnumTypev2 = new EnumType({ // eslint-disable-line
+  name: 'TimeAnalysisStudentsListByCategorySortByEnumTypev2',
+  values: {
+    studentName: {},
+    studentId: {},
+    category: {},
+    totalTimeSpent: {},
+    class:{},
+    branch:{},
+    orientation:{},
+    section: {},
+  },
+});
+
+
+
+export const TimeAnalysisStudentsListByCategory = {
+  args: {
+    class: { type: StringType, description: 'Class name' },
+    branch: { type: StringType, description: 'Branch name' },
+    orientation: { type: StringType, description: 'Orientation' },
+    section: { type: StringType, description: 'Section' },
+    startDate: { type: new NonNull(GraphQLDate), description: 'Start date' },
+    endDate: { type: new NonNull(GraphQLDate), description: 'End date' },
+    pageNumber: { type: IntType, description: 'Page number' },
+    limit: { type: IntType, description: 'Number of docs per page' },
+    sortBy: { type: TimeAnalysisStudentsListByCategorySortByEnumTypev2, description: 'Sort By' },
+    sortType: { type: SortingOrderEnumType, description: 'Sort Type' },
+    sortValue: { type: StringType, description: 'Sort Value' },
+  },
+  type: TimeAnalysisPaginatedViewStudentsListType,
+  async resolve(obj, args, context) {
+    const validRoles = ['CMS_ENGAGEMENT_VIEWER'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
+    if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
+    if (!args.limit) args.limit = 0; // eslint-disable-line
+    if (args.pageNumber < 1) throw new Error('Page Number is invalid');
+    if (args.limit < 0) throw new Error('Invalid limit');
+    return controller.getTimeAnalysisStudentsListByCategory(args, context).then(([count, data]) => {
+      const pageInfo = {};
+      const resp = {};
+      pageInfo.prevPage = true;
+      pageInfo.nextPage = true;
+      pageInfo.pageNumber = args.pageNumber;
+      pageInfo.totalPages = args.limit && count ? Math.ceil(count / args.limit) : 1;
+      pageInfo.totalEntries = count;
+      resp.data = data;
+      //console.log("datann : ",data)
+      if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+        throw new Error('Page Number is invalid');
+      }
+      if (args.pageNumber === pageInfo.totalPages) {
+        pageInfo.nextPage = false;
+      }
+      if (args.pageNumber === 1) {
+        pageInfo.prevPage = false;
+      }
+      resp.pageInfo = pageInfo;
+
+      return resp;
+    });
+  },
+};
 export default {
   TimeAnalysis,
   TimeAnalysisHeaders,
@@ -628,7 +694,8 @@ export default {
   TimeAnalysisStudentsListByDay,
   TimeAnalysisHeadersv2,
   TimeAnalysisStudentsListByDayv2,
-  TimeAnalysisStudentsListBySubjects
+  TimeAnalysisStudentsListBySubjects,
+  TimeAnalysisStudentsListByCategory
 };
 
 
