@@ -327,12 +327,12 @@ export async function uploadTestMapping(req, res){
     const validationCheck = await validateMappingDataFromDbDataAndCreateMap(data, chapterData, textbookData, classData, subjectsData);
     
     if(validationCheck.error){
-      return res.status(400).send({message: "Invalid row in the sheet",data: validationCheck.erroredRow});
+      return res.status(400).send({message: "Invalid row in the sheet",data: validationCheck.erroredRow,error: true});
     }
 
     await TestSchema.bulkWrite(validationCheck.mapping);
     
-    return res.status(200).send(validationCheck.retMap);
+    return res.status(200).send({error: false, message: "Success"});
   }catch(err){
     console.log(err)
     return res.status(500).send("internal server error");
@@ -399,7 +399,6 @@ async function validateMappingDataFromDbDataAndCreateMap(data, chapterData, text
     let error = false;
     let mapping = [];
     let erroredRow = [];
-    let retMap = []
     const promise = await Promise.all([
       convertArrayOfChapterToObject(chapterData),
       convertArrayOfTextbookToObject(textBookData),
@@ -445,10 +444,9 @@ async function validateMappingDataFromDbDataAndCreateMap(data, chapterData, text
         indexed_subject[_subjectKey],indexed_textbook[_textbookKey],
         indexed_chapter[_chapterKey])
         mapping.push(testMapping);
-        retMap.push(testMapping["updateOne"]["update"]["$set"])
       }
     }
-    return {error, mapping,retMap, erroredRow}
+    return {error, mapping, erroredRow}
   }catch(err){
     throw err;
   }
