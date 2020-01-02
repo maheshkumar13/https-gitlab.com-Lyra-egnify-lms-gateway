@@ -7,7 +7,12 @@ import {
 } from '../../settings/textbook/textbook.model';
 
 function queryForListTest(args) {
+  let activeStatus=true
+  if(args.active === false) activeStatus=false 
   let query = {
+    find: {
+      active: activeStatus
+    },
     search: {},
     sort: {
       "test.date": -1

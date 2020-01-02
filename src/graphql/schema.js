@@ -89,6 +89,10 @@ const schema = new Schema({
       TeacherLevelCompletionHeaders,
       StudentLevelTimeAnalysis,
       TeacherLevelTimeAnalysis,
+      TimeAnalysisHeadersv2,
+      TimeAnalysisStudentsListByDayv2,
+      TimeAnalysisStudentsListBySubjects,
+      TimeAnalysisStudentsListByCategory,
     },
   }),
   mutation: new ObjectType({
