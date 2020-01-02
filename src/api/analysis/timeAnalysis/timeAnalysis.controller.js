@@ -609,3 +609,98 @@ export async function getTimeAnalysisStudentsListBySubjects(args,context){
   const data = objsData && objsData.length ? objsData : [];
   return [count, data];
 }
+
+export async function getTimeAnalysisStudentsListByCategory(args,context){
+  if(!args.sortBy) args.sortBy = 'studentName';
+  if(args.sortBy === 'category' && !args.sortValue) {
+    throw new Error('sortValue required if sortBy is category');
+  }
+  if(!args.sortType) args.sortType = 1;
+  const [
+    contextStudentIds,
+    TimeAnalysis
+  ] = await Promise.all([
+    getStudentIdsByContext(context,args),
+    TimeAnalysisModel(context),
+  ])
+  const matchQuery = {
+    active: true,
+    isStudent: true,
+    studentId: { $in: contextStudentIds },
+    date: {
+      $gte: args.startDate,
+      $lte: args.endDate,
+    }
+  }
+  const agrQuery = [];
+  // try {
+  agrQuery.push({
+    $match: matchQuery,
+  })
+
+  agrQuery.push({
+    $project: { _id: 0, studentId: 1, category: { $objectToArray: '$category'}}
+  })
+
+  agrQuery.push({
+    $unwind: '$category'
+  })
+
+  agrQuery.push({
+    $group: { _id: { studentId: '$studentId', category:'$category.k'}, totalTimeSpent: {$sum: '$category.v.totalTimeSpent'}}
+  })
+
+  agrQuery.push({
+    $group: {
+      _id: '$_id.studentId',
+      totalTimeSpent: { $sum: '$totalTimeSpent'},
+      data: { $push: { category: '$_id.category', totalTimeSpent: '$totalTimeSpent'}}
+    }
+  })
+
+  agrQuery.push({
+    $unwind: '$data'
+  })
+
+  const groupQuery = {
+      _id: '$_id',
+      totalTimeSpent: { $first: '$totalTimeSpent'},
+      data: { $push: {
+        category: '$data.category',
+        totalTimeSpent: { $multiply: [100, {$divide:["$data.totalTimeSpent", "$totalTimeSpent"]}]}
+    }}
+  }
+
+  if (args.sortBy === 'category') {
+    groupQuery.category = {
+     $max: { $cond: { if: { $eq: ['$data.category', args.sortValue] }, then: { $multiply: [100, {$divide:["$data.totalTimeSpent", "$totalTimeSpent"]}]}, else: 0 }  },
+    }
+  }
+
+  agrQuery.push({
+    $group: groupQuery,
+  })
+
+  agrQuery.push({
+    $lookup: { from: 'studentInfo', localField: '_id', foreignField: 'studentId', as: 'docs'}
+  })
+  agrQuery.push({$unwind: '$docs'});
+  agrQuery.push({
+    $project: { studentId: '$_id', studentName: '$docs.studentName', totalTimeSpent: 1, category: 1, class: '$docs.hierarchyLevels.L_2', branch: '$docs.hierarchyLevels.L_5', section: '$docs.hierarchyLevels.L_6', orientation: '$docs.orientation',_id: 0,data: 1}
+  })
+  const sortQuery = {};
+  sortQuery[args.sortBy] = args.sortType;
+  agrQuery.push({ $sort: sortQuery })
+  const skip = (args.pageNumber - 1) * args.limit;
+  agrQuery.push({ $skip: skip })
+  if(args.limit) agrQuery.push({$limit: args.limit })
+
+  const agrCountQuery = [{ $match: matchQuery }, { $group: { _id: '$studentId' } }, { $count: 'total' }];
+  const [countData, objsData] = await Promise.all([
+    TimeAnalysis.aggregate(agrCountQuery).allowDiskUse(true),
+    TimeAnalysis.aggregate(agrQuery).allowDiskUse(true),
+  ])
+  const count = countData && countData.length ? countData[0].total : 0;
+  const data = objsData && objsData.length ? objsData : [];
+  return [count, data];
+}
