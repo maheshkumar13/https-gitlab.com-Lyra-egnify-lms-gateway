@@ -27,7 +27,7 @@ const uuidv1 = require('uuid/v1');
 
 function queryForListTest(args) {
   let activeStatus=true
-  if(args.active === false)activeStatus=false 
+  if(args.active === false) activeStatus=false 
   let query = {
     find: {
       active: activeStatus

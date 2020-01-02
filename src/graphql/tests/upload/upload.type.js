@@ -13,9 +13,6 @@ import GraphQLJSON from 'graphql-type-json';
 export const ListInputType = new InputType({
     name: 'ListInputType',
     fields: {
-        active: {
-            type: BooleanType
-        },
         classCode: {
             type: StringType
         },
