@@ -56,8 +56,8 @@ export async function getTestTimings(req, res) {
                 data:[]
             });
         }
-       let total={"count":count}
-       return res.status(200).send([resData,total]);
+       let data={"count":count,"data":resData}
+       return res.status(200).send(data);
     } catch (err) {
         console.log(err)
         return res.status(500).json({
