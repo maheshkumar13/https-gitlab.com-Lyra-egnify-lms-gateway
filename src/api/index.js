@@ -21,6 +21,7 @@ const studentSync = require('./v1/studentSync');
 const hierarchySync = require('./v1/hierarchySync');
 const elasticindexing = require('./indexelasticsearch/indexcontent/index');
 const test = require('./tests/upload');
+const testTimings = require('./tests/testTimings');
 const timeAnalysis = require('./analysis/timeAnalysis');
 
 export default function (app) {
@@ -31,6 +32,7 @@ export default function (app) {
   app.use('/api/textbook', textbook);
   app.use('/api/practice',testUpload);
   app.use('/api/test',test);
+  app.use('/api/test',testTimings);
   app.use('/api/studentLedger', studentLedger);
 
   // Util APIs
