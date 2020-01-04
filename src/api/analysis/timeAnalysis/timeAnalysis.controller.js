@@ -738,7 +738,7 @@ export async function getTimeAnalysisUniqueSubjectsByFilters(args, context){
 export async function getTimeAnalysisStudentsListBySubjectDateWise(args,context){
   if(!args.sortBy) args.sortBy = 'studentName';
   if(args.sortBy === 'category' && !args.sortValue) {
-    throw new Error('sortValue required if sortBy is category');
+    throw new Error('sortValue required if sortBy is date');
   }
   if(!args.sortType) args.sortType = 1;
   const [

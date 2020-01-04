@@ -1971,6 +1971,217 @@ export async function getTextbookBasedListOfQuizzes(args, context) {
 
 }
 
+export async function getContentMappingUploadedDataLearn(args,context){ 
+  const [
+    InstituteHierarchy,
+    Subject,
+    Textbook,
+    ConceptTaxonomy,
+    ContentMapping,
+  ] = await Promise.all([
+    InstituteHierarchyModel(context),
+    SubjectModel(context),
+    TextbookModel(context),
+    ConceptTaxonomyModel(context),
+    ContentMappingModel(context),
+  ])
+  
+  // Class Data
+  const classQuery = { active: true, levelName: 'Class' };
+  if(args.classCode) classQuery.childCode = args.classCode;
+  const classData = await InstituteHierarchy.find(classQuery,{child: 1, childCode: 1, _id: 0});
+  const classObj = {};
+  classData.forEach( x => {classObj[x.childCode] = x});
+  
+  // Subject Data
+  const subjectQuery = { active: true, 'refs.class.code': {$in: Object.keys(classObj) }};
+  if(args.subjectCode) subjectQuery.code = args.subjectCode;
+  const subjectData = await Subject.find(subjectQuery,{subject: 1, code: 1, refs: 1, _id: 0});
+  const subjectObj = {};
+  subjectData.forEach( x => {subjectObj[x.code] = x});
+
+  // Textbook Data
+  const textbookQuery = { active: true, 'refs.class.code': {$in: Object.keys(classObj)}, 'refs.subject.code': { $in: Object.keys(subjectObj)} };
+  if(args.textbookCode) textbookQuery.code = args.textbookCode;
+  if(args.branch) textbookQuery.branches = { $in: [args.branch, '', null]};
+  if(args.orientation) textbookQuery.orientations = { $in: [args.orientations, '', null]};
+  const textbookData = await Textbook.find(textbookQuery,{name: 1, code: 1, refs: 1, _id: 0});
+  const textbookObj = {};
+  textbookData.forEach( x => {
+    textbookObj[x.code] = {
+    class: {
+      name: classObj[x.refs.class.code].child,
+      code: classObj[x.refs.class.code].childCode,
+    },
+    subject: {
+      name: subjectObj[x.refs.subject.code].subject,
+      code: subjectObj[x.refs.subject.code].code,
+    },
+    textbook: {
+      name: x.name,
+      code: x.code,
+    }
+  }});
+  
+  // ConceptTaxonomy Data
+  const conceptQuery = { active: true, levelName: 'topic', 'refs.textbook.code': {$in: Object.keys(textbookObj)}};
+  if(args.chapterCode) {
+    conceptQuery.code = args.chapterCode;
+  }
+  const topicData = await ConceptTaxonomy.aggregate([
+    { $match: conceptQuery },
+    { $group: { _id: '$refs.textbook.code', codes: {$push: { code: '$code', name: '$child'}}}},
+  ]);
+  const topicObj = {};
+  // Content mapping
+  const topicsFilter = [];
+  topicData.forEach(x => {
+    const textbookCode = x._id;
+    const codes = [];
+    topicObj[textbookCode] = {};
+    x.codes.forEach(chapter => {
+      topicObj[textbookCode][chapter.code] = chapter.name;
+      codes.push(chapter.code);
+    })
+    topicsFilter.push({'refs.textbook.code': textbookCode, 'refs.topic.code': { $in: codes }});
+  })
+  const contentTypeMatchOrData = getContentTypeMatchOrData(args.contentCategory);
+
+  const contentQuery = {
+    active: true,
+    'content.category': { $nin: ['Practice', 'Tests', 'Take Quiz']},
+    $and: [{$or: topicsFilter},{$or: contentTypeMatchOrData }]
+  }
+  const skip = (args.pageNumber - 1) * args.limit;
+  const [count, data ] = await Promise.all([
+    ContentMapping.count(contentQuery),
+    ContentMapping.find(contentQuery).skip(skip).limit(args.limit).lean(),
+  ])
+  data.forEach(obj => {
+    const topicCode = obj.refs.topic.code;
+    obj.refs = textbookObj[obj.refs.textbook.code];
+    obj.refs.topic = {
+      name: topicObj[obj.refs.textbook.code][topicCode],
+      code: topicCode,
+    }
+  })
+  return {
+    count,
+    data
+  }
+}
+
+export async function getContentMappingUploadedDataReadingMaterialAudio(args,context){ 
+  const [
+    InstituteHierarchy,
+    Subject,
+    Textbook,
+    ConceptTaxonomy,
+    ContentMapping,
+  ] = await Promise.all([
+    InstituteHierarchyModel(context),
+    SubjectModel(context),
+    TextbookModel(context),
+    ConceptTaxonomyModel(context),
+    ContentMappingModel(context),
+  ])
+  
+  // Class Data
+  const classQuery = { active: true, levelName: 'Class' };
+  if(args.classCode) classQuery.childCode = args.classCode;
+  const classData = await InstituteHierarchy.find(classQuery,{child: 1, childCode: 1, _id: 0});
+  const classObj = {};
+  classData.forEach( x => {classObj[x.childCode] = x});
+  
+  // Subject Data
+  const subjectQuery = { active: true, 'refs.class.code': {$in: Object.keys(classObj) }};
+  if(args.subjectCode) subjectQuery.code = args.subjectCode;
+  const subjectData = await Subject.find(subjectQuery,{subject: 1, code: 1, refs: 1, _id: 0});
+  const subjectObj = {};
+  subjectData.forEach( x => {subjectObj[x.code] = x});
+
+  // Textbook Data
+  const textbookQuery = { active: true, 'refs.class.code': {$in: Object.keys(classObj)}, 'refs.subject.code': { $in: Object.keys(subjectObj)} };
+  if(args.textbookCode) textbookQuery.code = args.textbookCode;
+  if(args.branch) textbookQuery.branches = { $in: [args.branch, '', null]};
+  if(args.orientation) textbookQuery.orientations = { $in: [args.orientations, '', null]};
+  const textbookData = await Textbook.find(textbookQuery,{name: 1, code: 1, refs: 1, _id: 0});
+  const textbookObj = {};
+  textbookData.forEach( x => {
+    textbookObj[x.code] = {
+    class: {
+      name: classObj[x.refs.class.code].child,
+      code: classObj[x.refs.class.code].childCode,
+    },
+    subject: {
+      name: subjectObj[x.refs.subject.code].subject,
+      code: subjectObj[x.refs.subject.code].code,
+    },
+    textbook: {
+      name: x.name,
+      code: x.code,
+    }
+  }});
+  
+  // ConceptTaxonomy Data
+  const conceptQuery = { active: true, levelName: 'topic', 'refs.textbook.code': {$in: Object.keys(textbookObj)}};
+  if(args.chapterCode) {
+    conceptQuery.code = args.chapterCode;
+  }
+  const topicData = await ConceptTaxonomy.aggregate([
+    { $match: conceptQuery },
+    { $group: { _id: '$refs.textbook.code', codes: {$push: { code: '$code', name: '$child'}}}},
+  ]);
+  const topicObj = {};
+  // Content mapping
+  const topicsFilter = [];
+  topicData.forEach(x => {
+    const textbookCode = x._id;
+    const codes = [];
+    topicObj[textbookCode] = {};
+    x.codes.forEach(chapter => {
+      topicObj[textbookCode][chapter.code] = chapter.name;
+      codes.push(chapter.code);
+    })
+    topicsFilter.push({'refs.textbook.code': textbookCode, 'refs.topic.code': { $in: codes }});
+  })
+  const contentTypeMatchOrData = getContentTypeMatchOrData(args.contentCategory);
+
+  const contentQuery = {
+    active: true,
+    'content.category': { $in: ['Reading Material']},
+    $and: [{$or: topicsFilter},{$or: contentTypeMatchOrData }],
+    'metaData.audioFiles': {$exists: true },
+  }
+  const countQuery = [{$match: contentQuery}];
+  countQuery.push({$unwind: '$metaData.audioFiles'});
+  countQuery.push({$count: 'total'});
+
+  const agrQuery = [{$match: contentQuery}];
+  agrQuery.push({$unwind: '$metaData.audioFiles'});
+  agrQuery.push({$project: { 
+    _id: 0,
+    filePath: '$resource.key',
+    audioFilePath: '$metaData.audioFiles.key',
+    audioFileName: '$metaData.audioFiles.name',
+  }});
+  const skip = (args.pageNumber - 1) * args.limit;
+  if(skip) agrQuery.push({$skip: skip});
+  if(args.limit) agrQuery.push({$limit: args.limit});
+  
+  return Promise.all([
+    ContentMapping.aggregate(countQuery).allowDiskUse(true),
+    ContentMapping.aggregate(agrQuery).allowDiskUse(true)
+  ]).then(([countData, data]) => {
+    let count = 0;
+    if(countData && countData[0] && countData[0].total) count = countData[0].total;
+    return {
+      count,
+      data
+    }
+  })
+}
+
 export default{
   updateContent,
   getUniqueDataForValidation,
