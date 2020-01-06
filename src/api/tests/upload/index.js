@@ -18,5 +18,5 @@ const multer = Multer({
   });
 
 router.post('/upload-mapping', multer.single('file'), controller.uploadTestMapping)
-
+router.post('/upload-test-timing/:testId',multer.single('file'), controller.uploadTestiming)
 module.exports = router
