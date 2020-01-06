@@ -596,12 +596,17 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
   return upsertObj;
 }
 
-async function  uploadTestiming(req, res){
+export async function  uploadTestiming(req, res){
   try{
     if (!req.file) {
       return res.status(400).send({message: 'File required', error: true});
     }
+    const testId = req.body.testId || null;
     
+    if(!testId){
+      return res.status(400).send({message: "Test Id missing.", error: true});
+    }
+
     const fileName = req.file.originalname.split('.');
     const extname = fileName.pop()
     
@@ -620,7 +625,24 @@ async function  uploadTestiming(req, res){
       return res.status(400).send({error: true,message:"Invalid Headers",data: notFoundHeader});
     }
 
+    const validateTestTimingSheet = validateTestTimingRows(data);
+    
+    if(validateMappingSheet.length){
+      return res.status(400).send(
+        {message: "Invalid rows in the sheet",data: validateTestTimingSheet,error: true}
+        );
+    }
+    const TestSchema = await Tests(req.user_cxt);
+    const TestInfo = await TestSchema.findOne({testId}).select({
+      _id: 0,
+      mapping : 1,
+      test: 1
+    }).lean();
+    if(!TestInfo){
+      return res.status(400).send({error: true, message: "Invalid test id."});
+    }
 
+    
 
   }
   catch(err){
@@ -633,33 +655,50 @@ async function  uploadTestiming(req, res){
 //start date and end date format(18/11/2019 - 17:00:00)
 //duration is in minutes
 function validateTestTimingRows (data){
+  const timeBuff = 3 * 60 * 60 * 1000;
+  const currentTime = new Date().getTime();
   let errors = []
-  let length = data.length
+  const length = data.length
   for(let i = 0 ; i < length ; i++){
+    let startDate,endDate,dateDiffInMs;
     let rowNumber = i+2;
     let errorDetails = [];
-    if(!data[i]["branches"]){
-      errorDetails.push("branches not present")
+    if(!data[i]["branches"] || !data[i]["branches"].split(",").length){
+      errorDetails.push("Branches not present")
     }
     if(!data[i]["end date"]){
-      errorDetails.push("end date not present")
+      errorDetails.push("End date not present")
     }else{
-
+      endDate = convertToDateString(data[i]["end date"]);
+      if(new Date(endDate) === "Invlaid Date"){
+        errorDetails.push("Invalid End date format.Format should be DD/MM/YYYY - HH:MM:SS");
+      }else if( new Date(endDate).getTime() < currentTime ){
+        errorDetails.push("Invalid End date.End date should be greater than current time");
+      }
     }
 
     if(!data[i]["start date"]){
       errorDetails.push("start date not present")
     }else{
-      if(new Date(convertToDateString(data[i]["start date"])) === "Invlaid Date"){
+      startDate = convertToDateString(data[i]["start date"]);
+      if(new Date(startDate) === "Invlaid Date"){
         errorDetails.push("Invalid start date format.Format should be DD/MM/YYYY - HH:MM:SS");
+      }else if( new Date(startDate).getTime() < currentTime ){
+        errorDetails.push("Invalid start date.Start date should be greater than current time");
       }
     }
-
+    if(startDate && endDate){
+      dateDiffInMs  = new Date(endTime).getTime() - new Date(startDate).getTime();
+      if(dateDiffInMs < 0){
+        errorDetails.push("Start date should be less than End date.");
+      }
+    }
     if(!data[i]["duration"]){
       errorDetails.push("duration not present")
     }else{
-      if(new Date(convertToDateString(data[i]["end date"])) === "Invlaid Date"){
-        errorDetails.push("Invalid end date format.Format should be DD/MM/YYYY - HH:MM:SS");
+      let durationInMsWithBuff = parseInt(data[i]["duration"]) * 60 * 1000 + timeBuff;
+      if(dateDiffInMs <= durationInMsWithBuff ){
+        return errorDetails.push("Minimum difference between start date and end date should be 3hrs plus duration.")
       }
     }
 
