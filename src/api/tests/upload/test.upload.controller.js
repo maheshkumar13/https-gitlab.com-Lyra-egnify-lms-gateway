@@ -15,6 +15,7 @@ import {getModel as Hierarchy} from '../../settings/instituteHierarchy/institute
 import {getModel as Subject} from '../../settings/subject/subject.model';
 const MAPPING_HEADERS = ["class","subject","textbook","chapter","content name","media type","view order"]
 const SUPPORTED_MEDIA_TYPE = ["docx","xlsx","xml"];
+const TEST_TIMING_HEADERS = ["branches","end date","start date","duration"];
 
 function queryForListTest(args) {
   let activeStatus=true
@@ -593,4 +594,88 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
     }
 }
   return upsertObj;
+}
+
+async function  uploadTestiming(req, res){
+  try{
+    if (!req.file) {
+      return res.status(400).send({message: 'File required', error: true});
+    }
+    
+    const fileName = req.file.originalname.split('.');
+    const extname = fileName.pop()
+    
+    if (extname !== 'xlsx') {
+      return res.status(400).send({message:'Invalid file extension, only xlsx is supported',error: true});
+    }
+    
+    let data = getFileData(req);
+    
+    if(!data.length){
+      return res.status(400).send({error: true,message:"Empty file."});
+    }
+    const headersInSheet = Object.keys(data[0]);
+    const notFoundHeader = validateHeaders(headersInSheet, TEST_TIMING_HEADERS)
+    if(notFoundHeader.length){
+      return res.status(400).send({error: true,message:"Invalid Headers",data: notFoundHeader});
+    }
+
+
+
+  }
+  catch(err){
+    console.log(err);
+    return res.status(500).send("internal server error")
+  }
+}
+
+//"branches","end date","start date","duration"
+//start date and end date format(18/11/2019 - 17:00:00)
+//duration is in minutes
+function validateTestTimingRows (data){
+  let errors = []
+  let length = data.length
+  for(let i = 0 ; i < length ; i++){
+    let rowNumber = i+2;
+    let errorDetails = [];
+    if(!data[i]["branches"]){
+      errorDetails.push("branches not present")
+    }
+    if(!data[i]["end date"]){
+      errorDetails.push("end date not present")
+    }else{
+
+    }
+
+    if(!data[i]["start date"]){
+      errorDetails.push("start date not present")
+    }else{
+      if(new Date(convertToDateString(data[i]["start date"])) === "Invlaid Date"){
+        errorDetails.push("Invalid start date format.Format should be DD/MM/YYYY - HH:MM:SS");
+      }
+    }
+
+    if(!data[i]["duration"]){
+      errorDetails.push("duration not present")
+    }else{
+      if(new Date(convertToDateString(data[i]["end date"])) === "Invlaid Date"){
+        errorDetails.push("Invalid end date format.Format should be DD/MM/YYYY - HH:MM:SS");
+      }
+    }
+
+    if(errorDetails.length){
+      errors.push("Row "+ rowNumber+ " : "+errorDetails.join(","))
+    }
+  }
+  return errors;
+}
+
+function convertToDateString(dateString){
+  let l = dateString.trim().replace(/ /g,'');
+  let a  = l.split("-");
+  let b = a[0].split("/");
+  let temp = b[0];
+  b[0] = b[2];
+  b[2] = temp
+  return b.join("-")+"T"+a[1];
 }
