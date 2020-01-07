@@ -101,6 +101,7 @@ export const TeacherLevelTimeAnalysis = {
     class: { type: StringType, description: 'Class name' },
     branch: { type: StringType, description: 'Branch name' },
     orientation: { type: StringType, description: 'Orientation' },
+    section: { type: StringType, description: 'Section' },
     startDate: { type: GraphQLDate, description: 'Start date' },
     endDate: { type: GraphQLDate, description: 'End date' },
     pageNumber: { type: IntType, description: 'Page number' },
