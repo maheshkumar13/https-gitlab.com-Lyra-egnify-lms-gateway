@@ -1,11 +1,12 @@
-import {listTest , listTextBooksWithTestSubectWise , listUpcomingTestTextBookWise,listOfCompletedTestTextBookWise , headerCount , fetchInstructions ,getDashboardHeadersAssetCountV2 } from '../../../api/tests/upload/test.upload.controller';
-import {ListInputType,ListTestOutput , TestHeadersAssetCountInputType} from './upload.type';
+import {listTest , listTextBooksWithTestSubectWise, getDashboardHeadersAssetCountV2 } from '../../../api/tests/upload/test.upload.controller';
+import {ListInputType, ListTestOutput, TestHeadersAssetCountInputType} from './upload.type';
 import {getStudentDetailsById} from '../../../api/settings/student/student.controller';
-import {checkStudentHasTextbook, getTextbooks, getTextbookForTeachers} from '../../../api/settings/textbook/textbook.controller';
-import {GraphQLString as StringType,GraphQLNonNull as NonNull } from 'graphql';
+import {getTextbooks, getTextbookForTeachers} from '../../../api/settings/textbook/textbook.controller';
+import {GraphQLString as StringType, GraphQLNonNull as NonNull } from 'graphql';
 import { validateAccess } from '../../../utils/validator';
 import {fetchNodesWithContext} from '../../../api/settings/instituteHierarchy/instituteHierarchy.controller'
 import GraphQLJSON from 'graphql-type-json';
+
 export const ListTest = {
     args: {
         input: {
@@ -65,39 +66,6 @@ export const ListTest = {
     }
 }
 
-export const UpcomingTests = {
-    args: {
-        textbookCode: {
-            type: NonNull(StringType)
-        }
-    },
-    type: GraphQLJSON,
-    async resolve(object, args, context) {
-        try {
-            let studentInfo = await getStudentDetailsById({studentId: context.studentId}, context);
-            if(!studentInfo){
-                throw "Invalid Student";
-            }
-            let branchOfStudent = context.rawHierarchy[4]["child"];
-            let orientationOfStudent = studentInfo["orientation"];
-            let classOfStudent = context.rawHierarchy[1]["childCode"];
-            let textbookCode = args.textbookCode;
-            let textBookdetails = await checkStudentHasTextbook({
-                branchOfStudent,
-                orientationOfStudent,
-                classOfStudent,
-                textbookCode
-            }, context);
-            if (!textBookdetails) {
-                throw "Invalid TextBook"
-            }
-            return await listUpcomingTestTextBookWise(args, context);
-        } catch (err) {
-            throw new Error(err);
-        }
-    }
-}
-
 export const ListSubjectWiseBooksAndTestCount = {
     args: {
         subjectCode: {
@@ -123,39 +91,6 @@ export const ListSubjectWiseBooksAndTestCount = {
     }
 }
 
-export const CompletedTests = {
-    args: {
-        textbookCode: {
-            type: NonNull(StringType)
-        }
-    },
-    type: GraphQLJSON,
-    async resolve(object, args, context) {
-        try {
-            let studentInfo = await getStudentDetailsById({studentId: context.studentId}, context);
-            if(!studentInfo){
-                throw "Invalid Student";
-            }
-            let branchOfStudent = context.rawHierarchy[4]["child"];
-            let orientationOfStudent = studentInfo["orientation"];
-            let classOfStudent = context.rawHierarchy[1]["childCode"];
-            let textbookCode = args.textbookCode;
-            let textBookdetails = await checkStudentHasTextbook({
-                branchOfStudent,
-                orientationOfStudent,
-                classOfStudent,
-                textbookCode
-            }, context);
-            if (!textBookdetails) {
-                throw "Invalid TextBook"
-            }
-            return await listOfCompletedTestTextBookWise(args, context);
-        } catch (err) {
-            throw new Error(err);
-        }
-    }
-}
-
 export const HeaderCountForTextBookBasedTest = {
     args: {
         input: { type: TestHeadersAssetCountInputType },
@@ -164,22 +99,6 @@ export const HeaderCountForTextBookBasedTest = {
     async resolve (object , args , context){
         try{
           return await getDashboardHeadersAssetCountV2(args.input,context);
-        }catch(err){
-            throw new Error(err);
-        }
-    }
-}
-
-export const FetchInstruction = {
-    args: {
-        testId: {
-            type: NonNull(StringType)
-        }
-    },
-    type : GraphQLJSON,
-    async resolve (object , args , context){
-        try{
-          return await fetchInstructions(args,context);
         }catch(err){
             throw new Error(err);
         }
