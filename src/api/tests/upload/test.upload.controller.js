@@ -633,7 +633,7 @@ export async function  uploadTestiming(req, res){
 
     const validateTestTimingSheet = validateTestTimingRows(data);
     
-    if(validateMappingSheet.length){
+    if(validateTestTimingSheet.length){
       return res.status(400).send(
         {message: "Invalid rows in the sheet",data: validateTestTimingSheet,error: true}
         );
@@ -641,11 +641,10 @@ export async function  uploadTestiming(req, res){
     
     let branchesArr = [];
     
-    for(let i = 0 ; i < data; i++){
+    for(let i = 0 ; i < data.length; i++){
       data[i]["branches"] = data[i]["branches"].split(",");
-      branchesArr.concat(data[i]["branches"]);
+      branchesArr = branchesArr.concat(data[i]["branches"]);
     }
-    
     let branchObj = {};
     let duplicateBranches = [];
     
@@ -677,13 +676,11 @@ export async function  uploadTestiming(req, res){
     if(!testInfo){
       return res.status(400).send({error: true, message: "Invalid test id."});
     }
-    
     const branches = await HierarchySchema.find({
       "child": { $in: branchesArr },
-      "anscestors.childCode" : testInfo.mapping.class.code,
+      "anscetors.childCode" : testInfo.mapping.class.code,
       "levelName": "Branch"
     }).select({_id: 0, childCode: 1, child: 1}).lean();
-
     const validationCheck = validateTestTimingWithDbAndCreateMap(data, branches, testId);
     if(validationCheck.error){
       return res.status(400).send({
@@ -693,7 +690,7 @@ export async function  uploadTestiming(req, res){
       });
     }
     await TestTimingSchema.bulkWrite(validationCheck.mapping);
-    return res.status(200).send({error: false, message: "Success"});
+    return res.status(200).send({error: false, message: "Success", data: validationCheck.mapping});
   }
   catch(err){
     console.log(err);
@@ -720,7 +717,7 @@ function validateTestTimingRows (data){
       errorDetails.push("End date not present")
     }else{
       endDate = convertToDateString(data[i]["end date"]);
-      if(new Date(endDate) === "Invlaid Date"){
+      if(new Date(endDate) == "Invalid Date"){
         errorDetails.push("Invalid End date format.Format should be DD/MM/YYYY - HH:MM:SS");
       }else if( new Date(endDate).getTime() < currentTime ){
         errorDetails.push("Invalid End date.End date should be greater than current time");
@@ -733,7 +730,7 @@ function validateTestTimingRows (data){
       errorDetails.push("start date not present")
     }else{
       startDate = convertToDateString(data[i]["start date"]);
-      if(new Date(startDate) === "Invlaid Date"){
+      if(new Date(startDate) == "Invalid Date"){
         errorDetails.push("Invalid start date format.Format should be DD/MM/YYYY - HH:MM:SS");
       }else if( new Date(startDate).getTime() < currentTime ){
         errorDetails.push("Invalid start date.Start date should be greater than current time");
@@ -742,7 +739,7 @@ function validateTestTimingRows (data){
       }
     }
     if(startDate && endDate){
-      dateDiffInMs  = new Date(endTime).getTime() - new Date(startDate).getTime();
+      dateDiffInMs  = new Date(endDate).getTime() - new Date(startDate).getTime();
       if(dateDiffInMs < 0){
         errorDetails.push("Start date should be less than End date.");
       }
@@ -778,7 +775,7 @@ function branchMapOfName(branches){
   branches.forEach(function(branch){
     branchMap[branch["child"]] = branch;
   });
-  return brancheMap;
+  return branchMap;
 }
 
 function validateTestTimingWithDbAndCreateMap(data, branches, testId){
@@ -812,8 +809,8 @@ function createTimingMap(data, indexed_branch, ret_data, testId){
     let mapping = {
       testId: testId,
       _id: indexed_branch[branch]["childCode"]+"_"+testId,
-      startTime: new Date(data["start time"]),
-      endTime: new Date(data["end time"]),
+      startTime: new Date(data["start date"]),
+      endTime: new Date(data["end date"]),
       duration: parseInt(data["duration"])
     }
     let upsertObj = {
