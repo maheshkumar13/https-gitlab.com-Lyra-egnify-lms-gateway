@@ -11,7 +11,7 @@ export async function getTestTiming(req, res) {
 
     req.user_cxt["hierarchy"].forEach(obj=>{
         if(obj["level"] == 5){
-            branches.push(obj);
+            branches.push(obj.childCode);
         }
     });
 
@@ -20,13 +20,11 @@ export async function getTestTiming(req, res) {
     skip = isNaN(skip) ? 0 : parseInt(skip);
 
     if(branch && branches.length){
-        let index = branches.findIndex(function(obj){
-            return obj.child === branch;
-        })
+        let index = branches.indexOf(branch);
         if(index === -1){
             return res.status(403).send("Access denied");
         }
-        branches = [branches[index]["childCode"]];
+        branches = [branches[index]];
     }else if(branch && !branches.length){
         branches = [branch];
     }
