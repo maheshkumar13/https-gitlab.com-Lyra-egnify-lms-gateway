@@ -7,7 +7,7 @@ module.exports = {
   mongo: {
     uri: process.env.MONGODB_URI ||
     process.env.MONGODB_URL ||
-    'mongodb://localhost:27017/tenantregistry-lms-dev',
+    'mongodb://localhost:27017/tenantregistry-lms-qa',
   },
   // Seed database on startup
   seedDB: false,
@@ -42,5 +42,6 @@ module.exports = {
   encript: {
     key: 'secret',
   },
-  COUCH_DB_URL : process.env.COUCH_DB_URL || "http://13.235.245.210:5984/"
+  COUCH_DB_URL : process.env.COUCH_DB_URL || "http://13.235.245.210:5984/",
+  GA_SCHEDULER_URL: process.env.GA_SCHEDULER_URL || "https://rest.dev.rankguru.com/schedule"
 };
