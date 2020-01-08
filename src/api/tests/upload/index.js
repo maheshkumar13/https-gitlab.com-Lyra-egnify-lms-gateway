@@ -20,5 +20,5 @@ const multer = Multer({
 router.post('/upload-mapping', multer.single('file'), controller.uploadTestMapping)
 router.post('/upload-timing/:testId',multer.single('file'), controller.uploadTestiming)
 router.get('/testtiming/:testId', timingController.getTestTiming);
-
+router.post('/publish-test', controller.publishTest);
 module.exports = router
