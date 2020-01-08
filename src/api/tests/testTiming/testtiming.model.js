@@ -6,8 +6,14 @@ const testTimingsSchema = new mongoose.Schema({
     startTime: { type: Date, required: true},
     endTime: { type: Date, required: true},
     duration: { type: Number, required: true},
+    orientations: { type: Array, default: []},
+    class: { type: String}
 }, {
-        timestamps : true
+        timestamps : {
+            createdAt: 'created_at',
+            updatedAt: 'updated_at'
+          },
+          collection:"testTimings"
 });
 
 export async function getModel(userCxt) {

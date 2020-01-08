@@ -9,7 +9,7 @@ const router = express.Router();
 const Multer = require('multer');
 
 const controller = require('./test.upload.controller');
-
+const timingController = require('../testTiming/testtiming.controller');
 const multer = Multer({
     storage: Multer.MemoryStorage,
     limits: {
@@ -19,4 +19,6 @@ const multer = Multer({
 
 router.post('/upload-mapping', multer.single('file'), controller.uploadTestMapping)
 router.post('/upload-timing/:testId',multer.single('file'), controller.uploadTestiming)
+router.get('/testtiming/:testId', timingController.getTestTiming);
+
 module.exports = router
