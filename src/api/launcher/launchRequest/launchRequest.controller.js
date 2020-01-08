@@ -35,3 +35,54 @@ export async function getPreSignedUrl(args, context) {
     expires: params.Expires,
   }));
 }
+async function listAllKeys(params, resp) {
+  const data = await s3.listObjectsV2(params).promise();
+  resp.CommonPrefixes = resp.CommonPrefixes.concat(data.CommonPrefixes);
+  resp.Contents = resp.Contents.concat(data.Contents);
+  if (data.IsTruncated) {
+      params.ContinuationToken = data.NextContinuationToken;
+      return listAllKeys(params, resp);
+  }
+}
+
+export async function getS3FileSystem(args) {
+  if(!args.key) args.key = '';
+  let bucket = config.AWS_PRIVATE_BUCKET;
+  if(args.html === true) bucket = config.AWS_PUBLIC_BUCKET
+
+  const params = {
+    Bucket: bucket,
+    Prefix: args.key,
+    Delimiter: '/',
+  }
+  const resp = {
+    CommonPrefixes: [],
+    Contents: []
+  }
+  await listAllKeys(params, resp);
+  const data = [];
+  if(resp.CommonPrefixes && resp.CommonPrefixes.length){
+    resp.CommonPrefixes.forEach(x => {
+      const temp = {};
+      const fileNamesArray = x.Prefix.split('/');
+      temp.fileName = fileNamesArray[fileNamesArray.length-2];
+      temp.key = x.Prefix;
+      temp.folder = true;
+          data.push(temp);
+        })
+      }
+      if(resp.Contents && resp.Contents.length){
+      resp.Contents.forEach(x => {
+        const temp = {};
+        const fileNamesArray = x.Key.split('/');
+        temp.fileName = fileNamesArray[fileNamesArray.length-1];
+        temp.key = x.Key;
+        temp.lastModified = x.LastModified;
+        temp.size = x.Size;
+        temp.folder = false;
+        data.push(temp);
+      })
+    }
+    return data
+}
+
