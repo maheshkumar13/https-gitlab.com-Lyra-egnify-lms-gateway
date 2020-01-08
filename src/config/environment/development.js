@@ -7,7 +7,7 @@ module.exports = {
   mongo: {
     uri: process.env.MONGODB_URI ||
     process.env.MONGODB_URL ||
-    'mongodb://localhost:27017/tenantregistry-lms-qa',
+    'mongodb://localhost:27017/tenantregistry-lms-dev',
   },
   // Seed database on startup
   seedDB: false,
