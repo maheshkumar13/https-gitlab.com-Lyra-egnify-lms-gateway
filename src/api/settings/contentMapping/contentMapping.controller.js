@@ -2273,6 +2273,11 @@ export async function getContentMappingUploadedDataReadingMaterialAudio(args,con
 }
 
 export async function publishPractice(req, res){
+  try{
+
+  }catch(err){
+    return res.status(500).send("internal server error.")
+  }
   const assetId = req.params.assetId;
   if(!assetId){
     return res.status(400).send("Asset id missing.");
@@ -2292,16 +2297,15 @@ export async function publishPractice(req, res){
   }
   const setObj = {
     "resource.key": questionPaperId,
-    "coins": questionsCount
+    "coins": questionsCount,
   }
 
-  const contentMapping = ContentSchema.findOneAndUpdate({assetId},
+  const contentMapping = ContentSchema.findOneAndUpdate({assetId,"content.category":"Practice"},
     {$set:setObj},{new: true}).select({_id: 1}).lean();
-    if(contentMapping){
-      return res.status(200).send("Success");
-    }else{
+    if(!contentMapping){
       return res.status(400).send("Invalid asset id.");
     }
+    return res.status(200).send("Success");
 
 }
 
