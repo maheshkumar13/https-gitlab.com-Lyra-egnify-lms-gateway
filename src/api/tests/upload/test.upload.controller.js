@@ -850,6 +850,9 @@ export async function publishTest(req, res){
     if(!testTiming.length){
       return res.status(400).send("Invalid test id.");
     }
+    if(!questionsCount){
+      return res.status(400).send("Invalid question paper id.");
+    }
   
     const setObject = {
       "test.questionPaperId": questionPaperId,
@@ -862,7 +865,8 @@ export async function publishTest(req, res){
       "markingSchema.subject.0.totalMarks": questionsCount,
       "markingSchema.subject.0.marks.0.totalMarks": questionsCount,
       "markingSchema.subject.0.marks.0.end": questionsCount,
-      "markingSchema.subject.0.marks.0.numberOfQuestions": questionsCount
+      "markingSchema.subject.0.marks.0.numberOfQuestions": questionsCount,
+      "coins": questionsCount
     }
     const date = new Date(new Date(testTiming[0]["maxDate"]).getTime() + testTiming[0]["maxDuration"]*60000)
     .toISOString().replace("T"," ").split(".")[0]
