@@ -309,7 +309,7 @@ function getCleanFileData(req){
 function validateAndGetData(data, classesData, subjectsData, textbooksData){
   const result = {
     success: false,
-    essage: 'Invalid data',
+    message: 'Invalid data',
     errors: [],
   };
   const docs = [];
