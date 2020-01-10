@@ -2134,6 +2134,13 @@ export async function getContentMappingUploadedDataLearn(args,context){
     })
     topicsFilter.push({'refs.textbook.code': textbookCode, 'refs.topic.code': { $in: codes }});
   })
+
+  if(!topicsFilter.length) {
+    return {
+      count: 0,
+      data: []
+    }
+  }
   const contentTypeMatchOrData = getContentTypeMatchOrData(args.contentCategory);
 
   const contentQuery = {
