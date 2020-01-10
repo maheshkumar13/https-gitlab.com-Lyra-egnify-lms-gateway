@@ -1,6 +1,6 @@
 import {
   getModel as Tests
-} from './test.upload.model';
+} from './test.model';
 
 import {
   getModel as TextBook

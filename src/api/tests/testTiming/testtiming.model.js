@@ -9,7 +9,11 @@ const testTimingsSchema = new mongoose.Schema({
     class: { type: String},
     orientations: { type: Array }
 }, {
-        timestamps : true
+        timestamps : {
+            createdAt: 'created_at',
+            updatedAt: 'updated_at'
+          },
+          collection:"testTimings"
 });
 
 export async function getModel(userCxt) {
