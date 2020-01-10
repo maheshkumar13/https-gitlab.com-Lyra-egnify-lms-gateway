@@ -2138,7 +2138,7 @@ export async function getContentMappingUploadedDataLearn(args,context){
 
   const contentQuery = {
     active: true,
-    'content.category': { $nin: ['Practice', 'Tests', 'Take Quiz']},
+    'content.category': { $nin: ['Tests', 'Take Quiz']},
     $and: [{$or: topicsFilter},{$or: contentTypeMatchOrData }]
   }
   const skip = (args.pageNumber - 1) * args.limit;
