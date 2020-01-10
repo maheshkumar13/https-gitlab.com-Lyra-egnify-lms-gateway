@@ -681,7 +681,7 @@ export async function  uploadTestiming(req, res){
       "anscetors.childCode" : testInfo.mapping.class.code,
       "levelName": "Branch"
     }).select({_id: 0, childCode: 1, child: 1}).lean();
-    const validationCheck = validateTestTimingWithDbAndCreateMap(data, branches, testId);
+    const validationCheck = validateTestTimingWithDbAndCreateMap(data, branches, testId, testInfo["mapping"]["class"]["name"]);
     if(validationCheck.error){
       return res.status(400).send({
         error: true,
@@ -778,7 +778,7 @@ function branchMapOfName(branches){
   return branchMap;
 }
 
-function validateTestTimingWithDbAndCreateMap(data, branches, testId){
+function validateTestTimingWithDbAndCreateMap(data, branches, testId, className){
   const length = data.length;
   let error = false;
   let mapping = [];
@@ -797,13 +797,13 @@ function validateTestTimingWithDbAndCreateMap(data, branches, testId){
       erroredRow.push("Row "+ rowNumber+ " : Invalid Branch "+ missingBranch)
     }
     if(!error){
-      createTimingMap(data[i], indexed_branch, mapping, testId);
+      createTimingMap(data[i], indexed_branch, mapping, testId, className);
     }
   }
   return {error, mapping, erroredRow}
 }
 
-function createTimingMap(data, indexed_branch, ret_data, testId){
+function createTimingMap(data, indexed_branch, ret_data, testId, className){
   const branches = data["branches"];
   branches.forEach(function(branch){
     let mapping = {
@@ -811,7 +811,9 @@ function createTimingMap(data, indexed_branch, ret_data, testId){
       _id: indexed_branch[branch]["childCode"]+"_"+testId,
       startTime: new Date(data["start date"]),
       endTime: new Date(data["end date"]),
-      duration: parseInt(data["duration"])
+      duration: parseInt(data["duration"]),
+      class: className,
+      orientations: data["orientations"] ? data["orientations"].split(",") : []
     }
     let upsertObj = {
       updateOne: {
