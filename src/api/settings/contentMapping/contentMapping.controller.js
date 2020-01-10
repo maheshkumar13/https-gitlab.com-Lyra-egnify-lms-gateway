@@ -261,7 +261,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     
     if(obj['coins']) {
       const coins = parseInt(obj['coins']);
-      if (!Number.isInteger(coins) || coins < 0) {
+      if (!Number.isInteger(coins)) {
         result.success = false;
         result.message = `Invalid coins at row ${row}`;
       }
@@ -491,7 +491,7 @@ export async function uploadContentMappingv2(req, res) {
     // VALIDATING COINS
     const coins = parseInt(obj['coins']);
     if(obj['coins']) {
-      if (!Number.isInteger(coins) || coins < 0) {
+      if (!Number.isInteger(coins)) {
         errors.push(`Invalid coins at row ${row} (${obj['coins']})`);
       }
     }
@@ -2134,6 +2134,13 @@ export async function getContentMappingUploadedDataLearn(args,context){
     })
     topicsFilter.push({'refs.textbook.code': textbookCode, 'refs.topic.code': { $in: codes }});
   })
+
+  if(!topicsFilter.length) {
+    return {
+      count: 0,
+      data: []
+    }
+  }
   const contentTypeMatchOrData = getContentTypeMatchOrData(args.contentCategory);
 
   const contentQuery = {
