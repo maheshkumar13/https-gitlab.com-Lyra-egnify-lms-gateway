@@ -2271,6 +2271,189 @@ export async function getContentMappingUploadedDataReadingMaterialAudio(args,con
   })
 }
 
+function validateHeadersForPractice(data, errors, maxLimit) {
+  const mandetoryFields = [
+    'class', 'subject', 'textbook', 'chapter',
+    'content name', 'content category',
+    'media type', 'view order'
+  ];
+  const headers  = [
+    'class', 'subject', 'textbook', 'chapter',
+    'content name', 'content category', 'content type',
+    'file path', 'file size', 'media type',
+    'timg path', 'view order',
+    'category', 'publish year', 'publisher',
+  ]
+  const sheetHeaders = Object.keys(data[0]);
+  let diffHeaders = _.difference(headers,sheetHeaders);
+
+  if(diffHeaders.length) {
+    errors.push(`${diffHeaders.toString()} headers not found`);
+    return errors;
+  }
+
+  for(let i = 0; i < data.length; i += 1){
+    const obj = data[i];
+    for (let j = 0; j < mandetoryFields.length; j += 1) {
+      if (!obj[mandetoryFields[j]]) {
+        errors.push(`${mandetoryFields[j].toUpperCase()} value not found for row ${i + 2}`);
+        if(errors.length > maxLimit) return errors;
+      }
+    }
+  }
+  return errors;
+}
+export async function uploadPracticeMapping(req, res) {
+  if (!req.file) return res.status(400).end('File required');
+  	// validate extension
+	const name = req.file.originalname.split('.');
+	const extname = name[name.length - 1];
+	if (extname !== 'xlsx') {
+	  return res.status(400).end('Invalid extension, please upload .xlsx file');
+	}
+  let data = getCleanFileData(req);
+  if(!data.length) {
+    return res.status(400).end('No data found');
+  }
+  if(data.length > 10000) {
+    return res.status(400).end('Limit exceeded, max rows 10k');
+  }
+  let errors = [];
+  const maxLimit = 1000;
+  errors = validateHeadersForPractice(data, errors, maxLimit);
+  
+  if(errors.length) {
+    return res.send({
+      success: false,
+      message: 'Invalid data',
+      errors,
+    })
+  }
+  const dbData = await getDbDataForValidation(req.user_cxt)
+  const ContentMapping = await ContentMappingModel(req.user_cxt);
+  const bulk = ContentMapping.collection.initializeUnorderedBulkOp();
+  const validContentCategories = [ 'Practice' ]
+  const contentTypes = config.CONTENT_TYPES || {};
+
+  for(let i=0; i < data.length; i+=1) {
+    if(errors.length > maxLimit) {
+      return res.send({
+        success: false,
+        message: 'Invalid data',
+        errors,
+      })
+    }
+
+    const row = i+2;
+    const obj = data[i];
+
+
+    // VALIDATING CONTENT CATEGORY
+    const contentCategory = validContentCategories.find(x => x.toLowerCase() === obj['content category'].toLowerCase());
+    if(!contentCategory) {
+      errors.push(`Invalid CONTENT CATEGORY at row ${row} (${obj['content category']})`);
+    }
+
+    // VALIDATING CONTENT MEDIA TYPE
+    if( contentTypes && 
+        contentTypes[contentCategory] && 
+        !contentTypes[contentCategory].includes(obj['media type'].toLowerCase())
+      ) {
+      errors.push(`Invalid MEDIA TYPE at row ${row} (${obj['media type']}) for CONTENT CATEGORY (${obj['content category']})`);
+    }
+
+    // VALIDATING CATEGORY
+    const categories = ['A', 'B', 'C'];
+    if (obj.category && !categories.includes(obj.category)) {
+      errors.push(`Invalid CATEGORY at row ${row} (${obj.category})`);
+    }
+
+    // VALIDATING VIEW ORDER
+    const viewOrder = parseInt(obj['view order']);
+    if (!Number.isInteger(viewOrder) || viewOrder < 1) {
+      errors.push(`Invalid view order at row ${row}`);
+    }
+
+    const className = obj.class.toLowerCase();
+    const subjectName = obj.subject.toLowerCase();
+    const textbookName = obj.textbook.toLowerCase();
+    const chapterName = obj.chapter.toLowerCase();
+    
+    // VALIDATING CLASS
+    if(!dbData[className]) {
+      errors.push(`Invalid CLASS at row ${row} (${obj.class})`);
+      continue;
+    }
+
+    // VALIDATING SUBJECT
+    if(!dbData[className][subjectName]) {
+      errors.push(`Invalid SUBJECT at row ${row} (${obj.class}->${obj.subject})`);
+      continue;
+    }
+
+    // VALIDATING TEXTBOOK
+    if(!dbData[className][subjectName][textbookName]) {
+      errors.push(`Invalid TEXTBOOK at row ${row} (${obj.class}->${obj.subject}->${obj.textbook})`);
+      continue;
+    }
+    
+    // VALIDATING CHAPTER
+    const chapterObj = dbData[className][subjectName][textbookName][chapterName];
+    if(!chapterObj) {
+      errors.push(`Invalid CHAPTER at row ${row} (${obj.class}->${obj.subject}->${obj.textbook}->${obj.chapter})`);
+      continue;
+    }
+
+    if(errors.length) continue;
+
+    // PREPARING DATA OBJECT
+    const temp = {
+      content: {
+        name: obj['content name'],
+        category: contentCategory,
+        type: obj['content type'],
+      },
+      resource: {
+        size: obj['file size'],
+        type: obj['media type'].toLowerCase(),
+      },
+      publication: {
+        publisher: obj.publisher,
+        year: obj['publish year'],
+      },
+      timgPath: obj['timg path'] ? upath.toUnix(obj['timg path']) : '',
+      category: obj.category,
+      viewOrder: viewOrder,
+      refs: {
+        topic: {
+          code: chapterObj.topicCode,
+        },
+        textbook : {
+          code: chapterObj.textbookCode,
+        },
+      },
+      "assetId" : obj['asset id'] || crypto.randomBytes(10).toString('hex')
+    };
+    bulk.find({assetId: temp.assetId}).upsert().updateOne(temp);
+  }
+if(errors.length) {
+  console.info('sending errors..')
+  return res.send({
+    success: false,
+    message: 'Invalid data',
+    errors,
+  })
+}
+console.info('bulk executing..')
+  return bulk.execute().then(() => {
+    console.info(req.file.originalname, 'Uploaded successfully....')
+    return res.send('Data inserted/updated successfully')
+  }).catch((err) => {
+    console.error(err);
+    return res.status(400).end('Error occured');
+  });
+}
+
 export default{
   updateContent,
   getUniqueDataForValidation,
