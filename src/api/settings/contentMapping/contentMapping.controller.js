@@ -2093,7 +2093,7 @@ export async function getContentMappingUploadedDataLearn(args,context){
   const textbookQuery = { active: true, 'refs.class.code': {$in: Object.keys(classObj)}, 'refs.subject.code': { $in: Object.keys(subjectObj)} };
   if(args.textbookCode) textbookQuery.code = args.textbookCode;
   if(args.branch) textbookQuery.branches = { $in: [args.branch, '', null]};
-  if(args.orientation) textbookQuery.orientations = { $in: [args.orientations, '', null]};
+  if(args.orientation) textbookQuery.orientations = { $in: [args.orientation, '', null]};
   const textbookData = await Textbook.find(textbookQuery,{name: 1, code: 1, refs: 1, _id: 0});
   const textbookObj = {};
   textbookData.forEach( x => {
