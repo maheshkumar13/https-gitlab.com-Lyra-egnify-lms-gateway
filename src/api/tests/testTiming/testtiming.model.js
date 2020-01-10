@@ -6,6 +6,8 @@ const testTimingsSchema = new mongoose.Schema({
     startTime: { type: Date, required: true},
     endTime: { type: Date, required: true},
     duration: { type: Number, required: true},
+    class: { type: String},
+    orientations: { type: Array }
 }, {
         timestamps : true
 });
