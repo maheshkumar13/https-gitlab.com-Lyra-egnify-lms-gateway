@@ -84,7 +84,7 @@ export const ContentMappingUploadedDataLearn = {
     chapterCode: { type: StringType, description: 'Internal code of Textbook ' },
     branch: { type: StringType, description: 'Branch filter' },
     orientation: { type: StringType, description: 'Orientation filter' },
-    contentCategory: { type: new List(StringType), description: 'Category of the content' },
+    contentCategory: { type: StringType, description: 'Category of the content' },
   },
   type: ContentMappingPaginatedType,
   async resolve(obj, args, context) {
