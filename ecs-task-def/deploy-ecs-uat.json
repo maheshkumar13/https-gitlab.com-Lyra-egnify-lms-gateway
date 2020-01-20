@@ -119,7 +119,7 @@
           },
           {
             "name":"GA_SCHEDULER_URL",
-            "value":"https://rest.dev.rankguru.com/schedule"
+            "value":"https://rest.uat.rankguru.com/schedule"
           }
         ],
         "logConfiguration": {
