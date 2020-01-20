@@ -4,11 +4,18 @@ import { getModel as ContentMappingModel } from '../../settings/contentMapping/c
 import { getModel  as TextBook } from '.././../settings/textbook/textbook.model';
 import { config } from '../../../config/environment';
 import request from 'request';
+const md5 = require('md5');
 var client = require('../../../redis');
 const uuidv1 = require('uuid/v1');
 const fileUpload = require('../../../utils/fileUpload')
-
+const SUPPORTED_QUESTION_PAPER_MEDIA_TYPES = ["docx","doc","xlsx","zip"]
 const fs = require("fs");
+const MIME_TYPE = {
+  "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "xml":  "application/zip", //the mimetype is of zip because we are taking zip file in place of xml
+  "doc":  "application/msword"
+}
 
 function getQuery(args) {
   const query = {};
@@ -360,6 +367,73 @@ export async function parserStatus(req, res) {
     console.log(err);
     return res.status(500).send('Internal server error.');
   }
+}
+
+export async function parseQuestionPaper(req,res){
+  try{
+    const Questions = await QuestionModel(req.user_cxt);
+    const {content_name,subject, asset_id} = req.body;
+    if(!content_name || !subject || !asset_id){
+      return res.status(400).send("BAD_ARGS");
+    }
+    if (!req.file) {
+      return res.status(400).send({message: 'File required', error: true});
+    }
+
+    let extname = (req.file.originalname.split('.').pop()).toLowerCase();
+
+    if (!SUPPORTED_QUESTION_PAPER_MEDIA_TYPES.includes(extname)) {
+      return res.status(400).send({message:`Invalid file extension, supported media types are ${SUPPORTED_QUESTION_PAPER_TYPES}`,error: true});
+    }
+
+    if(extname === "zip"){
+      extname = "xml"
+    }
+
+    const option = {
+      url: `${config.parser.uri}?subject=${subject.trim()}&file_name=${content_name.trim()}&file_type=${extname.trim()}`,
+      method: "POST"
+    }
+    let questions = await parseQuestion(option, content_name, MIME_TYPE[extname], req.file.buffer);
+    const questionPaperId = md5(asset_id + subject + content_name);
+    if(questions){
+      questions = JSON.parse(questions);
+      for(let j = 0 ; j < questions.length; j++){
+        questions[j]["questionPaperId"] = questionPaperId,
+        questions[j]["optionHash"] = questions[j]["options"] ? md5(JSON.stringify(questions[j]["options"])) : null;
+        questions[j]["questionHash"] = questions[j]["question"] ? md5(questions[j]["question"]) : null;
+        questions[j]["keyHash"] = questions[j]["key"] ? md5(JSON.stringify(questions[j]["key"])) : null;
+        questions[j]["questionNumberId"] = questions[j]["optionHash"] && questions[j]["questionHash"] && questions[j]["keyHash"] ? md5(questions[j]["optionHash"]+questions[j]["questionHash"]+questions[j]["keyHash"]) : null;
+        questions[j]["subject"] = subject;
+      }
+      await Questions.remove({questionPaperId});
+      await Questions.create(questions);
+    }
+    return res.status(200).send({questionPaperId});
+  }catch(err){
+    console.log(err);
+    return res.status(500).send(err);
+  }
+}
+
+function parseQuestion(option, filename, contentType, data) {
+  return new Promise(function (resolve, reject) {
+    var req = request(option, function (err, resp, body) {
+      if (err) {
+        reject(err);
+      } else {
+        if (resp.statusCode === 200) {
+          resolve(body);
+        }
+        reject(err || resp || body);
+      }
+    });
+    var form = req.form();
+    form.append('file', data, {
+      filename: filename,
+      contentType: contentType
+    });
+  });
 }
 
 export default { getQuestions, getAndSaveResults, getQuestionLevelEvaluatedData, practiceParseAndValidate, parserStatus ,publishPractice };

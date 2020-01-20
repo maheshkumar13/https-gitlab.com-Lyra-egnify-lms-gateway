@@ -116,6 +116,10 @@
           {
             "name":"QUEUE_NS",
             "value":"lms-uat-mq"
+          },
+          {
+            "name":"PARSER_SERVICE",
+            "value":"http://uat.elk.rankguru.com:7000/parse"
           }
         ],
         "logConfiguration": {

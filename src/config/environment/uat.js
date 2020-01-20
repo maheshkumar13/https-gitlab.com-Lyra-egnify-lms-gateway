@@ -39,4 +39,7 @@ module.exports = {
   AWS_S3_SECRET: process.env.AWS_S3_SECRET || 'b3phrDHsFYBLJjGZY1CiMI8trwa2roJk3QSnzJ8N',
   AWS_S3_REGION: process.env.AWS_S3_REGION || 'ap-south-1',
   AWS_PUBLIC_BUCKET_FOLDER: 'samplefiles',
+  parser:{
+    uri : process.env.PARSER_SERVICE || "http://uat.elk.rankguru.com:7000/parse/"
+  },
 };
