@@ -6,6 +6,8 @@ import { getModel } from './student.model';
 import { getModel as SubjectModel } from '../subject/subject.model';
 import { getLastKLevels } from '../institute/institute.controller';
 import { config } from "../../../config/environment/index";
+import { fetchNodesWithContext } from '../../../api/settings/instituteHierarchy/instituteHierarchy.controller';
+
 function getMongoQuery(args) {
   const query = {};
   query.active = true;
@@ -483,6 +485,35 @@ export async function getStudentListByFilters(args, context) {
   } catch (err) {
     throw new Error("Failed to Query");
   }
+}
+
+export async function getStudentIdsByContext(context, filters = {}) {
+  const [ Student, hierarchyData ] = await Promise.all([
+    getModel(context),
+    fetchNodesWithContext({ levelNames: ['Class', 'Branch', 'Section'] }, context),
+  ]);
+  const query = { active: true };
+  if (context.userType === 'STUDENT') {
+    query['studentId'] = context.studentId;
+  }
+  const contextClasses = Array.from(new Set(hierarchyData.filter(x => x.levelName === 'Class').map(x => x.child)));
+  const contextBranches = Array.from(new Set(hierarchyData.filter(x => x.levelName === 'Branch').map(x => x.child)));
+  const contextSections = Array.from(new Set(hierarchyData.filter(x => x.levelName === 'Section').map(x => x.child)));
+  let contextOrientations = []
+  if(context.hierarchy && context.orientations && context.orientations.length){
+      contextOrientations = context.orientations;
+  }
+  query['hierarchyLevels.L_2'] = {$in: contextClasses };
+  query['hierarchyLevels.L_5'] = { $in: contextBranches };
+  query['hierarchyLevels.L_6'] = { $in: contextSections };
+  if(contextOrientations.length) query['orientation'] = { $in: contextOrientations };
+
+  if(filters.class) query['hierarchyLevels.L_2'] = filters.class;
+  if(filters.branch) query['hierarchyLevels.L_5'] = filters.branch;
+  if(filters.section) query['hierarchyLevels.L_6'] = filters.section;
+  if(filters.orientation) query.orientation = filters.orientation;
+  return Student.distinct('studentId', query);
+  
 }
 export default {
   getStudents,

@@ -1,6 +1,6 @@
 import {
   getModel as Tests
-} from './test.upload.model';
+} from './test.model';
 
 import {
   getModel as TextBook
@@ -10,11 +10,17 @@ const xlsx = require('xlsx');
 import {
   getModel as Chapter
 } from '../../settings/conceptTaxonomy/concpetTaxonomy.model'
+
+import {
+  getModel as TestTimings
+} from '../testTiming/testtiming.model'
+
 const uuidv4 = require("uuid/v4");
 import {getModel as Hierarchy} from '../../settings/instituteHierarchy/instituteHierarchy.model';
 import {getModel as Subject} from '../../settings/subject/subject.model';
 const MAPPING_HEADERS = ["class","subject","textbook","chapter","content name","media type","view order"]
 const SUPPORTED_MEDIA_TYPE = ["docx","xlsx","xml"];
+const TEST_TIMING_HEADERS = ["branches","end date","start date","duration"];
 
 function queryForListTest(args) {
   let query = {
@@ -76,7 +82,11 @@ function getFileData(req){
 export async function listTest(args, ctx) {
   try {
     const queries = queryForListTest(args);
-    let find = {"mapping.textbook.code":{"$in": args.textbookCode}, active: true};
+    let activeStatus = true;
+    if(args.active === false) {
+      activeStatus = false
+    } 
+    let find = {"mapping.textbook.code":{"$in": args.textbookCode}, active: activeStatus};
     if(args.gaStatus){
       find["gaStatus"] = args.gaStatus
     }
@@ -327,12 +337,12 @@ export async function uploadTestMapping(req, res){
     const validationCheck = await validateMappingDataFromDbDataAndCreateMap(data, chapterData, textbookData, classData, subjectsData);
     
     if(validationCheck.error){
-      return res.status(400).send({message: "Invalid row in the sheet",data: validationCheck.erroredRow});
+      return res.status(400).send({message: "Invalid row in the sheet",data: validationCheck.erroredRow,error: true});
     }
 
     await TestSchema.bulkWrite(validationCheck.mapping);
     
-    return res.status(200).send(validationCheck.retMap);
+    return res.status(200).send({error: false, message: "Success"});
   }catch(err){
     console.log(err)
     return res.status(500).send("internal server error");
@@ -399,7 +409,6 @@ async function validateMappingDataFromDbDataAndCreateMap(data, chapterData, text
     let error = false;
     let mapping = [];
     let erroredRow = [];
-    let retMap = []
     const promise = await Promise.all([
       convertArrayOfChapterToObject(chapterData),
       convertArrayOfTextbookToObject(textBookData),
@@ -445,10 +454,9 @@ async function validateMappingDataFromDbDataAndCreateMap(data, chapterData, text
         indexed_subject[_subjectKey],indexed_textbook[_textbookKey],
         indexed_chapter[_chapterKey])
         mapping.push(testMapping);
-        retMap.push(testMapping["updateOne"]["update"]["$set"])
       }
     }
-    return {error, mapping,retMap, erroredRow}
+    return {error, mapping, erroredRow}
   }catch(err){
     throw err;
   }
@@ -588,6 +596,234 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
         upsert: true,
         setDefaultsOnInsert: true
     }
-}
+  }
   return upsertObj;
+}
+
+export async function  uploadTestiming(req, res){
+  try{
+    if (!req.file) {
+      return res.status(400).send({message: 'File required', error: true});
+    }
+    const testId = req.params.testId || null;
+    
+    if(!testId){
+      return res.status(400).send({message: "Test Id missing.", error: true});
+    }
+
+    const fileName = req.file.originalname.split('.');
+    const extname = fileName.pop()
+    
+    if (extname !== 'xlsx') {
+      return res.status(400).send({message:'Invalid file extension, only xlsx is supported',error: true});
+    }
+    
+    let data = getFileData(req);
+    
+    if(!data.length){
+      return res.status(400).send({error: true,message:"Empty file."});
+    }
+
+    const headersInSheet = Object.keys(data[0]);
+    const notFoundHeader = validateHeaders(headersInSheet, TEST_TIMING_HEADERS)
+    
+    if(notFoundHeader.length){
+      return res.status(400).send({error: true,message:"Invalid Headers",data: notFoundHeader});
+    }
+
+    const validateTestTimingSheet = validateTestTimingRows(data);
+    
+    if(validateTestTimingSheet.length){
+      return res.status(400).send(
+        {message: "Invalid rows in the sheet",data: validateTestTimingSheet,error: true}
+        );
+    }
+    
+    let branchesArr = [];
+    
+    for(let i = 0 ; i < data.length; i++){
+      data[i]["branches"] = data[i]["branches"].split(",");
+      branchesArr = branchesArr.concat(data[i]["branches"]);
+    }
+    let branchObj = {};
+    let duplicateBranches = [];
+    
+    branchesArr.forEach(function(branch){
+      if(!branchObj.hasOwnProperty(branch)){
+        branchObj[branch] = 1;
+      }else{
+        duplicateBranches.push(branch);
+      }
+    });
+
+    if(duplicateBranches.length){
+      return res.status(400).send({error: true, message: "Duplicate branches in the rows.", data: duplicateBranches});
+    }
+
+    const promiseSchema = await Promise.all([Tests(req.user_cxt),Hierarchy(req.user_cxt),
+      TestTimings(req.user_cxt)]);
+
+    const TestSchema = promiseSchema[0];
+    const HierarchySchema = promiseSchema[1];
+    const TestTimingSchema = promiseSchema[2]
+
+    const testInfo = await TestSchema.findOne({testId}).select({
+      _id: 0,
+      mapping : 1,
+      test: 1
+    }).lean();
+
+    if(!testInfo){
+      return res.status(400).send({error: true, message: "Invalid test id."});
+    }
+    const branches = await HierarchySchema.find({
+      "child": { $in: branchesArr },
+      "anscetors.childCode" : testInfo.mapping.class.code,
+      "levelName": "Branch"
+    }).select({_id: 0, childCode: 1, child: 1}).lean();
+    const validationCheck = validateTestTimingWithDbAndCreateMap(data, branches, testId, testInfo["mapping"]["class"]["name"]);
+    if(validationCheck.error){
+      return res.status(400).send({
+        error: true,
+        message: "invalid rows in db",
+        data: validationCheck.erroredRow
+      });
+    }
+    await TestTimingSchema.bulkWrite(validationCheck.mapping);
+    return res.status(200).send({error: false, message: "Success", data: validationCheck.mapping});
+  }
+  catch(err){
+    console.log(err);
+    return res.status(500).send("internal server error")
+  }
+}
+
+//"branches","end date","start date","duration"
+//start date and end date format(18/11/2019 - 17:00:00)
+//duration is in minutes
+function validateTestTimingRows (data){
+  const timeBuff = 60 * 1000 * 2;
+  const currentTime = new Date().getTime();
+  let errors = []
+  const length = data.length
+  for(let i = 0 ; i < length ; i++){
+    let startDate,endDate,dateDiffInMs;
+    let rowNumber = i+2;
+    let errorDetails = [];
+    if(!data[i]["branches"] || !data[i]["branches"].split(",").length){
+      errorDetails.push("Branches not present")
+    }
+    if(!data[i]["end date"]){
+      errorDetails.push("End date not present")
+    }else{
+      endDate = convertToDateString(data[i]["end date"]);
+      if(new Date(endDate) == "Invalid Date"){
+        errorDetails.push("Invalid End date format.Format should be DD/MM/YYYY - HH:MM:SS");
+      }else if( new Date(endDate).getTime() < currentTime ){
+        errorDetails.push("Invalid End date.End date should be greater than current time");
+      }else{
+        data[i]["end date"] = endDate;
+      }
+    }
+
+    if(!data[i]["start date"]){
+      errorDetails.push("start date not present")
+    }else{
+      startDate = convertToDateString(data[i]["start date"]);
+      if(new Date(startDate) == "Invalid Date"){
+        errorDetails.push("Invalid start date format.Format should be DD/MM/YYYY - HH:MM:SS");
+      }else if( new Date(startDate).getTime() < currentTime ){
+        errorDetails.push("Invalid start date.Start date should be greater than current time");
+      }else{
+        data[i]["start date"] = startDate;
+      }
+    }
+    if(startDate && endDate){
+      dateDiffInMs  = new Date(endDate).getTime() - new Date(startDate).getTime();
+      if(dateDiffInMs < 0){
+        errorDetails.push("Start date should be less than End date.");
+      }
+    }
+    if(!data[i]["duration"]){
+      errorDetails.push("duration not present")
+    }else{
+      let durationInMsWithBuff = parseInt(data[i]["duration"]) * timeBuff ;
+      if(dateDiffInMs <= durationInMsWithBuff ){
+        return errorDetails.push("Minimum difference between start date and end date should be 3hrs plus duration.")
+      }
+    }
+
+    if(errorDetails.length){
+      errors.push("Row "+ rowNumber+ " : "+errorDetails.join(","))
+    }
+  }
+  return errors;
+}
+
+function convertToDateString(dateString){
+  let l = dateString.trim().replace(/ /g,'');
+  let a  = l.split("-");
+  let b = a[0].split("/");
+  let temp = b[0];
+  b[0] = b[2];
+  b[2] = temp
+  return b.join("-")+"T"+a[1];
+}
+
+function branchMapOfName(branches){
+  let branchMap = {}
+  branches.forEach(function(branch){
+    branchMap[branch["child"]] = branch;
+  });
+  return branchMap;
+}
+
+function validateTestTimingWithDbAndCreateMap(data, branches, testId, className){
+  const length = data.length;
+  let error = false;
+  let mapping = [];
+  let erroredRow = [];
+  const indexed_branch = branchMapOfName(branches);
+  for( let i = 0 ; i < length ; i++ ){
+    let rowNumber = i+2;
+    let missingBranch = "";
+    data[i]["branches"].forEach(function(branch){
+      if(!indexed_branch.hasOwnProperty(branch)){
+        error = true;
+        missingBranch += branch + ", ";
+      }
+    });
+    if(missingBranch.length){
+      erroredRow.push("Row "+ rowNumber+ " : Invalid Branch "+ missingBranch)
+    }
+    if(!error){
+      createTimingMap(data[i], indexed_branch, mapping, testId, className);
+    }
+  }
+  return {error, mapping, erroredRow}
+}
+
+function createTimingMap(data, indexed_branch, ret_data, testId, className){
+  const branches = data["branches"];
+  branches.forEach(function(branch){
+    let mapping = {
+      testId: testId,
+      _id: indexed_branch[branch]["childCode"]+"_"+testId,
+      startTime: new Date(data["start date"]),
+      endTime: new Date(data["end date"]),
+      duration: parseInt(data["duration"]),
+      class: className,
+      orientations: data["orientations"] ? data["orientations"].split(",") : []
+    }
+    let upsertObj = {
+      updateOne: {
+          filter: { "_id": mapping["_id"] },
+          update: {"$set": mapping},
+          upsert: true,
+          setDefaultsOnInsert: true
+      }
+    }
+    ret_data.push(upsertObj);
+  });
+  return true;
 }

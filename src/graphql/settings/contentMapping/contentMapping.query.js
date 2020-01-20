@@ -29,6 +29,7 @@ import {
   TextbookBasedQuizInputType,
   TextbookBasedQuizOutputType,
   DashboardHeadersAssetCountInputType,
+  ReadingMaterialAudioType
 } from './contentMapping.type';
 import { validateAccess } from '../../../utils/validator';
 
@@ -72,6 +73,111 @@ const ContentMappingPaginatedType = new ObjectType({
   },
 });
 
+
+export const ContentMappingUploadedDataLearn = {
+  args: {
+    pageNumber: { type: IntType, description: 'Page Number' },
+    limit: { type: IntType, description: 'Number of items per page' },
+    classCode: { type: StringType, description: 'Internal code of Textbook ' },
+    subjectCode: { type: StringType, description: 'Internal code of Textbook ' },
+    textbookCode: { type: StringType, description: 'Internal code of Textbook ' },
+    chapterCode: { type: StringType, description: 'Internal code of Textbook ' },
+    branch: { type: StringType, description: 'Branch filter' },
+    orientation: { type: StringType, description: 'Orientation filter' },
+    contentCategory: { type: StringType, description: 'Category of the content' },
+  },
+  type: ContentMappingPaginatedType,
+  async resolve(obj, args, context) {
+    if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
+    if (!args.limit) args.limit = 0; // eslint-disable-line
+    return controller.getContentMappingUploadedDataLearn(args, context)
+      .then(async (json) => {
+        if (json && json.data) {
+          const pageInfo = {};
+          const resp = {};
+          pageInfo.prevPage = true;
+          pageInfo.nextPage = true;
+          pageInfo.pageNumber = args.pageNumber;
+          pageInfo.totalPages = args.limit ? Math.ceil(json.count / args.limit) : 1;
+          if(!json.count) pageInfo.totalPages = 1;
+          pageInfo.totalEntries = json.count;
+          resp.data = json.data;
+
+          if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+            throw new Error('Page Number is invalid');
+          }
+          if (args.pageNumber === pageInfo.totalPages) {
+            pageInfo.nextPage = false;
+          }
+          if (args.pageNumber === 1) {
+            pageInfo.prevPage = false;
+          }
+          resp.pageInfo = pageInfo;
+          return resp;
+        }
+        return json;
+      });
+  },
+};
+
+const ReadingMaterialAudioPaginatedType = new ObjectType({
+  name: 'ReadingMaterialAudioPaginatedType',
+  fields() {
+    return {
+      data: {
+        type: new List(ReadingMaterialAudioType),
+      },
+      pageInfo: {
+        type: pageInfoType,
+      },
+    };
+  },
+});
+
+export const ContentMappingUploadedDataReadingMaterialAudio = {
+  args: {
+    pageNumber: { type: IntType, description: 'Page Number' },
+    limit: { type: IntType, description: 'Number of items per page' },
+    classCode: { type: StringType, description: 'Internal code of Textbook ' },
+    subjectCode: { type: StringType, description: 'Internal code of Textbook ' },
+    textbookCode: { type: StringType, description: 'Internal code of Textbook ' },
+    chapterCode: { type: StringType, description: 'Internal code of Textbook ' },
+    branch: { type: StringType, description: 'Branch filter' },
+    orientation: { type: StringType, description: 'Orientation filter' },
+  },
+  type: ReadingMaterialAudioPaginatedType,
+  async resolve(obj, args, context) {
+    if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
+    if (!args.limit) args.limit = 0; // eslint-disable-line
+    return controller.getContentMappingUploadedDataReadingMaterialAudio(args, context)
+      .then(async (json) => {
+        if (json && json.data) {
+          const pageInfo = {};
+          const resp = {};
+          pageInfo.prevPage = true;
+          pageInfo.nextPage = true;
+          pageInfo.pageNumber = args.pageNumber;
+          pageInfo.totalPages = args.limit ? Math.ceil(json.count / args.limit) : 1;
+          if(!json.count) pageInfo.totalPages = 1;
+          pageInfo.totalEntries = json.count;
+          resp.data = json.data;
+
+          if (args.pageNumber < 1 || args.pageNumber > pageInfo.totalPages) {
+            throw new Error('Page Number is invalid');
+          }
+          if (args.pageNumber === pageInfo.totalPages) {
+            pageInfo.nextPage = false;
+          }
+          if (args.pageNumber === 1) {
+            pageInfo.prevPage = false;
+          }
+          resp.pageInfo = pageInfo;
+          return resp;
+        }
+        return json;
+      });
+  },
+};
 
 export const ContentMapping = {
   args: {
@@ -199,5 +305,14 @@ export const TextbookBasedQuiz = {
 };
 
 export default {
-  ContentMapping, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats, ContentMappingStats, TextbookBasedQuiz, DashboardHeadersAssetCount,
+  ContentMapping,
+  CmsCategoryStats,
+  CategoryWiseFiles,
+  FileData,
+  CmsTopicLevelStats,
+  ContentMappingStats,
+  TextbookBasedQuiz,
+  DashboardHeadersAssetCount,
+  ContentMappingUploadedDataLearn,
+  ContentMappingUploadedDataReadingMaterialAudio
 };

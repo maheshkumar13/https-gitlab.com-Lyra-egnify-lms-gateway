@@ -21,8 +21,8 @@ import { createTextbook, updateTextbook, deleteTextbook } from './settings/textb
 import { Students, StudentUniqueValues, StudentsByLastNode, StudentById, studentHeader,StudentListByFilters} from './settings/student/student.query';
 import { updateStudentAvatar, updateStudentSubjects } from './settings/student/student.mutation';
 import { ConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.query';
-import { ContentMapping, ContentMappingStats, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats, TextbookBasedQuiz, DashboardHeadersAssetCount } from './settings/contentMapping/contentMapping.query';
-import { LaunchRequest } from './launcher/launchRequest/launchRequest.query';
+import { ContentMapping, ContentMappingStats, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats, TextbookBasedQuiz, DashboardHeadersAssetCount, ContentMappingUploadedDataLearn, ContentMappingUploadedDataReadingMaterialAudio } from './settings/contentMapping/contentMapping.query';
+import { LaunchRequest, GetS3FileSystem } from './launcher/launchRequest/launchRequest.query';
 import { Questions, Results, QuestionEvaluation } from './tests/questions/questions.query';
 import { MasterResults } from './tests/masterResults/masterResults.query';
 import { InsertContent, UpdateContent, updateMetaData } from './settings/contentMapping/contentMapping.mutation';
@@ -32,7 +32,7 @@ import { PackageList, PackageDetails } from './settings/package/package.query';
 import { CreatePackage, UpdatePackage, FeedbackPackage } from './settings/package/package.mutation';
 import { autoComplete, searchResult } from './search/searchRequest/search.query';
 import { ListTest, ListSubjectWiseBooksAndTestCount, HeaderCountForTextBookBasedTest } from '../graphql/tests/upload/upload.query';
-import { TimeAnalysis, TimeAnalysisStudentsList, TimeAnalysisHeaders, TimeAnalysisStudentsListByDay, StudentLevelTimeAnalysis, TeacherLevelTimeAnalysis } from './analysis/timeAnalysis/timeAnalysis.query';
+import { TimeAnalysis, TimeAnalysisStudentsList, TimeAnalysisHeaders, TimeAnalysisStudentsListByDay, StudentLevelTimeAnalysis, TeacherLevelTimeAnalysis, TimeAnalysisHeadersv2, TimeAnalysisStudentsListByDayv2, TimeAnalysisStudentsListBySubjects, TimeAnalysisStudentsListByCategory, TimeAnalysisUniqueSubjectsByFilters, TimeAnalysisStudentsListBySubjectDateWise, TimeAnalysisStudentsListByDate } from './analysis/timeAnalysis/timeAnalysis.query';
 import { StudentCompletionStats, TeacherLevelCompletionStats, TeacherLevelCompletionHeaders } from './analysis/completion/completion.query';
 
 const schema = new Schema({
@@ -89,6 +89,16 @@ const schema = new Schema({
       TeacherLevelCompletionHeaders,
       StudentLevelTimeAnalysis,
       TeacherLevelTimeAnalysis,
+      TimeAnalysisHeadersv2,
+      TimeAnalysisStudentsListByDayv2,
+      TimeAnalysisStudentsListBySubjects,
+      TimeAnalysisStudentsListByCategory,
+      TimeAnalysisUniqueSubjectsByFilters,
+      TimeAnalysisStudentsListBySubjectDateWise,
+      ContentMappingUploadedDataLearn,
+      ContentMappingUploadedDataReadingMaterialAudio,
+      TimeAnalysisStudentsListByDate,
+      GetS3FileSystem
     },
   }),
   mutation: new ObjectType({
