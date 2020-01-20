@@ -119,7 +119,7 @@
           },
           {
             "name":"PARSER_SERVICE",
-            "value":"http://uat.elk.rankguru.com:7000/parse"
+            "value":"http://uat.elk.rankguru.com:3000/parse"
           }
         ],
         "logConfiguration": {
