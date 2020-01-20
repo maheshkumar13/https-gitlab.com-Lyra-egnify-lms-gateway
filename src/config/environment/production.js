@@ -43,5 +43,8 @@ module.exports = {
     key: process.env.ENCRIPT_KEY || 'secret',
   },
   COUCH_DB_URL : process.env.COUCH_DB_URL,
-  GA_SCHEDULER_URL: process.env.GA_SCHEDULER_URL || "https://rest.rankguru.com/schedule"
+  GA_SCHEDULER_URL: process.env.GA_SCHEDULER_URL || "https://rest.rankguru.com/schedule",
+  parser:{
+    uri : process.env.PARSER_SERVICE || "http://uat.elk.rankguru.com:7000/parse/"
+  },
 };
