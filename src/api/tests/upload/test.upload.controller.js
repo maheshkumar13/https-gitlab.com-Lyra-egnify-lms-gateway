@@ -841,7 +841,7 @@ export async function publishTest(req, res){
     const [testTiming, questionsCount] = await Promise.all([
       TestTimingSchema.aggregate([{$match: {testId}},
       {$group: {"_id": "$testId",maxDate: {$max: "$endTime"},maxDuration: {$max: "$duration"}}},
-      {$lookup:{from: "tests", foreignField: "testId", "localField": "_id","as": "testInfo"}},
+      {$lookup:{from: "tests", foreignField: "testId", "localField": "testId","as": "testInfo"}},
       {$unwind: "$testInfo"},
       {$project:{testName: "$testInfo.test.name",maxDuration: 1,maxDate: 1}}]),
       QuestionsSchema.count({questionPaperId})
