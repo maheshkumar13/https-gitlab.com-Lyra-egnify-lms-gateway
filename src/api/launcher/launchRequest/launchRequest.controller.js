@@ -1,6 +1,7 @@
 import { config } from '../../../config/environment';
 
 const AWS = require('aws-sdk');
+const _ = require('lodash');
 
 AWS.config.update({
   signatureVersion: 'v4',
@@ -84,5 +85,27 @@ export async function getS3FileSystem(args) {
       })
     }
     return data
+}
+
+export async function getSignedUrlForUpload(args, context) {
+
+  const FILES_LIMIT = 1000;
+  const TOTAL_SIZE_LIMIT = 1024 * 1024 * 1024; // 1024 MB
+  const Expires = 4 * 60 * 60; // 4 hrs
+  if(args.data.length > FILES_LIMIT) throw new Error('Number of files limit exceeded'); 
+  const totalSize = _.sum(args.data.map(x => x.size));
+  if(totalSize > TOTAL_SIZE_LIMIT) throw new Error('Data size limit exceeded');
+  
+  let bucket = config.AWS_PRIVATE_BUCKET;
+  if(args.html === true) bucket = config.AWS_PUBLIC_BUCKET
+  const params = {
+    Bucket: bucket,
+    Expires,
+  };
+  args.data.forEach(x => {
+    params.Key = x.key;
+    x.uploadUrl = s3.getSignedUrl('putObject', params);
+  })
+  return args.data;
 }
 
