@@ -41,7 +41,12 @@ const QuestionSchema = new mongoose.Schema({
   chapter : {
     code : { type : String , default : null},
     name : { type : String , default : null}
-  }
+  },
+  questionNumberId: { type: String},
+  subject: { type: String},
+  optionHash: { type: String},
+  questionHash: { type: String},
+  keyHash: { type: String}
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 });
