@@ -32,10 +32,10 @@ export const ListInputType = new InputType({
             type: StringType
         },
         pageNumber : {
-            type : NonNull(IntType)
+            type : IntType
         },
         limit : {
-            type : NonNull(IntType)
+            type : IntType
         },
         orientation : {
             type : StringType
