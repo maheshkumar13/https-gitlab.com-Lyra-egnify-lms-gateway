@@ -155,6 +155,7 @@ export const DashboardHeadersAssetCountInputType = new InputType({
     orientation: { type: StringType, description: 'Orientaion name' },
     contentCategory: { type: StringType, description: 'content category' },
     header: { type: NonNull(DashboardHeaderEnumType), description: 'Header' },
+    readingMaterialAudio: { type: BooleanType, description: 'Default false, set true for headers count for the reading materials which has audios' },
   },
 });
 
