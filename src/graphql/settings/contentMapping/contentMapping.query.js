@@ -264,7 +264,7 @@ export const DashboardHeadersAssetCount = {
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) {
-    const validRoles = ['CMS_LEARN_VIEWER', 'CMS_PRACTICE_VIEWER', 'CMS_TEST_VIEWER'];
+    const validRoles = ['CMS_LEARN_VIEWER', 'CMS_PRACTICE_VIEWER', 'CMS_TEST_VIEWER', 'CMS_CONTENT_MANAGER', 'CMS_CONTENT_VIEWER'];
     if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     return controller.getDashboardHeadersAssetCountV2(args.input, context)
       .then(async json => json);

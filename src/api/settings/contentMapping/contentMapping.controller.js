@@ -1108,6 +1108,11 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
     active: true,
     'refs.textbook.code': { $in: textbookCodes },
   };
+
+  if(args.readingMaterialAudio === true) {
+    contentQuery['content.category'] = 'Reading Material';
+    contentQuery['metaData.audioFiles'] = {$ne: null};
+  }
   const contentTypeMatchOrData = getContentTypeMatchOrData(contentCategory);
   if(contentTypeMatchOrData.length) contentQuery['$or'] = contentTypeMatchOrData;
   
