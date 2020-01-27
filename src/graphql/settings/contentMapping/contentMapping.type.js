@@ -41,12 +41,15 @@ const refCodesType = new ObjectType({
   name: 'ContentMappingRefCodesType',
   fields: {
     code: { type: StringType, description: 'Internal code of reference' },
+    name: { type: StringType, description: 'Name of the reference' },
   },
 });
 
 const refsType = new ObjectType({
   name: 'ContentMappingRefsType',
   fields: {
+    class: { type: refCodesType, description: 'Class reference '},
+    subject: { type: refCodesType, description: 'Subject reference '},
     textbook: { type: refCodesType, description: 'Textbook reference' },
     topic: { type: refCodesType, description: 'Topic reference' },
   },
@@ -68,6 +71,16 @@ export const ContentMappingType = new ObjectType({
     viewOrder: { type: IntType, description: 'view order' },
   },
 });
+
+export const ReadingMaterialAudioType = new ObjectType({
+  name: 'ReadingMaterialAudioType',
+  fields: {
+    filePath: { type: StringType, description: 'File path' },
+    audioFilePath: { type: StringType, description: 'Audio file path'},
+    audioFileName: { type: StringType, description: 'Audio file name'},
+  },
+});
+
 
 export const CmsCategoryStatsInputType = new InputType({
   name: 'CmsCategoryStatsInputType',
@@ -142,6 +155,7 @@ export const DashboardHeadersAssetCountInputType = new InputType({
     orientation: { type: StringType, description: 'Orientaion name' },
     contentCategory: { type: StringType, description: 'content category' },
     header: { type: NonNull(DashboardHeaderEnumType), description: 'Header' },
+    readingMaterialAudio: { type: BooleanType, description: 'Default false, set true for headers count for the reading materials which has audios' },
   },
 });
 

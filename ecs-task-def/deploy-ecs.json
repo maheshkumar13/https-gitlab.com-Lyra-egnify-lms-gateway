@@ -104,6 +104,9 @@
           {
             "name":"CACHE_TIMEOUT_STUDENT",
             "value":"A"
+          },{
+            "name":"PARSER_SERVICE",
+            "value":"http://dev.elk.rankguru.com:7000/parse"
           }
         ],
         "logConfiguration": {

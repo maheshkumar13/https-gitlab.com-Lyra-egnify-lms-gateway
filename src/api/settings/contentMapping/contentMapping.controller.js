@@ -261,7 +261,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     
     if(obj['coins']) {
       const coins = parseInt(obj['coins']);
-      if (!Number.isInteger(coins) || coins < 0) {
+      if (!Number.isInteger(coins)) {
         result.success = false;
         result.message = `Invalid coins at row ${row}`;
       }
@@ -491,7 +491,7 @@ export async function uploadContentMappingv2(req, res) {
     // VALIDATING COINS
     const coins = parseInt(obj['coins']);
     if(obj['coins']) {
-      if (!Number.isInteger(coins) || coins < 0) {
+      if (!Number.isInteger(coins)) {
         errors.push(`Invalid coins at row ${row} (${obj['coins']})`);
       }
     }
@@ -1108,6 +1108,11 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
     active: true,
     'refs.textbook.code': { $in: textbookCodes },
   };
+
+  if(args.readingMaterialAudio === true) {
+    contentQuery['content.category'] = { $in: ['Reading Material']};
+    contentQuery['metaData.audioFiles'] = {$exists: true };
+  }
   const contentTypeMatchOrData = getContentTypeMatchOrData(contentCategory);
   if(contentTypeMatchOrData.length) contentQuery['$or'] = contentTypeMatchOrData;
   
@@ -1124,6 +1129,9 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
       _id: `$${groupby}`,
       count: { $sum: 1 },
     }
+  }
+  if(args.readingMaterialAudio === true) {
+    aggregateQuery.push({$unwind: '$metaData.audioFiles'});
   }
   aggregateQuery.push(contentGroupQuery)
   const result = await ContentMapping.aggregate(aggregateQuery).allowDiskUse(true);
@@ -2058,6 +2066,414 @@ export async function getTextbookBasedListOfQuizzes(args, context) {
     return ContentMapping.aggregate([{$match: query}, {$project: projection}]).allowDiskUse(true);
   });
 
+}
+
+export async function getContentMappingUploadedDataLearn(args,context){ 
+  const [
+    InstituteHierarchy,
+    Subject,
+    Textbook,
+    ConceptTaxonomy,
+    ContentMapping,
+  ] = await Promise.all([
+    InstituteHierarchyModel(context),
+    SubjectModel(context),
+    TextbookModel(context),
+    ConceptTaxonomyModel(context),
+    ContentMappingModel(context),
+  ])
+  
+  // Class Data
+  const classQuery = { active: true, levelName: 'Class' };
+  if(args.classCode) classQuery.childCode = args.classCode;
+  const classData = await InstituteHierarchy.find(classQuery,{child: 1, childCode: 1, _id: 0});
+  const classObj = {};
+  classData.forEach( x => {classObj[x.childCode] = x});
+  
+  // Subject Data
+  const subjectQuery = { active: true, 'refs.class.code': {$in: Object.keys(classObj) }};
+  if(args.subjectCode) subjectQuery.code = args.subjectCode;
+  const subjectData = await Subject.find(subjectQuery,{subject: 1, code: 1, refs: 1, _id: 0});
+  const subjectObj = {};
+  subjectData.forEach( x => {subjectObj[x.code] = x});
+
+  // Textbook Data
+  const textbookQuery = { active: true, 'refs.class.code': {$in: Object.keys(classObj)}, 'refs.subject.code': { $in: Object.keys(subjectObj)} };
+  if(args.textbookCode) textbookQuery.code = args.textbookCode;
+  if(args.branch) textbookQuery.branches = { $in: [args.branch, '', null]};
+  if(args.orientation) textbookQuery.orientations = { $in: [args.orientation, '', null]};
+  const textbookData = await Textbook.find(textbookQuery,{name: 1, code: 1, refs: 1, _id: 0});
+  const textbookObj = {};
+  textbookData.forEach( x => {
+    textbookObj[x.code] = {
+    class: {
+      name: classObj[x.refs.class.code].child,
+      code: classObj[x.refs.class.code].childCode,
+    },
+    subject: {
+      name: subjectObj[x.refs.subject.code].subject,
+      code: subjectObj[x.refs.subject.code].code,
+    },
+    textbook: {
+      name: x.name,
+      code: x.code,
+    }
+  }});
+  
+  // ConceptTaxonomy Data
+  const conceptQuery = { active: true, levelName: 'topic', 'refs.textbook.code': {$in: Object.keys(textbookObj)}};
+  if(args.chapterCode) {
+    conceptQuery.code = args.chapterCode;
+  }
+  const topicData = await ConceptTaxonomy.aggregate([
+    { $match: conceptQuery },
+    { $group: { _id: '$refs.textbook.code', codes: {$push: { code: '$code', name: '$child'}}}},
+  ]);
+  const topicObj = {};
+  // Content mapping
+  const topicsFilter = [];
+  topicData.forEach(x => {
+    const textbookCode = x._id;
+    const codes = [];
+    topicObj[textbookCode] = {};
+    x.codes.forEach(chapter => {
+      topicObj[textbookCode][chapter.code] = chapter.name;
+      codes.push(chapter.code);
+    })
+    topicsFilter.push({'refs.textbook.code': textbookCode, 'refs.topic.code': { $in: codes }});
+  })
+
+  if(!topicsFilter.length) {
+    return {
+      count: 0,
+      data: []
+    }
+  }
+  const contentTypeMatchOrData = getContentTypeMatchOrData(args.contentCategory);
+
+  const contentQuery = {
+    active: true,
+    'content.category': { $nin: ['Tests', 'Take Quiz']},
+    $and: [{$or: topicsFilter},{$or: contentTypeMatchOrData }]
+  }
+  const skip = (args.pageNumber - 1) * args.limit;
+  const [count, data ] = await Promise.all([
+    ContentMapping.count(contentQuery),
+    ContentMapping.find(contentQuery).skip(skip).limit(args.limit).lean(),
+  ])
+  data.forEach(obj => {
+    const topicCode = obj.refs.topic.code;
+    obj.refs = textbookObj[obj.refs.textbook.code];
+    obj.refs.topic = {
+      name: topicObj[obj.refs.textbook.code][topicCode],
+      code: topicCode,
+    }
+  })
+  return {
+    count,
+    data
+  }
+}
+
+export async function getContentMappingUploadedDataReadingMaterialAudio(args,context){ 
+  const [
+    InstituteHierarchy,
+    Subject,
+    Textbook,
+    ConceptTaxonomy,
+    ContentMapping,
+  ] = await Promise.all([
+    InstituteHierarchyModel(context),
+    SubjectModel(context),
+    TextbookModel(context),
+    ConceptTaxonomyModel(context),
+    ContentMappingModel(context),
+  ])
+  
+  // Class Data
+  const classQuery = { active: true, levelName: 'Class' };
+  if(args.classCode) classQuery.childCode = args.classCode;
+  const classData = await InstituteHierarchy.find(classQuery,{child: 1, childCode: 1, _id: 0});
+  const classObj = {};
+  classData.forEach( x => {classObj[x.childCode] = x});
+  
+  // Subject Data
+  const subjectQuery = { active: true, 'refs.class.code': {$in: Object.keys(classObj) }};
+  if(args.subjectCode) subjectQuery.code = args.subjectCode;
+  const subjectData = await Subject.find(subjectQuery,{subject: 1, code: 1, refs: 1, _id: 0});
+  const subjectObj = {};
+  subjectData.forEach( x => {subjectObj[x.code] = x});
+
+  // Textbook Data
+  const textbookQuery = { active: true, 'refs.class.code': {$in: Object.keys(classObj)}, 'refs.subject.code': { $in: Object.keys(subjectObj)} };
+  if(args.textbookCode) textbookQuery.code = args.textbookCode;
+  if(args.branch) textbookQuery.branches = { $in: [args.branch, '', null]};
+  if(args.orientation) textbookQuery.orientations = { $in: [args.orientation, '', null]};
+  const textbookData = await Textbook.find(textbookQuery,{name: 1, code: 1, refs: 1, _id: 0});
+  const textbookObj = {};
+  textbookData.forEach( x => {
+    textbookObj[x.code] = {
+    class: {
+      name: classObj[x.refs.class.code].child,
+      code: classObj[x.refs.class.code].childCode,
+    },
+    subject: {
+      name: subjectObj[x.refs.subject.code].subject,
+      code: subjectObj[x.refs.subject.code].code,
+    },
+    textbook: {
+      name: x.name,
+      code: x.code,
+    }
+  }});
+  
+  // ConceptTaxonomy Data
+  const conceptQuery = { active: true, levelName: 'topic', 'refs.textbook.code': {$in: Object.keys(textbookObj)}};
+  if(args.chapterCode) {
+    conceptQuery.code = args.chapterCode;
+  }
+  const topicData = await ConceptTaxonomy.aggregate([
+    { $match: conceptQuery },
+    { $group: { _id: '$refs.textbook.code', codes: {$push: { code: '$code', name: '$child'}}}},
+  ]);
+  const topicObj = {};
+  // Content mapping
+  const topicsFilter = [];
+  topicData.forEach(x => {
+    const textbookCode = x._id;
+    const codes = [];
+    topicObj[textbookCode] = {};
+    x.codes.forEach(chapter => {
+      topicObj[textbookCode][chapter.code] = chapter.name;
+      codes.push(chapter.code);
+    })
+    topicsFilter.push({'refs.textbook.code': textbookCode, 'refs.topic.code': { $in: codes }});
+  })
+
+  if(!topicsFilter.length) {
+    return {
+      count: 0,
+      data: []
+    }
+  }
+  const contentTypeMatchOrData = getContentTypeMatchOrData(args.contentCategory);
+
+  const contentQuery = {
+    active: true,
+    'content.category': { $in: ['Reading Material']},
+    $and: [{$or: topicsFilter},{$or: contentTypeMatchOrData }],
+    'metaData.audioFiles': {$exists: true },
+  }
+  const countQuery = [{$match: contentQuery}];
+  countQuery.push({$unwind: '$metaData.audioFiles'});
+  countQuery.push({$count: 'total'});
+
+  const agrQuery = [{$match: contentQuery}];
+  agrQuery.push({$unwind: '$metaData.audioFiles'});
+  agrQuery.push({$project: { 
+    _id: 0,
+    filePath: '$resource.key',
+    audioFilePath: '$metaData.audioFiles.key',
+    audioFileName: '$metaData.audioFiles.name',
+  }});
+  const skip = (args.pageNumber - 1) * args.limit;
+  if(skip) agrQuery.push({$skip: skip});
+  if(args.limit) agrQuery.push({$limit: args.limit});
+  
+  return Promise.all([
+    ContentMapping.aggregate(countQuery).allowDiskUse(true),
+    ContentMapping.aggregate(agrQuery).allowDiskUse(true)
+  ]).then(([countData, data]) => {
+    let count = 0;
+    if(countData && countData[0] && countData[0].total) count = countData[0].total;
+    return {
+      count,
+      data
+    }
+  })
+}
+
+function validateHeadersForPractice(data, errors, maxLimit) {
+  const mandetoryFields = [
+    'class', 'subject', 'textbook', 'chapter',
+    'test name', 'content category',
+    'media type', 'view order'
+  ];
+  const headers  = [
+    'class', 'subject', 'textbook', 'chapter',
+    'test name', 'content category', 'content type',
+    'file path', 'file size', 'media type',
+    'timg path', 'view order',
+    'category', 'publish year', 'publisher',
+  ]
+  const sheetHeaders = Object.keys(data[0]);
+  let diffHeaders = _.difference(headers,sheetHeaders);
+
+  if(diffHeaders.length) {
+    errors.push(`${diffHeaders.toString()} headers not found`);
+    return errors;
+  }
+
+  for(let i = 0; i < data.length; i += 1){
+    const obj = data[i];
+    for (let j = 0; j < mandetoryFields.length; j += 1) {
+      if (!obj[mandetoryFields[j]]) {
+        errors.push(`${mandetoryFields[j].toUpperCase()} value not found for row ${i + 2}`);
+        if(errors.length > maxLimit) return errors;
+      }
+    }
+  }
+  return errors;
+}
+export async function uploadPracticeMapping(req, res) {
+  if (!req.file) return res.status(400).end('File required');
+  	// validate extension
+	const name = req.file.originalname.split('.');
+	const extname = name[name.length - 1];
+	if (extname !== 'xlsx') {
+	  return res.status(400).end('Invalid extension, please upload .xlsx file');
+	}
+  let data = getCleanFileData(req);
+  if(!data.length) {
+    return res.status(400).end('No data found');
+  }
+  if(data.length > 10000) {
+    return res.status(400).end('Limit exceeded, max rows 10k');
+  }
+  let errors = [];
+  const maxLimit = 1000;
+  errors = validateHeadersForPractice(data, errors, maxLimit);
+  
+  if(errors.length) {
+    return res.send({
+      success: false,
+      message: 'Invalid data',
+      errors,
+    })
+  }
+  const dbData = await getDbDataForValidation(req.user_cxt)
+  const ContentMapping = await ContentMappingModel(req.user_cxt);
+  const bulk = ContentMapping.collection.initializeUnorderedBulkOp();
+  const validContentCategories = [ 'Practice' ]
+  const contentTypes = config.CONTENT_TYPES || {};
+
+  for(let i=0; i < data.length; i+=1) {
+    if(errors.length > maxLimit) {
+      return res.send({
+        success: false,
+        message: 'Invalid data',
+        errors,
+      })
+    }
+
+    const row = i+2;
+    const obj = data[i];
+
+
+    // VALIDATING CONTENT CATEGORY
+    const contentCategory = validContentCategories.find(x => x.toLowerCase() === obj['content category'].toLowerCase());
+    if(!contentCategory) {
+      errors.push(`Invalid CONTENT CATEGORY at row ${row} (${obj['content category']})`);
+    }
+
+    // VALIDATING CONTENT MEDIA TYPE
+    if( contentTypes && 
+        contentTypes[contentCategory] && 
+        !contentTypes[contentCategory].includes(obj['media type'].toLowerCase())
+      ) {
+      errors.push(`Invalid MEDIA TYPE at row ${row} (${obj['media type']}) for CONTENT CATEGORY (${obj['content category']})`);
+    }
+
+    // VALIDATING CATEGORY
+    const categories = ['A', 'B', 'C'];
+    if (obj.category && !categories.includes(obj.category)) {
+      errors.push(`Invalid CATEGORY at row ${row} (${obj.category})`);
+    }
+
+    // VALIDATING VIEW ORDER
+    const viewOrder = parseInt(obj['view order']);
+    if (!Number.isInteger(viewOrder) || viewOrder < 1) {
+      errors.push(`Invalid view order at row ${row}`);
+    }
+
+    const className = obj.class.toLowerCase();
+    const subjectName = obj.subject.toLowerCase();
+    const textbookName = obj.textbook.toLowerCase();
+    const chapterName = obj.chapter.toLowerCase();
+    
+    // VALIDATING CLASS
+    if(!dbData[className]) {
+      errors.push(`Invalid CLASS at row ${row} (${obj.class})`);
+      continue;
+    }
+
+    // VALIDATING SUBJECT
+    if(!dbData[className][subjectName]) {
+      errors.push(`Invalid SUBJECT at row ${row} (${obj.class}->${obj.subject})`);
+      continue;
+    }
+
+    // VALIDATING TEXTBOOK
+    if(!dbData[className][subjectName][textbookName]) {
+      errors.push(`Invalid TEXTBOOK at row ${row} (${obj.class}->${obj.subject}->${obj.textbook})`);
+      continue;
+    }
+    
+    // VALIDATING CHAPTER
+    const chapterObj = dbData[className][subjectName][textbookName][chapterName];
+    if(!chapterObj) {
+      errors.push(`Invalid CHAPTER at row ${row} (${obj.class}->${obj.subject}->${obj.textbook}->${obj.chapter})`);
+      continue;
+    }
+
+    if(errors.length) continue;
+
+    // PREPARING DATA OBJECT
+    const temp = {
+      content: {
+        name: obj['test name'],
+        category: contentCategory,
+        type: obj['content type'],
+      },
+      resource: {
+        size: obj['file size'],
+        type: obj['media type'].toLowerCase(),
+      },
+      publication: {
+        publisher: obj.publisher,
+        year: obj['publish year'],
+      },
+      timgPath: obj['timg path'] ? upath.toUnix(obj['timg path']) : '',
+      category: obj.category,
+      viewOrder: viewOrder,
+      refs: {
+        topic: {
+          code: chapterObj.topicCode,
+        },
+        textbook : {
+          code: chapterObj.textbookCode,
+        },
+      },
+      "assetId" : obj['asset id'] || crypto.randomBytes(10).toString('hex')
+    };
+    bulk.find({assetId: temp.assetId}).upsert().updateOne(temp);
+  }
+if(errors.length) {
+  console.info('sending errors..')
+  return res.send({
+    success: false,
+    message: 'Invalid data',
+    errors,
+  })
+}
+console.info('bulk executing..')
+  return bulk.execute().then(() => {
+    console.info(req.file.originalname, 'Uploaded successfully....')
+    return res.send('Data inserted/updated successfully')
+  }).catch((err) => {
+    console.error(err);
+    return res.status(400).end('Error occured');
+  });
 }
 
 export default{
