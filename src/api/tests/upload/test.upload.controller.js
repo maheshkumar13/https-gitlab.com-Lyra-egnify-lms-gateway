@@ -18,7 +18,7 @@ import {
 const uuidv4 = require("uuid/v4");
 import {getModel as Hierarchy} from '../../settings/instituteHierarchy/instituteHierarchy.model';
 import {getModel as Subject} from '../../settings/subject/subject.model';
-const MAPPING_HEADERS = ["class","subject","textbook","chapter","content name","media type","view order"]
+const MAPPING_HEADERS = ["class","subject","textbook","chapter","test name","media type","view order"]
 const SUPPORTED_MEDIA_TYPE = ["docx","xlsx","xml"];
 const TEST_TIMING_HEADERS = ["branches","end date","start date","duration"];
 
@@ -514,8 +514,8 @@ async function subjectMapWithClassName(subjects,classes){
 
 function createTestMappingObject(data, classData, subjectData, textBookData, chapterData){
   let mapping = {
-    "testId" : data["asset id"] || uuidv4(),
-    "testName" : data["content name"],
+    "testId" : data["test id"] || uuidv4(),
+    "testName" : data["test name"],
     "subjects" : [
         {
             "totalQuestions" : null,
@@ -585,7 +585,7 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
         "date" : new Date(),
         "duration" : null,
         "questionPaperId" : null,
-        "name" : data["content name"]
+        "name" : data["test name"]
     },
     "viewOrder" : data["view order"] || null
   }
