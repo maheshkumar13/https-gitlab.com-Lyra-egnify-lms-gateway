@@ -2296,12 +2296,12 @@ export async function getContentMappingUploadedDataReadingMaterialAudio(args,con
 function validateHeadersForPractice(data, errors, maxLimit) {
   const mandetoryFields = [
     'class', 'subject', 'textbook', 'chapter',
-    'content name', 'content category',
+    'test name', 'content category',
     'media type', 'view order'
   ];
   const headers  = [
     'class', 'subject', 'textbook', 'chapter',
-    'content name', 'content category', 'content type',
+    'test name', 'content category', 'content type',
     'file path', 'file size', 'media type',
     'timg path', 'view order',
     'category', 'publish year', 'publisher',
@@ -2431,7 +2431,7 @@ export async function uploadPracticeMapping(req, res) {
     // PREPARING DATA OBJECT
     const temp = {
       content: {
-        name: obj['content name'],
+        name: obj['test name'],
         category: contentCategory,
         type: obj['content type'],
       },
