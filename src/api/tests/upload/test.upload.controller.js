@@ -384,8 +384,8 @@ function validateMappingRows (data){
       errorDetails.push("CHAPTER not present")
     }
 
-    if(!data[i]["content name"]){
-      errorDetails.push("CONTENT NAME not present")
+    if(!data[i]["test name"]){
+      errorDetails.push("TEST NAME not present")
     }
 
     if(errorDetails.length){
