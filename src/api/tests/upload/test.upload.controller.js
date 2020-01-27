@@ -868,7 +868,8 @@ export async function publishTest(req, res){
       "markingSchema.subject.0.marks.0.totalMarks": questionsCount,
       "markingSchema.subject.0.marks.0.end": questionsCount,
       "markingSchema.subject.0.marks.0.numberOfQuestions": questionsCount,
-      "coins": questionsCount
+      "coins": questionsCount,
+      "questionPaperId": questionPaperId
     }
     const date = new Date(new Date(testTiming[0]["maxDate"]).getTime() + testTiming[0]["maxDuration"]*60000)
     .toISOString().replace("T"," ").split(".")[0]
