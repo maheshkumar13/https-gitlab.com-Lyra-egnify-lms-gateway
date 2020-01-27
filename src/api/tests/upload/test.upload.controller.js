@@ -508,8 +508,6 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
     "testName" : data["content name"],
     "subjects" : [
         {
-            "totalQuestions" : null,
-            "qmapCompletion" : null,
             "code" : subjectData.code,
             "parentCode" : textBookData.code,
             "subject" : data["subject"],
@@ -518,32 +516,22 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
     ],
 
     "markingSchema" : {
-        "totalQuestions" : null,
-        "totalMarks" : null,
         "subjects" : [
             {
                 "tieBreaker" : 1,
                 "start" : 1,
-                "end" : null,
                 "subject" : data["subject"],
-                "totalQuestions" : null,
-                "totalMarks" : null,
                 "marks" : [
                     {
                         "noOfOptions" : 4,
-                        "numberOfSubQuestions" : null,
                         "P" : 0,
                         "ADD" : 1,
                         "questionType" : "Single Answer",
                         "egnifyQuestionType" : "Single answer type",
-                        "numberOfQuestions" : null,
-                        "section" : null,
                         "C" : 1,
                         "W" : 0,
                         "U" : 0,
                         "start" : 1,
-                        "end" : null,
-                        "totalMarks" : null
                     }
                 ]
             }
@@ -573,9 +561,13 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
         "startTime" : new Date(),
         "endTime" : new Date(),
         "date" : new Date(),
+<<<<<<< Updated upstream
         "duration" : null,
         "questionPaperId" : null,
         "name" : data["content name"]
+=======
+        "name" : data["test name"]
+>>>>>>> Stashed changes
     },
     "viewOrder" : data["view order"] || null
   }
