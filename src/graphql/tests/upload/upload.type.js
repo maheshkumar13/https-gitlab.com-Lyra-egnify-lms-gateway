@@ -32,10 +32,10 @@ export const ListInputType = new InputType({
             type: StringType
         },
         pageNumber : {
-            type : NonNull(IntType)
+            type : IntType
         },
         limit : {
-            type : NonNull(IntType)
+            type : IntType
         },
         orientation : {
             type : StringType
@@ -192,6 +192,9 @@ const Mapping = new ObjectType({
         class: {
             type: CommonData
         },
+        chapter: {
+            type: CommonData
+        }
     }
 })
 
@@ -221,6 +224,9 @@ const Data = new ObjectType({
         },
         mapping: {
             type: Mapping
+        },
+        viewOrder: {
+            type: IntType
         },
         orientations : { type : new ListType(StringType) },
         branches : { type : new ListType(StringType)},

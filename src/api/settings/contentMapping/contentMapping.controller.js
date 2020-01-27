@@ -261,7 +261,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     
     if(obj['coins']) {
       const coins = parseInt(obj['coins']);
-      if (!Number.isInteger(coins) || coins < 0) {
+      if (!Number.isInteger(coins)) {
         result.success = false;
         result.message = `Invalid coins at row ${row}`;
       }
@@ -491,7 +491,7 @@ export async function uploadContentMappingv2(req, res) {
     // VALIDATING COINS
     const coins = parseInt(obj['coins']);
     if(obj['coins']) {
-      if (!Number.isInteger(coins) || coins < 0) {
+      if (!Number.isInteger(coins)) {
         errors.push(`Invalid coins at row ${row} (${obj['coins']})`);
       }
     }
@@ -1108,6 +1108,11 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
     active: true,
     'refs.textbook.code': { $in: textbookCodes },
   };
+
+  if(args.readingMaterialAudio === true) {
+    contentQuery['content.category'] = { $in: ['Reading Material']};
+    contentQuery['metaData.audioFiles'] = {$exists: true };
+  }
   const contentTypeMatchOrData = getContentTypeMatchOrData(contentCategory);
   if(contentTypeMatchOrData.length) contentQuery['$or'] = contentTypeMatchOrData;
   
@@ -1124,6 +1129,9 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
       _id: `$${groupby}`,
       count: { $sum: 1 },
     }
+  }
+  if(args.readingMaterialAudio === true) {
+    aggregateQuery.push({$unwind: '$metaData.audioFiles'});
   }
   aggregateQuery.push(contentGroupQuery)
   const result = await ContentMapping.aggregate(aggregateQuery).allowDiskUse(true);
@@ -2093,7 +2101,7 @@ export async function getContentMappingUploadedDataLearn(args,context){
   const textbookQuery = { active: true, 'refs.class.code': {$in: Object.keys(classObj)}, 'refs.subject.code': { $in: Object.keys(subjectObj)} };
   if(args.textbookCode) textbookQuery.code = args.textbookCode;
   if(args.branch) textbookQuery.branches = { $in: [args.branch, '', null]};
-  if(args.orientation) textbookQuery.orientations = { $in: [args.orientations, '', null]};
+  if(args.orientation) textbookQuery.orientations = { $in: [args.orientation, '', null]};
   const textbookData = await Textbook.find(textbookQuery,{name: 1, code: 1, refs: 1, _id: 0});
   const textbookObj = {};
   textbookData.forEach( x => {
@@ -2134,11 +2142,18 @@ export async function getContentMappingUploadedDataLearn(args,context){
     })
     topicsFilter.push({'refs.textbook.code': textbookCode, 'refs.topic.code': { $in: codes }});
   })
+
+  if(!topicsFilter.length) {
+    return {
+      count: 0,
+      data: []
+    }
+  }
   const contentTypeMatchOrData = getContentTypeMatchOrData(args.contentCategory);
 
   const contentQuery = {
     active: true,
-    'content.category': { $nin: ['Practice', 'Tests', 'Take Quiz']},
+    'content.category': { $nin: ['Tests', 'Take Quiz']},
     $and: [{$or: topicsFilter},{$or: contentTypeMatchOrData }]
   }
   const skip = (args.pageNumber - 1) * args.limit;
@@ -2193,7 +2208,7 @@ export async function getContentMappingUploadedDataReadingMaterialAudio(args,con
   const textbookQuery = { active: true, 'refs.class.code': {$in: Object.keys(classObj)}, 'refs.subject.code': { $in: Object.keys(subjectObj)} };
   if(args.textbookCode) textbookQuery.code = args.textbookCode;
   if(args.branch) textbookQuery.branches = { $in: [args.branch, '', null]};
-  if(args.orientation) textbookQuery.orientations = { $in: [args.orientations, '', null]};
+  if(args.orientation) textbookQuery.orientations = { $in: [args.orientation, '', null]};
   const textbookData = await Textbook.find(textbookQuery,{name: 1, code: 1, refs: 1, _id: 0});
   const textbookObj = {};
   textbookData.forEach( x => {
@@ -2234,6 +2249,13 @@ export async function getContentMappingUploadedDataReadingMaterialAudio(args,con
     })
     topicsFilter.push({'refs.textbook.code': textbookCode, 'refs.topic.code': { $in: codes }});
   })
+
+  if(!topicsFilter.length) {
+    return {
+      count: 0,
+      data: []
+    }
+  }
   const contentTypeMatchOrData = getContentTypeMatchOrData(args.contentCategory);
 
   const contentQuery = {
@@ -2274,12 +2296,12 @@ export async function getContentMappingUploadedDataReadingMaterialAudio(args,con
 function validateHeadersForPractice(data, errors, maxLimit) {
   const mandetoryFields = [
     'class', 'subject', 'textbook', 'chapter',
-    'content name', 'content category',
+    'test name', 'content category',
     'media type', 'view order'
   ];
   const headers  = [
     'class', 'subject', 'textbook', 'chapter',
-    'content name', 'content category', 'content type',
+    'test name', 'content category', 'content type',
     'file path', 'file size', 'media type',
     'timg path', 'view order',
     'category', 'publish year', 'publisher',
@@ -2409,7 +2431,7 @@ export async function uploadPracticeMapping(req, res) {
     // PREPARING DATA OBJECT
     const temp = {
       content: {
-        name: obj['content name'],
+        name: obj['test name'],
         category: contentCategory,
         type: obj['content type'],
       },

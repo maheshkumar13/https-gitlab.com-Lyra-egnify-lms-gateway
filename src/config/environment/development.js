@@ -34,7 +34,7 @@ module.exports = {
     password: process.env.REDIS_PASSWORD || 'rQsVPF2gbiHi',
   },
   parser:{
-    uri : process.env.PARSER_SERVICE || "http://13.235.219.180:8080/parse/"
+    uri : process.env.PARSER_SERVICE || "http://dev.elk.rankguru.com:7000/parse"
   },
   elasticSearch:{
     url : process.env.ELASTIC_SEARCH_URL || "http://13.235.245.210:9200/"
