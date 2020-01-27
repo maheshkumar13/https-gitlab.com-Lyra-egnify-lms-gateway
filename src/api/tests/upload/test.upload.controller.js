@@ -561,13 +561,7 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
         "startTime" : new Date(),
         "endTime" : new Date(),
         "date" : new Date(),
-<<<<<<< Updated upstream
-        "duration" : null,
-        "questionPaperId" : null,
-        "name" : data["content name"]
-=======
         "name" : data["test name"]
->>>>>>> Stashed changes
     },
     "viewOrder" : data["view order"] || null
   }
