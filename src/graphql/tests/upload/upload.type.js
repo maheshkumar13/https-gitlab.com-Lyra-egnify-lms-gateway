@@ -192,6 +192,9 @@ const Mapping = new ObjectType({
         class: {
             type: CommonData
         },
+        chapter: {
+            type: CommonData
+        }
     }
 })
 
@@ -221,6 +224,9 @@ const Data = new ObjectType({
         },
         mapping: {
             type: Mapping
+        },
+        viewOrder: {
+            type: StringType
         },
         orientations : { type : new ListType(StringType) },
         branches : { type : new ListType(StringType)},

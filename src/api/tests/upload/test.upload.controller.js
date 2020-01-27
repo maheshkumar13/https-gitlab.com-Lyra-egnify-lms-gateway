@@ -18,7 +18,7 @@ import {
 const uuidv4 = require("uuid/v4");
 import {getModel as Hierarchy} from '../../settings/instituteHierarchy/instituteHierarchy.model';
 import {getModel as Subject} from '../../settings/subject/subject.model';
-const MAPPING_HEADERS = ["class","subject","textbook","chapter","test name","media type","view order"]
+const MAPPING_HEADERS = ["class","subject","textbook","chapter","test name","view order"]
 const SUPPORTED_MEDIA_TYPE = ["docx","xlsx","xml"];
 const TEST_TIMING_HEADERS = ["branches","end date","start date","duration"];
 
@@ -386,14 +386,6 @@ function validateMappingRows (data){
 
     if(!data[i]["content name"]){
       errorDetails.push("CONTENT NAME not present")
-    }
-
-    if(!data[i]["media type"]){
-      errorDetails.push("MEDIA TYPE not present")
-    }
-
-    if(data[i]["media type"] && SUPPORTED_MEDIA_TYPE.indexOf(data[i]["media type"].toLowerCase()) === -1){
-      errorDetails.push("Invalid MEDIA TYPE. Supported media types are :",SUPPORTED_MEDIA_TYPE.join(","));
     }
 
     if(errorDetails.length){
