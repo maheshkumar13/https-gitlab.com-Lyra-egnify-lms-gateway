@@ -226,7 +226,7 @@ const Data = new ObjectType({
             type: Mapping
         },
         viewOrder: {
-            type: StringType
+            type: IntType
         },
         orientations : { type : new ListType(StringType) },
         branches : { type : new ListType(StringType)},
