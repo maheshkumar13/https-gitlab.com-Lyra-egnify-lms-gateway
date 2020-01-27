@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { getDB } from '../../../db';
 const testTimingsSchema = new mongoose.Schema({
+    _id: {type: String, required: true, index: true},
     testId: { type: String, required: true},
     hierarchyId: { type: String, required: true},
     startTime: { type: Date, required: true},

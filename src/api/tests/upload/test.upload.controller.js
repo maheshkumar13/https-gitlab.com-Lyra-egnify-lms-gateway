@@ -690,7 +690,7 @@ export async function  uploadTestiming(req, res){
       });
     }
     await TestTimingSchema.bulkWrite(validationCheck.mapping);
-    return res.status(200).send({error: false, message: "Success", data: validationCheck.mapping});
+    return res.status(200).send({error: false, message: "Success"});
   }
   catch(err){
     console.log(err);
