@@ -1054,6 +1054,25 @@ function getContentTypeMatchOrData(contentCategory){
   return orData;
 }
 
+function getContentTypeMatchOrDataWithList(contentCategory){
+  const orData = [];
+  let contentTypes = config.CONTENT_TYPES || {};
+  if(contentCategory && contentCategory.length) {
+    contentCategory.forEach(x => {
+      if(contentTypes[contentCategory]){
+        orData.push({'content.category': x, 'resource.type': { $in: contentTypes[x]}});
+      } else {
+        orData.push({'content.category': x });
+      }
+    })
+    return orData;
+  }
+  for(let category in contentTypes){
+    orData.push({'content.category': category, 'resource.type': { $in: contentTypes[category]}});
+  }
+  return orData;
+}
+
 export async function getDashboardHeadersAssetCountV2(args, context) {
   const {
     classCode,
@@ -2149,7 +2168,7 @@ export async function getContentMappingUploadedDataLearn(args,context){
       data: []
     }
   }
-  const contentTypeMatchOrData = getContentTypeMatchOrData(args.contentCategory);
+  const contentTypeMatchOrData = getContentTypeMatchOrDataWithList(args.contentCategory);
 
   const contentQuery = {
     active: true,
