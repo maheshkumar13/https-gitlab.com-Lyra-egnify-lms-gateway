@@ -1059,7 +1059,7 @@ function getContentTypeMatchOrDataWithList(contentCategory){
   let contentTypes = config.CONTENT_TYPES || {};
   if(contentCategory && contentCategory.length) {
     contentCategory.forEach(x => {
-      if(contentTypes[contentCategory]){
+      if(contentTypes[x]){
         orData.push({'content.category': x, 'resource.type': { $in: contentTypes[x]}});
       } else {
         orData.push({'content.category': x });
