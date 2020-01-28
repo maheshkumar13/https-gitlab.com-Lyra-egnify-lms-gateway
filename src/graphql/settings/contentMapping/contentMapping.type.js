@@ -153,7 +153,7 @@ export const DashboardHeadersAssetCountInputType = new InputType({
     textbookCode: { type: StringType, description: 'Code of the textBook' },
     branch: { type: StringType, description: 'Branch name' },
     orientation: { type: StringType, description: 'Orientaion name' },
-    contentCategory: { type: StringType, description: 'content category' },
+    contentCategory: { type: new List(StringType), description: 'content category' },
     header: { type: NonNull(DashboardHeaderEnumType), description: 'Header' },
     readingMaterialAudio: { type: BooleanType, description: 'Default false, set true for headers count for the reading materials which has audios' },
   },
