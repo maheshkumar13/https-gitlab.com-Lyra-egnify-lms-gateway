@@ -18,7 +18,7 @@ import {
 const uuidv4 = require("uuid/v4");
 import {getModel as Hierarchy} from '../../settings/instituteHierarchy/instituteHierarchy.model';
 import {getModel as Subject} from '../../settings/subject/subject.model';
-const MAPPING_HEADERS = ["class","subject","textbook","chapter","content name","media type","view order"]
+const MAPPING_HEADERS = ["class","subject","textbook","chapter","test name","view order"]
 const SUPPORTED_MEDIA_TYPE = ["docx","xlsx","xml"];
 const TEST_TIMING_HEADERS = ["branches","end date","start date","duration"];
 
@@ -384,16 +384,8 @@ function validateMappingRows (data){
       errorDetails.push("CHAPTER not present")
     }
 
-    if(!data[i]["content name"]){
-      errorDetails.push("CONTENT NAME not present")
-    }
-
-    if(!data[i]["media type"]){
-      errorDetails.push("MEDIA TYPE not present")
-    }
-
-    if(data[i]["media type"] && SUPPORTED_MEDIA_TYPE.indexOf(data[i]["media type"].toLowerCase()) === -1){
-      errorDetails.push("Invalid MEDIA TYPE. Supported media types are :",SUPPORTED_MEDIA_TYPE.join(","));
+    if(!data[i]["test name"]){
+      errorDetails.push("TEST NAME not present")
     }
 
     if(errorDetails.length){
@@ -514,12 +506,10 @@ async function subjectMapWithClassName(subjects,classes){
 
 function createTestMappingObject(data, classData, subjectData, textBookData, chapterData){
   let mapping = {
-    "testId" : data["asset id"] || uuidv4(),
-    "testName" : data["content name"],
+    "testId" : data["test id"] || uuidv4(),
+    "testName" : data["test name"],
     "subjects" : [
         {
-            "totalQuestions" : null,
-            "qmapCompletion" : null,
             "code" : subjectData.code,
             "parentCode" : textBookData.code,
             "subject" : data["subject"],
@@ -528,32 +518,22 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
     ],
 
     "markingSchema" : {
-        "totalQuestions" : null,
-        "totalMarks" : null,
         "subjects" : [
             {
                 "tieBreaker" : 1,
                 "start" : 1,
-                "end" : null,
                 "subject" : data["subject"],
-                "totalQuestions" : null,
-                "totalMarks" : null,
                 "marks" : [
                     {
                         "noOfOptions" : 4,
-                        "numberOfSubQuestions" : null,
                         "P" : 0,
                         "ADD" : 1,
                         "questionType" : "Single Answer",
                         "egnifyQuestionType" : "Single answer type",
-                        "numberOfQuestions" : null,
-                        "section" : null,
                         "C" : 1,
                         "W" : 0,
                         "U" : 0,
                         "start" : 1,
-                        "end" : null,
-                        "totalMarks" : null
                     }
                 ]
             }
@@ -583,9 +563,7 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
         "startTime" : new Date(),
         "endTime" : new Date(),
         "date" : new Date(),
-        "duration" : null,
-        "questionPaperId" : null,
-        "name" : data["content name"]
+        "name" : data["test name"]
     },
     "viewOrder" : data["view order"] || null
   }
@@ -690,7 +668,7 @@ export async function  uploadTestiming(req, res){
       });
     }
     await TestTimingSchema.bulkWrite(validationCheck.mapping);
-    return res.status(200).send({error: false, message: "Success", data: validationCheck.mapping});
+    return res.status(200).send({error: false, message: "Success"});
   }
   catch(err){
     console.log(err);

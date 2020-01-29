@@ -1054,6 +1054,25 @@ function getContentTypeMatchOrData(contentCategory){
   return orData;
 }
 
+function getContentTypeMatchOrDataWithList(contentCategory){
+  const orData = [];
+  let contentTypes = config.CONTENT_TYPES || {};
+  if(contentCategory && contentCategory.length) {
+    contentCategory.forEach(x => {
+      if(contentTypes[x]){
+        orData.push({'content.category': x, 'resource.type': { $in: contentTypes[x]}});
+      } else {
+        orData.push({'content.category': x });
+      }
+    })
+    return orData;
+  }
+  for(let category in contentTypes){
+    orData.push({'content.category': category, 'resource.type': { $in: contentTypes[category]}});
+  }
+  return orData;
+}
+
 export async function getDashboardHeadersAssetCountV2(args, context) {
   const {
     classCode,
@@ -1108,7 +1127,12 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
     active: true,
     'refs.textbook.code': { $in: textbookCodes },
   };
-  const contentTypeMatchOrData = getContentTypeMatchOrData(contentCategory);
+
+  if(args.readingMaterialAudio === true) {
+    contentQuery['content.category'] = { $in: ['Reading Material']};
+    contentQuery['metaData.audioFiles'] = {$exists: true };
+  }
+  const contentTypeMatchOrData = getContentTypeMatchOrDataWithList(contentCategory);
   if(contentTypeMatchOrData.length) contentQuery['$or'] = contentTypeMatchOrData;
   
   if (chapterCode) contentQuery['refs.topic.code'] = chapterCode;
@@ -1124,6 +1148,9 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
       _id: `$${groupby}`,
       count: { $sum: 1 },
     }
+  }
+  if(args.readingMaterialAudio === true) {
+    aggregateQuery.push({$unwind: '$metaData.audioFiles'});
   }
   aggregateQuery.push(contentGroupQuery)
   const result = await ContentMapping.aggregate(aggregateQuery).allowDiskUse(true);
@@ -2141,7 +2168,7 @@ export async function getContentMappingUploadedDataLearn(args,context){
       data: []
     }
   }
-  const contentTypeMatchOrData = getContentTypeMatchOrData(args.contentCategory);
+  const contentTypeMatchOrData = getContentTypeMatchOrDataWithList(args.contentCategory);
 
   const contentQuery = {
     active: true,
@@ -2287,16 +2314,12 @@ export async function getContentMappingUploadedDataReadingMaterialAudio(args,con
 
 function validateHeadersForPractice(data, errors, maxLimit) {
   const mandetoryFields = [
-    'class', 'subject', 'textbook', 'chapter',
-    'content name', 'content category',
-    'media type', 'view order'
+    'class', 'subject', 'textbook', 'chapter','test name'
   ];
   const headers  = [
     'class', 'subject', 'textbook', 'chapter',
-    'content name', 'content category', 'content type',
-    'file path', 'file size', 'media type',
-    'timg path', 'view order',
-    'category', 'publish year', 'publisher',
+    'test name', 'content type','file size', 'media type',
+    'view order','category', 'publish year', 'publisher',
   ]
   const sheetHeaders = Object.keys(data[0]);
   let diffHeaders = _.difference(headers,sheetHeaders);
@@ -2346,7 +2369,6 @@ export async function uploadPracticeMapping(req, res) {
   const dbData = await getDbDataForValidation(req.user_cxt)
   const ContentMapping = await ContentMappingModel(req.user_cxt);
   const bulk = ContentMapping.collection.initializeUnorderedBulkOp();
-  const validContentCategories = [ 'Practice' ]
   const contentTypes = config.CONTENT_TYPES || {};
 
   for(let i=0; i < data.length; i+=1) {
@@ -2361,17 +2383,11 @@ export async function uploadPracticeMapping(req, res) {
     const row = i+2;
     const obj = data[i];
 
-
-    // VALIDATING CONTENT CATEGORY
-    const contentCategory = validContentCategories.find(x => x.toLowerCase() === obj['content category'].toLowerCase());
-    if(!contentCategory) {
-      errors.push(`Invalid CONTENT CATEGORY at row ${row} (${obj['content category']})`);
-    }
-
     // VALIDATING CONTENT MEDIA TYPE
     if( contentTypes && 
-        contentTypes[contentCategory] && 
-        !contentTypes[contentCategory].includes(obj['media type'].toLowerCase())
+        contentTypes["Practice"] && 
+        obj['media type'] &&
+        !contentTypes["Practice"].includes(obj['media type'].toLowerCase())
       ) {
       errors.push(`Invalid MEDIA TYPE at row ${row} (${obj['media type']}) for CONTENT CATEGORY (${obj['content category']})`);
     }
@@ -2423,20 +2439,20 @@ export async function uploadPracticeMapping(req, res) {
     // PREPARING DATA OBJECT
     const temp = {
       content: {
-        name: obj['content name'],
-        category: contentCategory,
-        type: obj['content type'],
+        name: obj['test name'],
+        category: "Practice",
+        type: obj['content type'] || null,
       },
       resource: {
-        size: obj['file size'],
-        type: obj['media type'].toLowerCase(),
+        size: obj['file size'] || 0,
+        type: obj['media type'] ? obj['media type'].toLowerCase() : null,
       },
       publication: {
-        publisher: obj.publisher,
-        year: obj['publish year'],
+        publisher: obj.publisher || null,
+        year: obj['publish year'] || null,
       },
-      timgPath: obj['timg path'] ? upath.toUnix(obj['timg path']) : '',
-      category: obj.category,
+      timgPath: null,
+      category: obj.category || "",
       viewOrder: viewOrder,
       refs: {
         topic: {

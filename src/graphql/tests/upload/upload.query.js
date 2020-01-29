@@ -20,7 +20,7 @@ export const ListTest = {
             if (!validateAccess(validRoles, context)){
                 throw new Error('Access Denied');
             }
-            const orientationOfTeacher = context.orientations;
+            const orientationOfTeacher = context.orientations || [];
             const levelNames = ["Branch","Class"]
             const Nodes = await fetchNodesWithContext({levelNames},context); //class name and class code
             let classCodes = []
@@ -41,7 +41,7 @@ export const ListTest = {
                 throw new Error("Invalid branch selection.")
             }
 
-            if(args.input.orientation && !orientationOfTeacher.includes(args.input.orientation)){
+            if(args.input.orientation && orientationOfTeacher.length && !orientationOfTeacher.includes(args.input.orientation)){
                 throw new Error("Invalid orientation selection.")
             }
 
