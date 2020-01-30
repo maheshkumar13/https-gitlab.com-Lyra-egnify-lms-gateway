@@ -312,7 +312,7 @@ export const CmsPracticeStats = {
   },
   type: new List(CmsPracticeStatsOutputType),
   async resolve(obj, args, context) {
-    return controller.getCMSCategoryStatsV2(args.input, context)
+    return controller.getCMSPracticeStatsV2(args.input, context)
       .then(async json => json);
   },
 };
