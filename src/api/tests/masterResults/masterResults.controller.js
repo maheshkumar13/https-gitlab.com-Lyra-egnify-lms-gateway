@@ -98,7 +98,6 @@ export async function getStudentList(req, res) {
   if(limits){
     aggregationquery1.splice(2,0,{ $limit: limits });
   }
-  console.log(JSON.stringify(aggregationquery1))
   const aggregationquery2 = [{
     $match: {
       questionPaperId: req.params.paperId,
