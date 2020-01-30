@@ -2518,8 +2518,7 @@ export async function getCMSPracticeStatsV2(args, context) {
   if(gaStatus){
     contentMatchQuery["gaStatus"] = gaStatus;
   }
-  const contentTypeMatchOrData = getContentTypeMatchOrData("");
-  if(contentTypeMatchOrData.length) contentMatchQuery['$or'] = contentTypeMatchOrData;
+  
   contentMatchQuery['refs.textbook.code'] = { $in: textbookCodes };
   if(chapterCode) contentMatchQuery['refs.topic.code'] = chapterCode;
   contentAggregateQuery.push({$match: contentMatchQuery});
