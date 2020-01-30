@@ -1277,7 +1277,7 @@ export async function getCMSCategoryStatsV2(args, context) {
     chapterCode,
     textbookCode,
     branch,
-    orientation
+    orientation,
   } = args;
 
   // Textbook data;
@@ -1299,7 +1299,7 @@ export async function getCMSCategoryStatsV2(args, context) {
 
   // Content mapping
   const contentAggregateQuery = [];
-  const contentMatchQuery = { active: true}
+  const contentMatchQuery = { active: true }
   const contentTypeMatchOrData = getContentTypeMatchOrData("");
   if(contentTypeMatchOrData.length) contentMatchQuery['$or'] = contentTypeMatchOrData;
   contentMatchQuery['refs.textbook.code'] = { $in: textbookCodes };
