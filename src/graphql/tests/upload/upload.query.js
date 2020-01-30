@@ -1,8 +1,8 @@
-import {listTest , listTextBooksWithTestSubectWise, getDashboardHeadersAssetCountV2 } from '../../../api/tests/upload/test.upload.controller';
-import {ListInputType, ListTestOutput, TestHeadersAssetCountInputType} from './upload.type';
+import {listTest , listTextBooksWithTestSubectWise, getDashboardHeadersAssetCountV2, getCMSTestStatsV2 } from '../../../api/tests/upload/test.upload.controller';
+import {ListInputType, ListTestOutput, TestHeadersAssetCountInputType,CmsTestStatsInputType,CmsTestStatsOutputType} from './upload.type';
 import {getStudentDetailsById} from '../../../api/settings/student/student.controller';
 import {getTextbooks, getTextbookForTeachers} from '../../../api/settings/textbook/textbook.controller';
-import {GraphQLString as StringType, GraphQLNonNull as NonNull } from 'graphql';
+import {GraphQLString as StringType, GraphQLNonNull as NonNull, GraphQLList as List } from 'graphql';
 import { validateAccess } from '../../../utils/validator';
 import {fetchNodesWithContext} from '../../../api/settings/instituteHierarchy/instituteHierarchy.controller'
 import GraphQLJSON from 'graphql-type-json';
@@ -104,3 +104,14 @@ export const HeaderCountForTextBookBasedTest = {
         }
     }
 }
+
+export const CmsTestStats = {
+    args: {
+      input: { type: CmsTestStatsInputType },
+    },
+    type: new List(CmsTestStatsOutputType),
+    async resolve(obj, args, context) {
+      return getCMSTestStatsV2(args.input, context)
+        .then(async json => json);
+    },
+  };
