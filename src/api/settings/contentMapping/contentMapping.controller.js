@@ -1278,6 +1278,7 @@ export async function getCMSCategoryStatsV2(args, context) {
     textbookCode,
     branch,
     orientation,
+    gaStatus
   } = args;
 
   // Textbook data;
@@ -1299,7 +1300,10 @@ export async function getCMSCategoryStatsV2(args, context) {
 
   // Content mapping
   const contentAggregateQuery = [];
-  const contentMatchQuery = { active: true }
+  const contentMatchQuery = { active: true,"content.category": "Practice" }
+  if(gaStatus){
+    contentMatchQuery["gaStatus"] = gaStatus;
+  }
   const contentTypeMatchOrData = getContentTypeMatchOrData("");
   if(contentTypeMatchOrData.length) contentMatchQuery['$or'] = contentTypeMatchOrData;
   contentMatchQuery['refs.textbook.code'] = { $in: textbookCodes };

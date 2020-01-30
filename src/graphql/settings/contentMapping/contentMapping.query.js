@@ -29,7 +29,9 @@ import {
   TextbookBasedQuizInputType,
   TextbookBasedQuizOutputType,
   DashboardHeadersAssetCountInputType,
-  ReadingMaterialAudioType
+  ReadingMaterialAudioType,
+  CmsPracticeStatsInputType,
+  CmsPracticeStatsOutputType,
 } from './contentMapping.type';
 import { validateAccess } from '../../../utils/validator';
 
@@ -304,6 +306,17 @@ export const TextbookBasedQuiz = {
   },
 };
 
+export const CmsPracticeStats = {
+  args: {
+    input: { type: CmsPracticeStatsInputType },
+  },
+  type: new List(CmsPracticeStatsOutputType),
+  async resolve(obj, args, context) {
+    return controller.getCMSCategoryStatsV2(args.input, context)
+      .then(async json => json);
+  },
+};
+
 export default {
   ContentMapping,
   CmsCategoryStats,
@@ -314,5 +327,6 @@ export default {
   TextbookBasedQuiz,
   DashboardHeadersAssetCount,
   ContentMappingUploadedDataLearn,
-  ContentMappingUploadedDataReadingMaterialAudio
+  ContentMappingUploadedDataReadingMaterialAudio,
+  CmsPracticeStats
 };

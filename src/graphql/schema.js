@@ -21,7 +21,7 @@ import { createTextbook, updateTextbook, deleteTextbook } from './settings/textb
 import { Students, StudentUniqueValues, StudentsByLastNode, StudentById, studentHeader,StudentListByFilters} from './settings/student/student.query';
 import { updateStudentAvatar, updateStudentSubjects } from './settings/student/student.mutation';
 import { ConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.query';
-import { ContentMapping, ContentMappingStats, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats, TextbookBasedQuiz, DashboardHeadersAssetCount, ContentMappingUploadedDataLearn, ContentMappingUploadedDataReadingMaterialAudio } from './settings/contentMapping/contentMapping.query';
+import { ContentMapping, ContentMappingStats, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats, TextbookBasedQuiz, DashboardHeadersAssetCount, ContentMappingUploadedDataLearn, ContentMappingUploadedDataReadingMaterialAudio, CmsPracticeStats } from './settings/contentMapping/contentMapping.query';
 import { LaunchRequest, GetS3FileSystem, GetS3SignedUrlForUpload } from './launcher/launchRequest/launchRequest.query';
 import { Questions, Results, QuestionEvaluation } from './tests/questions/questions.query';
 import { MasterResults } from './tests/masterResults/masterResults.query';
@@ -99,7 +99,8 @@ const schema = new Schema({
       ContentMappingUploadedDataReadingMaterialAudio,
       TimeAnalysisStudentsListByDate,
       GetS3FileSystem,
-      GetS3SignedUrlForUpload
+      GetS3SignedUrlForUpload,
+      CmsPracticeStats
     },
   }),
   mutation: new ObjectType({
