@@ -2484,6 +2484,71 @@ console.info('bulk executing..')
   });
 }
 
+export async function getCMSPracticeStatsV2(args, context) {
+  const {
+    classCode,
+    subjectCode,
+    chapterCode,
+    textbookCode,
+    branch,
+    orientation,
+    gaStatus
+  } = args;
+
+  // Textbook data;
+  const textbookMatchQuery = { active: true }
+  if (classCode ) textbookMatchQuery['refs.class.code'] = classCode;
+  if (subjectCode) textbookMatchQuery['refs.subject.code'] = subjectCode;
+  if (textbookCode) textbookMatchQuery['code'] = textbookCode;
+  if (branch) textbookMatchQuery['branches'] = { $in: [ branch, null ] };
+  if (orientation) textbookMatchQuery['orientations'] = { $in: [ orientation, null ] };
+
+
+  const [ Textbook, ContentMapping ] = await Promise.all([TextbookModel(context), ContentMappingModel(context)]);
+  const docs = await Textbook.find(textbookMatchQuery,{_id: 0, code: 1, 'refs.class.code': 1 })
+  if(!docs || !docs.length) return [];
+  // return docs;
+  const objectifyDocs = {};
+  docs.forEach(x => objectifyDocs[x.code] = x.refs.class.code);
+  let textbookCodes = docs.map(x => x.code);
+
+  // Content mapping
+  const contentAggregateQuery = [];
+  const contentMatchQuery = { active: true,"content.category": "Practice" }
+  if(gaStatus){
+    contentMatchQuery["gaStatus"] = gaStatus;
+  }
+  
+  contentMatchQuery['refs.textbook.code'] = { $in: textbookCodes };
+  if(chapterCode) contentMatchQuery['refs.topic.code'] = chapterCode;
+  contentAggregateQuery.push({$match: contentMatchQuery});
+  // return contentMatchQuery;
+  const contentGroupQuery = {
+    _id: {
+      textbookCode: '$refs.textbook.code',
+      category: '$content.category'
+    }, count: { $sum: 1 }
+  }
+  contentAggregateQuery.push({$group: contentGroupQuery });
+  const data = await ContentMapping.aggregate(contentAggregateQuery).allowDiskUse(true);
+  const tempData = {}
+  data.forEach(x => {
+      const classCode = objectifyDocs[x._id.textbookCode]; 
+      const category = x._id.category;
+      if(!tempData[classCode]) tempData[classCode] = {};
+      if(!tempData[classCode][category]) tempData[classCode][category] = 0;
+      tempData[classCode][category] += x.count;
+  })
+  // return tempData;
+  const finalData = [];
+  for(let temp in tempData){
+    for(let category in tempData[temp]){
+      finalData.push({classCode: temp, category, count: tempData[temp][category]})
+    }
+  }
+  return finalData;
+}
+
 export default{
   updateContent,
   getUniqueDataForValidation,
