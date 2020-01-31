@@ -111,7 +111,7 @@ export const CmsTestStats = {
     },
     type: new List(CmsTestStatsOutputType),
     async resolve(obj, args, context) {
-      return getCMSTestStatsV2(args.input, context)
+      return getCMSTestStats(args.input, context)
         .then(async json => json);
     },
   };

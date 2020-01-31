@@ -806,7 +806,7 @@ function createTimingMap(data, indexed_branch, ret_data, testId, className){
   return true;
 }
 
-export async function getCMSTestStatsV2(args, context) {
+export async function getCMSTestStats(args, context) {
   const {
     classCode,
     subjectCode,
