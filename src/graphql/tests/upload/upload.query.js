@@ -1,4 +1,4 @@
-import {listTest , listTextBooksWithTestSubectWise, getDashboardHeadersAssetCountV2, getCMSTestStatsV2 } from '../../../api/tests/upload/test.upload.controller';
+import {listTest , listTextBooksWithTestSubectWise, getDashboardHeadersAssetCountV2, getCMSTestStats } from '../../../api/tests/upload/test.upload.controller';
 import {ListInputType, ListTestOutput, TestHeadersAssetCountInputType,CmsTestStatsInputType,CmsTestStatsOutputType} from './upload.type';
 import {getStudentDetailsById} from '../../../api/settings/student/student.controller';
 import {getTextbooks, getTextbookForTeachers} from '../../../api/settings/textbook/textbook.controller';
