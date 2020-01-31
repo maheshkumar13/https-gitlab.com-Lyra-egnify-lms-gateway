@@ -18,6 +18,8 @@ import {
 const uuidv4 = require("uuid/v4");
 import {getModel as Hierarchy} from '../../settings/instituteHierarchy/instituteHierarchy.model';
 import {getModel as Subject} from '../../settings/subject/subject.model';
+import {getModel as MasterResult } from './masterresults.model';
+
 const MAPPING_HEADERS = ["class","subject","textbook","chapter","test name","view order"]
 const SUPPORTED_MEDIA_TYPE = ["docx","xlsx","xml"];
 const TEST_TIMING_HEADERS = ["branches","end date","start date","duration"];
@@ -869,4 +871,97 @@ export async function getCMSTestStats(args, context) {
     }
   }
   return finalData;
+}
+
+export async function testAnalysis(args, context){
+  try{
+    const [TestMasterResultSchema, QuestionSchema] = await Promise.all([
+      MasterResult(context), 
+    ])
+    const {testId,studentId,limit,skip} = args;
+    var dumpingArray = []
+		const db = await MongoClient.connect(mongoURIRemote);
+		const aggregatePipeline = [
+			{$skip: skip },
+			{
+		        $lookup: {
+		            "from": "tests",
+		            "localField": "testId",
+		            "foreignField": "testId",
+		            "as": "testInfo"
+		        }
+		    }, {
+		        $unwind: "$testInfo"
+		    },
+		    {
+		        $lookup: {
+		            "from": "studentInfo",
+		            "localField": "studentId",
+		            "foreignField": "studentId",
+		            "as": "studentInfo"
+		        }
+		    },
+		    {
+		        "$unwind": "$studentInfo"
+		    }
+		]
+		let matchQuery = {$match:{}}
+		let project = {$project:{
+			"studentId": 1,
+			"name": 1,
+			"testInfo.test.questionPaperId": 1,
+			"testInfo.mapping.subject.name": 1,
+			"testInfo.markingSchema.totalQuestions": 1,
+			"testInfo.test.name": 1,
+			"testInfo.mapping.textbook.name": 1,
+			"responseData.questionResponse": 1,
+			"studentInfo.hierarchy": 1,
+			"cwuAnalysis" : 1
+		}}
+		if(testId && testId.length){
+			matchQuery["$match"]["testId"] = {$in : testIds}
+		}
+		if(studentId && studentId.length){
+			matchQuery["$match"]["studentId"] = {$in : studentIds}
+		}
+		if(Object.keys(matchQuery["$match"]).length){
+			aggregatePipeline.unshift(matchQuery);
+    }
+    if(limit){
+      aggregatePipeline.splice(2,0,{$limit: limit})
+    }
+		aggregatePipeline.push(project);
+		const studentAnalysis = await db.db(DB_NAME_REMOTE).collection("test_masterresults").aggregate(aggregatePipeline,{allowDiskUse: true}).toArray()
+		let questionPaperIds = {}
+		studentAnalysis.forEach((studentData)=>{
+			questionPaperIds[studentData["testInfo"]["test"]["questionPaperId"]] = true
+		});
+		let questionPaperIdsArray = Object.keys(questionPaperIds);
+		let questionsArray = await db.db(DB_NAME_REMOTE).collection("questions").aggregate([{$match:{questionPaperId : {$in: questionPaperIdsArray}}},{ $group: { "_id": "$questionPaperId", "questions": { $push: { "qno": "$qno", "revised_blooms_taxonomy": "$revised_blooms_taxonomy" } } } }]).toArray()
+		let questionPaperIndex = questionPaperIdToIndex(questionsArray);
+		for ( let i = 0 ; i < studentAnalysis.length ; i++){
+			let data = totalTimeSpentQuestionWise(studentAnalysis[i]["responseData"]["questionResponse"]);
+			let analysisObject = {
+				"Student Admission ID": studentAnalysis[i]["studentId"],
+				"Student Name" : studentAnalysis[i]["name"],
+				"Branch Name" : studentAnalysis[i]["studentInfo"]["hierarchy"][4]["child"],
+				"Class" : studentAnalysis[i]["studentInfo"]["hierarchy"][1]["child"],
+				"Section" : studentAnalysis[i]["studentInfo"]["hierarchy"][5]["child"],
+				"Subject" : studentAnalysis[i]["testInfo"]["mapping"]["subject"]["name"],
+				"Test Name" : studentAnalysis[i]["testInfo"]["test"]["name"],
+				"Total Number Of Questions" : studentAnalysis[i]["testInfo"]["markingSchema"]["totalQuestions"],
+				"CWU" : cwuDetailsInGroupOfDifficulty(studentAnalysis[i]),
+				"Time Spent For Each Question in seconds" : data.timeSpent,
+				"CWU questionwise": data.marksObtained,
+				"Total Marks Obtained" : studentAnalysis[i]["cwuAnalysis"]["overall"]["C"],
+				"Total Marks Obtained (Application)" : totalMarksObtainedGrouped(studentAnalysis[i],questionsArray[questionPaperIndex[studentAnalysis[i]["testInfo"]["test"]["questionPaperId"]]]["questions"], "Application", "revised_blooms_taxonomy"),
+				"Total Marks Obtained (Knowledge)" : totalMarksObtainedGrouped(studentAnalysis[i], questionsArray[questionPaperIndex[studentAnalysis[i]["testInfo"]["test"]["questionPaperId"]]]["questions"], "Knowledge", "revised_blooms_taxonomy"),
+				"Total Marks Obtained (Inference)" : totalMarksObtainedGrouped(studentAnalysis[i], questionsArray[questionPaperIndex[studentAnalysis[i]["testInfo"]["test"]["questionPaperId"]]]["questions"], "Inference", "revised_blooms_taxonomy"),
+				"TEXTBOOK": studentAnalysis[i]["testInfo"]["mapping"]["textbook"]["name"]
+			}
+			dumpingArray.push(analysisObject)
+		}
+  }catch(err){
+    throw err;
+  }
 }
