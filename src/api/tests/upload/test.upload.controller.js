@@ -805,3 +805,68 @@ function createTimingMap(data, indexed_branch, ret_data, testId, className){
   });
   return true;
 }
+
+export async function getCMSTestStats(args, context) {
+  const {
+    classCode,
+    subjectCode,
+    chapterCode,
+    textbookCode,
+    branch,
+    orientation,
+    gaStatus
+  } = args;
+
+  // Textbook data;
+  const textbookMatchQuery = { active: true }
+  if (classCode ) textbookMatchQuery['refs.class.code'] = classCode;
+  if (subjectCode) textbookMatchQuery['refs.subject.code'] = subjectCode;
+  if (textbookCode) textbookMatchQuery['code'] = textbookCode;
+  if (branch) textbookMatchQuery['branches'] = { $in: [ branch, null ] };
+  if (orientation) textbookMatchQuery['orientations'] = { $in: [ orientation, null ] };
+
+
+  const [ TextbookSchema, TestSchema ] = await Promise.all([TextBook(context), Tests(context)]);
+  const docs = await TextbookSchema.find(textbookMatchQuery,{_id: 0, code: 1, 'refs.class.code': 1 })
+  if(!docs || !docs.length) return [];
+  // return docs;
+  const objectifyDocs = {};
+  docs.forEach(x => objectifyDocs[x.code] = x.refs.class.code);
+  let textbookCodes = docs.map(x => x.code);
+
+  // Content mapping
+  const contentAggregateQuery = [];
+  const contentMatchQuery = { active: true }
+  if(gaStatus){
+    contentMatchQuery["gaStatus"] = "finished";
+  }
+  // const contentTypeMatchOrData = getContentTypeMatchOrData("");
+  // if(contentTypeMatchOrData.length) contentMatchQuery['$or'] = contentTypeMatchOrData;
+  contentMatchQuery['mapping.textbook.code'] = { $in: textbookCodes };
+  if(chapterCode) contentMatchQuery['mapping.chapter.code'] = chapterCode;
+  contentAggregateQuery.push({$match: contentMatchQuery});
+  // return contentMatchQuery;
+  const contentGroupQuery = {
+    _id: {
+      textbookCode: '$mapping.textbook.code',
+    }, count: { $sum: 1 }
+  }
+  contentAggregateQuery.push({$group: contentGroupQuery });
+  const data = await TestSchema.aggregate(contentAggregateQuery).allowDiskUse(true);
+  const tempData = {}
+  data.forEach(x => {
+      const classCode = objectifyDocs[x._id.textbookCode]; 
+      const category = x._id.category;
+      if(!tempData[classCode]) tempData[classCode] = {};
+      if(!tempData[classCode][category]) tempData[classCode][category] = 0;
+      tempData[classCode][category] += x.count;
+  })
+  // return tempData;
+  const finalData = [];
+  for(let temp in tempData){
+    for(let key in tempData[temp]){
+      finalData.push({classCode: temp, category:"Test", count: tempData[temp][key]})
+    }
+  }
+  return finalData;
+}

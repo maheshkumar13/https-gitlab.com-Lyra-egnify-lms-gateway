@@ -279,3 +279,25 @@ export const TestHeadersAssetCountInputType = new InputType({
       header: { type: NonNull(TestHeaderEnumType), description: 'Header' }
     },
 });
+
+export const CmsTestStatsInputType = new InputType({
+    name: 'CmsTestStatsInputType',
+    fields: {
+      classCode: { type: StringType, description: 'Code of the class' },
+      subjectCode: { type: StringType, description: 'Code of the subject' },
+      chapterCode: { type: StringType, description: 'Code of the chapter' },
+      textbookCode: { type: StringType, description: 'Code of the textBook' },
+      branch: { type: StringType, description: 'Branch name' },
+      orientation: { type: StringType, description: 'Orientaion name' },
+      gaStatus: {type: BooleanType, description: "filter for ga"}
+    },
+  });
+  
+  export const CmsTestStatsOutputType = new ObjectType({
+    name: 'CmsTestStatsOutputType',
+    fields: {
+      classCode: { type: StringType, description: 'Class code' },
+      category: { type: StringType, description: 'Name of the category' },
+      count: { type: IntType, description: 'Count of the files which belongs to that category' },
+    },
+  });
