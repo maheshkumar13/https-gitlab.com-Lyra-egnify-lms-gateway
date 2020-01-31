@@ -838,7 +838,7 @@ export async function getCMSTestStatsV2(args, context) {
   const contentAggregateQuery = [];
   const contentMatchQuery = { active: true }
   if(gaStatus){
-    contentMatchQuery["gaStatus"] = gaStatus;
+    contentMatchQuery["gaStatus"] = "finished";
   }
   // const contentTypeMatchOrData = getContentTypeMatchOrData("");
   // if(contentTypeMatchOrData.length) contentMatchQuery['$or'] = contentTypeMatchOrData;
