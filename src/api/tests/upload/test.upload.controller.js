@@ -906,7 +906,39 @@ export async function testAnalysis(args, context){
 		    {
 		        "$unwind": "$studentInfo"
 		    }
-		]
+    ]
+    const countQuery = [{
+        $lookup: {
+            "from": "tests",
+            "localField": "testId",
+            "foreignField": "testId",
+            "as": "testInfo"
+        }
+    }, {
+        $unwind: "$testInfo"
+    },
+    {
+        $lookup: {
+            "from": "studentInfo",
+            "localField": "studentId",
+            "foreignField": "studentId",
+            "as": "studentInfo"
+        }
+    },
+    {
+        "$unwind": "$studentInfo"
+    },{
+      $group: {
+        _id: {"studentId":"$studentInfo.studentId", "testId": "$testInfo.testId"},
+        count: {$sum: 1}
+      }},
+      {
+        $project: {
+          _id: 0,
+          count: 1
+        }
+      }
+    ]
 		let matchQuery = {$match:{}}
 		let project = {$project:{
 			"studentId": 1,
@@ -927,13 +959,17 @@ export async function testAnalysis(args, context){
 			matchQuery["$match"]["studentId"] = studentId
 		}
 		if(Object.keys(matchQuery["$match"]).length){
-			aggregatePipeline.unshift(matchQuery);
+      aggregatePipeline.unshift(matchQuery);
+      countQuery.unshift(matchQuery);
     }
     if(limit){
       aggregatePipeline.splice(2,0,{$limit: limit})
     }
     aggregatePipeline.push(project);
-		const studentAnalysis = await TestMasterResultSchema.aggregate(aggregatePipeline).allowDiskUse(true)
+    const [studentAnalysis,count] = await Promise.all([
+      TestMasterResultSchema.aggregate(aggregatePipeline).allowDiskUse(true),
+      TestMasterResultSchema.aggregate(countQuery).allowDiskUse(true)
+    ])
     if(!studentAnalysis || !studentAnalysis.length){
       return [];
     }
@@ -966,7 +1002,7 @@ export async function testAnalysis(args, context){
 			}
 			dumpingArray.push(analysisObject)
     }
-    return dumpingArray;
+    return {"studentAnalysis": dumpingArray, count: count.length};
   }catch(err){
     console.log(err)
     throw err;
@@ -996,7 +1032,7 @@ function cwuDetailsInGroupOfDifficulty(data){
 			}
 			if(data["responseData"]["questionResponse"][key].hasOwnProperty("U")){
 				difficulty[data["responseData"]["questionResponse"][key]["difficulty"].toLowerCase()]["U"] = difficulty[data["responseData"]["questionResponse"][key]["difficulty"].toLowerCase()]["U"] + 1
-				difficulty["unattempted"] = difficulty["unattempted"] + 1;
+				difficulty["Unattempted"] = difficulty["Unattempted"] + 1;
 			}
 		}
 	}
