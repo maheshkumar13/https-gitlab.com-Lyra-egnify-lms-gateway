@@ -6,6 +6,7 @@ import {
   getModel as TextBook
 } from '../../settings/textbook/textbook.model';
 const xlsx = require('xlsx');
+import {getModel as Questions} from '../questions/questions.model';
 
 import {
   getModel as Chapter
@@ -876,11 +877,12 @@ export async function getCMSTestStats(args, context) {
 export async function testAnalysis(args, context){
   try{
     const [TestMasterResultSchema, QuestionSchema] = await Promise.all([
-      MasterResult(context), 
-    ])
-    const {testId,studentId,limit,skip} = args;
+      MasterResult(context), Questions(context)
+    ]);
+    let {testId,studentId,limit,skip} = args;
+    skip = skip || 0;
+    limit = limit || 0;
     var dumpingArray = []
-		const db = await MongoClient.connect(mongoURIRemote);
 		const aggregatePipeline = [
 			{$skip: skip },
 			{
@@ -919,10 +921,10 @@ export async function testAnalysis(args, context){
 			"cwuAnalysis" : 1
 		}}
 		if(testId && testId.length){
-			matchQuery["$match"]["testId"] = {$in : testIds}
+			matchQuery["$match"]["testId"] = testId
 		}
 		if(studentId && studentId.length){
-			matchQuery["$match"]["studentId"] = {$in : studentIds}
+			matchQuery["$match"]["studentId"] = studentId
 		}
 		if(Object.keys(matchQuery["$match"]).length){
 			aggregatePipeline.unshift(matchQuery);
@@ -930,38 +932,116 @@ export async function testAnalysis(args, context){
     if(limit){
       aggregatePipeline.splice(2,0,{$limit: limit})
     }
-		aggregatePipeline.push(project);
-		const studentAnalysis = await db.db(DB_NAME_REMOTE).collection("test_masterresults").aggregate(aggregatePipeline,{allowDiskUse: true}).toArray()
-		let questionPaperIds = {}
+    aggregatePipeline.push(project);
+		const studentAnalysis = await TestMasterResultSchema.aggregate(aggregatePipeline).allowDiskUse(true)
+    if(!studentAnalysis || !studentAnalysis.length){
+      return [];
+    }
+    let questionPaperIds = {}
 		studentAnalysis.forEach((studentData)=>{
 			questionPaperIds[studentData["testInfo"]["test"]["questionPaperId"]] = true
-		});
+    });
 		let questionPaperIdsArray = Object.keys(questionPaperIds);
-		let questionsArray = await db.db(DB_NAME_REMOTE).collection("questions").aggregate([{$match:{questionPaperId : {$in: questionPaperIdsArray}}},{ $group: { "_id": "$questionPaperId", "questions": { $push: { "qno": "$qno", "revised_blooms_taxonomy": "$revised_blooms_taxonomy" } } } }]).toArray()
+		let questionsArray = await QuestionSchema.aggregate([{$match:{questionPaperId : {$in: questionPaperIdsArray}}},{ $group: { "_id": "$questionPaperId", "questions": { $push: { "qno": "$qno", "revised_blooms_taxonomy": "$revised_blooms_taxonomy" } } } }]).allowDiskUse(true)
 		let questionPaperIndex = questionPaperIdToIndex(questionsArray);
 		for ( let i = 0 ; i < studentAnalysis.length ; i++){
 			let data = totalTimeSpentQuestionWise(studentAnalysis[i]["responseData"]["questionResponse"]);
 			let analysisObject = {
-				"Student Admission ID": studentAnalysis[i]["studentId"],
-				"Student Name" : studentAnalysis[i]["name"],
-				"Branch Name" : studentAnalysis[i]["studentInfo"]["hierarchy"][4]["child"],
-				"Class" : studentAnalysis[i]["studentInfo"]["hierarchy"][1]["child"],
-				"Section" : studentAnalysis[i]["studentInfo"]["hierarchy"][5]["child"],
-				"Subject" : studentAnalysis[i]["testInfo"]["mapping"]["subject"]["name"],
-				"Test Name" : studentAnalysis[i]["testInfo"]["test"]["name"],
-				"Total Number Of Questions" : studentAnalysis[i]["testInfo"]["markingSchema"]["totalQuestions"],
-				"CWU" : cwuDetailsInGroupOfDifficulty(studentAnalysis[i]),
-				"Time Spent For Each Question in seconds" : data.timeSpent,
-				"CWU questionwise": data.marksObtained,
-				"Total Marks Obtained" : studentAnalysis[i]["cwuAnalysis"]["overall"]["C"],
-				"Total Marks Obtained (Application)" : totalMarksObtainedGrouped(studentAnalysis[i],questionsArray[questionPaperIndex[studentAnalysis[i]["testInfo"]["test"]["questionPaperId"]]]["questions"], "Application", "revised_blooms_taxonomy"),
-				"Total Marks Obtained (Knowledge)" : totalMarksObtainedGrouped(studentAnalysis[i], questionsArray[questionPaperIndex[studentAnalysis[i]["testInfo"]["test"]["questionPaperId"]]]["questions"], "Knowledge", "revised_blooms_taxonomy"),
-				"Total Marks Obtained (Inference)" : totalMarksObtainedGrouped(studentAnalysis[i], questionsArray[questionPaperIndex[studentAnalysis[i]["testInfo"]["test"]["questionPaperId"]]]["questions"], "Inference", "revised_blooms_taxonomy"),
-				"TEXTBOOK": studentAnalysis[i]["testInfo"]["mapping"]["textbook"]["name"]
+				"studentId": studentAnalysis[i]["studentId"],
+				"studentName" : studentAnalysis[i]["name"],
+				"branchName" : studentAnalysis[i]["studentInfo"]["hierarchy"][4]["child"],
+				"class" : studentAnalysis[i]["studentInfo"]["hierarchy"][1]["child"],
+				"section" : studentAnalysis[i]["studentInfo"]["hierarchy"][5]["child"],
+				"subject" : studentAnalysis[i]["testInfo"]["mapping"]["subject"]["name"],
+				"testName" : studentAnalysis[i]["testInfo"]["test"]["name"],
+				"totalNumberOfQuestions" : studentAnalysis[i]["testInfo"]["markingSchema"]["totalQuestions"],
+				"cwuDetailsInGroupOfDifficulty" : cwuDetailsInGroupOfDifficulty(studentAnalysis[i]),
+				"timeSpentOnEachQuestion" : data.timeSpent,
+				"questionWiseCwu": data.marksObtained,
+				"totalMarksObtianed" : studentAnalysis[i]["cwuAnalysis"]["overall"]["C"],
+				"totalMarksObtained(Application)" : totalMarksObtainedGrouped(studentAnalysis[i],questionsArray[questionPaperIndex[studentAnalysis[i]["testInfo"]["test"]["questionPaperId"]]]["questions"], "Application", "revised_blooms_taxonomy"),
+				"totalMarksObtained(Knowledge)" : totalMarksObtainedGrouped(studentAnalysis[i], questionsArray[questionPaperIndex[studentAnalysis[i]["testInfo"]["test"]["questionPaperId"]]]["questions"], "Knowledge", "revised_blooms_taxonomy"),
+				"totalMarksObtained(Inference)" : totalMarksObtainedGrouped(studentAnalysis[i], questionsArray[questionPaperIndex[studentAnalysis[i]["testInfo"]["test"]["questionPaperId"]]]["questions"], "Inference", "revised_blooms_taxonomy"),
+				"textbook": studentAnalysis[i]["testInfo"]["mapping"]["textbook"]["name"]
 			}
 			dumpingArray.push(analysisObject)
-		}
+    }
+    return dumpingArray;
   }catch(err){
+    console.log(err)
     throw err;
   }
+}
+
+function questionPaperIdToIndex(questions){
+	let ret_obj = {};
+	for(let i = 0 ; i < questions.length ; i++){
+		ret_obj[questions[i]["_id"]] = i
+	}
+	return ret_obj;
+}
+
+//[ "Easy", "Medium", "Hard", "Difficult", "EASY", "MEDIUM", "HARD" ]
+function cwuDetailsInGroupOfDifficulty(data){
+	let difficulty = {"easy": {"C":0,"W":0,"U":0} ,"medium":{"C":0,"W":0,"U":0}, "hard" : {"C":0,"W":0,"U":0}, "difficult":{"C":0,"W":0,"U":0},"Correct": 0, "Wrong": 0, "Unattempted": 0}
+	for ( let key in data["responseData"]["questionResponse"]){
+		if([ "Easy", "Medium", "Hard", "Difficult", "EASY", "MEDIUM", "HARD" ].includes(data["responseData"]["questionResponse"][key]["difficulty"])){
+			if(data["responseData"]["questionResponse"][key].hasOwnProperty("C")){
+				difficulty[data["responseData"]["questionResponse"][key]["difficulty"].toLowerCase()]["C"] = difficulty[data["responseData"]["questionResponse"][key]["difficulty"].toLowerCase()]["C"] + 1;
+				difficulty["Correct"] = difficulty["Correct"] + 1;
+			}
+			if(data["responseData"]["questionResponse"][key].hasOwnProperty("W")){
+				difficulty[data["responseData"]["questionResponse"][key]["difficulty"].toLowerCase()]["W"] = difficulty[data["responseData"]["questionResponse"][key]["difficulty"].toLowerCase()]["W"] + 1
+				difficulty["Wrong"] = difficulty["Wrong"] + 1;
+			}
+			if(data["responseData"]["questionResponse"][key].hasOwnProperty("U")){
+				difficulty[data["responseData"]["questionResponse"][key]["difficulty"].toLowerCase()]["U"] = difficulty[data["responseData"]["questionResponse"][key]["difficulty"].toLowerCase()]["U"] + 1
+				difficulty["unattempted"] = difficulty["unattempted"] + 1;
+			}
+		}
+	}
+	return difficulty;
+}
+
+function totalMarksObtainedGrouped(data,  question , groupBy, type){
+	let marksObtained = 0;
+	let groupByquestions = {};
+	let questions = JSON.parse(JSON.stringify(question))
+	for (let i = 0 ; i < questions.length ; i++){
+		if(!questions[i][type]){
+			return "NOT_MAPPED"
+		}
+		if(questions[i][type].toLowerCase() === groupBy.toLowerCase()){
+			groupByquestions[questions[i]["qno"]] = true;
+		}
+	}
+	for ( let qno in groupByquestions){
+		if(data["responseData"]["questionResponse"][qno].hasOwnProperty("C")){
+			marksObtained = marksObtained + 1
+		}
+	}
+	return marksObtained;
+}
+
+function totalTimeSpentQuestionWise(questionResponse){
+	let timeSpent = {};
+	let marksObtained = {
+		"correct": [],
+		"wrong": [],
+		"unattempted": []	
+	}
+	for(let qno in questionResponse){
+		timeSpent[qno] = questionResponse[qno]["timespent"];
+		if(questionResponse[qno].hasOwnProperty("C")){
+			marksObtained.correct.push(qno);
+		}
+		if(questionResponse[qno].hasOwnProperty("W")){
+			marksObtained.wrong.push(qno);
+		}
+
+		if(questionResponse[qno].hasOwnProperty("U")){
+			marksObtained.unattempted.push(qno);
+		}
+	}
+	return {timeSpent, marksObtained};
 }
