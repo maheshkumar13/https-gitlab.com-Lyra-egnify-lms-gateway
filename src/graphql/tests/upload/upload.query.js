@@ -1,5 +1,5 @@
 import {listTest , listTextBooksWithTestSubectWise, getDashboardHeadersAssetCountV2, getCMSTestStats, testAnalysis } from '../../../api/tests/upload/test.upload.controller';
-import {ListInputType, ListTestOutput, TestHeadersAssetCountInputType,CmsTestStatsInputType,CmsTestStatsOutputType} from './upload.type';
+import {ListInputType, ListTestOutput, TestHeadersAssetCountInputType,CmsTestStatsInputType,CmsTestStatsOutputType, TestAnalysisOutputType } from './upload.type';
 import {getStudentDetailsById} from '../../../api/settings/student/student.controller';
 import {getTextbooks, getTextbookForTeachers} from '../../../api/settings/textbook/textbook.controller';
 import {GraphQLString as StringType, GraphQLNonNull as NonNull, GraphQLList as List, GraphQLInt as IntType } from 'graphql';
@@ -123,7 +123,7 @@ export const TestAnalysis = {
         limit: { type: IntType, description: "Number of rows to be returned"},
         skip: { type: IntType, description: "Number of rows to skip"}
     },
-    type: GraphQLJSON,
+    type: TestAnalysisOutputType,
     async resolve (objects,args,context){
         try{
             return await testAnalysis(args,context)
