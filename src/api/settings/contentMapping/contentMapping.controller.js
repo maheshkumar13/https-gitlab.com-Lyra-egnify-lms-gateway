@@ -2586,6 +2586,33 @@ export async function getCMSPracticeStatsV2(args, context) {
   return finalData;
 }
 
+export async function publishQuiz(req, res){
+  try{
+    const assetId = req.params.assetId;
+    const questionPaperId = req.body.questionPaperId;
+    if(!questionPaperId){
+      return res.status(400).send("Question paper id missing.");
+    }
+    const [ContentSchema,QuestionSchema] = await Promise.all([
+      ContentMappingModel(req.user_cxt),Questions(req.user_cxt)
+    ]);
+    const questionsCount = await QuestionSchema.count({questionPaperId});
+    if(!questionsCount){
+      return res.status(400).send("Invalid question paper id");
+    }
+    const setObj = {
+      "metaData.questionPaperId": questionPaperId
+    };
+    const content = await ContentSchema.findOneAndUpdate({assetId},{$set: setObj},{new: true}).select({_id: 1}).lean();
+    if(!content){
+      return res.status(400).send("Invalid asset id.");
+    }
+    return res.status(200).send("Success");
+  }catch(err){
+    return res.status(500).send("internal server error.");
+  }
+}
+
 export default{
   updateContent,
   getUniqueDataForValidation,
