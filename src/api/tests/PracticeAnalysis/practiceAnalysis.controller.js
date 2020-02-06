@@ -1,6 +1,6 @@
 
 import { getModel as practiceanalysisModel } from './practiceanalysis.model';
-
+import { getModel as StudentInfoSchema } from '../../settings/student/student.model';
 
 export async function getPracticeAnalysis(req, res) {
     try {
@@ -33,4 +33,86 @@ export async function getPracticeAnalysis(req, res) {
         });
     };
 }
+
+export async function getStudentWisePracticeStats(req, res){
+    try{
+        const { Branch, Class, Orientation, Section, limit, skip} = req.query;
+        limit = parseInt(limit) ? limit : 0;
+        skip = parseInt(skip) ? skip : 0;
+        if( !Branch || !Class || !Orientation){
+            return res.status(400).send("Bad Req.")
+        }
+        let aggregateQuery = [
+            {
+                "$lookup":{
+                    "from": "masterresults",
+                    "let": { studentId: "$studentId"},
+                    "pipeline": [
+                        {
+                            "$match": {
+                                "$expr":{
+                                    "$eq": ["$studentId", "$$studentId"]
+                                }
+                            }
+                        },
+                        {
+                            "$group":{
+                                "_id": {
+                                    "studentId": "$studentId",
+                                    "questionPaperId": "$questionPaperId"
+                                }
+                            }
+                        }
+                    ],		
+                    "as": "practiceInfo"
+                }
+            },{
+                "$project":{
+                    "studentId": 1,
+                    "class": "$hierarchyLevels.L_2",
+                    "branch": "$hierarchyLevels.L_5",
+                    "orientation": 1,
+                    "section": "$hierarchyLevels.L_6",
+                    "attemptedPractice": {
+                        $cond: {
+                            if: {
+                                $isArray: "$practiceInfo"
+                            },
+                            then: {
+                                $size: "$practiceInfo"
+                            },
+                            else: 0
+                        }
+                    }
+                }
+            }
+        ];
+        let matchQuery = {
+            "$match":{
+                "orientation": Orientation,
+                "hierarchyLevels.L_5": Branch,
+                "hierarchyLevels.L_2": Class
+            }
+        }
+        if(Section){
+            matchQuery["$match"]["hierarchyLevels.L_6"] = Section; 
+        }
+        aggregateQuery.splice(0,0,matchQuery);
+        aggregateQuery.splice(1,0,{$skip: skip})
+        if(limit){
+            aggregateQuery.splice(2,0,{$limit: limit});
+        }
+
+        const StudentInfo = await StudentInfoSchema(req.user_cxt);
+        let [results,count] = await Promise.all([
+            StudentInfo.aggregateQuery(aggregateQuery).allowDiskUSe(true),
+            StudentInfo.count(matchQuery["$match"])
+        ]);
+        return res.status(200).send({ results, count});        
+    }catch(err){
+        console.log(err);
+        return res.status(500).send("internal server error");
+    }
+}
+
 export default { getPracticeAnalysis};
