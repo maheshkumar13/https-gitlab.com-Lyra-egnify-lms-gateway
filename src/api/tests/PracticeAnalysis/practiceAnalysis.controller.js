@@ -49,9 +49,10 @@ export async function getPracticeCompletionStats(req, res){
         limit = parseInt(limit) ? limit : 0;
         skip = parseInt(skip) ? skip : 0;
         const PracticeSummary = await PracticceSummarySchema(req.user_cxt);
-        const result = await PracticeSummary.find(getQuery)
-        .skip(skip).limit(limit).lean();
-        return res.status(200).send(result)
+        const [result,count] = await Promise.all([
+            PracticeSummary.find(getQuery).skip(skip).limit(limit).lean(),
+            PracticeSummary.count(getQuery)])
+        return res.status(200).send({result,count})
     }catch(err){
         console.log(err);
         return res.status(500).send("internal server error");
