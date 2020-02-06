@@ -29,7 +29,9 @@ import {
   TextbookBasedQuizInputType,
   TextbookBasedQuizOutputType,
   DashboardHeadersAssetCountInputType,
-  ReadingMaterialAudioType
+  ReadingMaterialAudioType,
+  CmsPracticeStatsInputType,
+  CmsPracticeStatsOutputType,
 } from './contentMapping.type';
 import { validateAccess } from '../../../utils/validator';
 
@@ -84,7 +86,7 @@ export const ContentMappingUploadedDataLearn = {
     chapterCode: { type: StringType, description: 'Internal code of Textbook ' },
     branch: { type: StringType, description: 'Branch filter' },
     orientation: { type: StringType, description: 'Orientation filter' },
-    contentCategory: { type: StringType, description: 'Category of the content' },
+    contentCategory: { type: new List(StringType), description: 'Category of the content' },
   },
   type: ContentMappingPaginatedType,
   async resolve(obj, args, context) {
@@ -264,7 +266,7 @@ export const DashboardHeadersAssetCount = {
   },
   type: GraphQLJSON,
   async resolve(obj, args, context) {
-    const validRoles = ['CMS_LEARN_VIEWER', 'CMS_PRACTICE_VIEWER', 'CMS_TEST_VIEWER'];
+    const validRoles = ['CMS_LEARN_VIEWER', 'CMS_PRACTICE_VIEWER', 'CMS_TEST_VIEWER', 'CMS_CONTENT_MANAGER', 'CMS_CONTENT_VIEWER'];
     if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     return controller.getDashboardHeadersAssetCountV2(args.input, context)
       .then(async json => json);
@@ -304,6 +306,17 @@ export const TextbookBasedQuiz = {
   },
 };
 
+export const CmsPracticeStats = {
+  args: {
+    input: { type: CmsPracticeStatsInputType },
+  },
+  type: new List(CmsPracticeStatsOutputType),
+  async resolve(obj, args, context) {
+    return controller.getCMSPracticeStatsV2(args.input, context)
+      .then(async json => json);
+  },
+};
+
 export default {
   ContentMapping,
   CmsCategoryStats,
@@ -314,5 +327,6 @@ export default {
   TextbookBasedQuiz,
   DashboardHeadersAssetCount,
   ContentMappingUploadedDataLearn,
-  ContentMappingUploadedDataReadingMaterialAudio
+  ContentMappingUploadedDataReadingMaterialAudio,
+  CmsPracticeStats
 };

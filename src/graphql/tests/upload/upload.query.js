@@ -1,8 +1,8 @@
-import {listTest , listTextBooksWithTestSubectWise, getDashboardHeadersAssetCountV2 } from '../../../api/tests/upload/test.upload.controller';
-import {ListInputType, ListTestOutput, TestHeadersAssetCountInputType} from './upload.type';
+import {listTest , listTextBooksWithTestSubectWise, getDashboardHeadersAssetCountV2, getCMSTestStats } from '../../../api/tests/upload/test.upload.controller';
+import {ListInputType, ListTestOutput, TestHeadersAssetCountInputType,CmsTestStatsInputType,CmsTestStatsOutputType} from './upload.type';
 import {getStudentDetailsById} from '../../../api/settings/student/student.controller';
 import {getTextbooks, getTextbookForTeachers} from '../../../api/settings/textbook/textbook.controller';
-import {GraphQLString as StringType, GraphQLNonNull as NonNull } from 'graphql';
+import {GraphQLString as StringType, GraphQLNonNull as NonNull, GraphQLList as List } from 'graphql';
 import { validateAccess } from '../../../utils/validator';
 import {fetchNodesWithContext} from '../../../api/settings/instituteHierarchy/instituteHierarchy.controller'
 import GraphQLJSON from 'graphql-type-json';
@@ -20,7 +20,7 @@ export const ListTest = {
             if (!validateAccess(validRoles, context)){
                 throw new Error('Access Denied');
             }
-            const orientationOfTeacher = context.orientations;
+            const orientationOfTeacher = context.orientations || [];
             const levelNames = ["Branch","Class"]
             const Nodes = await fetchNodesWithContext({levelNames},context); //class name and class code
             let classCodes = []
@@ -41,7 +41,7 @@ export const ListTest = {
                 throw new Error("Invalid branch selection.")
             }
 
-            if(args.input.orientation && !orientationOfTeacher.includes(args.input.orientation)){
+            if(args.input.orientation && orientationOfTeacher.length && !orientationOfTeacher.includes(args.input.orientation)){
                 throw new Error("Invalid orientation selection.")
             }
 
@@ -104,3 +104,14 @@ export const HeaderCountForTextBookBasedTest = {
         }
     }
 }
+
+export const CmsTestStats = {
+    args: {
+      input: { type: CmsTestStatsInputType },
+    },
+    type: new List(CmsTestStatsOutputType),
+    async resolve(obj, args, context) {
+      return getCMSTestStats(args.input, context)
+        .then(async json => json);
+    },
+  };

@@ -153,8 +153,9 @@ export const DashboardHeadersAssetCountInputType = new InputType({
     textbookCode: { type: StringType, description: 'Code of the textBook' },
     branch: { type: StringType, description: 'Branch name' },
     orientation: { type: StringType, description: 'Orientaion name' },
-    contentCategory: { type: StringType, description: 'content category' },
+    contentCategory: { type: new List(StringType), description: 'content category' },
     header: { type: NonNull(DashboardHeaderEnumType), description: 'Header' },
+    readingMaterialAudio: { type: BooleanType, description: 'Default false, set true for headers count for the reading materials which has audios' },
   },
 });
 
@@ -318,6 +319,28 @@ export const TextbookBasedQuizOutputType = new ObjectType({
   }
 });
 
+export const CmsPracticeStatsInputType = new InputType({
+  name: 'CmsPracticeStatsInputType',
+  fields: {
+    classCode: { type: StringType, description: 'Code of the class' },
+    subjectCode: { type: StringType, description: 'Code of the subject' },
+    chapterCode: { type: StringType, description: 'Code of the chapter' },
+    textbookCode: { type: StringType, description: 'Code of the textBook' },
+    branch: { type: StringType, description: 'Branch name' },
+    orientation: { type: StringType, description: 'Orientaion name' },
+    gaStatus: {type: BooleanType, description: "filter for ga"}
+  },
+});
+
+export const CmsPracticeStatsOutputType = new ObjectType({
+  name: 'CmsPracticeStatsOutputType',
+  fields: {
+    classCode: { type: StringType, description: 'Class code' },
+    category: { type: StringType, description: 'Name of the category' },
+    count: { type: IntType, description: 'Count of the files which belongs to that category' },
+  },
+});
+
 export default {
   ContentMappingType,
   CmsCategoryStatsOutputType,
@@ -330,6 +353,8 @@ export default {
   UpdateContentInputType,
   UpdateMetaDataInputType,
   TextbookBasedQuizInputType,
-  TextbookBasedQuizOutputType
+  TextbookBasedQuizOutputType,
+  CmsPracticeStatsInputType,
+  CmsPracticeStatsOutputType
 };
 

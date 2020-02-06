@@ -13,7 +13,11 @@ import {
 
 import GraphQLJSON from 'graphql-type-json';
 
-import { LaunchRequestType, S3FileSystemType } from './launchRequest.type';
+import {
+  LaunchRequestType,
+  S3FileSystemType,
+  GetSignedUrlForUploadInputType,
+  GetSignedUrlForUploadOutputType, } from './launchRequest.type';
 
 const controller = require('../../../api/launcher/launchRequest/launchRequest.controller');
 
@@ -39,7 +43,18 @@ export const GetS3FileSystem = {
   },
 };
 
+export const GetS3SignedUrlForUpload = {
+  args: {
+    input: { type: GetSignedUrlForUploadInputType }
+  },
+  type: new List(GetSignedUrlForUploadOutputType),
+  async resolve(obj, args, context) {
+    return controller.getSignedUrlForUpload(args.input, context);
+  },
+};
+
 export default {
   LaunchRequest,
   GetS3FileSystem,
+  GetS3SignedUrlForUpload,
 };

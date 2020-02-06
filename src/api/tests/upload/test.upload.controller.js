@@ -18,8 +18,7 @@ const GA_SCHEDULER_URL = require('../../../config/environment')["config"]["GA_SC
 const uuidv4 = require("uuid/v4");
 import {getModel as Hierarchy} from '../../settings/instituteHierarchy/instituteHierarchy.model';
 import {getModel as Subject} from '../../settings/subject/subject.model';
-import {getModel as Questions} from '../questions/questions.model';
-const MAPPING_HEADERS = ["class","subject","textbook","chapter","content name","media type","view order"]
+const MAPPING_HEADERS = ["class","subject","textbook","chapter","test name","view order"]
 const SUPPORTED_MEDIA_TYPE = ["docx","xlsx","xml"];
 const TEST_TIMING_HEADERS = ["branches","end date","start date","duration"];
 const axios = require("axios");
@@ -386,16 +385,8 @@ function validateMappingRows (data){
       errorDetails.push("CHAPTER not present")
     }
 
-    if(!data[i]["content name"]){
-      errorDetails.push("CONTENT NAME not present")
-    }
-
-    if(!data[i]["media type"]){
-      errorDetails.push("MEDIA TYPE not present")
-    }
-
-    if(data[i]["media type"] && SUPPORTED_MEDIA_TYPE.indexOf(data[i]["media type"].toLowerCase()) === -1){
-      errorDetails.push("Invalid MEDIA TYPE. Supported media types are :",SUPPORTED_MEDIA_TYPE.join(","));
+    if(!data[i]["test name"]){
+      errorDetails.push("TEST NAME not present")
     }
 
     if(errorDetails.length){
@@ -516,12 +507,10 @@ async function subjectMapWithClassName(subjects,classes){
 
 function createTestMappingObject(data, classData, subjectData, textBookData, chapterData){
   let mapping = {
-    "testId" : data["asset id"] || uuidv4(),
-    "testName" : data["content name"],
+    "testId" : data["test id"] || uuidv4(),
+    "testName" : data["test name"],
     "subjects" : [
         {
-            "totalQuestions" : null,
-            "qmapCompletion" : null,
             "code" : subjectData.code,
             "parentCode" : textBookData.code,
             "subject" : data["subject"],
@@ -530,32 +519,22 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
     ],
 
     "markingSchema" : {
-        "totalQuestions" : null,
-        "totalMarks" : null,
         "subjects" : [
             {
                 "tieBreaker" : 1,
                 "start" : 1,
-                "end" : null,
                 "subject" : data["subject"],
-                "totalQuestions" : null,
-                "totalMarks" : null,
                 "marks" : [
                     {
                         "noOfOptions" : 4,
-                        "numberOfSubQuestions" : null,
                         "P" : 0,
                         "ADD" : 1,
                         "questionType" : "Single Answer",
                         "egnifyQuestionType" : "Single answer type",
-                        "numberOfQuestions" : null,
-                        "section" : null,
                         "C" : 1,
                         "W" : 0,
                         "U" : 0,
                         "start" : 1,
-                        "end" : null,
-                        "totalMarks" : null
                     }
                 ]
             }
@@ -585,9 +564,7 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
         "startTime" : new Date(),
         "endTime" : new Date(),
         "date" : new Date(),
-        "duration" : null,
-        "questionPaperId" : null,
-        "name" : data["content name"]
+        "name" : data["test name"]
     },
     "viewOrder" : data["view order"] || null
   }
@@ -692,7 +669,7 @@ export async function  uploadTestiming(req, res){
       });
     }
     await TestTimingSchema.bulkWrite(validationCheck.mapping);
-    return res.status(200).send({error: false, message: "Success", data: validationCheck.mapping});
+    return res.status(200).send({error: false, message: "Success"});
   }
   catch(err){
     console.log(err);
@@ -903,4 +880,69 @@ async function scheduleGA(data, user_cxt){
   }catch(err){
     throw err;
   }
+}
+
+export async function getCMSTestStats(args, context) {
+  const {
+    classCode,
+    subjectCode,
+    chapterCode,
+    textbookCode,
+    branch,
+    orientation,
+    gaStatus
+  } = args;
+
+  // Textbook data;
+  const textbookMatchQuery = { active: true }
+  if (classCode ) textbookMatchQuery['refs.class.code'] = classCode;
+  if (subjectCode) textbookMatchQuery['refs.subject.code'] = subjectCode;
+  if (textbookCode) textbookMatchQuery['code'] = textbookCode;
+  if (branch) textbookMatchQuery['branches'] = { $in: [ branch, null ] };
+  if (orientation) textbookMatchQuery['orientations'] = { $in: [ orientation, null ] };
+
+
+  const [ TextbookSchema, TestSchema ] = await Promise.all([TextBook(context), Tests(context)]);
+  const docs = await TextbookSchema.find(textbookMatchQuery,{_id: 0, code: 1, 'refs.class.code': 1 })
+  if(!docs || !docs.length) return [];
+  // return docs;
+  const objectifyDocs = {};
+  docs.forEach(x => objectifyDocs[x.code] = x.refs.class.code);
+  let textbookCodes = docs.map(x => x.code);
+
+  // Content mapping
+  const contentAggregateQuery = [];
+  const contentMatchQuery = { active: true }
+  if(gaStatus){
+    contentMatchQuery["gaStatus"] = "finished";
+  }
+  // const contentTypeMatchOrData = getContentTypeMatchOrData("");
+  // if(contentTypeMatchOrData.length) contentMatchQuery['$or'] = contentTypeMatchOrData;
+  contentMatchQuery['mapping.textbook.code'] = { $in: textbookCodes };
+  if(chapterCode) contentMatchQuery['mapping.chapter.code'] = chapterCode;
+  contentAggregateQuery.push({$match: contentMatchQuery});
+  // return contentMatchQuery;
+  const contentGroupQuery = {
+    _id: {
+      textbookCode: '$mapping.textbook.code',
+    }, count: { $sum: 1 }
+  }
+  contentAggregateQuery.push({$group: contentGroupQuery });
+  const data = await TestSchema.aggregate(contentAggregateQuery).allowDiskUse(true);
+  const tempData = {}
+  data.forEach(x => {
+      const classCode = objectifyDocs[x._id.textbookCode]; 
+      const category = x._id.category;
+      if(!tempData[classCode]) tempData[classCode] = {};
+      if(!tempData[classCode][category]) tempData[classCode][category] = 0;
+      tempData[classCode][category] += x.count;
+  })
+  // return tempData;
+  const finalData = [];
+  for(let temp in tempData){
+    for(let key in tempData[temp]){
+      finalData.push({classCode: temp, category:"Test", count: tempData[temp][key]})
+    }
+  }
+  return finalData;
 }
