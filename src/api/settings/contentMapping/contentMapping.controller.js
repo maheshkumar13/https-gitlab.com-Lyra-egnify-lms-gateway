@@ -2294,6 +2294,7 @@ export async function publishPractice(req, res){
     const setObj = {
       "resource.key": questionPaperId,
       "coins": questionsCount,
+      "active": true
     }
 
     const contentMapping = ContentSchema.findOneAndUpdate({assetId,"content.category":"Practice"},
