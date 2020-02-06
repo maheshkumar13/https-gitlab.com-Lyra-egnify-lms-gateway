@@ -14,13 +14,14 @@ import {
 import {
   getModel as TestTimings
 } from '../testTiming/testtiming.model'
-
+const GA_SCHEDULER_URL = require('../../../config/environment')["config"]["GA_SCHEDULER_URL"];
 const uuidv4 = require("uuid/v4");
 import {getModel as Hierarchy} from '../../settings/instituteHierarchy/instituteHierarchy.model';
 import {getModel as Subject} from '../../settings/subject/subject.model';
 const MAPPING_HEADERS = ["class","subject","textbook","chapter","test name","view order"]
 const SUPPORTED_MEDIA_TYPE = ["docx","xlsx","xml"];
 const TEST_TIMING_HEADERS = ["branches","end date","start date","duration"];
+const axios = require("axios");
 
 function queryForListTest(args) {
   let query = {
@@ -804,6 +805,81 @@ function createTimingMap(data, indexed_branch, ret_data, testId, className){
     ret_data.push(upsertObj);
   });
   return true;
+}
+
+export async function publishTest(req, res){
+  try{
+    const { questionPaperId, testId } = req.body;
+  
+    if(!questionPaperId || !testId){
+      return res.status(400).send("Bad_Args");
+    }
+  
+    const [TestTimingSchema,QuestionsSchema,TestSchema] = await Promise.all([
+      TestTimings(req.user_cxt),Questions(req.user_cxt),Tests(req.user_cxt)]);
+    const [testTiming, questionsCount] = await Promise.all([
+      TestTimingSchema.aggregate([{$match: {testId}},
+      {$group: {"_id": "$testId",maxDate: {$max: "$endTime"},maxDuration: {$max: "$duration"}}},
+      {$lookup:{from: "tests", foreignField: "testId", "localField": "testId","as": "testInfo"}},
+      {$unwind: "$testInfo"},
+      {$project:{testName: "$testInfo.test.name",maxDuration: 1,maxDate: 1}}]),
+      QuestionsSchema.count({questionPaperId})
+    ]);
+    
+    if(!testTiming.length){
+      return res.status(400).send("Invalid test id.");
+    }
+    if(!questionsCount){
+      return res.status(400).send("Invalid question paper id.");
+    }
+  
+    const setObject = {
+      "test.questionPaperId": questionPaperId,
+      "active": true,
+      "subject.0.totalQuestions": questionsCount,
+      "markingSchema.totalQuestions": questionsCount,
+      "markingSchema.totalMarks": questionsCount,
+      "markingSchema.subject.0.end": questionsCount,
+      "markingSchema.subject.0.totalQuestions": questionsCount,
+      "markingSchema.subject.0.totalMarks": questionsCount,
+      "markingSchema.subject.0.marks.0.totalMarks": questionsCount,
+      "markingSchema.subject.0.marks.0.end": questionsCount,
+      "markingSchema.subject.0.marks.0.numberOfQuestions": questionsCount,
+      "coins": questionsCount,
+      "questionPaperId": questionPaperId
+    }
+    const date = new Date(new Date(testTiming[0]["maxDate"]).getTime() + testTiming[0]["maxDuration"]*60000)
+    .toISOString().replace("T"," ").split(".")[0]
+    .replace(/-/g,"/").substring(2);
+  
+    const data = {
+      "date" : date,
+      "function":"couch_to_mongo",
+      "args" : {
+        "test_id" : testId,
+        "questionPaperId": questionPaperId,
+        "test_name": testTiming[0]["testName"], 
+        "tie_breaking_list":[],
+        "studentId" : null
+      }
+    }
+    await scheduleGA(data,req.user_cxt);
+    await TestSchema.update({testId},{$set: setObject});
+  }catch(err){
+    return res.status(500).send("internal server error.");
+  }
+}
+
+async function scheduleGA(data, user_cxt){
+  try{
+    const headers = {
+      "accesscontroltoken": user_cxt["token"]["accesscontroltoken"],
+      "authorization": user_cxt["token"]["authorization"]
+    }
+    await axios({ method: "POST", GA_SCHEDULER_URL, data , headers });
+  }catch(err){
+    throw err;
+  }
 }
 
 export async function getCMSTestStats(args, context) {
