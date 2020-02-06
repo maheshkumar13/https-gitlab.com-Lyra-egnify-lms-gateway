@@ -2297,7 +2297,7 @@ export async function publishPractice(req, res){
       "active": true
     }
 
-    const contentMapping = ContentSchema.findOneAndUpdate({assetId,"content.category":"Practice"},
+    const contentMapping = await ContentSchema.findOneAndUpdate({assetId,"content.category":"Practice"},
       {$set:setObj},{new: true}).select({_id: 1}).lean();
       if(!contentMapping){
         return res.status(400).send("Invalid asset id.");
