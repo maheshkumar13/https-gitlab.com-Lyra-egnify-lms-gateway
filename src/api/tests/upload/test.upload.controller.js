@@ -1,6 +1,6 @@
 import {
   getModel as Tests
-} from './test.upload.model';
+} from './test.model';
 
 import {
   getModel as TextBook
@@ -10,19 +10,21 @@ const xlsx = require('xlsx');
 import {
   getModel as Chapter
 } from '../../settings/conceptTaxonomy/concpetTaxonomy.model'
+
+import {
+  getModel as TestTimings
+} from '../testTiming/testtiming.model'
+const GA_SCHEDULER_URL = require('../../../config/environment')["config"]["GA_SCHEDULER_URL"];
 const uuidv4 = require("uuid/v4");
 import {getModel as Hierarchy} from '../../settings/instituteHierarchy/instituteHierarchy.model';
 import {getModel as Subject} from '../../settings/subject/subject.model';
-const MAPPING_HEADERS = ["class","subject","textbook","chapter","content name","media type","view order"]
+const MAPPING_HEADERS = ["class","subject","textbook","chapter","test name","view order"]
 const SUPPORTED_MEDIA_TYPE = ["docx","xlsx","xml"];
+const TEST_TIMING_HEADERS = ["branches","end date","start date","duration"];
+const axios = require("axios");
 
 function queryForListTest(args) {
-  let activeStatus=true
-  if(args.active === false) activeStatus=false 
   let query = {
-    find: {
-      active: activeStatus
-    },
     search: {},
     sort: {
       "test.date": -1
@@ -81,7 +83,11 @@ function getFileData(req){
 export async function listTest(args, ctx) {
   try {
     const queries = queryForListTest(args);
-    let find = {"mapping.textbook.code":{"$in": args.textbookCode}, active: true};
+    let activeStatus = true;
+    if(args.active === false) {
+      activeStatus = false
+    } 
+    let find = {"mapping.textbook.code":{"$in": args.textbookCode}, active: activeStatus};
     if(args.gaStatus){
       find["gaStatus"] = args.gaStatus
     }
@@ -379,16 +385,8 @@ function validateMappingRows (data){
       errorDetails.push("CHAPTER not present")
     }
 
-    if(!data[i]["content name"]){
-      errorDetails.push("CONTENT NAME not present")
-    }
-
-    if(!data[i]["media type"]){
-      errorDetails.push("MEDIA TYPE not present")
-    }
-
-    if(data[i]["media type"] && SUPPORTED_MEDIA_TYPE.indexOf(data[i]["media type"].toLowerCase()) === -1){
-      errorDetails.push("Invalid MEDIA TYPE. Supported media types are :",SUPPORTED_MEDIA_TYPE.join(","));
+    if(!data[i]["test name"]){
+      errorDetails.push("TEST NAME not present")
     }
 
     if(errorDetails.length){
@@ -509,12 +507,10 @@ async function subjectMapWithClassName(subjects,classes){
 
 function createTestMappingObject(data, classData, subjectData, textBookData, chapterData){
   let mapping = {
-    "testId" : data["asset id"] || uuidv4(),
-    "testName" : data["content name"],
+    "testId" : data["test id"] || uuidv4(),
+    "testName" : data["test name"],
     "subjects" : [
         {
-            "totalQuestions" : null,
-            "qmapCompletion" : null,
             "code" : subjectData.code,
             "parentCode" : textBookData.code,
             "subject" : data["subject"],
@@ -523,32 +519,22 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
     ],
 
     "markingSchema" : {
-        "totalQuestions" : null,
-        "totalMarks" : null,
         "subjects" : [
             {
                 "tieBreaker" : 1,
                 "start" : 1,
-                "end" : null,
                 "subject" : data["subject"],
-                "totalQuestions" : null,
-                "totalMarks" : null,
                 "marks" : [
                     {
                         "noOfOptions" : 4,
-                        "numberOfSubQuestions" : null,
                         "P" : 0,
                         "ADD" : 1,
                         "questionType" : "Single Answer",
                         "egnifyQuestionType" : "Single answer type",
-                        "numberOfQuestions" : null,
-                        "section" : null,
                         "C" : 1,
                         "W" : 0,
                         "U" : 0,
                         "start" : 1,
-                        "end" : null,
-                        "totalMarks" : null
                     }
                 ]
             }
@@ -578,9 +564,7 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
         "startTime" : new Date(),
         "endTime" : new Date(),
         "date" : new Date(),
-        "duration" : null,
-        "questionPaperId" : null,
-        "name" : data["content name"]
+        "name" : data["test name"]
     },
     "viewOrder" : data["view order"] || null
   }
@@ -591,6 +575,374 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
         upsert: true,
         setDefaultsOnInsert: true
     }
-}
+  }
   return upsertObj;
+}
+
+export async function  uploadTestiming(req, res){
+  try{
+    if (!req.file) {
+      return res.status(400).send({message: 'File required', error: true});
+    }
+    const testId = req.params.testId || null;
+    
+    if(!testId){
+      return res.status(400).send({message: "Test Id missing.", error: true});
+    }
+
+    const fileName = req.file.originalname.split('.');
+    const extname = fileName.pop()
+    
+    if (extname !== 'xlsx') {
+      return res.status(400).send({message:'Invalid file extension, only xlsx is supported',error: true});
+    }
+    
+    let data = getFileData(req);
+    
+    if(!data.length){
+      return res.status(400).send({error: true,message:"Empty file."});
+    }
+
+    const headersInSheet = Object.keys(data[0]);
+    const notFoundHeader = validateHeaders(headersInSheet, TEST_TIMING_HEADERS)
+    
+    if(notFoundHeader.length){
+      return res.status(400).send({error: true,message:"Invalid Headers",data: notFoundHeader});
+    }
+
+    const validateTestTimingSheet = validateTestTimingRows(data);
+    
+    if(validateTestTimingSheet.length){
+      return res.status(400).send(
+        {message: "Invalid rows in the sheet",data: validateTestTimingSheet,error: true}
+        );
+    }
+    
+    let branchesArr = [];
+    
+    for(let i = 0 ; i < data.length; i++){
+      data[i]["branches"] = data[i]["branches"].split(",");
+      branchesArr = branchesArr.concat(data[i]["branches"]);
+    }
+    let branchObj = {};
+    let duplicateBranches = [];
+    
+    branchesArr.forEach(function(branch){
+      if(!branchObj.hasOwnProperty(branch)){
+        branchObj[branch] = 1;
+      }else{
+        duplicateBranches.push(branch);
+      }
+    });
+
+    if(duplicateBranches.length){
+      return res.status(400).send({error: true, message: "Duplicate branches in the rows.", data: duplicateBranches});
+    }
+
+    const promiseSchema = await Promise.all([Tests(req.user_cxt),Hierarchy(req.user_cxt),
+      TestTimings(req.user_cxt)]);
+
+    const TestSchema = promiseSchema[0];
+    const HierarchySchema = promiseSchema[1];
+    const TestTimingSchema = promiseSchema[2]
+
+    const testInfo = await TestSchema.findOne({testId}).select({
+      _id: 0,
+      mapping : 1,
+      test: 1
+    }).lean();
+
+    if(!testInfo){
+      return res.status(400).send({error: true, message: "Invalid test id."});
+    }
+    const branches = await HierarchySchema.find({
+      "child": { $in: branchesArr },
+      "anscetors.childCode" : testInfo.mapping.class.code,
+      "levelName": "Branch"
+    }).select({_id: 0, childCode: 1, child: 1}).lean();
+    const validationCheck = validateTestTimingWithDbAndCreateMap(data, branches, testId, testInfo["mapping"]["class"]["name"]);
+    if(validationCheck.error){
+      return res.status(400).send({
+        error: true,
+        message: "invalid rows in db",
+        data: validationCheck.erroredRow
+      });
+    }
+    await TestTimingSchema.bulkWrite(validationCheck.mapping);
+    return res.status(200).send({error: false, message: "Success"});
+  }
+  catch(err){
+    console.log(err);
+    return res.status(500).send("internal server error")
+  }
+}
+
+//"branches","end date","start date","duration"
+//start date and end date format(18/11/2019 - 17:00:00)
+//duration is in minutes
+function validateTestTimingRows (data){
+  const timeBuff = 60 * 1000 * 2;
+  const currentTime = new Date().getTime();
+  let errors = []
+  const length = data.length
+  for(let i = 0 ; i < length ; i++){
+    let startDate,endDate,dateDiffInMs;
+    let rowNumber = i+2;
+    let errorDetails = [];
+    if(!data[i]["branches"] || !data[i]["branches"].split(",").length){
+      errorDetails.push("Branches not present")
+    }
+    if(!data[i]["end date"]){
+      errorDetails.push("End date not present")
+    }else{
+      endDate = convertToDateString(data[i]["end date"]);
+      if(new Date(endDate) == "Invalid Date"){
+        errorDetails.push("Invalid End date format.Format should be DD/MM/YYYY - HH:MM:SS");
+      }else if( new Date(endDate).getTime() < currentTime ){
+        errorDetails.push("Invalid End date.End date should be greater than current time");
+      }else{
+        data[i]["end date"] = endDate;
+      }
+    }
+
+    if(!data[i]["start date"]){
+      errorDetails.push("start date not present")
+    }else{
+      startDate = convertToDateString(data[i]["start date"]);
+      if(new Date(startDate) == "Invalid Date"){
+        errorDetails.push("Invalid start date format.Format should be DD/MM/YYYY - HH:MM:SS");
+      }else if( new Date(startDate).getTime() < currentTime ){
+        errorDetails.push("Invalid start date.Start date should be greater than current time");
+      }else{
+        data[i]["start date"] = startDate;
+      }
+    }
+    if(startDate && endDate){
+      dateDiffInMs  = new Date(endDate).getTime() - new Date(startDate).getTime();
+      if(dateDiffInMs < 0){
+        errorDetails.push("Start date should be less than End date.");
+      }
+    }
+    if(!data[i]["duration"]){
+      errorDetails.push("duration not present")
+    }else{
+      let durationInMsWithBuff = parseInt(data[i]["duration"]) * timeBuff ;
+      if(dateDiffInMs <= durationInMsWithBuff ){
+        return errorDetails.push("Minimum difference between start date and end date should be 3hrs plus duration.")
+      }
+    }
+
+    if(errorDetails.length){
+      errors.push("Row "+ rowNumber+ " : "+errorDetails.join(","))
+    }
+  }
+  return errors;
+}
+
+function convertToDateString(dateString){
+  let l = dateString.trim().replace(/ /g,'');
+  let a  = l.split("-");
+  let b = a[0].split("/");
+  let temp = b[0];
+  b[0] = b[2];
+  b[2] = temp
+  return b.join("-")+"T"+a[1];
+}
+
+function branchMapOfName(branches){
+  let branchMap = {}
+  branches.forEach(function(branch){
+    branchMap[branch["child"]] = branch;
+  });
+  return branchMap;
+}
+
+function validateTestTimingWithDbAndCreateMap(data, branches, testId, className){
+  const length = data.length;
+  let error = false;
+  let mapping = [];
+  let erroredRow = [];
+  const indexed_branch = branchMapOfName(branches);
+  for( let i = 0 ; i < length ; i++ ){
+    let rowNumber = i+2;
+    let missingBranch = "";
+    data[i]["branches"].forEach(function(branch){
+      if(!indexed_branch.hasOwnProperty(branch)){
+        error = true;
+        missingBranch += branch + ", ";
+      }
+    });
+    if(missingBranch.length){
+      erroredRow.push("Row "+ rowNumber+ " : Invalid Branch "+ missingBranch)
+    }
+    if(!error){
+      createTimingMap(data[i], indexed_branch, mapping, testId, className);
+    }
+  }
+  return {error, mapping, erroredRow}
+}
+
+function createTimingMap(data, indexed_branch, ret_data, testId, className){
+  const branches = data["branches"];
+  branches.forEach(function(branch){
+    let mapping = {
+      testId: testId,
+      _id: indexed_branch[branch]["childCode"]+"_"+testId,
+      startTime: new Date(data["start date"]),
+      endTime: new Date(data["end date"]),
+      duration: parseInt(data["duration"]),
+      class: className,
+      orientations: data["orientations"] ? data["orientations"].split(",") : []
+    }
+    let upsertObj = {
+      updateOne: {
+          filter: { "_id": mapping["_id"] },
+          update: {"$set": mapping},
+          upsert: true,
+          setDefaultsOnInsert: true
+      }
+    }
+    ret_data.push(upsertObj);
+  });
+  return true;
+}
+
+export async function publishTest(req, res){
+  try{
+    const { questionPaperId, testId } = req.body;
+  
+    if(!questionPaperId || !testId){
+      return res.status(400).send("Bad_Args");
+    }
+  
+    const [TestTimingSchema,QuestionsSchema,TestSchema] = await Promise.all([
+      TestTimings(req.user_cxt),Questions(req.user_cxt),Tests(req.user_cxt)]);
+    const [testTiming, questionsCount] = await Promise.all([
+      TestTimingSchema.aggregate([{$match: {testId}},
+      {$group: {"_id": "$testId",maxDate: {$max: "$endTime"},maxDuration: {$max: "$duration"}}},
+      {$lookup:{from: "tests", foreignField: "testId", "localField": "testId","as": "testInfo"}},
+      {$unwind: "$testInfo"},
+      {$project:{testName: "$testInfo.test.name",maxDuration: 1,maxDate: 1}}]),
+      QuestionsSchema.count({questionPaperId})
+    ]);
+    
+    if(!testTiming.length){
+      return res.status(400).send("Invalid test id.");
+    }
+    if(!questionsCount){
+      return res.status(400).send("Invalid question paper id.");
+    }
+  
+    const setObject = {
+      "test.questionPaperId": questionPaperId,
+      "active": true,
+      "subject.0.totalQuestions": questionsCount,
+      "markingSchema.totalQuestions": questionsCount,
+      "markingSchema.totalMarks": questionsCount,
+      "markingSchema.subject.0.end": questionsCount,
+      "markingSchema.subject.0.totalQuestions": questionsCount,
+      "markingSchema.subject.0.totalMarks": questionsCount,
+      "markingSchema.subject.0.marks.0.totalMarks": questionsCount,
+      "markingSchema.subject.0.marks.0.end": questionsCount,
+      "markingSchema.subject.0.marks.0.numberOfQuestions": questionsCount,
+      "coins": questionsCount,
+      "questionPaperId": questionPaperId
+    }
+    const date = new Date(new Date(testTiming[0]["maxDate"]).getTime() + testTiming[0]["maxDuration"]*60000)
+    .toISOString().replace("T"," ").split(".")[0]
+    .replace(/-/g,"/").substring(2);
+  
+    const data = {
+      "date" : date,
+      "function":"couch_to_mongo",
+      "args" : {
+        "test_id" : testId,
+        "questionPaperId": questionPaperId,
+        "test_name": testTiming[0]["testName"], 
+        "tie_breaking_list":[],
+        "studentId" : null
+      }
+    }
+    await scheduleGA(data,req.user_cxt);
+    await TestSchema.update({testId},{$set: setObject});
+  }catch(err){
+    return res.status(500).send("internal server error.");
+  }
+}
+
+async function scheduleGA(data, user_cxt){
+  try{
+    const headers = {
+      "accesscontroltoken": user_cxt["token"]["accesscontroltoken"],
+      "authorization": user_cxt["token"]["authorization"]
+    }
+    await axios({ method: "POST", GA_SCHEDULER_URL, data , headers });
+  }catch(err){
+    throw err;
+  }
+}
+
+export async function getCMSTestStats(args, context) {
+  const {
+    classCode,
+    subjectCode,
+    chapterCode,
+    textbookCode,
+    branch,
+    orientation,
+    gaStatus
+  } = args;
+
+  // Textbook data;
+  const textbookMatchQuery = { active: true }
+  if (classCode ) textbookMatchQuery['refs.class.code'] = classCode;
+  if (subjectCode) textbookMatchQuery['refs.subject.code'] = subjectCode;
+  if (textbookCode) textbookMatchQuery['code'] = textbookCode;
+  if (branch) textbookMatchQuery['branches'] = { $in: [ branch, null ] };
+  if (orientation) textbookMatchQuery['orientations'] = { $in: [ orientation, null ] };
+
+
+  const [ TextbookSchema, TestSchema ] = await Promise.all([TextBook(context), Tests(context)]);
+  const docs = await TextbookSchema.find(textbookMatchQuery,{_id: 0, code: 1, 'refs.class.code': 1 })
+  if(!docs || !docs.length) return [];
+  // return docs;
+  const objectifyDocs = {};
+  docs.forEach(x => objectifyDocs[x.code] = x.refs.class.code);
+  let textbookCodes = docs.map(x => x.code);
+
+  // Content mapping
+  const contentAggregateQuery = [];
+  const contentMatchQuery = { active: true }
+  if(gaStatus){
+    contentMatchQuery["gaStatus"] = "finished";
+  }
+  // const contentTypeMatchOrData = getContentTypeMatchOrData("");
+  // if(contentTypeMatchOrData.length) contentMatchQuery['$or'] = contentTypeMatchOrData;
+  contentMatchQuery['mapping.textbook.code'] = { $in: textbookCodes };
+  if(chapterCode) contentMatchQuery['mapping.chapter.code'] = chapterCode;
+  contentAggregateQuery.push({$match: contentMatchQuery});
+  // return contentMatchQuery;
+  const contentGroupQuery = {
+    _id: {
+      textbookCode: '$mapping.textbook.code',
+    }, count: { $sum: 1 }
+  }
+  contentAggregateQuery.push({$group: contentGroupQuery });
+  const data = await TestSchema.aggregate(contentAggregateQuery).allowDiskUse(true);
+  const tempData = {}
+  data.forEach(x => {
+      const classCode = objectifyDocs[x._id.textbookCode]; 
+      const category = x._id.category;
+      if(!tempData[classCode]) tempData[classCode] = {};
+      if(!tempData[classCode][category]) tempData[classCode][category] = 0;
+      tempData[classCode][category] += x.count;
+  })
+  // return tempData;
+  const finalData = [];
+  for(let temp in tempData){
+    for(let key in tempData[temp]){
+      finalData.push({classCode: temp, category:"Test", count: tempData[temp][key]})
+    }
+  }
+  return finalData;
 }

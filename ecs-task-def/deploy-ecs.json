@@ -104,6 +104,13 @@
           {
             "name":"CACHE_TIMEOUT_STUDENT",
             "value":"A"
+          },
+          {
+            "name":"GA_SCHEDULER_URL",
+            "value":"https://rest.dev.rankguru.com/schedule"
+          },{
+            "name":"PARSER_SERVICE",
+            "value":"http://dev.elk.rankguru.com:7000/parse"
           }
         ],
         "logConfiguration": {

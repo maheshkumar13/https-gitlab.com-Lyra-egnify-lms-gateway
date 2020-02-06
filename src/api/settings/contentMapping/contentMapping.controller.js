@@ -262,7 +262,7 @@ function validateSheetAndGetData(req, dbData, textbookData, uniqueBranches) {
     
     if(obj['coins']) {
       const coins = parseInt(obj['coins']);
-      if (!Number.isInteger(coins) || coins < 0) {
+      if (!Number.isInteger(coins)) {
         result.success = false;
         result.message = `Invalid coins at row ${row}`;
       }
@@ -492,7 +492,7 @@ export async function uploadContentMappingv2(req, res) {
     // VALIDATING COINS
     const coins = parseInt(obj['coins']);
     if(obj['coins']) {
-      if (!Number.isInteger(coins) || coins < 0) {
+      if (!Number.isInteger(coins)) {
         errors.push(`Invalid coins at row ${row} (${obj['coins']})`);
       }
     }
@@ -1055,6 +1055,25 @@ function getContentTypeMatchOrData(contentCategory){
   return orData;
 }
 
+function getContentTypeMatchOrDataWithList(contentCategory){
+  const orData = [];
+  let contentTypes = config.CONTENT_TYPES || {};
+  if(contentCategory && contentCategory.length) {
+    contentCategory.forEach(x => {
+      if(contentTypes[x]){
+        orData.push({'content.category': x, 'resource.type': { $in: contentTypes[x]}});
+      } else {
+        orData.push({'content.category': x });
+      }
+    })
+    return orData;
+  }
+  for(let category in contentTypes){
+    orData.push({'content.category': category, 'resource.type': { $in: contentTypes[category]}});
+  }
+  return orData;
+}
+
 export async function getDashboardHeadersAssetCountV2(args, context) {
   const {
     classCode,
@@ -1109,7 +1128,12 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
     active: true,
     'refs.textbook.code': { $in: textbookCodes },
   };
-  const contentTypeMatchOrData = getContentTypeMatchOrData(contentCategory);
+
+  if(args.readingMaterialAudio === true) {
+    contentQuery['content.category'] = { $in: ['Reading Material']};
+    contentQuery['metaData.audioFiles'] = {$exists: true };
+  }
+  const contentTypeMatchOrData = getContentTypeMatchOrDataWithList(contentCategory);
   if(contentTypeMatchOrData.length) contentQuery['$or'] = contentTypeMatchOrData;
   
   if (chapterCode) contentQuery['refs.topic.code'] = chapterCode;
@@ -1125,6 +1149,9 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
       _id: `$${groupby}`,
       count: { $sum: 1 },
     }
+  }
+  if(args.readingMaterialAudio === true) {
+    aggregateQuery.push({$unwind: '$metaData.audioFiles'});
   }
   aggregateQuery.push(contentGroupQuery)
   const result = await ContentMapping.aggregate(aggregateQuery).allowDiskUse(true);
@@ -2094,7 +2121,7 @@ export async function getContentMappingUploadedDataLearn(args,context){
   const textbookQuery = { active: true, 'refs.class.code': {$in: Object.keys(classObj)}, 'refs.subject.code': { $in: Object.keys(subjectObj)} };
   if(args.textbookCode) textbookQuery.code = args.textbookCode;
   if(args.branch) textbookQuery.branches = { $in: [args.branch, '', null]};
-  if(args.orientation) textbookQuery.orientations = { $in: [args.orientations, '', null]};
+  if(args.orientation) textbookQuery.orientations = { $in: [args.orientation, '', null]};
   const textbookData = await Textbook.find(textbookQuery,{name: 1, code: 1, refs: 1, _id: 0});
   const textbookObj = {};
   textbookData.forEach( x => {
@@ -2135,11 +2162,18 @@ export async function getContentMappingUploadedDataLearn(args,context){
     })
     topicsFilter.push({'refs.textbook.code': textbookCode, 'refs.topic.code': { $in: codes }});
   })
-  const contentTypeMatchOrData = getContentTypeMatchOrData(args.contentCategory);
+
+  if(!topicsFilter.length) {
+    return {
+      count: 0,
+      data: []
+    }
+  }
+  const contentTypeMatchOrData = getContentTypeMatchOrDataWithList(args.contentCategory);
 
   const contentQuery = {
     active: true,
-    'content.category': { $nin: ['Practice', 'Tests', 'Take Quiz']},
+    'content.category': { $nin: ['Tests', 'Take Quiz']},
     $and: [{$or: topicsFilter},{$or: contentTypeMatchOrData }]
   }
   const skip = (args.pageNumber - 1) * args.limit;
@@ -2194,7 +2228,7 @@ export async function getContentMappingUploadedDataReadingMaterialAudio(args,con
   const textbookQuery = { active: true, 'refs.class.code': {$in: Object.keys(classObj)}, 'refs.subject.code': { $in: Object.keys(subjectObj)} };
   if(args.textbookCode) textbookQuery.code = args.textbookCode;
   if(args.branch) textbookQuery.branches = { $in: [args.branch, '', null]};
-  if(args.orientation) textbookQuery.orientations = { $in: [args.orientations, '', null]};
+  if(args.orientation) textbookQuery.orientations = { $in: [args.orientation, '', null]};
   const textbookData = await Textbook.find(textbookQuery,{name: 1, code: 1, refs: 1, _id: 0});
   const textbookObj = {};
   textbookData.forEach( x => {
@@ -2235,6 +2269,13 @@ export async function getContentMappingUploadedDataReadingMaterialAudio(args,con
     })
     topicsFilter.push({'refs.textbook.code': textbookCode, 'refs.topic.code': { $in: codes }});
   })
+
+  if(!topicsFilter.length) {
+    return {
+      count: 0,
+      data: []
+    }
+  }
   const contentTypeMatchOrData = getContentTypeMatchOrData(args.contentCategory);
 
   const contentQuery = {
@@ -2270,6 +2311,279 @@ export async function getContentMappingUploadedDataReadingMaterialAudio(args,con
       data
     }
   })
+}
+
+export async function publishPractice(req, res){
+  try{
+    const assetId = req.params.assetId;
+    if(!assetId){
+      return res.status(400).send("Asset id missing.");
+    }
+    const questionPaperId = req.body.questionPaperId;
+    if(!questionPaperId){
+      return res.status(400).send("Question paper id missing.");
+    }
+
+    const [ ContentSchema, QuestionSchema ] = await Promise.all([
+      ContentMappingModel(req.user_cxt), Questions(req.user_cxt)
+    ]);
+
+    const questionsCount = await QuestionSchema.count({questionPaperId});
+    if(!questionsCount){
+      return res.status(400).send("Invalid question paper id.");
+    }
+    const setObj = {
+      "resource.key": questionPaperId,
+      "coins": questionsCount,
+      "active": true
+    }
+
+    const contentMapping = await ContentSchema.findOneAndUpdate({assetId,"content.category":"Practice"},
+      {$set:setObj},{new: true}).select({_id: 1}).lean();
+      if(!contentMapping){
+        return res.status(400).send("Invalid asset id.");
+      }
+      return res.status(200).send("Success");
+  }catch(err){
+    return res.status(500).send("internal server error.")
+  }
+}
+
+function validateHeadersForPractice(data, errors, maxLimit) {
+  const mandetoryFields = [
+    'class', 'subject', 'textbook', 'chapter','test name'
+  ];
+  const headers  = [
+    'class', 'subject', 'textbook', 'chapter',
+    'test name', 'content type','file size', 'media type',
+    'view order','category', 'publish year', 'publisher',
+  ]
+  const sheetHeaders = Object.keys(data[0]);
+  let diffHeaders = _.difference(headers,sheetHeaders);
+
+  if(diffHeaders.length) {
+    errors.push(`${diffHeaders.toString()} headers not found`);
+    return errors;
+  }
+
+  for(let i = 0; i < data.length; i += 1){
+    const obj = data[i];
+    for (let j = 0; j < mandetoryFields.length; j += 1) {
+      if (!obj[mandetoryFields[j]]) {
+        errors.push(`${mandetoryFields[j].toUpperCase()} value not found for row ${i + 2}`);
+        if(errors.length > maxLimit) return errors;
+      }
+    }
+  }
+  return errors;
+}
+export async function uploadPracticeMapping(req, res) {
+  if (!req.file) return res.status(400).end('File required');
+  	// validate extension
+	const name = req.file.originalname.split('.');
+	const extname = name[name.length - 1];
+	if (extname !== 'xlsx') {
+	  return res.status(400).end('Invalid extension, please upload .xlsx file');
+	}
+  let data = getCleanFileData(req);
+  if(!data.length) {
+    return res.status(400).end('No data found');
+  }
+  if(data.length > 10000) {
+    return res.status(400).end('Limit exceeded, max rows 10k');
+  }
+  let errors = [];
+  const maxLimit = 1000;
+  errors = validateHeadersForPractice(data, errors, maxLimit);
+  
+  if(errors.length) {
+    return res.send({
+      success: false,
+      message: 'Invalid data',
+      errors,
+    })
+  }
+  const dbData = await getDbDataForValidation(req.user_cxt)
+  const ContentMapping = await ContentMappingModel(req.user_cxt);
+  const bulk = ContentMapping.collection.initializeUnorderedBulkOp();
+  const contentTypes = config.CONTENT_TYPES || {};
+
+  for(let i=0; i < data.length; i+=1) {
+    if(errors.length > maxLimit) {
+      return res.send({
+        success: false,
+        message: 'Invalid data',
+        errors,
+      })
+    }
+
+    const row = i+2;
+    const obj = data[i];
+
+    // VALIDATING CONTENT MEDIA TYPE
+    if( contentTypes && 
+        contentTypes["Practice"] && 
+        obj['media type'] &&
+        !contentTypes["Practice"].includes(obj['media type'].toLowerCase())
+      ) {
+      errors.push(`Invalid MEDIA TYPE at row ${row} (${obj['media type']}) for CONTENT CATEGORY (${obj['content category']})`);
+    }
+
+    // VALIDATING CATEGORY
+    const categories = ['A', 'B', 'C'];
+    if (obj.category && !categories.includes(obj.category)) {
+      errors.push(`Invalid CATEGORY at row ${row} (${obj.category})`);
+    }
+
+    // VALIDATING VIEW ORDER
+    const viewOrder = parseInt(obj['view order']);
+    if (!Number.isInteger(viewOrder) || viewOrder < 1) {
+      errors.push(`Invalid view order at row ${row}`);
+    }
+
+    const className = obj.class.toLowerCase();
+    const subjectName = obj.subject.toLowerCase();
+    const textbookName = obj.textbook.toLowerCase();
+    const chapterName = obj.chapter.toLowerCase();
+    
+    // VALIDATING CLASS
+    if(!dbData[className]) {
+      errors.push(`Invalid CLASS at row ${row} (${obj.class})`);
+      continue;
+    }
+
+    // VALIDATING SUBJECT
+    if(!dbData[className][subjectName]) {
+      errors.push(`Invalid SUBJECT at row ${row} (${obj.class}->${obj.subject})`);
+      continue;
+    }
+
+    // VALIDATING TEXTBOOK
+    if(!dbData[className][subjectName][textbookName]) {
+      errors.push(`Invalid TEXTBOOK at row ${row} (${obj.class}->${obj.subject}->${obj.textbook})`);
+      continue;
+    }
+    
+    // VALIDATING CHAPTER
+    const chapterObj = dbData[className][subjectName][textbookName][chapterName];
+    if(!chapterObj) {
+      errors.push(`Invalid CHAPTER at row ${row} (${obj.class}->${obj.subject}->${obj.textbook}->${obj.chapter})`);
+      continue;
+    }
+
+    if(errors.length) continue;
+
+    // PREPARING DATA OBJECT
+    const temp = {
+      content: {
+        name: obj['test name'],
+        category: "Practice",
+        type: obj['content type'] || null,
+      },
+      resource: {
+        size: obj['file size'] || 0,
+        type: obj['media type'] ? obj['media type'].toLowerCase() : null,
+      },
+      publication: {
+        publisher: obj.publisher || null,
+        year: obj['publish year'] || null,
+      },
+      timgPath: null,
+      category: obj.category || "",
+      viewOrder: viewOrder,
+      refs: {
+        topic: {
+          code: chapterObj.topicCode,
+        },
+        textbook : {
+          code: chapterObj.textbookCode,
+        },
+      },
+      "assetId" : obj['asset id'] || crypto.randomBytes(10).toString('hex')
+    };
+    bulk.find({assetId: temp.assetId}).upsert().updateOne(temp);
+  }
+if(errors.length) {
+  console.info('sending errors..')
+  return res.send({
+    success: false,
+    message: 'Invalid data',
+    errors,
+  })
+}
+console.info('bulk executing..')
+  return bulk.execute().then(() => {
+    console.info(req.file.originalname, 'Uploaded successfully....')
+    return res.send('Data inserted/updated successfully')
+  }).catch((err) => {
+    console.error(err);
+    return res.status(400).end('Error occured');
+  });
+}
+
+export async function getCMSPracticeStatsV2(args, context) {
+  const {
+    classCode,
+    subjectCode,
+    chapterCode,
+    textbookCode,
+    branch,
+    orientation,
+    gaStatus
+  } = args;
+
+  // Textbook data;
+  const textbookMatchQuery = { active: true }
+  if (classCode ) textbookMatchQuery['refs.class.code'] = classCode;
+  if (subjectCode) textbookMatchQuery['refs.subject.code'] = subjectCode;
+  if (textbookCode) textbookMatchQuery['code'] = textbookCode;
+  if (branch) textbookMatchQuery['branches'] = { $in: [ branch, null ] };
+  if (orientation) textbookMatchQuery['orientations'] = { $in: [ orientation, null ] };
+
+
+  const [ Textbook, ContentMapping ] = await Promise.all([TextbookModel(context), ContentMappingModel(context)]);
+  const docs = await Textbook.find(textbookMatchQuery,{_id: 0, code: 1, 'refs.class.code': 1 })
+  if(!docs || !docs.length) return [];
+  // return docs;
+  const objectifyDocs = {};
+  docs.forEach(x => objectifyDocs[x.code] = x.refs.class.code);
+  let textbookCodes = docs.map(x => x.code);
+
+  // Content mapping
+  const contentAggregateQuery = [];
+  const contentMatchQuery = { active: true,"content.category": "Practice" }
+  if(gaStatus){
+    contentMatchQuery["gaStatus"] = gaStatus;
+  }
+  
+  contentMatchQuery['refs.textbook.code'] = { $in: textbookCodes };
+  if(chapterCode) contentMatchQuery['refs.topic.code'] = chapterCode;
+  contentAggregateQuery.push({$match: contentMatchQuery});
+  // return contentMatchQuery;
+  const contentGroupQuery = {
+    _id: {
+      textbookCode: '$refs.textbook.code',
+      category: '$content.category'
+    }, count: { $sum: 1 }
+  }
+  contentAggregateQuery.push({$group: contentGroupQuery });
+  const data = await ContentMapping.aggregate(contentAggregateQuery).allowDiskUse(true);
+  const tempData = {}
+  data.forEach(x => {
+      const classCode = objectifyDocs[x._id.textbookCode]; 
+      const category = x._id.category;
+      if(!tempData[classCode]) tempData[classCode] = {};
+      if(!tempData[classCode][category]) tempData[classCode][category] = 0;
+      tempData[classCode][category] += x.count;
+  })
+  // return tempData;
+  const finalData = [];
+  for(let temp in tempData){
+    for(let category in tempData[temp]){
+      finalData.push({classCode: temp, category, count: tempData[temp][category]})
+    }
+  }
+  return finalData;
 }
 
 export async function publishQuiz(req, res){
