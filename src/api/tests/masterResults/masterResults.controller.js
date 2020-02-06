@@ -44,7 +44,7 @@ export async function getStudentList(req, res) {
   const branchName = req.user_cxt.hierarchy.map(x => x.childCode);
   const orientations = req.user_cxt.orientations;
   let skips = 0;
-  let limits = 100;
+  let limits = 0;
   if (Number(req.query.skip)){
     skips = Number(req.query.skip);
   }
@@ -78,7 +78,7 @@ export async function getStudentList(req, res) {
     res.status(404).send("studentId not found");
   }
   const studentNameArray = studentInfo.map(x => x._id.studentName);
-
+  
   const aggregationquery1 = [{
     $match: {
       questionPaperId: req.params.paperId,
@@ -86,8 +86,7 @@ export async function getStudentList(req, res) {
     }
   },
   { $skip: skips },
-  { $limit: limits }
-    , { $sort: { "updated_at": -1 } },
+  { $sort: { "updated_at": -1 } },
   { $project: { "cwuAnalysis._id": 0 } },
   {
     "$group": {
@@ -96,6 +95,9 @@ export async function getStudentList(req, res) {
       "obtainedMarks": { "$first": "$obtainedMarks" }
     }
   }];
+  if(limits){
+    aggregationquery1.splice(2,0,{ $limit: limits });
+  }
   const aggregationquery2 = [{
     $match: {
       questionPaperId: req.params.paperId,
