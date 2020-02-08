@@ -10,5 +10,8 @@ const express = require('express');
 const router = express.Router();
 
 const controller = require('./practiceAnalysis.controller');
+
 router.post('/practiceAnalysis/:questionPaperId', controller.getPracticeAnalysis);
+router.get('/practice-completion-stats',controller.getPracticeCompletionStats);
+
 module.exports = router;

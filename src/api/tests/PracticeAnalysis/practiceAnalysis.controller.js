@@ -1,6 +1,5 @@
-
 import { getModel as practiceanalysisModel } from './practiceanalysis.model';
-
+import { getModel as PracticceSummarySchema } from './practicesummary.model';
 
 export async function getPracticeAnalysis(req, res) {
     try {
@@ -33,4 +32,33 @@ export async function getPracticeAnalysis(req, res) {
         });
     };
 }
+
+export async function getPracticeCompletionStats(req, res){
+    try{
+        let { Branch, Orientation , Class, limit, skip } = req.query;
+        let getQuery = {}
+        if(Branch){
+            getQuery["branch"] = Branch
+        }
+        if(Orientation){
+            getQuery["orientation"] = Orientation
+        }
+        if(Class){
+            getQuery["class"] = Class
+        }
+        limit = parseInt(limit) ? limit : 0;
+        skip = parseInt(skip) ? skip : 0;
+        limit = parseInt(limit)
+        skip = parseInt(skip)
+        const PracticeSummary = await PracticceSummarySchema(req.user_cxt);
+        const [result,count] = await Promise.all([
+            PracticeSummary.find(getQuery).skip(skip).limit(limit).lean(),
+            PracticeSummary.count(getQuery)])
+        return res.status(200).send({result,count})
+    }catch(err){
+        console.log(err);
+        return res.status(500).send("internal server error");
+    }
+}
+
 export default { getPracticeAnalysis};
