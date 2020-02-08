@@ -36,9 +36,11 @@ export async function getPracticeAnalysis(req, res) {
 
 export async function getStudentWisePracticeStats(req, res){
     try{
-        const { Branch, Class, Orientation, Section, limit, skip} = req.query;
+        let { Branch, Class, Orientation, Section, limit, skip} = req.query;
         limit = parseInt(limit) ? limit : 0;
         skip = parseInt(skip) ? skip : 0;
+        limit = parseInt(limit)
+        skip = parseInt(skip)
         if( !Branch || !Class || !Orientation){
             return res.status(400).send("Bad Req.")
         }
@@ -83,7 +85,9 @@ export async function getStudentWisePracticeStats(req, res){
                             },
                             else: 0
                         }
-                    }
+                    },
+                    studentName: 1,
+                    _id: 0
                 }
             }
         ];
@@ -105,7 +109,7 @@ export async function getStudentWisePracticeStats(req, res){
 
         const StudentInfo = await StudentInfoSchema(req.user_cxt);
         let [results,count] = await Promise.all([
-            StudentInfo.aggregateQuery(aggregateQuery).allowDiskUSe(true),
+            StudentInfo.aggregate(aggregateQuery).allowDiskUse(true),
             StudentInfo.count(matchQuery["$match"])
         ]);
         return res.status(200).send({ results, count});        
