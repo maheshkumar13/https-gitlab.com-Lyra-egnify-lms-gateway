@@ -7,7 +7,7 @@ const instituteId = "Egni_u001"
 export async function practiceSummary() {
     // * * * * *
     // 0 1 * * * *
-    cron.schedule('* * * * * *', async () => {
+    cron.schedule('0 2 * * * *', async () => {
         try{
             let time = new Date().getMilliseconds();
             const Textbook = await TextbookSchema({instituteId});
