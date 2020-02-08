@@ -5,11 +5,14 @@ import { getModel as PracticeSummarySchema } from './practicesummary.model';
 const instituteId = "Egni_u001"
 
 export async function practiceSummary() {
-    cron.schedule('0 1 * * * *', () => {
+    // * * * * *
+    // 0 1 * * * *
+    cron.schedule('* * * * * *', async () => {
         try{
+            let time = new Date().getMilliseconds();
             const Textbook = await TextbookSchema({instituteId});
             const MasterResults = await MasterResultSchema({instituteId});
-            const PracticeSummary = await PracticeSummarySchema({instituteId});
+            const PracticeSummaryModel = await PracticeSummarySchema({instituteId});
             const aggregateQueryForContentMappings = [
                 {
                     "$match": {
@@ -64,29 +67,22 @@ export async function practiceSummary() {
                 },
                 {
                     "$unwind": "$branch"
-                },{
-                    "$lookup":{
-                        "from": "studentInfo",
-                        "let": { "class": "$class", "branch": "$branch", "orientation": "$orientation"},
-                        "pipeline": [{
-                            "$match":{
-                                "$expr":{
-                                    "$and":[
-                                        {"$eq": ["$hierarchyLevels.L_2", "$$class"]},
-                                        {"$eq": ["$hierarchyLevels.L_5", "$$branch"]},
-                                        {"$eq": ["$orientation", "$$orientation"]}
-                                    ]
-                                }
-                            }
-                        }],
-                        "as": "students"
+                },
+                {
+                    $group: {
+                           _id: {
+                               orientation: "$orientation",
+                               branch: "$branch",
+                               class: "$class"
+                           },
+                           numberOfPractices: {$sum: "$numberOfPractices"}
                     }
                 },
                 {
                     "$project": {
-                        "orientation": 1,
-                        "branch": 1,
-                        "class": 1,
+                        "orientation": "$_id.orientation",
+                        "branch": "$_id.branch",
+                        "class": "$_id.class",
                         "numberOfPractices": 1,
                         "numberOfStudents": {
                             "$cond": {
@@ -102,6 +98,26 @@ export async function practiceSummary() {
                     }
                 }
             ]
+
+            // {
+            //     "$lookup":{
+            //         "from": "studentInfo",
+            //         "let": { "class": "$_id.class", "branch": "$_id.branch", "orientation": "$_id.orientation"},
+            //         "pipeline": [{
+            //             "$match":{
+            //                 "$expr":{
+            //                     "$and":[
+            //                         {"$eq": ["$hierarchyLevels.L_2", "$$class"]},
+            //                         {"$eq": ["$hierarchyLevels.L_5", "$$branch"]},
+            //                         {"$eq": ["$orientation", "$$orientation"]}
+            //                     ]
+            //                 }
+            //             }
+            //         }],
+            //         "as": "students"
+            //     }
+            // },
+            
             const aggregateQueryForMasterResults = [
                 {
                     "$group": {
@@ -135,8 +151,10 @@ export async function practiceSummary() {
                     }
                 }
             ]
-            let aggregatedDataFromContentMappings = await Textbook.aggregate(aggregateQueryForContentMappings);
-            let aggregatedDataFromMasterResults = await MasterResults(aggregateQueryForMasterResults);
+            let aggregatedDataFromContentMappings = await Textbook.aggregate(aggregateQueryForContentMappings).allowDiskUse(true);
+            console.log(new Date().getMilliseconds() - time);
+            let aggregatedDataFromMasterResults = await MasterResults.aggregate(aggregateQueryForMasterResults).allowDiskUse(true);
+            console.log(new Date().getMilliseconds() - time);
             const lengthAggregatedDataFromContentMappings = aggregatedDataFromContentMappings.length;
             const lengthAggregatedDataFromMasterResults = aggregatedDataFromMasterResults.length;
             let indexed_aggregatedDataFromMasterResults = {};
@@ -150,8 +168,9 @@ export async function practiceSummary() {
                 aggregatedDataFromContentMappings[i]["branch"] + aggregatedDataFromContentMappings[i]["orientation"];
                 aggregatedDataFromContentMappings[i]["numberOfStudentsAttempted"] = indexed_aggregatedDataFromMasterResults[key];
             }
-            await PracticeSummary.remove({});
-            await PracticeSummary.insertMany(aggregatedDataFromContentMappings);
+            await PracticeSummaryModel.remove({});
+            await PracticeSummaryModel.create(aggregatedDataFromContentMappings);
+            console.log(new Date().getMilliseconds() - time);
         }catch(err){
             console.log(err);
         }

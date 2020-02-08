@@ -6,7 +6,7 @@ const practiceSummary = new mongoose.Schema({
     class: { type: String },
     numberOfPractices: { type: Number },
     numberOfStudents: { type: Number },
-    numberOfStudentsAttempted: { type: Number }
+    numberOfStudentsAttempted: { type: Number, default: 0 }
 }, {
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
     collection: 'practiceSummary'

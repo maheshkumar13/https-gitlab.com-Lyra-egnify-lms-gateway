@@ -35,7 +35,7 @@ export async function getPracticeAnalysis(req, res) {
 
 export async function getPracticeCompletionStats(req, res){
     try{
-        const { Branch, Orientation , Class, limit, skip } = req.query;
+        let { Branch, Orientation , Class, limit, skip } = req.query;
         let getQuery = {}
         if(Branch){
             getQuery["branch"] = Branch
@@ -48,6 +48,8 @@ export async function getPracticeCompletionStats(req, res){
         }
         limit = parseInt(limit) ? limit : 0;
         skip = parseInt(skip) ? skip : 0;
+        limit = parseInt(limit)
+        skip = parseInt(skip)
         const PracticeSummary = await PracticceSummarySchema(req.user_cxt);
         const [result,count] = await Promise.all([
             PracticeSummary.find(getQuery).skip(skip).limit(limit).lean(),
