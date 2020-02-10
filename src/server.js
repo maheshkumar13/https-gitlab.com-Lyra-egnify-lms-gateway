@@ -25,6 +25,7 @@ import seedDatabaseIfNeeded from './config/seed';
 import client from './redis';
 import { triggerTimeAnalysis } from './api/analysis/timeAnalysis/timeAnalysis.controller';
 import { practiceSummary } from './api/tests/PracticeAnalysis/practicesummarycron';
+import { TestSummary } from './api/tests/upload/testSummary.cron';
 const { ApolloEngine } = require('apollo-engine');
 const morgan = require('morgan');
 const cors = require('cors');
@@ -122,6 +123,7 @@ app.listen(config.port, () => {
   triggerTimeAnalysis.start();
   scheduleforUpdatePracticeAnalysis();
   practiceSummary();
+  TestSummary();
 });
 
 // Initialize engine with your API key. Alternatively,
