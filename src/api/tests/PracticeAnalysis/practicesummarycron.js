@@ -2,9 +2,10 @@ const cron = require('node-cron');
 import { getModel as TextbookSchema } from '../../settings/textbook/textbook.model';
 import { getModel as MasterResultSchema }from '../masterResults/masterResults.model';
 import { getModel as PracticeSummarySchema } from './practicesummary.model';
+import { getModel as StudentInfoModel } from '../../settings/student/student.model';
 const instituteId = "Egni_u001"
 
-export async function practiceSummary() {
+export function practiceSummary() {
     // * * * * *
     // 0 1 * * * *
     cron.schedule('0 2 * * * *', async () => {
@@ -13,6 +14,8 @@ export async function practiceSummary() {
             const Textbook = await TextbookSchema({instituteId});
             const MasterResults = await MasterResultSchema({instituteId});
             const PracticeSummaryModel = await PracticeSummarySchema({instituteId});
+            const StudentInfo = await StudentInfoModel({instituteId});
+
             const aggregateQueryForContentMappings = [
                 {
                     "$match": {
@@ -84,39 +87,35 @@ export async function practiceSummary() {
                         "branch": "$_id.branch",
                         "class": "$_id.class",
                         "numberOfPractices": 1,
-                        "numberOfStudents": {
-                            "$cond": {
-                                "if": {
-                                    "$isArray": "$students"
-                                },
-                                "then": {
-                                    "$size": "$students"
-                                },
-                                "else": 0
-                            }
-                        }
+                        _id: 0
                     }
                 }
             ]
 
-            // {
-            //     "$lookup":{
-            //         "from": "studentInfo",
-            //         "let": { "class": "$_id.class", "branch": "$_id.branch", "orientation": "$_id.orientation"},
-            //         "pipeline": [{
-            //             "$match":{
-            //                 "$expr":{
-            //                     "$and":[
-            //                         {"$eq": ["$hierarchyLevels.L_2", "$$class"]},
-            //                         {"$eq": ["$hierarchyLevels.L_5", "$$branch"]},
-            //                         {"$eq": ["$orientation", "$$orientation"]}
-            //                     ]
-            //                 }
-            //             }
-            //         }],
-            //         "as": "students"
-            //     }
-            // },
+            const aggregateQueryForStudentInfo = [{
+                $match: {
+                    active: true
+                }
+            }, {
+                $group: {
+                    _id: {
+                        class: "$hierarchyLevels.L_2",
+                        branch: "$hierarchyLevels.L_5",
+                        orientation: "$orientation"
+                    },
+                    count: {
+                        $sum: 1
+                    }
+                }
+            }, {
+                $project: {
+                    class: "$_id.class",
+                    branch: "$_id.branch",
+                    orientation: "$_id.orientation",
+                    _id: 0,
+                    numberOfStudents: "$count"
+                }
+            }]
             
             const aggregateQueryForMasterResults = [
                 {
@@ -145,32 +144,39 @@ export async function practiceSummary() {
                     "$project":{
                         "class": "$_id.class",
                         "branch": "$_id.branch",
-                        "orientation": "_id.orientation",
+                        "orientation": "$_id.orientation",
                         "noOfStudentAttemptedPractice": "$count",
                         "_id": 0
                     }
                 }
             ]
+
             let aggregatedDataFromContentMappings = await Textbook.aggregate(aggregateQueryForContentMappings).allowDiskUse(true);
-            console.log(new Date().getMilliseconds() - time);
             let aggregatedDataFromMasterResults = await MasterResults.aggregate(aggregateQueryForMasterResults).allowDiskUse(true);
-            console.log(new Date().getMilliseconds() - time);
+            let aggregatedDataFromStudentInfo = await StudentInfo.aggregate(aggregateQueryForStudentInfo).allowDiskUse(true);
             const lengthAggregatedDataFromContentMappings = aggregatedDataFromContentMappings.length;
             const lengthAggregatedDataFromMasterResults = aggregatedDataFromMasterResults.length;
+            const lengthAggregatedDataFromStudentInfo = aggregatedDataFromStudentInfo.length;
             let indexed_aggregatedDataFromMasterResults = {};
+            let indexed_aggregatedDataFromStudentInfo = {};
             for (let i = 0 ; i < lengthAggregatedDataFromMasterResults ; i++){
                 let key = aggregatedDataFromMasterResults[i]["class"] + 
                 aggregatedDataFromMasterResults[i]["branch"] + aggregatedDataFromMasterResults[i]["orientation"];
                 indexed_aggregatedDataFromMasterResults[key] = aggregatedDataFromMasterResults[i]["noOfStudentAttemptedPractice"];
             }
+            for(let i = 0; i < lengthAggregatedDataFromStudentInfo; i++ ){
+                let key = aggregatedDataFromStudentInfo[i]["class"] + 
+                aggregatedDataFromStudentInfo[i]["branch"] + aggregatedDataFromStudentInfo[i]["orientation"];
+                indexed_aggregatedDataFromStudentInfo[key] = aggregatedDataFromStudentInfo[i]["numberOfStudents"];
+            }
             for (let i = 0 ; i < lengthAggregatedDataFromContentMappings ; i++){
                 let key = aggregatedDataFromContentMappings[i]["class"] + 
                 aggregatedDataFromContentMappings[i]["branch"] + aggregatedDataFromContentMappings[i]["orientation"];
                 aggregatedDataFromContentMappings[i]["numberOfStudentsAttempted"] = indexed_aggregatedDataFromMasterResults[key];
+                aggregatedDataFromContentMappings[i]["numberOfStudents"] = indexed_aggregatedDataFromStudentInfo[key];
             }
             await PracticeSummaryModel.remove({});
             await PracticeSummaryModel.create(aggregatedDataFromContentMappings);
-            console.log(new Date().getMilliseconds() - time);
         }catch(err){
             console.log(err);
         }
