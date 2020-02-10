@@ -5,7 +5,7 @@ const practiceSummary = new mongoose.Schema({
     branch: { type: String },
     class: { type: String },
     numberOfPractices: { type: Number },
-    numberOfStudents: { type: Number },
+    numberOfStudents: { type: Number,default: 0 },
     numberOfStudentsAttempted: { type: Number, default: 0 }
 }, {
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
