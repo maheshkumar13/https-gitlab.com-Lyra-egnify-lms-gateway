@@ -5,11 +5,20 @@
 
 
 const express = require('express');
-
 const router = express.Router();
-import {convertOldTestToNewFormat , fetchEncryptedQuestions ,fetchDecryptionKey} from './test.upload.controller'
-router.get('/questions/:testId' , fetchEncryptedQuestions );
-router.get('/convert-old-to-new',convertOldTestToNewFormat);
-router.get('/decrypt-key',fetchDecryptionKey);
+const Multer = require('multer');
+
+const controller = require('./test.upload.controller');
+const timingController = require('../testTiming/testtiming.controller');
+const multer = Multer({
+    storage: Multer.MemoryStorage,
+    limits: {
+      fileSize: 5 * 1024 * 1024, // no larger than 5mb
+    },
+  });
+
+router.post('/upload-mapping', multer.single('file'), controller.uploadTestMapping)
+router.post('/upload-timing/:testId',multer.single('file'), controller.uploadTestiming)
+router.get('/testtiming/:testId', timingController.getTestTiming);
 
 module.exports = router

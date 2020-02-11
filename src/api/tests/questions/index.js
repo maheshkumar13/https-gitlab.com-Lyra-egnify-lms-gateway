@@ -17,5 +17,6 @@ const multer = Multer({
 router.post('/upload', multer.single('file'), controller.practiceParseAndValidate);
 router.post('/parser-status',controller.parserStatus);
 router.post('/publish', controller.publishPractice);
+router.post('/parse-file',multer.single('file'), controller.parseQuestionPaper);
 
 module.exports = router

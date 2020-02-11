@@ -41,12 +41,15 @@ const refCodesType = new ObjectType({
   name: 'ContentMappingRefCodesType',
   fields: {
     code: { type: StringType, description: 'Internal code of reference' },
+    name: { type: StringType, description: 'Name of the reference' },
   },
 });
 
 const refsType = new ObjectType({
   name: 'ContentMappingRefsType',
   fields: {
+    class: { type: refCodesType, description: 'Class reference '},
+    subject: { type: refCodesType, description: 'Subject reference '},
     textbook: { type: refCodesType, description: 'Textbook reference' },
     topic: { type: refCodesType, description: 'Topic reference' },
   },
@@ -68,6 +71,16 @@ export const ContentMappingType = new ObjectType({
     viewOrder: { type: IntType, description: 'view order' },
   },
 });
+
+export const ReadingMaterialAudioType = new ObjectType({
+  name: 'ReadingMaterialAudioType',
+  fields: {
+    filePath: { type: StringType, description: 'File path' },
+    audioFilePath: { type: StringType, description: 'Audio file path'},
+    audioFileName: { type: StringType, description: 'Audio file name'},
+  },
+});
+
 
 export const CmsCategoryStatsInputType = new InputType({
   name: 'CmsCategoryStatsInputType',
@@ -101,6 +114,7 @@ export const CategoryWiseFilesInputType = new InputType({
     category: { type: new NonNull(StringType), description: 'Name of the category' },
     branch: { type: StringType, description: 'Branch name' },
     orientation: { type: StringType, description: 'Orientaion name' },
+    gaStatus: { type: BooleanType, description: 'gaStatus type' },
     pageNumber: { type: IntType, description: 'Page number' },
     limit: { type: IntType, description: 'Limit of the records to be fetched' },
   },
@@ -139,8 +153,9 @@ export const DashboardHeadersAssetCountInputType = new InputType({
     textbookCode: { type: StringType, description: 'Code of the textBook' },
     branch: { type: StringType, description: 'Branch name' },
     orientation: { type: StringType, description: 'Orientaion name' },
-    contentCategory: { type: StringType, description: 'content category' },
+    contentCategory: { type: new List(StringType), description: 'content category' },
     header: { type: NonNull(DashboardHeaderEnumType), description: 'Header' },
+    readingMaterialAudio: { type: BooleanType, description: 'Default false, set true for headers count for the reading materials which has audios' },
   },
 });
 
@@ -218,6 +233,7 @@ export const FileDataOutputType = new ObjectType({
     subject: { type: StringType, description: 'subject to which the file belongs to' },
     textBookName: { type: StringType, description: 'Name of the textBook' },
     topicName: { type: StringType, description: 'Name of the topic' },
+    timgPath: { type: StringType, description: 'thumbnail path' },
     coins:{type:StringType},
     filePath :{type:StringType, description:'path of the file'},
     fileSize: {type:StringType,description: 'size of the file'},
@@ -303,6 +319,28 @@ export const TextbookBasedQuizOutputType = new ObjectType({
   }
 });
 
+export const CmsPracticeStatsInputType = new InputType({
+  name: 'CmsPracticeStatsInputType',
+  fields: {
+    classCode: { type: StringType, description: 'Code of the class' },
+    subjectCode: { type: StringType, description: 'Code of the subject' },
+    chapterCode: { type: StringType, description: 'Code of the chapter' },
+    textbookCode: { type: StringType, description: 'Code of the textBook' },
+    branch: { type: StringType, description: 'Branch name' },
+    orientation: { type: StringType, description: 'Orientaion name' },
+    gaStatus: {type: BooleanType, description: "filter for ga"}
+  },
+});
+
+export const CmsPracticeStatsOutputType = new ObjectType({
+  name: 'CmsPracticeStatsOutputType',
+  fields: {
+    classCode: { type: StringType, description: 'Class code' },
+    category: { type: StringType, description: 'Name of the category' },
+    count: { type: IntType, description: 'Count of the files which belongs to that category' },
+  },
+});
+
 export default {
   ContentMappingType,
   CmsCategoryStatsOutputType,
@@ -315,6 +353,8 @@ export default {
   UpdateContentInputType,
   UpdateMetaDataInputType,
   TextbookBasedQuizInputType,
-  TextbookBasedQuizOutputType
+  TextbookBasedQuizOutputType,
+  CmsPracticeStatsInputType,
+  CmsPracticeStatsOutputType
 };
 

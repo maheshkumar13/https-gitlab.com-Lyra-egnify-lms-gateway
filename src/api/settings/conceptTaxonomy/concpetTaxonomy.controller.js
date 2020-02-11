@@ -1,5 +1,8 @@
 import { getModel as ConcpetTaxonomyModel } from './concpetTaxonomy.model';
 import { getModel as TextbookModel} from '../textbook/textbook.model';
+import { getModel as InstituteHierarchyModel } from '../instituteHierarchy/instituteHierarchy.model';
+import { getModel as SubjectModel } from '../subject/subject.model';
+
 import { config } from '../../../config/environment';
 
 const crypto = require('crypto')
@@ -266,4 +269,224 @@ export async function fetchNodes(args, context){
 	return ConcpetTaxonomyModel(context).then((ConceptTaxonomy) => {
 		return ConceptTaxonomy.find(query);
 	})
+}
+
+function getCleanFileData(req){
+	const workbook = xlsx.read(req.file.buffer, {
+		type: 'buffer',
+		cellDates: true
+	  });
+
+	// converting the sheet data to array of of objects
+	const data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]],{defval:""});
+	// deleting empty string keys from all objects
+	data.forEach((v) => {
+		delete v[''];
+	}); // eslint-disable-line
+
+	// deleting all trailing empty rows
+	for (let i = data.length - 1; i >= 0; i -= 1) {
+		let values = Object.values(data[i]);
+		values = values.map(x => x.toString());
+		const vals = values.map(x => x.trim());
+		if (vals.every(x => x === '')) data.pop();
+		else break;
+	}
+
+	// trim and remove whitespace and chaging keys to lower case
+	data.forEach((obj) => {
+		const keys = Object.keys(obj);
+		for (let i = 0; i < keys.length; i += 1) {
+			const key = keys[i];
+			const lowerKey = key.toLowerCase();
+			obj[lowerKey] = obj[key].toString().replace(/\s\s+/g, ' ').trim();
+			if (key !== lowerKey) delete obj[key];
+		}
+	});
+	return data;
+}
+
+function validateAndGetData(data, classesData, subjectsData, textbooksData){
+  const result = {
+    success: false,
+    message: 'Invalid data',
+    errors: [],
+  };
+  const docs = [];
+  const maxErrorsLimit = 1000;
+  const mfields = ['class', 'subject', 'textbook', 'code', 'chapter', 'view order']
+  for (let i = 0; i < data.length; i += 1) {
+      const obj = data[i];
+      for (let j = 0; j < mfields.length; j += 1) {
+        if (!obj[mfields[j]]) {
+          result.errors.push(`${mfields[j].toUpperCase()} not found at row ${i + 1}`);
+          if(result.errors.length > maxErrorsLimit) {
+            return [result, docs]
+          }
+        } else if(mfields[j] === 'view order' && !parseInt(obj[mfields[j]])) {
+          result.errors.push(`Invalid VIEW ORDER at row ${i+1} (${obj['view order']})`);
+          if(result.errors.length > maxErrorsLimit) {
+            return [result, docs]
+          } 
+        }
+      }
+    }
+	const allbooks = [];
+	data.forEach(obj => {
+		if(!allbooks.find(x => x.class === obj.class && x.subject === obj.subject && x.textbook === obj.textbook)){
+			const temp = {
+				class: obj.class,
+				subject: obj.subject,
+				textbook: obj.textbook,
+				chapters: [],
+			}
+			const fl = data.filter(x => x.class === obj.class && x.subject === obj.subject && x.textbook === obj.textbook)
+			fl.forEach(x => {
+				temp.chapters.push({
+					name: x.chapter,
+					order: x['view order'],
+					code: x.code,
+				})
+			})
+			allbooks.push(temp);
+		}
+  })
+  
+	for(let i = 0; i < allbooks.length; i += 1) {
+		const obj = allbooks[i];
+		if(!obj) continue;
+    
+    // Class level validation
+    const classObj = classesData.find(x => x.class.toLowerCase() === obj.class.toLowerCase())
+		if(!classObj) {
+      result.errors.push(`Invalid CLASS (${obj.class})`);
+			continue;
+		}
+		obj.classCode = classObj.classCode;
+    obj.class = classObj.class;
+    
+    // Subject level validation
+		const subjectObj = subjectsData.find(x => x.classCode === obj.classCode && x.subject.toLowerCase() === obj.subject.toLowerCase())
+		if(!subjectObj) {
+      result.errors.push(`Invalid SUBJECT (${obj.class}->${obj.subject})`);
+			continue;
+		}
+		obj.subject = subjectObj.subject;
+    obj.subjectCode = subjectObj.subjectCode;
+    
+    // Textbook level validation
+		const textbookObj = textbooksData.find(x => x.classCode === obj.classCode && x.subjectCode === obj.subjectCode && x.textbook.toLowerCase() === obj.textbook.toLowerCase())
+		if(!textbookObj) {
+      result.errors.push(`Invalid TEXTBOOK (${obj.class}->${obj.subject}->${obj.textbook})`);
+			continue;
+		}
+    obj.textbookCode = textbookObj.code;
+    
+    // Validating codes
+		const codes = obj.chapters.map(x => x.code);
+		let ucodes = new Set(codes);
+		ucodes = Array.from(ucodes);
+		if(codes.length !== ucodes.length) {
+      result.errors.push(`Duplicate CODES in (${obj.class}->${obj.subject}->${obj.textbook})`);
+    }
+
+    // Validating chapters
+		const names = obj.chapters.map(x => x.name)
+		let unames = new Set(names);
+		unames = Array.from(unames);
+		if(names.length !== unames.length){
+      result.errors.push(`Duplicate CHAPTERS in (${obj.class}->${obj.subject}->${obj.textbook})`);
+    }
+    
+    // Validating view orders
+		const orders = obj.chapters.map(x => x.order)
+		for(let i=1; i<=orders.length; i++){
+			if(!orders.includes(i.toString())) {
+        result.errors.push(`Invalid VIEW ORDERS in (${obj.class}->${obj.subject}->${obj.textbook})`);
+				break;
+			}
+    }
+
+    if(result.errors.length > maxErrorsLimit) {
+      return [result, docs]
+    }
+    
+		obj.chapters.forEach(x => {
+			const temp = {
+				'levelName': 'topic',
+				'parentCode': obj.subjectCode,
+				'active': true,
+				'viewOrder': parseInt(x.order),
+				'child': x.name,
+				'childCode': Date.now() + crypto.randomBytes(5).toString('hex'),
+				'code': x.code,
+				'refs': {
+					'textbook': {
+						'name': obj.textbook,
+						'code': obj.textbookCode,
+					}
+				}
+			}
+			docs.push(temp)
+		})
+	}
+	if(!result.errors.length) result.success = true;
+	return [result, docs]
+}
+
+export async function uploadTextbookChapters(req,res) {
+	if (!req.file) return res.status(400).end('File required');
+	// validate extension
+	const name = req.file.originalname.split('.');
+	const extname = name[name.length - 1];
+	if (extname !== 'xlsx') {
+	  return res.status(400).end('Invalid extension, please upload .xlsx file');
+	}
+  let data = getCleanFileData(req);
+  if(!data.length) {
+    return res.status(400).end('No data found');
+  }
+	const [
+		InstituteHierarchy,
+		Subject,
+    Textbook,
+    ConcpetTaxonomy,
+	] = await Promise.all([
+		InstituteHierarchyModel(req.user_cxt),
+		SubjectModel(req.user_cxt),
+    TextbookModel(req.user_cxt),
+    ConcpetTaxonomyModel(req.user_cxt),
+	])
+	const [
+		classesData,
+		subjectsData,
+		textbooksData
+	] = await Promise.all([
+		InstituteHierarchy.aggregate([{$match:{levelName: 'Class'}},{$project:{_id: 0, class: '$child', classCode: '$childCode'}}]),
+		Subject.aggregate([{$match: { active: true}},{$project: {subject: 1, classCode: '$refs.class.code', subjectCode: '$code',_id: 0 }}]),
+		Textbook.aggregate([{$match: {active: true }},{$project: {code: 1, name: 1, refs: 1, _id: 0}},{$project: {textbook: '$name', subjectCode: '$refs.subject.code', classCode: '$refs.class.code', code: 1}}]),
+	]).catch(err => {
+		console.error(err);
+	})
+	let result = {};
+	try {
+	[ result, data ] = validateAndGetData(data, classesData, subjectsData, textbooksData);
+	} catch(err) {
+		console.error(err);
+	}	
+	if (!result.success) {
+    return res.send(result);
+  }
+  const textbookCodes = data.map(x => x.refs.textbook.code);
+  return ConcpetTaxonomy.deleteMany({ 'refs.textbook.code': { $in: textbookCodes }})
+    .then(() => {
+      return ConcpetTaxonomy.create(data).then(() => {
+        return res.send({
+          message: 'Succeccfully inserted'
+        })
+      })
+    }).catch(err => {
+      console.error(err);
+      return res.status(400).end('Something went wrong');
+    })
 }

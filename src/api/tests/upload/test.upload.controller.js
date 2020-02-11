@@ -1,65 +1,38 @@
 import {
   getModel as Tests
-} from './test.upload.model';
-import {
-  getModel as Questions
-} from '../questions/questions.model';
-import {
-  getModel as OldTest
-} from '../../settings/contentMapping/contentMapping.model';
+} from './test.model';
 
 import {
   getModel as TextBook
 } from '../../settings/textbook/textbook.model';
+const xlsx = require('xlsx');
+
 import {
-  getModel as MasterResult
-} from '../masterResults/test.masterResults.model';
-import { getStudentDetailsById } from '../../settings/student/student.controller';
-import { getModel as TestSnapshot } from './testsnapshot.model';
+  getModel as Chapter
+} from '../../settings/conceptTaxonomy/concpetTaxonomy.model'
 
-const couchdb = require("../../../utils/couch");
+import {
+  getModel as TestTimings
+} from '../testTiming/testtiming.model'
 
-const encrypt = require('../../../utils/encrypt');
-const request = require("request");
-const config = require('../../../config/environment')["config"];
-const fileUpload = require('../../../utils/fileUpload');
-const uuidv1 = require('uuid/v1');
+const uuidv4 = require("uuid/v4");
+import {getModel as Hierarchy} from '../../settings/instituteHierarchy/instituteHierarchy.model';
+import {getModel as Subject} from '../../settings/subject/subject.model';
+const MAPPING_HEADERS = ["class","subject","textbook","chapter","test name","view order"]
+const SUPPORTED_MEDIA_TYPE = ["docx","xlsx","xml"];
+const TEST_TIMING_HEADERS = ["branches","end date","start date","duration"];
 
 function queryForListTest(args) {
   let query = {
-    find: {
-      active: true
-    },
     search: {},
     sort: {
       "test.date": -1
     }
   }
-  if (args.classCode) {
-    query["find"]["mapping.class.code"] = args.classCode;
-  }
-  if (args.textbookCode) {
-    query["find"]["mapping.textbook.code"] = args.textbookCode;
-  }
-  if (args.subjectCode) {
-    query["find"]["mapping.subject.code"] = args.subjectCode;
-  }
-
-  if (args.branch) {
-    query["find"]["branches"] = args.branch;
-  }
-
-  if (args.orientation) {
-    query["find"]["orientations"] = args.orientation;
-  }
 
   if (args.searchQuery) {
     query["search"]["value"] = args.searchQuery;
     query["search"]["fields"] = ["mapping.subject.name", "test.name", "mapping.textbook.name", "mapping.class.name"]
-  }
-
-  if(args.gaStatus){
-    query["find"]["gaStatus"] = args.gaStatus;
   }
 
   if (args.sortOrder === "asc") {
@@ -71,16 +44,59 @@ function queryForListTest(args) {
 
 }
 
+function getFileData(req){
+	const workbook = xlsx.read(req.file.buffer, {
+		type: 'buffer',
+		cellDates: true
+	  });
+
+	// converting the sheet data to array of of objects
+	const data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]],{defval:""});
+	// deleting empty string keys from all objects
+	data.forEach((v) => {
+		delete v[''];
+	}); // eslint-disable-line
+
+	// deleting all trailing empty rows
+	for (let i = data.length - 1; i >= 0; i -= 1) {
+		let values = Object.values(data[i]);
+		values = values.map(x => x.toString());
+		const vals = values.map(x => x.trim());
+		if (vals.every(x => x === '')) data.pop();
+		else break;
+	}
+
+	// trim and remove whitespace and changing keys to lower case
+	data.forEach((obj) => {
+		const keys = Object.keys(obj);
+		for (let i = 0; i < keys.length; i += 1) {
+			const key = keys[i];
+			const lowerKey = key.toLowerCase();
+			obj[lowerKey] = obj[key].toString().replace(/\s\s+/g, ' ').trim();
+			if (key !== lowerKey) delete obj[key];
+		}
+	});
+	return data;
+}
+
 export async function listTest(args, ctx) {
   try {
     const queries = queryForListTest(args);
+    let activeStatus = true;
+    if(args.active === false) {
+      activeStatus = false
+    } 
+    let find = {"mapping.textbook.code":{"$in": args.textbookCode}, active: activeStatus};
+    if(args.gaStatus){
+      find["gaStatus"] = args.gaStatus
+    }
     const TestSchema = await Tests(ctx);
     let limit = args.limit ? args.limit : 0;
     let skip = args.pageNumber ? args.pageNumber - 1 : 0;
     let data = await TestSchema.dataTables({
       limit: limit,
       skip: skip * limit,
-      find: queries.find,
+      find: find,
       search: queries.search,
       sort: queries.sort,
     });
@@ -97,348 +113,6 @@ export async function listTest(args, ctx) {
     return data
   } catch (err) {
     throw err;
-  }
-}
-
-function validateTestInfo(args) {
-  if (new Date(args.startTime) == "Invalid Date") {
-    throw "Invalid start time.";
-  } else if (new Date(args.startTime).getTime() <= new Date().getTime()) {
-    console.log(new Date(args.startTime).getTime(), new Date().getTime());
-    throw "Invalid start time.";
-  }
-  if (new Date(args.endTime) == "Invalid Date") {
-    throw "Invalid end time.";
-  } else if (new Date(args.endTime).getTime() <= new Date().getTime()) {
-    throw "Invalid end time.";
-  }
-  if (new Date(args.testDate) == "Invalid Date") {
-    throw "Invalid test date.";
-  } else if (new Date(args.testDate).getTime() <= new Date().getTime()) {
-    throw "Invalid test date.";
-  }
-  if (!compareDays(args.startTime, args.testDate)) {
-    throw "Date mismatch.";
-  }
-
-  if ((new Date(args.endTime).getTime() - new Date(args.startTime).getTime()) < parseInt(args.testDuration)) {
-    throw "End time minus starttime cannot be samller than test duration.";
-  }
-  return '';
-}
-
-export async function parseAndValidateTest(args, ctx) {
-  try {
-    validateTestInfo(args); //validaion of user inputs
-    let lang = "english";
-    //'hindi','telugu','tamil','kannada','sanskrit'
-    if (args.subjectName.toLowerCase() === "telugu" ||
-      args.subjectName.toLowerCase() === "hindi" ||
-      args.subjectName.toLowerCase() === "tamil" ||
-      args.subjectName.toLowerCase() === "kannada" ||
-      args.subjectName.toLowerCase() === "sanskrit") {
-      lang = args.subjectName.toLowerCase();
-    }
-    let data = await fileUpload.s3GetFileData(args.fileKey);
-    const mimeType = {
-      "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "xml": "text/xml"
-    }
-    const file_id = args.fileKey;
-    const url = config.parser.uri + "?subject=" + lang + "&file_id=" + file_id;
-    const file_data = data.data;
-    const option = {
-      method: "POST",
-      url: url
-    }
-    const name = args.fileKey.split("/")[1];
-    const contetType = mimeType[name.split(".").pop()];
-    let parsedData = await parseFile(option, name, contetType, file_data);
-    const paper_id = uuidv1();
-    args["paper_id"] = paper_id;
-    const orientationsAndBranches = await getOrientationAndBranches(args.textbookCode, req.user_cxt);
-    if (orientationsAndBranches) {
-      throw "Invalid textbook"
-    } else {
-      args["orientations"] = orientationsAndBranches["orientations"];
-      args["branches"] = orientationsAndBranches["branches"];
-    }
-    let test = await createTest(args, ctx);
-    const jsonifiedData = JSON.parse(parsedData);
-    let errorQuestions = jsonifiedData.filter((question) => {
-      return question.errors.length > 0;
-    });
-    let errorQuestionNumbers = errorQuestions.map((question) => {
-      return question.qno;
-    });
-    let percentageError = (errorQuestions.length / jsonifiedData.length) * 100;
-    await setQuestionInDb(jsonifiedData, ctx, paper_id, args.fileKey);
-    return {
-      jsonifiedData,
-      percentageError,
-      errorQuestionNumbers,
-      test_id: test["_id"]
-    };
-  } catch (err) {
-    console.log(err);
-    throw err;
-  }
-}
-
-export async function updateTest(args, ctx) {
-  try {
-    validateTestInfo(args);
-    const orientationsAndBranches = await getOrientationAndBranches(args.textbookCode, req.user_cxt);
-    if (orientationsAndBranches) {
-      throw "Invalid textbook"
-    } else {
-      args["orientations"] = orientationsAndBranches["orientations"];
-      args["branches"] = orientationsAndBranches["branches"];
-    }
-    await updateTestInfo(args, ctx);
-    return {
-      message: "Test updated successfully."
-    }
-  } catch (err) {
-    throw err;
-  }
-}
-
-async function updateTestInfo(args, ctx) {
-  try {
-    const TestSchema = await Tests(ctx);
-    const updatedTest = await TestSchema.findOneAndUpdate({
-      _id: args.id
-    }, {
-      $set: createUpdateObject(args)
-    }, {
-      new: true
-    });
-    if (updatedTest) {
-      return updatedTest
-    } else {
-      throw "No such test available";
-    }
-  } catch (err) {
-    throw err;
-  }
-}
-
-function createUpdateObject(args) {
-  let updateQuery = {}
-  updateQuery["test.startTime"] = args.startTime
-  updateQuery["test.endTime"] = args.endTime
-  updateQuery["test.date"] = args.testDate
-  updateQuery["test.duration"] = args.testDuration
-  updateQuery["test.name"] = args.test_name
-  updateQuery["mappings.class.code"] = args.classCode
-  updateQuery["mappings.class.name"] = args.className
-  updateQuery["mappings.subject.code"] = args.subjectCode
-  updateQuery["mappings.subject.name"] = args.subjectName
-  updateQuery["mappings.textbook.name"] = args.textbooName
-  updateQuery["mappings.textbook.code"] = args.textbookCode
-  updateQuery["orientations"] = args.orientations
-  updateQuery["branches"] = args.branches
-  updateQuery["markingScheme"] = args.markingScheme
-  return updateQuery;
-}
-
-//This function takes in any number of date object as parameter and return whether they are equal in terms of year, month and date.
-function compareDays() {
-  let compare = true;
-  let dateInfo = {
-    "year": null,
-    "month": null,
-    "day": null
-  };
-  if (arguments.length <= 1) {
-    return "Pass atleast two dates to a compare day."
-  }
-  for (let i = 0; i < arguments.length; i++) {
-    if (dateInfo.year && (new Date(arguments[i]).getFullYear() != dateInfo.year)) {
-      compare = false;
-      break;
-    } else {
-      dateInfo.year = new Date(arguments[i]).getFullYear();
-    }
-    if (dateInfo.month && (new Date(arguments[i]).getMonth() != dateInfo.month)) {
-      compare = false;
-      break;
-    } else {
-      dateInfo.month = new Date(arguments[i]).getMonth();
-    }
-    if (dateInfo.day && (new Date(arguments[i]).getDate() != dateInfo.day)) {
-      compare = false;
-      break;
-    } else {
-      dateInfo.day = new Date(arguments[i]).getDate();
-    }
-  }
-  return compare;
-}
-
-async function getOrientationAndBranches(textbookCode, ctx) {
-  try {
-    const TextBookSchema = await TextBook(ctx);
-    return await TextBookSchema.findOne({
-      code: textbookCode
-    }).select({
-      orientations: 1,
-      branches: 1,
-      _id: 0
-    }).lean();
-  } catch (err) {
-    throw err;
-  }
-}
-
-async function setQuestionInDb(questions, ctx, qpid, filePath) {
-  try {
-    for (let i = 0; i < questions.length; i++) {
-      questions[i]["questionPaperId"] = qpid;
-    }
-    const QuestionsSchema = await Questions(ctx);
-    await QuestionsSchema.create(questions);
-    return true;
-  } catch (err) {
-    throw new Error(err);
-  }
-}
-
-async function parseFile(option, filename, contentType, data) {
-  return new Promise(function (resolve, reject) {
-    console.log(option);
-    var req = request(option, function (err, resp, body) {
-      if (err) {
-        reject(err);
-      } else {
-        if (resp.statusCode !== 200) {
-          reject("Parse Error");
-        } else {
-          resolve(body);
-        }
-      }
-    });
-    var form = req.form();
-    form.append('file', data, {
-      filename: filename,
-      contentType: contentType
-    });
-  });
-}
-
-function createObjectForTestMapping(args) {
-  return {
-    mapping: {
-      class: {
-        code: args.classCode,
-          name: args.className
-      },
-      subject: {
-        code: args.subjectCode,
-        name: args.subjectName
-      },
-      textbook: {
-        code: args.textbookCode,
-        name: args.textbooName
-      }
-    },
-    test: {
-      name: args.test_name,
-      startTime: new Date(args.startTime),
-      endTime: new Date(args.endTime),
-      date: new Date(args.testDate),
-      duration: parseInt(args.testDuration),
-      paper_id: args.paper_id
-    },
-    markingScheme: args.markingScheme,
-    fileKey: args.fileKey,
-    active: false,
-    branches: args.branches,
-    orientations: args.orientations
-  }
-}
-
-async function createTest(args, ctx) {
-  try {
-    const TestSchema = await Tests(ctx);
-    return await TestSchema.create(createObjectForTestMapping(args));;
-  } catch (err) {
-    throw err;
-  }
-}
-
-export async function publishTest(args, ctx) {
-  try {
-    const TestSchema = await Tests(ctx);
-    let result = await TestSchema.findOneAndUpdate({
-      _id: args.id
-    }, {
-      $set: {
-        active: true
-      }
-    }, {
-      new: true
-    });
-    if (result) {
-      return {
-        "message": "Test published successfully."
-      };
-    } else {
-      return {
-        "message": "No such test availbale."
-      };
-    }
-  } catch (err) {
-    throw err;
-  }
-}
-
-export async function convertOldTestToNewFormat(req, res) {
-  try {
-    const OldTestSchema = await OldTest(req.user_cxt);
-    let ExistingTestsInOldFormat = await OldTestSchema.aggregate([{
-        $match: {
-          "content.category": "Tests",
-          active: true
-        }
-      },
-      {
-        $lookup: {
-          from: "textbooks",
-          localField: "refs.textbook.code",
-          foreignField: "code",
-          as: "mapping"
-        }
-      },
-      {
-        $unwind: "$mapping"
-      },
-      {
-        $project: {
-          "_id": 0,
-          "active": 1,
-          "mapping.class.code": "$mapping.refs.class.code",
-          "mapping.class.name": "$mapping.refs.class.name",
-          "mapping.subject.code": "$mapping.refs.subject.code",
-          "mapping.subject.name": "$mapping.refs.subject.name",
-          "mapping.textbook.code": "$mapping.code",
-          "mapping.textbook.name": "$mapping.name",
-          "test.name": "$content.name",
-          "test.questionPaperId": "$resource.key",
-          "branches": "$mapping.branches",
-          "orientations": "$mapping.orientations"
-        }
-      }
-    ]);
-    const TestSchema = await Tests(req.user_cxt);
-    console.log(ExistingTestsInOldFormat.length);
-    await TestSchema.create(ExistingTestsInOldFormat);
-    return res.status(200).send("Converted old format to new one");
-  } catch (err) {
-    console.log(err);
-    return res.status(500).send("Internal server error");
   }
 }
 
@@ -486,499 +160,713 @@ export async function listTextBooksWithTestSubectWise(args, ctx) {
   }
 }
 
-export async function listUpcomingTestTextBookWise(args, ctx) {
-  try {
-    let promises = await Promise.all([Tests(ctx),await MasterResult(ctx)])
-    const TestSchema = promises[0];
-    const TestList = await TestSchema.aggregate([{
-      "$match": {
-        "test.endTime": {
-          $gte: new Date()
-        },
-        active: true,
-        "mapping.textbook.code": args.textbookCode
-      }
-    },{
-      $sort : {"test.endTime":1}
-    },{
-      $lookup: {
-        from: "markingschemes",
-        localField: "markingScheme",
-        foreignField: "_id",
-        as: "markingAnalysis"
-      }
-    }, {
-      $unwind: "$markingAnalysis"
-    }, {
-      $project: {
-        _id: 0,
-        "totalMarks": "$markingAnalysis.totalMarks",
-        "totalQuestions": "$markingAnalysis.totalQuestions",
-        "test": 1
-      }
-    }]);
-    const questionPaperIds = TestList.map((obj) => obj["test"]["questionPaperId"]);
-    const MasterResultSchema = promises[1];
-    const testAlreadySubmittedByStudent = (await MasterResultSchema.find({
-      questionPaperId: {
-        $in: questionPaperIds
-      },
-      studentId: ctx.studentId,
-      status : { $ne : "SUBMITTED" }
-    }).select({
-      _id: 0,
-      questionPaperId: 1
-    })).map((obj) => obj.questionPaperId);
-    return appendIsTestActive(TestList, testAlreadySubmittedByStudent);
-  } catch (err) {
-    throw err;
-  }
-}
+export async function getDashboardHeadersAssetCountV2(args, context) {
+  const {
+    classCode,
+    subjectCode,
+    chapterCode,
+    textbookCode,
+    branch,
+    orientation,
+    header
+  } = args;
+  let groupby = 'code';
+  if(header === 'class') groupby = 'refs.class.code';
+  else if (header === 'branch') groupby = 'branches';
+  else if (header === 'orientation') groupby = 'orientations';
+  else if (header === 'subject') groupby = 'refs.subject.code';
 
-export async function listOfCompletedTestTextBookWise(args , ctx){
-  try{
-    let promises = await Promise.all([Tests(ctx),MasterResult(ctx)]);
-    const TestSchema = promises[0];
-    const MasterResultSchema = promises[1];
-    const TestList = await TestSchema.find({
-      "mapping.textbook.code":args.textbookCode,
-      "test.startTime":{ "$lte" : new Date()}
-    }).select({_id : 0,test:1});
-    const questionPaperIds = TestList.map((obj)=> obj.test.questionPaperId);
-    const markingAnalysis = await MasterResultSchema.find({ studentId : ctx.studentId,questionPaperId:{$in:questionPaperIds},status : "SUBMITTED"}).select({_id:0}).lean();
-    return appendMarkingAnalysis(TestList,markingAnalysis);
-  }catch(err){
-    throw err
-  }
-}
+  const textbookAggregateQuery = [];
 
-function appendIsTestActive(testArr, testAlreadySubmittedByStudent) {
-  let finalUpcomingTest = [];
-  for (let i = 0; i < testArr.length; i++) {
-    if (testAlreadySubmittedByStudent.indexOf(testArr[i]["test"]["questionPaperId"]) > -1) {
-      continue;
-    }
-    testArr[i]["activeNow"] = new Date(testArr[i]["test"]["startTime"]).getTime() > new Date().getTime() ? false : true;
-    finalUpcomingTest.push(testArr[i]);
-  }
-  return finalUpcomingTest;
-}
+  const textbookMatchQuery = { active: true }
+  if (classCode ) textbookMatchQuery['refs.class.code'] = classCode;
+  if (subjectCode) textbookMatchQuery['refs.subject.code'] = subjectCode;
+  if (textbookCode) textbookMatchQuery['code'] = textbookCode;
+  if (branch) textbookMatchQuery['branches'] = { $in: [ branch, null ] };
+  if (orientation) textbookMatchQuery['orientations'] = { $in: [ orientation, null ] };
+  textbookAggregateQuery.push({ $match: textbookMatchQuery });
 
-function appendMarkingAnalysis(possibleListOfCompletedTests,completedTests){
-  let finalCompletedTest = [];
-  for(let i=0; i < possibleListOfCompletedTests.length; i++){
-    let qPid = possibleListOfCompletedTests[i]["test"]["questionPaperId"];
-    let indexOfCompletedTest = completedTests.findIndex((obj)=>{
-      return qPid === obj["questionPaperId"]
-    });
-    if(indexOfCompletedTest > -1){
-      let obj = JSON.parse(JSON.stringify(possibleListOfCompletedTests[i]));
-      obj["markingAnalysis"] = completedTests[indexOfCompletedTest];
-      finalCompletedTest.push(obj);
-    }else if( indexOfCompletedTest === -1 &&   (new Date(possibleListOfCompletedTests[i]["test"]["endTime"]).getTime() < new Date().getTime())){
-      let obj = JSON.parse(JSON.stringify(possibleListOfCompletedTests[i]));
-      obj["markingAnalysis"] = null;
-      finalCompletedTest.push(obj);
+  if(header === 'branch') textbookAggregateQuery.push({$unwind: '$branches'})
+  if(header === 'orientation') textbookAggregateQuery.push({$unwind: '$orientations'})
+
+  const textbookGroupQuery = {
+    $group: {
+      _id: `$${groupby}`,
+      textbookCodes: { $push: '$code' }
     }
   }
-  return finalCompletedTest
-}
+  textbookAggregateQuery.push(textbookGroupQuery);
 
-export async function fetchEncryptedQuestions( req, res){
-  try{
-    if(!req.params.testId){
-      return res.status(400).send("test id is required.")
-    }
-    let testId = req.params.testId;
-    let findQuery = {questionPaperId : testId};
-    if(req.query.questionNo){
-      findQuery["qno"] = req.query.questionNo;
-    }    
-    const QuestionModel = await Questions(req.user_cxt);
-    let questions = await QuestionModel.find(findQuery).select({_id : 0 ,question:1,qno:1, subject : 1,q_type :1,q_category:1,options : 1,questionPaperId : 1}).lean();
-    if(questions.length){
-      return res.status(200).send(encrypt.encriptObject(questions));
-    }else{
-      return res.status(204).send("No Content");
-    }
-  }catch(err){
-    console.error(err);
-    return res.status(500).send("Internal server error");
-  }
-}
+  const [ Textbook, ContentMapping ] = await Promise.all([TextBook(context), Tests(context)]);
+  const docs = await Textbook.aggregate(textbookAggregateQuery).allowDiskUse(true);
 
-export async function fetchDecryptionKey(req , res ){
-  return res.status(200).send(config.encript.key);
-}
+  if(!docs || !docs.length) return {};
 
-export async function startTest(args , ctx){
-  try{
-    let promises = await Promise.all([Tests(ctx), MasterResult(ctx)])
-    const TestSchema = promises[0] ;
-    const MasterResultSchema  = promises[1];
-    const isTestAlreadyTakenOrStarted = await MasterResultSchema.findOne({ studentId : ctx.studentId,questionPaperId:args.questionPaperId});
-    if(isTestAlreadyTakenOrStarted && isTestAlreadyTakenOrStarted.status === "SUBMITTED"){
-      throw "Test already submitted";
-    }else{
-      let test = await TestSchema.aggregate([{
-        $match: {
-            "test.questionPaperId": args.questionPaperId,
-            "orientations": args.orientationOfStudent,
-            "branches": args.branchOfStudent,
-            "mapping.class.code": args.classOfStudent,
-            "test.startTime": {
-                $lte: new Date()
-              },
-            "test.endTime": {
-                $gte: new Date()
-              },
-              active : true
-            }
-          },
-          {
-            $project:{
-              _id : 0,
-              test : 1,
-              questions : 1,
-              mapping : 1
-            }
-          }
-        ]
-      )
-      if(!test.length){
-        throw "Invalid test or test not started yet";
-      }
-      let duration = test.test.duration; //In minutes
+  let textbookCodes = []
+  docs.forEach(x => {
+    textbookCodes = textbookCodes.concat(x.textbookCodes)
+  })
 
-      if(isTestAlreadyTakenOrStarted && isTestAlreadyTakenOrStarted.status === "STARTED"){
-        let timeLeft = (new Date().getTime() -  new Date(isTestAlreadyTakenOrStarted.startedAt).getTime()) / 1000*60;
-        if(timeLeft >= duration){
-          throw "Test duration is already completed."
-        }else{
-          return {
-            status: 'success',
-            syncDbUrl: isTestAlreadyTakenOrStarted.syncDbUrl,
-            shouldSync: isTestAlreadyTakenOrStarted.status === "STARTED" ? true : false, // eslint-disable-line
-            testKey : config.encript.key,
-            timeLeft,
-            duration
-          };
-        }
-      }
-      // const timeString = new Date();
-      const randValue = Math.floor(Math.random() * (999 - 100 + 1) + 100); // eslint-disable-line
-      const dbName = `${ctx.instituteId}_${args.questionPaperId}_${ctx.studentId}_${randValue.toString()}`.toLowerCase();
-      const syncDbUrl = `${config.COUCH_DB_URL}/${dbName}`;
-      const masterResultMapping = {
-        questionPaperId: args.questionPaperId,
-        studentId: ctx.studentId,
-        status: "STARTED",
-        startedAt: new Date(),
-        classCode: args.classOfStudent,
-        textbookCode: test[0].mapping.textbook.code,
-        subjectCode: test[0].mapping.subject.code,
-        branch: args.branchOfStudent,
-        orientation: args.orientationOfStudent,
-        instructionAccepted : args.instructionAccepted ? args.instructionAccepted : false,
-        syncDbUrl : syncDbUrl
-      }
-      await MasterResultSchema.create(masterResultMapping);
-      // test[0]["serverStartTime"] = args.startTime
-      // delete test[0]["mapping"]
-      return {
-        status: 'success',
-        syncDbUrl:  syncDbUrl,
-        shouldSync: false, // eslint-disable-line,
-        testKey : config.encript.key,
-        duration,
-        timeLeft : duration
-      };
-    }
-  }catch(err){
-    throw err;
-  }
-}
+  textbookCodes = Array.from(new Set(textbookCodes));
 
-export async function headerCount(args , ctx){
-  try{
-    let matchPipeline = { active : true , type : "textbookbasedtest"};
-    if( args.classCode ){
-      matchPipeline["mapping.class.code"] = args.classCode
-    }
-  
-    if(args.orientation){
-      matchPipeline["orientations"] = args.orientation
-    }
-  
-    if(args.branch){
-      matchPipeline["branches"] = args.branch
-    }
-  
-    if(args.subjectCode){
-      matchPipeline["mapping.subject.code"] = args.subjectCode
-    }
-  
-    if(args.textbookCode){
-      matchPipeline["mapping.textbook.code"] = args.textbookCode
-    }
-  
-    let groupPipeline = {
-      "_id" : `$mapping.${args.header}.code`,
-      count : {$sum:1}
-    }
-
-    const TestSchema = await Tests(ctx);
-    const result = await TestSchema.aggregate([
-      {
-        $match : matchPipeline
-      },
-      {
-        $group : groupPipeline
-      }
-    ]);
-    let outputResult = {};
-    result.forEach(function(obj){
-      outputResult[obj._id] = obj["count"];
-    })
-    return outputResult;
-  }catch(err){
-    throw err;
-  }
-}
-
-export async function fetchInstructions(args , ctx ){
-  try{
-    const TestSchema = await Tests(ctx);
-    let currTime = new Date();
-    const instructions = await TestSchema.aggregate([
-      {
-        $match : {
-          "test.questionPaperId" : args.testId,
-          active : true,
-          "test.startTime" : { $lte : new Date(currTime)},
-          "test.endTime" : { $gte : new Date(currTime)}
-        }
-      },{
-        $lookup : {
-          from : "markingschemes",
-          localField : "markingScheme",
-          foreignField : "_id",
-          as : "markingScheme"
-        }
-      },
-      {
-        $unwind : "$markingScheme"  
-      },
-      {
-        $project : {
-          markingScheme : 1,
-          "startTime" : "$test.startTime",
-          "endTime" : "$test.endTime",
-          "duration" : "$test.duration",
-          "_id" : 0
-        }
-      }
-    ]);
-    return instructions;
-  }catch(err){
-    throw err;
-  }
-}
-
-// {
-//   "testId":"*******",
-//   "rawResponse":{
-//     "1" : ["a","b"], //more than one option correct
-//     "2" : ["c"], // single answer correct
-//     "3" : ["d"],
-//     "4" : [] // unattempted or nothing,
-//     ...
-//   }
-// }
-// @params submisssionTime NOT REQUIRED client time cannot be trusted.
-// triggered when submit test is done or autotriggered when the duration of test is completed.
-// 
-export async function completeTest ( args , ctx ){
-  //Trigger an api to GA server with CWU ANALYSIS , RAW RESPONSE and BEHAVIOUR DATA 
-  //should be asynchronusly triggered with retries upto 3 times if failed keep in db so that can be synchronised later
-  //Need cron job to sync couchdb to lms mongo if the request is not made due to internet connectivity.
-  //once request is received validate the time at which test was submitted, if valid calculate CWU and total marks obtained with percentage.
-  try{
-    const promisesA = await Promise.all([MasterResult(ctx),Tests(ctx),Questions(ctx),TestSnapshot(ctx)]);
-    const MasterSchema = promisesA[0];
-    const TestSchema = promisesA[1];
-    const QuestionsSchema = promisesA[2];
-    const TestSnapshotSchema =  promisesA[3];
-    const test = TestSchema.aggregate([
-      {$match: {"test.questionPaperId": args.testId}},
-      {$lookup:{
-          from : "markingschemes",
-          localField : "markingScheme",
-          foreignField : "_id",
-          as : "markingScheme"   
-      }},{$unwind : "$markingScheme"},{
-        $project : {
-          _id : 0,
-          test : 1,
-          markingScheme : 1
-        }
-      }
-    ]);
-    const master = MasterSchema.findOne({ studentId : ctx.studentId,questionPaperId : args.testId,status : "STARTED"}).lean();
-    const questions = QuestionsSchema.find({questionPaperId : args.testId}).select({_id : 0,key : 1,qno : 1}).lean();
-    const promisesB = await Promise.all([test,master,questions]);
-    const testDetails = promisesB[0];
-    const correctOptions = promisesB[2];
-    const studentTestDetails = promisesB[1];
-    if(!testDetails || !correctOptions || !studentTestDetails){
-      throw "Invalid test or student or student has not started test yet."
-    }
-    const submisssionTime = new Date();
-    let timeDiff = (new Date(submisssionTime).getTime()- new Date(studentTestDetails.startedAt).getTime())/60000;
-    if( testDetails.test.duration < timeDiff ){
-      //Get behaviour data from couchDB and generate everything other than rank analysis
-      if(studentTestDetails.totalMarks){
-        throw "Test is over, please wait for your result"; 
-      }
-    }
-    let correctAnswerMapping = {};
-    correctOptions.forEach(function(objt){
-      correctAnswerMapping[objt["qno"]] = objt["key"];
-    });
-    const behaviourData = await fetchBehaviourDataFromCouchDb(studentTestDetails.syncDbUrl);
-    args.behaviourData = behaviourData;
-    if(!studentTestDetails.totalMarks){
-      const rawResponseFromBehaviourData = getRawResponseFromBehaviourData(behaviourData);
-      args.rawResponse = rawResponseFromBehaviourData;
-    }
-    args.testName = test.test.name;
-    let analysisOfTest = calculateMarks(args.rawResponse,testDetails.markingScheme,correctAnswerMapping);
-    analysisOfTest["timeTaken"] = timeDiff;
-    analysisOfTest["completedAt"] = new Date(submisssionTime);
-    updateMasterResult(MasterSchema,analysisOfTest,ctx);
-    createTestSnapshotData(TestSnapshotSchema , args,analysisOfTest,ctx );
-    return analysisOfTest;
-  }catch(err){
-    throw err;
-  }
-}
-
-function calculateMarks(rawResponse , markingScheme , correctOptions){
-  let marksObtained = 0 , percentageObtained;
-  let cwuAnalysis = {C : 0,W : 0, R : 0};
-  let responseData = {
-    evaluation: {},
-    score : { },
-    response : rawResponse
+  const contentQuery = { 
+    active: true,
+    'mapping.textbook.code': { $in: textbookCodes },
   };
-  for(let key in correctOptions){
-    if(rawResponse.hasOwnProperty(key)){
-      if(isEqual(rawResponse[key],correctOptions[key])){
-        responseData.evaluation[key] = "C";
-        cwuAnalysis["C"] = cwuAnalysis["C"] + 1;
-        responseData.score[key] = markingScheme.eval.rightAnswer;
-        marksObtained = marksObtained + markingScheme.eval.rightAnswer;
-      }else{
-        responseData.evaluation[key] = "W";
-        cwuAnalysis["W"] = cwuAnalysis["W"] + 1;
-        responseData.score[key] = markingScheme.eval.wrongAnswer;
-        marksObtained = marksObtained + markingScheme.eval.wrongAnswer;
-      }
-    }else{
-      responseData.evaluation[key] = "U";
-      cwuAnalysis["U"] = cwuAnalysis["U"] + 1;
-      responseData.score[key] = markingScheme.eval.wrongAnswer;
-      marksObtained = marksObtained + markingScheme.eval.wrongAnswer;
-
+  //const contentTypeMatchOrData = getContentTypeMatchOrData(contentCategory);
+  // if(contentTypeMatchOrData.length) contentQuery['$or'] = contentTypeMatchOrData;
+  
+  if (chapterCode) contentQuery['mapping.chapter.code'] = chapterCode;
+  const aggregateQuery = []; 
+  const contentMatchQuery = {
+    $match: contentQuery,
+  }
+  groupby = 'mapping.textbook.code';
+  if(header === 'chapter') groupby = 'mapping.chapter.code';
+  aggregateQuery.push(contentMatchQuery);
+  const contentGroupQuery = {
+    $group: {
+      _id: `$${groupby}`,
+      count: { $sum: 1 },
     }
   }
-  percentageObtained = (marksObtained * 100)/markingScheme.totalMarks;
-  return {marksObtained,cwuAnalysis,percentageObtained,cwuAnalysis,responseData};
-}
-function isEqual(a , b) {
-  if (a.length != b.length)
-      return false;
-  else {
-      for (var i = 0; i < a.length; i++){
-        if (a[i] != b[i]){
-            return false;
-        }
-      }
-      return true;
-  }
-}
-
-async function fetchBehaviourDataFromCouchDb(dbName){
-  try{
-    const couchSyncDb = await couchdb.use(dbName);
-    const data = await couchSyncDb.list({ include_docs: true });
-    const { rows } = data;
-    const behaviourData = [];
-    for (let l = 0; l < rows.length; l += 1) {
-      behaviourData.push(rows[l].doc);
-    }
-    couchSyncDB.destroy(dbName,function(err,deleted){
-      console.log(err);
+  aggregateQuery.push(contentGroupQuery)
+  const result = await ContentMapping.aggregate(aggregateQuery).allowDiskUse(true);
+  if(!result || !result.length) return {};
+  const objectifyResult = {};
+  result.forEach(x => objectifyResult[x._id] = x.count)
+  if(header === 'chapter') return objectifyResult;
+  const finalData = {};
+  docs.forEach(x => {
+     finalData[x._id] = 0;
+     x.textbookCodes.forEach(y => {
+      finalData[x._id] += objectifyResult[y] || 0;
     });
-    return behaviourData;
+  });
+  return finalData;
+}
+
+export async function uploadTestMapping(req, res){
+  try{
+    if (!req.file) {
+      return res.status(400).send({message: 'File required', error: true});
+    }
+    
+    const fileName = req.file.originalname.split('.');
+    const extname = fileName.pop()
+    
+    if (extname !== 'xlsx') {
+      return res.status(400).send({message:'Invalid file extension, only xlsx is supported',error: true});
+    }
+    
+    let data = getFileData(req);
+    
+    if(!data.length){
+      return res.status(400).send({error: true,message:"Empty file."});
+    }
+    
+    const headersInSheet = Object.keys(data[0]);
+    const notFoundHeader = validateHeaders(headersInSheet, MAPPING_HEADERS)
+    
+    if(notFoundHeader.length){
+      return res.status(400).send({error: true,message:"Invalid Headers",data: notFoundHeader});
+    }
+    const validateMappingSheet = validateMappingRows(data);
+    
+    if(validateMappingSheet.length){
+      return res.status(400).send(
+        {message: "Invalid row in the sheet",data: validateMappingSheet,error: true}
+        );
+    }
+    const TestSchema = await Tests(req.user_cxt);
+    
+    const promiseSchema = await Promise.all([
+      Chapter(req.user_cxt),TextBook(req.user_cxt),
+      Hierarchy(req.user_cxt),Subject(req.user_cxt)
+    ]);
+    
+    const ChapterSchema = promiseSchema[0];
+    const TextBookSchema = promiseSchema[1];
+    const HierarchySchema = promiseSchema[2];
+    const SubjectSchema = promiseSchema[3];
+
+    let textbook = new Set();
+    let classs = new Set()
+    let subject = new Set();
+    let chapter = new Set();
+    
+    for(let i = 0 ; i < data.length ; i++){
+      textbook.add(data[i]["textbook"]);
+      classs.add(data[i]["class"]);
+      subject.add(data[i]["subject"]);
+      chapter.add(data[i]["chapter"]);
+    }
+    
+    const textbooks = Array.from(textbook);
+    const classes = Array.from(classs);
+    const subjects = Array.from(subject);
+    const chapters = Array.from(chapter);
+    
+    const promiseGetIndependentData = await Promise.all([
+      HierarchySchema.find({levelName:"Class",child:{$in:classes},active:true})
+      .select({_id:0,childCode:1,child: 1}).lean(),
+      TextBookSchema.find({"refs.class.name":{$in: classes},"name":{$in: textbooks},"refs.subject.name":{$in: subjects}, active: true})
+      .select({_id:0, orientations: 1, branches: 1,code:1, refs: 1,name: 1}).lean()
+    ]);
+
+    const classData = promiseGetIndependentData[0];
+    const textbookData = promiseGetIndependentData[1];
+
+    let classCodes = [];
+
+    classData.forEach(obj => classCodes.push(obj.childCode));
+
+    let textbookCodes = [];
+    
+    textbookData.forEach(textbook => {textbookCodes.push(textbook["code"]);});
+    
+    const promiseGetDependentData = await Promise.all([
+      SubjectSchema.find({subject:{$in:subjects},active:true,"refs.class.code":{$in:classCodes}})
+      .select({_id: 0, subject: 1,code: 1, "refs.class.code": 1}).lean(),
+      ChapterSchema.find({"refs.textbook.code":{$in:textbookCodes},"child": {$in : chapters} , "levelName":"topic",active:true})
+      .select({_id: 0, childCode: 1, child: 1, refs: 1}).lean()
+    ]);
+
+    const subjectsData = promiseGetDependentData[0];
+    const chapterData = promiseGetDependentData[1];
+    const validationCheck = await validateMappingDataFromDbDataAndCreateMap(data, chapterData, textbookData, classData, subjectsData);
+    
+    if(validationCheck.error){
+      return res.status(400).send({message: "Invalid row in the sheet",data: validationCheck.erroredRow,error: true});
+    }
+
+    await TestSchema.bulkWrite(validationCheck.mapping);
+    
+    return res.status(200).send({error: false, message: "Success"});
+  }catch(err){
+    console.log(err)
+    return res.status(500).send("internal server error");
+  }
+}
+
+function validateHeaders(headersInSheet, _MAPPING_HEADERS){
+  let obj = {}
+  for(let i = 0; i < headersInSheet.length; i++){
+      obj[headersInSheet[i]] = true
+  }
+  let headersNotFound = [];
+  for(let j = 0 ; j < _MAPPING_HEADERS.length; j ++ ){
+    if(!obj.hasOwnProperty(_MAPPING_HEADERS[j])){
+      headersNotFound.push(_MAPPING_HEADERS[j].toUpperCase())
+    }
+  }
+  return headersNotFound;
+}
+//["class","subject","textbook","chapter","content name","media type"]
+function validateMappingRows (data){
+  let errors = []
+  let length = data.length
+  for(let i = 0 ; i < length ; i++){
+    let rowNumber = i+2;
+    let errorDetails = [];
+    if(!data[i]["class"]){
+      errorDetails.push("CLASS not present")
+    }
+    if(!data[i]["subject"]){
+      errorDetails.push("SUBJECT not present")
+    }
+
+    if(!data[i]["textbook"]){
+      errorDetails.push("TEXTBOOK not present")
+    }
+
+    if(!data[i]["chapter"]){
+      errorDetails.push("CHAPTER not present")
+    }
+
+    if(!data[i]["test name"]){
+      errorDetails.push("TEST NAME not present")
+    }
+
+    if(errorDetails.length){
+      errors.push("Row "+ rowNumber+ " : "+errorDetails.join(","))
+    }
+  }
+  return errors;
+}
+
+async function validateMappingDataFromDbDataAndCreateMap(data, chapterData, textBookData, classData, subjectsData){
+  try{
+    const length = data.length;
+    let error = false;
+    let mapping = [];
+    let erroredRow = [];
+    const promise = await Promise.all([
+      convertArrayOfChapterToObject(chapterData),
+      convertArrayOfTextbookToObject(textBookData),
+      classMapWithClassName(classData),
+      subjectMapWithClassName(subjectsData, classData)
+    ])
+    const indexed_chapter = promise[0]
+    const indexed_textbook = promise[1]
+    const indexed_class = promise[2]
+    const indexed_subject = promise[3]
+    for (let i = 0 ; i< length ; i++){
+      let rowNumber = i+2;
+      if(!indexed_class.hasOwnProperty(data[i]["class"])){
+        erroredRow.push("Row "+ rowNumber+ " : Invalid class")
+        error = true;
+        continue;
+      }
+  
+      let _subjectKey = data[i]["subject"]+"_"+data[i]["class"];
+  
+      if(!indexed_subject.hasOwnProperty(_subjectKey)){
+        erroredRow.push("Row "+ rowNumber+ " : Invalid subject")
+        error = true;
+        continue;
+      }
+  
+      let _textbookKey = data[i]["textbook"]+"_"+data[i]["class"]+"_"+data[i]["subject"];
+      if(!indexed_textbook.hasOwnProperty(_textbookKey)){
+        erroredRow.push("Row "+ rowNumber+ " : Invalid textbook")
+        error = true;
+        continue;
+      }
+  
+      let _chapterKey = data[i]["chapter"]+"_"+indexed_textbook[_textbookKey]["code"];
+      
+      if(!indexed_chapter.hasOwnProperty(_chapterKey)){
+        erroredRow.push("Row "+ rowNumber+ " : Invalid chapter")
+        error = true;
+        continue;
+      }
+      if(!error){
+        let testMapping = createTestMappingObject(data[i],indexed_class[data[i]["class"]],
+        indexed_subject[_subjectKey],indexed_textbook[_textbookKey],
+        indexed_chapter[_chapterKey])
+        mapping.push(testMapping);
+      }
+    }
+    return {error, mapping, erroredRow}
   }catch(err){
     throw err;
   }
+  
 }
 
-function getRawResponseFromBehaviourData(behaviourData){
-  let rawResponse = {};
-  behaviourData.forEach(function(resp){
-    rawResponse[resp.questionNumber] = resp["latestResponse"].pop()
-  });
-  return rawResponse;
-}
-
-function updateMasterResult(MasterSchema , args,ctx){
-  MasterSchema.update({questionPaperId : args.testId,studentId : ctx.studentId},{
-    $set : {
-      status :  "SUBMITTED",
-      timeTaken : args.timeTaken,
-      completedAt : args.completedAt,
-      percentage : args.percentageObtained,
-      obtainedMarks : args.marksObtained,
-      cwuAnalysis: args.cwuAnalysis,
-      responseData : args.responseData
-    }
-  });
-}
-
-async function createTestSnapshotData(TestSnapshotSchema , args , analysisOfTest , ctx){
-  try{
-    const studentDetails = await getStudentDetailsById(ctx.studentId , ctx);
-    TestSnapshotSchema.create({
-      studentId :   ctx.studentId,
-      testId : args.testId,
-      studentName : studentDetails.studentName || null,
-      fatherName : studentDetails.fatherName || null,
-      phone : null,
-      email : null,
-      dob : studentDetails.dob || null,
-      gender : studentDetails.gender || null,
-      category : studentDetails.category || null,
-      hierarchy : studentDetails.hierarchy || [],
-      egnifyId : studentDetails.egnifyId || null,
-      accessTag : {hierarchy : studentDetails.hierarchy.pop()["childCode"]},
-      testName : args.testName,
-      hierarchyTag : null,
-      behaviourData : args.behaviourData,
-      hierarchyLevels : studentDetails.hierarchyLevels,
-      responseData : {
-        questionResponse : analysisOfTest.responseData.evaluation,
-        questionsMarks :  analysisOfTest.responseData.score,
-        rawResponse : args.rawResponse
-      }
-    },function (err , testSnapshot){
-      if(err){
-        console.log(err);
-      }
-    })
-  }catch(err){
-    console.log(err);
+async function convertArrayOfTextbookToObject(textbook){
+  let textbookObj = {};
+  let length = textbook.length;
+  for(let i = 0 ; i < length ;i++){
+    let textbookKey = textbook[i]["name"]+"_"+textbook[i]["refs"]["class"]["name"]+"_"+textbook[i]["refs"]["subject"]["name"];
+    textbookObj[textbookKey] = textbook[i]
   }
+  return textbookObj;
+}
+
+async function convertArrayOfChapterToObject(chapters){
+  let chapterObj = {};
+  let length = chapters.length;
+  for(let i = 0 ; i < length ; i++){
+    let chapterKey = chapters[i]["child"]+"_"+chapters[i]["refs"]["textbook"]["code"];
+    chapterObj[chapterKey] = chapters[i];
+  }
+  return chapterObj;
+}
+
+async function classMapWithClassCode(classes){
+  let classObj = {};
+  let length = classes.length;
+  for(let i = 0 ; i< length; i++){
+    classObj[classes[i]["childCode"]] = classes[i];
+  }
+  return classObj;
+}
+
+async function classMapWithClassName(classes){
+  let classObj = {};
+  let length = classes.length;
+  for(let i = 0 ; i< length; i++){
+    classObj[classes[i]["child"]] = classes[i];
+  }
+  return classObj;
+}
+
+async function subjectMapWithClassName(subjects,classes){
+  let subjectObj ={};
+  const classMap = await classMapWithClassCode(classes);
+  let length = subjects.length;
+  for (let i = 0 ; i < length ; i++){
+    let subjectKey = subjects[i]["subject"]+ "_" + classMap[subjects[i]["refs"]["class"]["code"]]["child"];
+    subjectObj[subjectKey] = subjects[i];
+  }
+  return subjectObj;
+}
+
+function createTestMappingObject(data, classData, subjectData, textBookData, chapterData){
+  let mapping = {
+    "testId" : data["test id"] || uuidv4(),
+    "testName" : data["test name"],
+    "subjects" : [
+        {
+            "code" : subjectData.code,
+            "parentCode" : textBookData.code,
+            "subject" : data["subject"],
+            "subjectCode" : subjectData.code
+        }
+    ],
+
+    "markingSchema" : {
+        "subjects" : [
+            {
+                "tieBreaker" : 1,
+                "start" : 1,
+                "subject" : data["subject"],
+                "marks" : [
+                    {
+                        "noOfOptions" : 4,
+                        "P" : 0,
+                        "ADD" : 1,
+                        "questionType" : "Single Answer",
+                        "egnifyQuestionType" : "Single answer type",
+                        "C" : 1,
+                        "W" : 0,
+                        "U" : 0,
+                        "start" : 1,
+                    }
+                ]
+            }
+        ]
+    },
+    "mapping" : {
+        "class" : {
+            "code" : classData["childCode"],
+            "name" : data["class"]
+        },
+        "subject" : {
+            "code" : subjectData["code"],
+            "name" : data["subject"]
+        },
+        "textbook" : {
+            "code" : textBookData["code"],
+            "name" : data["textbook"]
+        },
+        "chapter" : {
+            "code" : chapterData["code"],
+            "name" : data["chapter"]
+        }
+    },
+    "branches" : textBookData["branches"],
+    "orientations" : textBookData["orientations"],
+    "test" : {
+        "startTime" : new Date(),
+        "endTime" : new Date(),
+        "date" : new Date(),
+        "name" : data["test name"]
+    },
+    "viewOrder" : data["view order"] || null
+  }
+  let upsertObj = {
+    updateOne: {
+        filter: {"testId":mapping["testId"] },
+        update: {"$set": mapping},
+        upsert: true,
+        setDefaultsOnInsert: true
+    }
+  }
+  return upsertObj;
+}
+
+export async function  uploadTestiming(req, res){
+  try{
+    if (!req.file) {
+      return res.status(400).send({message: 'File required', error: true});
+    }
+    const testId = req.params.testId || null;
+    
+    if(!testId){
+      return res.status(400).send({message: "Test Id missing.", error: true});
+    }
+
+    const fileName = req.file.originalname.split('.');
+    const extname = fileName.pop()
+    
+    if (extname !== 'xlsx') {
+      return res.status(400).send({message:'Invalid file extension, only xlsx is supported',error: true});
+    }
+    
+    let data = getFileData(req);
+    
+    if(!data.length){
+      return res.status(400).send({error: true,message:"Empty file."});
+    }
+
+    const headersInSheet = Object.keys(data[0]);
+    const notFoundHeader = validateHeaders(headersInSheet, TEST_TIMING_HEADERS)
+    
+    if(notFoundHeader.length){
+      return res.status(400).send({error: true,message:"Invalid Headers",data: notFoundHeader});
+    }
+
+    const validateTestTimingSheet = validateTestTimingRows(data);
+    
+    if(validateTestTimingSheet.length){
+      return res.status(400).send(
+        {message: "Invalid rows in the sheet",data: validateTestTimingSheet,error: true}
+        );
+    }
+    
+    let branchesArr = [];
+    
+    for(let i = 0 ; i < data.length; i++){
+      data[i]["branches"] = data[i]["branches"].split(",");
+      branchesArr = branchesArr.concat(data[i]["branches"]);
+    }
+    let branchObj = {};
+    let duplicateBranches = [];
+    
+    branchesArr.forEach(function(branch){
+      if(!branchObj.hasOwnProperty(branch)){
+        branchObj[branch] = 1;
+      }else{
+        duplicateBranches.push(branch);
+      }
+    });
+
+    if(duplicateBranches.length){
+      return res.status(400).send({error: true, message: "Duplicate branches in the rows.", data: duplicateBranches});
+    }
+
+    const promiseSchema = await Promise.all([Tests(req.user_cxt),Hierarchy(req.user_cxt),
+      TestTimings(req.user_cxt)]);
+
+    const TestSchema = promiseSchema[0];
+    const HierarchySchema = promiseSchema[1];
+    const TestTimingSchema = promiseSchema[2]
+
+    const testInfo = await TestSchema.findOne({testId}).select({
+      _id: 0,
+      mapping : 1,
+      test: 1
+    }).lean();
+
+    if(!testInfo){
+      return res.status(400).send({error: true, message: "Invalid test id."});
+    }
+    const branches = await HierarchySchema.find({
+      "child": { $in: branchesArr },
+      "anscetors.childCode" : testInfo.mapping.class.code,
+      "levelName": "Branch"
+    }).select({_id: 0, childCode: 1, child: 1}).lean();
+    const validationCheck = validateTestTimingWithDbAndCreateMap(data, branches, testId, testInfo["mapping"]["class"]["name"]);
+    if(validationCheck.error){
+      return res.status(400).send({
+        error: true,
+        message: "invalid rows in db",
+        data: validationCheck.erroredRow
+      });
+    }
+    await TestTimingSchema.bulkWrite(validationCheck.mapping);
+    return res.status(200).send({error: false, message: "Success"});
+  }
+  catch(err){
+    console.log(err);
+    return res.status(500).send("internal server error")
+  }
+}
+
+//"branches","end date","start date","duration"
+//start date and end date format(18/11/2019 - 17:00:00)
+//duration is in minutes
+function validateTestTimingRows (data){
+  const timeBuff = 60 * 1000 * 2;
+  const currentTime = new Date().getTime();
+  let errors = []
+  const length = data.length
+  for(let i = 0 ; i < length ; i++){
+    let startDate,endDate,dateDiffInMs;
+    let rowNumber = i+2;
+    let errorDetails = [];
+    if(!data[i]["branches"] || !data[i]["branches"].split(",").length){
+      errorDetails.push("Branches not present")
+    }
+    if(!data[i]["end date"]){
+      errorDetails.push("End date not present")
+    }else{
+      endDate = convertToDateString(data[i]["end date"]);
+      if(new Date(endDate) == "Invalid Date"){
+        errorDetails.push("Invalid End date format.Format should be DD/MM/YYYY - HH:MM:SS");
+      }else if( new Date(endDate).getTime() < currentTime ){
+        errorDetails.push("Invalid End date.End date should be greater than current time");
+      }else{
+        data[i]["end date"] = endDate;
+      }
+    }
+
+    if(!data[i]["start date"]){
+      errorDetails.push("start date not present")
+    }else{
+      startDate = convertToDateString(data[i]["start date"]);
+      if(new Date(startDate) == "Invalid Date"){
+        errorDetails.push("Invalid start date format.Format should be DD/MM/YYYY - HH:MM:SS");
+      }else if( new Date(startDate).getTime() < currentTime ){
+        errorDetails.push("Invalid start date.Start date should be greater than current time");
+      }else{
+        data[i]["start date"] = startDate;
+      }
+    }
+    if(startDate && endDate){
+      dateDiffInMs  = new Date(endDate).getTime() - new Date(startDate).getTime();
+      if(dateDiffInMs < 0){
+        errorDetails.push("Start date should be less than End date.");
+      }
+    }
+    if(!data[i]["duration"]){
+      errorDetails.push("duration not present")
+    }else{
+      let durationInMsWithBuff = parseInt(data[i]["duration"]) * timeBuff ;
+      if(dateDiffInMs <= durationInMsWithBuff ){
+        return errorDetails.push("Minimum difference between start date and end date should be 3hrs plus duration.")
+      }
+    }
+
+    if(errorDetails.length){
+      errors.push("Row "+ rowNumber+ " : "+errorDetails.join(","))
+    }
+  }
+  return errors;
+}
+
+function convertToDateString(dateString){
+  let l = dateString.trim().replace(/ /g,'');
+  let a  = l.split("-");
+  let b = a[0].split("/");
+  let temp = b[0];
+  b[0] = b[2];
+  b[2] = temp
+  return b.join("-")+"T"+a[1];
+}
+
+function branchMapOfName(branches){
+  let branchMap = {}
+  branches.forEach(function(branch){
+    branchMap[branch["child"]] = branch;
+  });
+  return branchMap;
+}
+
+function validateTestTimingWithDbAndCreateMap(data, branches, testId, className){
+  const length = data.length;
+  let error = false;
+  let mapping = [];
+  let erroredRow = [];
+  const indexed_branch = branchMapOfName(branches);
+  for( let i = 0 ; i < length ; i++ ){
+    let rowNumber = i+2;
+    let missingBranch = "";
+    data[i]["branches"].forEach(function(branch){
+      if(!indexed_branch.hasOwnProperty(branch)){
+        error = true;
+        missingBranch += branch + ", ";
+      }
+    });
+    if(missingBranch.length){
+      erroredRow.push("Row "+ rowNumber+ " : Invalid Branch "+ missingBranch)
+    }
+    if(!error){
+      createTimingMap(data[i], indexed_branch, mapping, testId, className);
+    }
+  }
+  return {error, mapping, erroredRow}
+}
+
+function createTimingMap(data, indexed_branch, ret_data, testId, className){
+  const branches = data["branches"];
+  branches.forEach(function(branch){
+    let mapping = {
+      testId: testId,
+      _id: indexed_branch[branch]["childCode"]+"_"+testId,
+      startTime: new Date(data["start date"]),
+      endTime: new Date(data["end date"]),
+      duration: parseInt(data["duration"]),
+      class: className,
+      orientations: data["orientations"] ? data["orientations"].split(",") : []
+    }
+    let upsertObj = {
+      updateOne: {
+          filter: { "_id": mapping["_id"] },
+          update: {"$set": mapping},
+          upsert: true,
+          setDefaultsOnInsert: true
+      }
+    }
+    ret_data.push(upsertObj);
+  });
+  return true;
+}
+
+export async function getCMSTestStats(args, context) {
+  const {
+    classCode,
+    subjectCode,
+    chapterCode,
+    textbookCode,
+    branch,
+    orientation,
+    gaStatus
+  } = args;
+
+  // Textbook data;
+  const textbookMatchQuery = { active: true }
+  if (classCode ) textbookMatchQuery['refs.class.code'] = classCode;
+  if (subjectCode) textbookMatchQuery['refs.subject.code'] = subjectCode;
+  if (textbookCode) textbookMatchQuery['code'] = textbookCode;
+  if (branch) textbookMatchQuery['branches'] = { $in: [ branch, null ] };
+  if (orientation) textbookMatchQuery['orientations'] = { $in: [ orientation, null ] };
+
+
+  const [ TextbookSchema, TestSchema ] = await Promise.all([TextBook(context), Tests(context)]);
+  const docs = await TextbookSchema.find(textbookMatchQuery,{_id: 0, code: 1, 'refs.class.code': 1 })
+  if(!docs || !docs.length) return [];
+  // return docs;
+  const objectifyDocs = {};
+  docs.forEach(x => objectifyDocs[x.code] = x.refs.class.code);
+  let textbookCodes = docs.map(x => x.code);
+
+  // Content mapping
+  const contentAggregateQuery = [];
+  const contentMatchQuery = { active: true }
+  if(gaStatus){
+    contentMatchQuery["gaStatus"] = "finished";
+  }
+  // const contentTypeMatchOrData = getContentTypeMatchOrData("");
+  // if(contentTypeMatchOrData.length) contentMatchQuery['$or'] = contentTypeMatchOrData;
+  contentMatchQuery['mapping.textbook.code'] = { $in: textbookCodes };
+  if(chapterCode) contentMatchQuery['mapping.chapter.code'] = chapterCode;
+  contentAggregateQuery.push({$match: contentMatchQuery});
+  // return contentMatchQuery;
+  const contentGroupQuery = {
+    _id: {
+      textbookCode: '$mapping.textbook.code',
+    }, count: { $sum: 1 }
+  }
+  contentAggregateQuery.push({$group: contentGroupQuery });
+  const data = await TestSchema.aggregate(contentAggregateQuery).allowDiskUse(true);
+  const tempData = {}
+  data.forEach(x => {
+      const classCode = objectifyDocs[x._id.textbookCode]; 
+      const category = x._id.category;
+      if(!tempData[classCode]) tempData[classCode] = {};
+      if(!tempData[classCode][category]) tempData[classCode][category] = 0;
+      tempData[classCode][category] += x.count;
+  })
+  // return tempData;
+  const finalData = [];
+  for(let temp in tempData){
+    for(let key in tempData[temp]){
+      finalData.push({classCode: temp, category:"Test", count: tempData[temp][key]})
+    }
+  }
+  return finalData;
 }

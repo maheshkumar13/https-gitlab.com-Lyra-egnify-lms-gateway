@@ -82,10 +82,45 @@ export const updateTextbookInputType = new InputType({
     branches: { type: new List(StringType), description: 'List of branches name' },
   }
 })
+export const classType = new ObjectType({
+  name: 'classType',
+  fields: {
+    name: { type: StringType, description: 'class name' },
+    code: { type: StringType, description: 'class code' },
+  },
+});
+
+export const generalDataType = new ObjectType({
+  name: 'generalDataType',
+  fields: {
+    name: { type: StringType, description: 'name' },
+    code: { type: StringType, description: 'code' },
+    viewOrder: { type: IntType, description: 'viewOrder' },
+  },
+});
+export const textbookType = new ObjectType({
+  name: 'textbookType',
+  fields: {
+    name: { type: StringType, description: 'name' },
+    code: { type: StringType, description: 'code' },
+    viewOrder: { type: IntType, description: 'viewOrder' },
+    imageUrl: { type: StringType, description: 'ImageUrl' },
+  },
+});
+export const ChapterWiseListOutputType = new ObjectType({
+  name: 'ChapterWiseListOutputType',
+  fields: {
+    class: { type: classType, description: 'class details' },
+    subject: { type: generalDataType, description: 'subject details' },
+    textbook: { type: textbookType, description: 'textbook details' },
+    chapter: { type: generalDataType, description: 'chapter details' },
+  },
+});
 
 export default {
   TextbookType,
   TextbookInputType,
   updateTextbookInputType,
   nameCodeType,
+  ChapterWiseListOutputType,
 };

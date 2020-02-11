@@ -16,13 +16,13 @@ import { InstituteHierarchyGrid } from './settings/instituteHierarchy/instituteH
 import { updateCategory } from './settings/instituteHierarchy/instituteHierarchy.mutaion';
 import { createSubject } from './settings/subject/subject.mutation';
 import { Programs } from './settings/programs/programs.query';
-import { Textbooks, TextbooksInfo } from './settings/textbook/textbook.query';
+import { Textbooks, TextbooksInfo, TextbookByPagination, ChapterWiseList} from './settings/textbook/textbook.query';
 import { createTextbook, updateTextbook, deleteTextbook } from './settings/textbook/textbook.mutation';
-import { Students, StudentUniqueValues, StudentsByLastNode, StudentById, StudentList } from './settings/student/student.query';
+import { Students, StudentUniqueValues, StudentsByLastNode, StudentById, studentHeader,StudentListByFilters} from './settings/student/student.query';
 import { updateStudentAvatar, updateStudentSubjects } from './settings/student/student.mutation';
 import { ConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.query';
-import { ContentMapping, ContentMappingStats, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats, TextbookBasedQuiz, DashboardHeadersAssetCount } from './settings/contentMapping/contentMapping.query';
-import { LaunchRequest } from './launcher/launchRequest/launchRequest.query';
+import { ContentMapping, ContentMappingStats, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats, TextbookBasedQuiz, DashboardHeadersAssetCount, ContentMappingUploadedDataLearn, ContentMappingUploadedDataReadingMaterialAudio, CmsPracticeStats } from './settings/contentMapping/contentMapping.query';
+import { LaunchRequest, GetS3FileSystem, GetS3SignedUrlForUpload } from './launcher/launchRequest/launchRequest.query';
 import { Questions, Results, QuestionEvaluation } from './tests/questions/questions.query';
 import { MasterResults } from './tests/masterResults/masterResults.query';
 import { InsertContent, UpdateContent, updateMetaData } from './settings/contentMapping/contentMapping.mutation';
@@ -31,10 +31,8 @@ import { TestType } from './settings/testType/testType.query';
 import { PackageList, PackageDetails } from './settings/package/package.query';
 import { CreatePackage, UpdatePackage, FeedbackPackage } from './settings/package/package.mutation';
 import { autoComplete, searchResult } from './search/searchRequest/search.query';
-import { ListTest, UpcomingTests, ListSubjectWiseBooksAndTestCount, CompletedTests, HeaderCountForTextBookBasedTest, FetchInstruction } from '../graphql/tests/upload/upload.query';
-import { ListMarkingSchema } from '../graphql/tests/markingShema/marking.shema.query';
-import { PublishTest, ParseAndValidateTest, updateTestInfo, SubmitTest, StartTest } from './tests/upload/upload.mutation';
-import { TimeAnalysis, TimeAnalysisHeaders } from './analysis/timeAnalysis/timeAnalysis.query';
+import { ListTest, ListSubjectWiseBooksAndTestCount, HeaderCountForTextBookBasedTest, CmsTestStats } from '../graphql/tests/upload/upload.query';
+import { TimeAnalysis, TimeAnalysisStudentsList, TimeAnalysisHeaders, TimeAnalysisStudentsListByDay, StudentLevelTimeAnalysis, TeacherLevelTimeAnalysis, TimeAnalysisHeadersv2, TimeAnalysisStudentsListByDayv2, TimeAnalysisStudentsListBySubjects, TimeAnalysisStudentsListByCategory, TimeAnalysisUniqueSubjectsByFilters, TimeAnalysisStudentsListBySubjectDateWise, TimeAnalysisStudentsListByDate } from './analysis/timeAnalysis/timeAnalysis.query';
 import { StudentCompletionStats, TeacherLevelCompletionStats, TeacherLevelCompletionHeaders } from './analysis/completion/completion.query';
 
 const schema = new Schema({
@@ -46,12 +44,15 @@ const schema = new Schema({
       Institute,
       InstituteHierarchyGrid,
       Textbooks,
+      TextbookByPagination,
+      ChapterWiseList,
       ConceptTaxonomy,
       InstituteHierarchyPaginated,
       Students,
       StudentUniqueValues,
       StudentsByLastNode,
-      StudentList,
+      studentHeader,
+      StudentListByFilters,
       Programs,
       ContentMapping,
       LaunchRequest,
@@ -77,17 +78,30 @@ const schema = new Schema({
       autoComplete,
       searchResult,
       ListTest,
-      ListMarkingSchema,
-      UpcomingTests,
       ListSubjectWiseBooksAndTestCount,
-      CompletedTests,
       HeaderCountForTextBookBasedTest,
-      FetchInstruction,
       TimeAnalysis,
       TimeAnalysisHeaders,
+      TimeAnalysisStudentsList,
+      TimeAnalysisStudentsListByDay,
       StudentCompletionStats,
       TeacherLevelCompletionStats,
       TeacherLevelCompletionHeaders,
+      StudentLevelTimeAnalysis,
+      TeacherLevelTimeAnalysis,
+      TimeAnalysisHeadersv2,
+      TimeAnalysisStudentsListByDayv2,
+      TimeAnalysisStudentsListBySubjects,
+      TimeAnalysisStudentsListByCategory,
+      TimeAnalysisUniqueSubjectsByFilters,
+      TimeAnalysisStudentsListBySubjectDateWise,
+      ContentMappingUploadedDataLearn,
+      ContentMappingUploadedDataReadingMaterialAudio,
+      TimeAnalysisStudentsListByDate,
+      GetS3FileSystem,
+      GetS3SignedUrlForUpload,
+      CmsPracticeStats,
+      CmsTestStats
     },
   }),
   mutation: new ObjectType({
@@ -107,12 +121,7 @@ const schema = new Schema({
       DeleteTestType,
       CreatePackage,
       UpdatePackage,
-      FeedbackPackage,
-      PublishTest,
-      ParseAndValidateTest,
-      updateTestInfo,
-      SubmitTest,
-      StartTest
+      FeedbackPackage
     },
   }),
 });

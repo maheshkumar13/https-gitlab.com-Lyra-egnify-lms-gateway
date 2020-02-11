@@ -30,12 +30,59 @@ export const TimeAnalysisHeadersType = new ObjectType({
     class: { type: new List(StringType), description: 'List of available classes by search condition' },
     branch: { type: new List(StringType), description: 'List of available branches by search condition' },
     orientation: { type: new List(StringType), description: 'List of available orientations by search condition' },
+    section: { type: new List(StringType), description: 'List of available sections' },
     subject: { type: new List(StringType), description: 'List of available subjects by search condition' },
   },
 });
 
+export const TimeAnalysisHeadersTypev2 = new ObjectType({
+  name: 'TimeAnalysisHeadersTypev2',
+  fields: {
+    class: { type: new List(StringType), description: 'List of available classes by search condition' },
+    branch: { type: new List(StringType), description: 'List of available branches by search condition' },
+    orientation: { type: new List(StringType), description: 'List of available orientations by search condition' },
+    section: { type: new List(StringType), description: 'List of available sections' },
+  },
+});
+
+export const TimeAnalysisListType = new ObjectType({
+  name: 'TimeAnalysisListType',
+  fields: {
+    studentId: { type: StringType, description: 'Student Id' },
+    studentName: { type: StringType, description: 'Student Name' },
+    data: { type: new List(GraphQLJSON) }
+
+  },
+});
+
+export const TimeAnalysisListByDayType = new ObjectType({
+  name: 'TimeAnalysisListByDayType',
+  fields: {
+    studentId: { type: StringType, description: 'Student Id' },
+    studentName: { type: StringType, description: 'Student Name' },
+    totalTimeSpent: { type: IntType, description: 'Total Time Spent' },
+    data: { type: new List(GraphQLJSON) }
+
+  },
+});
+
+export const TimeAnalysisViewStudentsListType = new ObjectType({
+  name: 'TimeAnalysisViewStudentsListType',
+  fields: {
+    studentId: { type: StringType, description: 'Student Id' },
+    studentName: { type: StringType, description: 'Student Name' },
+    class: { type: StringType, description: 'Class Name' },
+    branch: { type: StringType, description: 'Branch Name' },
+    orientation: { type: StringType, description: 'Orientation Name' },
+    section: { type: StringType, description: 'Section Name' },
+    totalTimeSpent: { type: GraphQLJSON, description: 'Total time spent' },
+    data: { type: new List(GraphQLJSON) }
+  },
+});
 export default {
   TimeAnalysisType,
   TimeAnalysisHeadersType,
+  TimeAnalysisListType,
+  TimeAnalysisListByDayType
 };
 

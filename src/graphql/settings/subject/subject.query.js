@@ -16,6 +16,7 @@ import GraphQLJSON from 'graphql-type-json';
 
 import { SubjectType } from './subject.type';
 import { SubjectDetailsType } from '../package/package.type';
+import { validateAccess } from '../../../utils/validator';
 
 const controller = require('../../../api/settings/subject/subject.controller');
 
@@ -34,6 +35,8 @@ export const Subjects = {
 export const getSubjectTextbookTopic = {
   type: GraphQLJSON,
   async resolve(obj, args, context) {
+    const validRoles = ['LMS_LEARN_VIEWER', 'Egni_u001_student'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     return controller.getSubjectTextbookTopic(args, context);
   }
 };

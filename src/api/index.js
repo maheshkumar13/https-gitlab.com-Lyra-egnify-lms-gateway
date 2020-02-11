@@ -8,7 +8,8 @@ const contentMapping = require('./settings/contentMapping');
 const textbook = require('./settings/textbook');
 const testUpload = require('./tests/questions');
 const studentLedger = require('./studentLedger');
-
+const practiceStudent = require('./tests/masterResults');
+const practiceAnalysis = require('./tests/PracticeAnalysis');
 // Util modules
 const uploadFile = require('./v1/uploadFile');
 const downloadReports = require('./v1/downloadReports');
@@ -43,4 +44,6 @@ export default function (app) {
   app.use('/api/v1/hierarchySync', hierarchySync);
   app.use('/api/elastic', elasticindexing);
   app.use('/api/timeAnalysis', timeAnalysis);
+  app.use('/api/practiceStudent', practiceStudent);
+  app.use('/api/practiceAnalysis', practiceAnalysis);
 }

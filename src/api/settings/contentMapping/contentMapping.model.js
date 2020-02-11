@@ -18,7 +18,7 @@ const contentSchema = new mongoose.Schema({
 });
 
 const resourceSchema = new mongoose.Schema({
-  key: { type: String },
+  key: { type: String,default: null },
   size: { type: Number },
   type: { type: String },
 });
@@ -51,6 +51,7 @@ const contentMappingSchema = new mongoose.Schema({
   coins: { type: Number, default: 0 },
   timgPath: { type: String },
   viewOrder: { type: Number },
+  gaStatus: { type: Boolean, default: false },
   metaData: {},
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },

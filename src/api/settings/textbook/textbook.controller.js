@@ -1,5 +1,9 @@
 /* eslint-disable */
 import {
+  getModel as ConcpetTaxonomyModel
+} from '../conceptTaxonomy/concpetTaxonomy.model';
+
+import {
   getModel as TextbookModel
 } from './textbook.model';
 import {
@@ -47,7 +51,7 @@ export async function getStudentData(context) {
 
 function getTextbooksQuery(args) {
   const query = {
-    active: true
+    active: true,
   }
   if (args.classCode) query['refs.class.code'] = args.classCode;
   if (args.subjectCode) query['refs.subject.code'] = args.subjectCode;
@@ -76,11 +80,37 @@ export async function getTextbooks(args, context) {
       }
     }
     const query = getTextbooksQuery(args)
-    console.log(query);
     return TextbookModel(context).then((Textbook) => {
       return Textbook.find(query)
     })
   })
+}
+
+export async function getTextbooksByPagination(args, context) {
+  return getStudentData(context).then((obj) => {
+    if (obj && obj.orientation) {
+      args.orientation = obj.orientation
+      const {
+        hierarchy
+      } = obj;
+      if (hierarchy && hierarchy.length) {
+        const branchData = hierarchy.find(x => x.level === 5);
+        if (branchData && branchData.child) args.branch = branchData.child;
+      }
+    }
+    const query = getTextbooksQuery(args)
+    const skip = (args.pageNumber - 1) * args.limit;
+    return TextbookModel(context).then((Textbook) => {
+      return Promise.all([Textbook.count(query), Textbook.find(query).skip(skip).limit(args.limit)]).then(([count, data]) => {
+         count = count ? count: 0;
+         data = data && data.length ? data:[];
+      return {
+        data,
+        count
+      }
+    })
+  })
+})
 }
 
 export async function getHierarchyData(context, hierarchyCodes) {
@@ -383,7 +413,7 @@ function cleanUploadBranchAndOrientationiMappingTextbookData(data) {
   return data;
 }
 
-function validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, uniqueBranches, uniqueOrientations) {
+function  validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, uniqueBranches, uniqueOrientations) {
   const result = {
     success: true,
     message: 'Invalid data',
@@ -500,6 +530,15 @@ function validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, un
       finalOrientations.push(uniqueOrientationsObj[x]);
     })
     obj.orientations = finalOrientations;
+
+    if(obj['view order']) {
+      obj['view order'] = Number(obj['view order'])
+      if(!obj['view order']) {
+        result.success = false;
+        result.message = `Row ${row}, Invalid VIEW ORDER (${obj['view order']})`;
+        errors.push(result.message);
+      }
+    }
   }
 
   if (errors.length) result.errors = errors;
@@ -521,7 +560,6 @@ export async function uploadBranchAndOrientationiMappingTextbook(req, res) {
   });
   // converting the sheet data to csv
   let data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-  // console.log(data);
   data = cleanUploadBranchAndOrientationiMappingTextbookData(data);
 
   if (!data.length) return res.status(400).end('No Data found');
@@ -548,6 +586,9 @@ export async function uploadBranchAndOrientationiMappingTextbook(req, res) {
           orientations: obj.orientations
         }
       };
+      if(obj['view order']) {
+        patch.$set.viewOrder = obj['view order'];
+      }
       bulk.find(query).updateOne(patch);
     })
     bulk.execute().then(() => {
@@ -579,6 +620,139 @@ export async function checkStudentHasTextbook(args, ctx) {
     throw err;
   }
 }
+
+//Based on the orientation, branch, class and subject of teacher
+export async function getTextbookForTeachers(args, context) {
+  try{
+    const Textbook = await TextbookModel(context);
+    let findQuery = {}
+    if(args.branch ){
+      findQuery["branches"] = args.branch
+    }
+    if(args.orientation){
+      findQuery["orientations"] = args.orientation
+    }
+    if(args.classCode){
+      findQuery["refs.class.code"] = args.classCode
+    }
+    if(args.subjectCode){
+      findQuery["refs.subject.code"] = args.subjectCode
+    }
+
+    const textbooks = await Textbook.find(findQuery).lean();
+    const textbookCodes = textbooks.map(obj => obj.code);
+    return textbookCodes;
+  }catch(err){
+    throw err;
+  }
+}
+export async function getChapterWiseList(args, context) {
+  const [Textbook, ConcpetTaxonomy, Subject] = await Promise.all([
+    TextbookModel(context),
+    ConcpetTaxonomyModel(context),
+    SubjectModel(context)]);
+  if (!args && !args.classCode && !args.subjectCode && !args.textbookCode) {
+    throw new Error('Nothing is Provided');
+  }
+  const skip = (args.pageNumber - 1) * args.limit;
+  const { classCode, subjectCode, textbookCode } = args;
+  const subjectQuery = { active: true, viewOrder: { $ne: null } }
+  const textbookQuery = { active: true, viewOrder: { $ne: null } }
+  const conceptTaxonomyQuery = { active: true, viewOrder: { $ne: null }, levelName: "topic" }
+  if (classCode) {
+    subjectQuery["refs.class.code"]=classCode
+    textbookQuery["refs.class.code"] =  classCode
+  }
+  if (subjectCode) {
+    subjectQuery.code = subjectCode
+    textbookQuery["refs.subject.code"] = subjectCode
+  }
+    if (textbookCode) {
+      textbookQuery.code = textbookCode
+      conceptTaxonomyQuery["refs.textbook.code"] = textbookCode
+    }
+    const projectionForSubject = {
+      subject: 1,
+      _id: 0,
+      code: 1,
+      viewOrder: 1,
+      refs: 1
+    }
+    const projectionForTextbook = {
+      name: 1,
+      _id: 0,
+      code: 1,
+      viewOrder: 1,
+      refs: 1,
+      imageUrl: 1
+    }
+    const projectionForConceptTaxonomies = {
+      viewOrder: 1,
+      code: 1,
+      child: 1,
+      refs: 1
+    }
+    let resArray = [];
+    let subjectObject = {}
+    let textbookObject = {}
+    let textbookCodes = []
+    let classCodes = []
+    let subjectCodes = []
+  let subjectData = await Subject.find(subjectQuery).select(projectionForSubject).sort({ "refs.class.name": 1 }).lean();
+    subjectData.forEach(subject => {
+            subjectObject[subject.code] = subject
+            classCodes.push(subject.refs.class.code)
+            subjectCodes.push(subject.code)
+          })
+    if (!classCode) {
+      textbookQuery["refs.class.code"] = {
+        $in: classCodes
+      }
+      textbookQuery["refs.subject.code"] = {
+        $in: subjectCodes
+      }
+    }
+  let textbookData = await Textbook.find(textbookQuery).select(projectionForTextbook).lean();
+    textbookData.forEach(textbook => {
+      textbookObject[textbook.code] = textbook
+      textbookCodes.push(textbook.code)
+    })
+    if (!textbookCode) {
+      conceptTaxonomyQuery["refs.textbook.code"] = {
+        $in: textbookCodes
+      }
+    }
+  let [concpetTaxonomyData, count]=await Promise.all([ConcpetTaxonomy.find(conceptTaxonomyQuery)
+    .select(projectionForConceptTaxonomies).skip(skip).limit(args.limit).lean(),
+                       ConcpetTaxonomy.count(conceptTaxonomyQuery)]);
+    concpetTaxonomyData.forEach(concpetTaxonomy => {
+      const data = {
+        class: {
+          name: textbookObject[concpetTaxonomy.refs.textbook.code].refs.class.name,
+          code: textbookObject[concpetTaxonomy.refs.textbook.code].refs.class.code,
+        },
+        subject: {
+          name: subjectObject[textbookObject[concpetTaxonomy.refs.textbook.code].refs.subject.code].subject,
+          code: subjectObject[textbookObject[concpetTaxonomy.refs.textbook.code].refs.subject.code].code,
+          viewOrder: subjectObject[textbookObject[concpetTaxonomy.refs.textbook.code].refs.subject.code].viewOrder,
+        },
+        textbook: {
+          name: textbookObject[concpetTaxonomy.refs.textbook.code].name,
+          code: textbookObject[concpetTaxonomy.refs.textbook.code].code,
+          viewOrder: textbookObject[concpetTaxonomy.refs.textbook.code].viewOrder,
+          imageUrl: textbookObject[concpetTaxonomy.refs.textbook.code].imageUrl,
+        },
+        chapter: {
+          name: concpetTaxonomy.child,
+          code: concpetTaxonomy.code,
+          viewOrder: concpetTaxonomy.viewOrder,
+        }
+      }
+    resArray.push(data)
+  })
+  return [count, resArray];
+}
+
 export default {
   getHierarchyData
 }
