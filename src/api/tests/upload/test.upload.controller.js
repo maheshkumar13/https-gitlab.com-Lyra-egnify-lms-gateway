@@ -172,7 +172,8 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
     textbookCode,
     branch,
     orientation,
-    header
+    header,
+    gaStatus
   } = args;
   let groupby = 'code';
   if(header === 'class') groupby = 'refs.class.code';
@@ -221,6 +222,9 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
   // if(contentTypeMatchOrData.length) contentQuery['$or'] = contentTypeMatchOrData;
   
   if (chapterCode) contentQuery['mapping.chapter.code'] = chapterCode;
+  if (gaStatus){
+    contentQuery['gaStatus'] = "finished"
+  }
   const aggregateQuery = []; 
   const contentMatchQuery = {
     $match: contentQuery,
