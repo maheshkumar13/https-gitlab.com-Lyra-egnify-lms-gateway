@@ -21,4 +21,6 @@ router.post('/upload-mapping', multer.single('file'), controller.uploadTestMappi
 router.post('/upload-timing/:testId',multer.single('file'), controller.uploadTestiming)
 router.get('/testtiming/:testId', timingController.getTestTiming);
 router.post('/publish-test', controller.publishTest);
+router.get('/test-summary',controller.getTestCompletionStats);
+router.get('/student-test-stats',controller.getStudentWiseTestStats);
 module.exports = router
