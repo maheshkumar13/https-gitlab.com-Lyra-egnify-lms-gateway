@@ -7,7 +7,7 @@ import {
 } from '../../settings/textbook/textbook.model';
 const xlsx = require('xlsx');
 import {getModel as Questions} from '../questions/questions.model';
-
+import {getModel as StudentInfoSchema} from '../../settings/student/student.model'
 import {
   getModel as Chapter
 } from '../../settings/conceptTaxonomy/concpetTaxonomy.model'
