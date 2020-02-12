@@ -8,7 +8,7 @@ const instituteId = "Egni_u001"
 export function TestSummary() {
     // * * * * *
     // 0 1 * * * 
-    cron.schedule('0 3 * * *', async () => {
+    cron.schedule('0 0 3 * * *', async () => {
         try{
             const Textbook = await TextbookSchema({instituteId});
             const MasterResults = await MasterResultSchema({instituteId});
