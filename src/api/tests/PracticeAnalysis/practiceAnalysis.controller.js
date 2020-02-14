@@ -123,7 +123,8 @@ export async function getStudentWisePracticeStats(req, res){
             "$match":{
                 "orientation": Orientation,
                 "hierarchyLevels.L_5": Branch,
-                "hierarchyLevels.L_2": Class
+                "hierarchyLevels.L_2": Class,
+                "active": true
             }
         }
         if(Section){
