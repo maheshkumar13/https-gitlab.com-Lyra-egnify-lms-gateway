@@ -38,6 +38,9 @@ export function practiceSummary() {
                                         },
                                         {
                                             "$eq": ["$active", true]
+                                        },
+                                        {
+                                            "$eq": ["$gaStatus", true]
                                         }
                                     ]
                                 }
