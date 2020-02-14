@@ -156,6 +156,7 @@ export const DashboardHeadersAssetCountInputType = new InputType({
     contentCategory: { type: new List(StringType), description: 'content category' },
     header: { type: NonNull(DashboardHeaderEnumType), description: 'Header' },
     readingMaterialAudio: { type: BooleanType, description: 'Default false, set true for headers count for the reading materials which has audios' },
+    gaStatus: { type: BooleanType, description: "Filter for teacher corner performance"}
   },
 });
 
