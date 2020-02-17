@@ -6,8 +6,6 @@ import { getModel as StudentInfoModel } from '../../settings/student/student.mod
 const instituteId = "Egni_u001"
 
 export function practiceSummary() {
-    // * * * * *
-    // 0 1 * * * *
     cron.schedule('0 0 2 * * *', async () => {
         try{
             const Textbook = await TextbookSchema({instituteId});
@@ -29,22 +27,11 @@ export function practiceSummary() {
                         },
                         "pipeline": [{
                             "$match": {
-                                "$expr": {
-                                    "$and": [{
-                                            "$eq": ["$refs.textbook.code", "$$code"]
-                                        },
-                                        {
-                                            "$eq": ["$content.category", "Practice"]
-                                        },
-                                        {
-                                            "$eq": ["$active", true]
-                                        },
-                                        {
-                                            "$eq": ["$gaStatus", true]
-                                        }
-                                    ]
+                                "active": true,
+                                "gaStatus": true,
+                                "content.category": "Practice",
+                                "$expr": {"$eq": ["$refs.textbook.code", "$$code"]}
                                 }
-                            }
                         }],
                         "as": "practices"
                     }
