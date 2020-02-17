@@ -1202,7 +1202,9 @@ function totalTimeSpentQuestionWise(questionResponse){
 export async function getTestCompletionStats(req, res){
   try{
     let { Branch, Orientation , Class, limit, skip } = req.query;
-    let getQuery = {}
+    let getQuery = {
+      "numberOfTests":{$gt: 0}
+    }
     if(Branch){
         getQuery["branch"] = Branch
     }

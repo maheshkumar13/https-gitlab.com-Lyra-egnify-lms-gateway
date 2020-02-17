@@ -37,7 +37,9 @@ export async function getPracticeAnalysis(req, res) {
 export async function getPracticeCompletionStats(req, res){
     try{
         let { Branch, Orientation , Class, limit, skip } = req.query;
-        let getQuery = {}
+        let getQuery = {
+            "numberOfPractices": {$gt: 0}
+        }
         if(Branch){
             getQuery["branch"] = Branch
         }
