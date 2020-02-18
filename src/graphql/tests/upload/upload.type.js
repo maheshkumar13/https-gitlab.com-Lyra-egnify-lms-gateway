@@ -6,7 +6,7 @@ import {
     GraphQLObjectType as ObjectType,
     GraphQLList as ListType,
     GraphQLBoolean as BooleanType,
-    GraphQLEnumType as EnumType
+    GraphQLEnumType as EnumType,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 
@@ -276,7 +276,8 @@ export const TestHeadersAssetCountInputType = new InputType({
       textbookCode: { type: StringType, description: 'Code of the textBook' },
       branch: { type: StringType, description: 'Branch name' },
       orientation: { type: StringType, description: 'Orientaion name' },
-      header: { type: NonNull(TestHeaderEnumType), description: 'Header' }
+      header: { type: NonNull(TestHeaderEnumType), description: 'Header' },
+      gaStatus: { type: BooleanType, description: "Filter for fetching performance data"}
     },
 });
 
@@ -301,3 +302,35 @@ export const CmsTestStatsInputType = new InputType({
       count: { type: IntType, description: 'Count of the files which belongs to that category' },
     },
   });
+const studentAnalysis = new ObjectType({
+    name: "studentAnalysis",
+    fields: {
+        "studentId": {type: StringType},
+        "studentName": {type: StringType},
+        "branchName": {type: StringType},
+        "class": {type: StringType},
+        "section": {type: StringType},
+        "subject": {type: StringType},
+        "testName": {type: StringType},
+        "totalNumberOfQuestions": {type: IntType},
+        "cwuDetailsInGroupOfDifficulty": {type: GraphQLJSON},
+        "timeSpentOnEachQuestion": {type: GraphQLJSON},
+        "questionWiseCwu": {type: GraphQLJSON},
+        "totalMarksObtianed": {type: IntType},
+        "totalMarksObtainedByApplication": {type: StringType},
+        "totalMarksObtainedByKnowledge": {type: StringType},
+        "totalMarksObtainedByInference": {type: StringType},
+        "textbook": {type: StringType},
+        "Correct": {type: IntType},
+        "Wrong": {type: IntType},
+        "Unattempted": {type: IntType}
+    }
+})
+
+export const TestAnalysisOutputType = new ObjectType({
+    name: "TestAnalysisOutputType",
+    fields: {
+        studentAnalysis:{type: new ListType(studentAnalysis)},
+        count: {type: IntType}
+    }
+})

@@ -1,8 +1,8 @@
-import {listTest , listTextBooksWithTestSubectWise, getDashboardHeadersAssetCountV2, getCMSTestStats } from '../../../api/tests/upload/test.upload.controller';
-import {ListInputType, ListTestOutput, TestHeadersAssetCountInputType,CmsTestStatsInputType,CmsTestStatsOutputType} from './upload.type';
+import {listTest , listTextBooksWithTestSubectWise, getDashboardHeadersAssetCountV2, getCMSTestStats, testAnalysis } from '../../../api/tests/upload/test.upload.controller';
+import {ListInputType, ListTestOutput, TestHeadersAssetCountInputType,CmsTestStatsInputType,CmsTestStatsOutputType, TestAnalysisOutputType } from './upload.type';
 import {getStudentDetailsById} from '../../../api/settings/student/student.controller';
 import {getTextbooks, getTextbookForTeachers} from '../../../api/settings/textbook/textbook.controller';
-import {GraphQLString as StringType, GraphQLNonNull as NonNull, GraphQLList as List } from 'graphql';
+import {GraphQLString as StringType, GraphQLNonNull as NonNull, GraphQLList as List, GraphQLInt as IntType } from 'graphql';
 import { validateAccess } from '../../../utils/validator';
 import {fetchNodesWithContext} from '../../../api/settings/instituteHierarchy/instituteHierarchy.controller'
 import GraphQLJSON from 'graphql-type-json';
@@ -114,4 +114,21 @@ export const CmsTestStats = {
       return getCMSTestStats(args.input, context)
         .then(async json => json);
     },
-  };
+};
+
+export const TestAnalysis = {
+    args:{
+        testId: { type: StringType, description: "Test Id"},
+        studentId: { type: StringType, description: "Student Id"},
+        limit: { type: IntType, description: "Number of rows to be returned"},
+        skip: { type: IntType, description: "Number of rows to skip"}
+    },
+    type: TestAnalysisOutputType,
+    async resolve (objects,args,context){
+        try{
+            return await testAnalysis(args,context)
+        }catch(err){
+            throw new Error(err);
+        }
+    }
+}
