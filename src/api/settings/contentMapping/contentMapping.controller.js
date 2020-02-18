@@ -503,6 +503,12 @@ export async function uploadContentMappingv2(req, res) {
       errors.push(`Invalid view order at row ${row}`);
     }
 
+    // VALIDATING VIEW ORDER
+    const studyWeek = parseInt(obj['study week']);
+    if (obj['study week'] && (!Number.isInteger(studyWeek) || studyWeek < 1 || studyWeek > 52)) {
+      errors.push(`Invalid study week at row ${row}`);
+    }
+
     const className = obj.class.toLowerCase();
     const subjectName = obj.subject.toLowerCase();
     const textbookName = obj.textbook.toLowerCase();
@@ -555,6 +561,7 @@ export async function uploadContentMappingv2(req, res) {
       category: obj.category,
       coins: coins ? coins : 0,
       viewOrder: viewOrder,
+      studyWeek,
       refs: {
         topic: {
           code: chapterObj.topicCode,
