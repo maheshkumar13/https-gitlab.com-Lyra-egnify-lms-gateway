@@ -65,7 +65,7 @@ export const StudentLevelTimeAnalysis = {
   },
   type: TimeAnalysisPaginatedType,
   async resolve(obj, args, context) {
-    const validRoles = ['LMS_ENGAGEMENT_VIEWER'];
+    const validRoles = ['LMS_ENGAGEMENT_VIEWER', 'Egni_u001_student'];
     if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     if (!args.pageNumber) args.pageNumber = 1; // eslint-disable-line
     if (!args.limit) args.limit = 0; // eslint-disable-line

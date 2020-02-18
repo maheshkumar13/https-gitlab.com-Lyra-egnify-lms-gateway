@@ -656,9 +656,9 @@ export async function getChapterWiseList(args, context) {
   }
   const skip = (args.pageNumber - 1) * args.limit;
   const { classCode, subjectCode, textbookCode } = args;
-  const subjectQuery = { active: true, viewOrder: { $ne: null } }
-  const textbookQuery = { active: true, viewOrder: { $ne: null } }
-  const conceptTaxonomyQuery = { active: true, viewOrder: { $ne: null }, levelName: "topic" }
+  const subjectQuery = { active: true  }
+  const textbookQuery = { active: true }
+  const conceptTaxonomyQuery = { active: true, levelName: "topic" }
   if (classCode) {
     subjectQuery["refs.class.code"]=classCode
     textbookQuery["refs.class.code"] =  classCode
@@ -717,11 +717,9 @@ export async function getChapterWiseList(args, context) {
       textbookObject[textbook.code] = textbook
       textbookCodes.push(textbook.code)
     })
-    if (!textbookCode) {
       conceptTaxonomyQuery["refs.textbook.code"] = {
         $in: textbookCodes
       }
-    }
   let [concpetTaxonomyData, count]=await Promise.all([ConcpetTaxonomy.find(conceptTaxonomyQuery)
     .select(projectionForConceptTaxonomies).skip(skip).limit(args.limit).lean(),
                        ConcpetTaxonomy.count(conceptTaxonomyQuery)]);

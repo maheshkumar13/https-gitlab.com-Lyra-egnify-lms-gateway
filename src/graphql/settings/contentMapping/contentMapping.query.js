@@ -227,7 +227,7 @@ export const ContentMapping = {
 export const ContentMappingStats = {
   type: GraphQLJSON,
   async resolve(obj, args, context) {
-    const validRoles = ['LMS_LEARN_VIEWER'];
+    const validRoles = ['LMS_LEARN_VIEWER', 'Egni_u001_student'];
     if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     return controller.getContentMappingStats(args, context);
   }
