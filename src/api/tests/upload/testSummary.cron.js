@@ -40,7 +40,7 @@ export function TestSummary() {
                         "orientation": "$orientations",
                         "branch": "$branches",
                         "class": "$refs.class.name",
-                        "numberOftests": {
+                        "numberOfTests": {
                             "$cond": {
                                 "if": {
                                     "$isArray": "$tests"
@@ -66,7 +66,7 @@ export function TestSummary() {
                                branch: "$branch",
                                class: "$class"
                            },
-                           numberOftests: {$sum: "$numberOftests"}
+                           numberOfTests: {$sum: "$numberOfTests"}
                     }
                 },
                 {
@@ -74,7 +74,7 @@ export function TestSummary() {
                         "orientation": "$_id.orientation",
                         "branch": "$_id.branch",
                         "class": "$_id.class",
-                        "numberOftests": 1,
+                        "numberOfTests": 1,
                         _id: 0
                     }
                 }
