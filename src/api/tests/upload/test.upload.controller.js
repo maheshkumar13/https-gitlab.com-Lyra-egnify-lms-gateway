@@ -7,7 +7,7 @@ import {
 } from '../../settings/textbook/textbook.model';
 const xlsx = require('xlsx');
 import {getModel as Questions} from '../questions/questions.model';
-
+import {getModel as StudentInfoSchema} from '../../settings/student/student.model'
 import {
   getModel as Chapter
 } from '../../settings/conceptTaxonomy/concpetTaxonomy.model'
@@ -20,7 +20,7 @@ const uuidv4 = require("uuid/v4");
 import {getModel as Hierarchy} from '../../settings/instituteHierarchy/instituteHierarchy.model';
 import {getModel as Subject} from '../../settings/subject/subject.model';
 import {getModel as MasterResult } from './masterresults.model';
-
+import {getModel as TestSummarySchema } from './testSummary.model';
 const MAPPING_HEADERS = ["class","subject","textbook","chapter","test name","view order"]
 const SUPPORTED_MEDIA_TYPE = ["docx","xlsx","xml"];
 const TEST_TIMING_HEADERS = ["branches","end date","start date","duration"];
@@ -172,7 +172,8 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
     textbookCode,
     branch,
     orientation,
-    header
+    header,
+    gaStatus
   } = args;
   let groupby = 'code';
   if(header === 'class') groupby = 'refs.class.code';
@@ -221,6 +222,9 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
   // if(contentTypeMatchOrData.length) contentQuery['$or'] = contentTypeMatchOrData;
   
   if (chapterCode) contentQuery['mapping.chapter.code'] = chapterCode;
+  if (gaStatus){
+    contentQuery['gaStatus'] = "finished"
+  }
   const aggregateQuery = []; 
   const contentMatchQuery = {
     $match: contentQuery,
@@ -1193,4 +1197,120 @@ function totalTimeSpentQuestionWise(questionResponse){
 		}
 	}
 	return {timeSpent, marksObtained};
+}
+
+export async function getTestCompletionStats(req, res){
+  try{
+    let { Branch, Orientation , Class, limit, skip } = req.query;
+    let getQuery = {
+      "numberOfTests":{$gt: 0}
+    }
+    if(Branch){
+        getQuery["branch"] = Branch
+    }
+    if(Orientation){
+        getQuery["orientation"] = Orientation
+    }
+    if(Class){
+        getQuery["class"] = Class
+    }
+    limit = parseInt(limit) ? limit : 0;
+    skip = parseInt(skip) ? skip : 0;
+    limit = parseInt(limit)
+    skip = parseInt(skip)
+    const TestSummary = await TestSummarySchema(req.user_cxt);
+    const [result,count] = await Promise.all([
+        TestSummary.find(getQuery).skip(skip).limit(limit).lean(),
+        TestSummary.count(getQuery)])
+    return res.status(200).send({result,count})
+  }catch(err){
+    console.log(err);
+    return res.status(500).send("internal server error");
+  }
+}
+
+export async function getStudentWiseTestStats(req, res){
+  try{
+      let { Branch, Class, Orientation, Section, limit, skip} = req.query;
+      limit = parseInt(limit) ? limit : 0;
+      skip = parseInt(skip) ? skip : 0;
+      limit = parseInt(limit)
+      skip = parseInt(skip)
+      if( !Branch || !Class || !Orientation){
+          return res.status(400).send("Bad Req.")
+      }
+      let aggregateQuery = [
+          {
+              "$lookup":{
+                  "from": "test_masterresults",
+                  "let": { studentId: "$studentId"},
+                  "pipeline": [
+                      {
+                          "$match": {
+                              "$expr":{
+                                  "$eq": ["$studentId", "$$studentId"]
+                              }
+                          }
+                      },
+                      {
+                          "$group":{
+                              "_id": {
+                                  "studentId": "$studentId",
+                                  "testId": "$testId"
+                              }
+                          }
+                      }
+                  ],		
+                  "as": "testInfo"
+              }
+          },{
+              "$project":{
+                  "studentId": 1,
+                  "class": "$hierarchyLevels.L_2",
+                  "branch": "$hierarchyLevels.L_5",
+                  "orientation": 1,
+                  "section": "$hierarchyLevels.L_6",
+                  "attemptedTest": {
+                      $cond: {
+                          if: {
+                              $isArray: "$testInfo"
+                          },
+                          then: {
+                              $size: "$testInfo"
+                          },
+                          else: 0
+                      }
+                  },
+                  studentName: 1,
+                  _id: 0
+              }
+          }
+      ];
+      let matchQuery = {
+          "$match":{
+              "orientation": Orientation,
+              "hierarchyLevels.L_5": Branch,
+              "hierarchyLevels.L_2": Class,
+              "active": true
+          }
+      }
+      if(Section){
+          matchQuery["$match"]["hierarchyLevels.L_6"] = Section; 
+      }
+      aggregateQuery.splice(0,0,matchQuery);
+      aggregateQuery.splice(1,0,{$skip: skip})
+      if(limit){
+          aggregateQuery.splice(2,0,{$limit: limit});
+      }
+
+      const StudentInfo = await StudentInfoSchema(req.user_cxt);
+      let [results,count] = await Promise.all([
+          StudentInfo.aggregate(aggregateQuery).allowDiskUse(true),
+          StudentInfo.count(matchQuery["$match"])
+      ]);
+      return res.status(200).send({ results, count});        
+  }catch(err){
+      console.log(err);
+      return res.status(500).send("internal server error");
+  }
 }

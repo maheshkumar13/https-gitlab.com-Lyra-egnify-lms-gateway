@@ -1083,7 +1083,8 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
     branch,
     orientation,
     contentCategory,
-    header
+    header,
+    gaStatus
   } = args;
   let groupby = 'code';
   if(header === 'class') groupby = 'refs.class.code';
@@ -1128,6 +1129,11 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
     active: true,
     'refs.textbook.code': { $in: textbookCodes },
   };
+  let contentCategoryLength = contentCategory.length;
+  if(contentCategoryLength && contentCategoryLength === 1
+     && contentCategory[0] === "Practice" && gaStatus){
+    contentQuery["gaStatus"] = true
+  }
 
   if(args.readingMaterialAudio === true) {
     contentQuery['content.category'] = { $in: ['Reading Material']};
