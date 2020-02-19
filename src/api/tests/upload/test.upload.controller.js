@@ -86,11 +86,10 @@ function getFileData(req){
 export async function listTest(args, ctx) {
   try {
     const queries = queryForListTest(args);
-    let activeStatus = true;
-    if(args.active === false) {
-      activeStatus = false
-    } 
-    let find = {"mapping.textbook.code":{"$in": args.textbookCode}, active: activeStatus};
+    let find = {"mapping.textbook.code":{"$in": args.textbookCode}};
+    if(args.active) {
+      find["active"] = true;
+    }
     if(args.gaStatus){
       find["gaStatus"] = args.gaStatus
     }
