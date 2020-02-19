@@ -172,7 +172,8 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
     branch,
     orientation,
     header,
-    gaStatus
+    gaStatus,
+    active
   } = args;
   let groupby = 'code';
   if(header === 'class') groupby = 'refs.class.code';
@@ -213,8 +214,7 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
 
   textbookCodes = Array.from(new Set(textbookCodes));
 
-  const contentQuery = { 
-    active: true,
+  const contentQuery = {
     'mapping.textbook.code': { $in: textbookCodes },
   };
   //const contentTypeMatchOrData = getContentTypeMatchOrData(contentCategory);
@@ -223,6 +223,9 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
   if (chapterCode) contentQuery['mapping.chapter.code'] = chapterCode;
   if (gaStatus){
     contentQuery['gaStatus'] = "finished"
+  }
+  if(active){
+    contentQuery["active"] = true;
   }
   const aggregateQuery = []; 
   const contentMatchQuery = {
