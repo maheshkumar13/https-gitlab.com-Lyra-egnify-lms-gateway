@@ -277,7 +277,8 @@ export const TestHeadersAssetCountInputType = new InputType({
       branch: { type: StringType, description: 'Branch name' },
       orientation: { type: StringType, description: 'Orientaion name' },
       header: { type: NonNull(TestHeaderEnumType), description: 'Header' },
-      gaStatus: { type: BooleanType, description: "Filter for fetching performance data"}
+      gaStatus: { type: BooleanType, description: "Filter for fetching performance data"},
+      active: { type: BooleanType}
     },
 });
 
