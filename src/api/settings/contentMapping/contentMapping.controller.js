@@ -2383,10 +2383,13 @@ function validateHeadersForPractice(data, errors, maxLimit) {
   }
   return errors;
 }
+
 export async function uploadPracticeMapping(req, res) {
-  if (!req.file) return res.status(400).end('File required');
+  try{
+    if (!req.file) return res.status(400).end('File required');
   	// validate extension
-	const name = req.file.originalname.split('.');
+  const name = req.file.originalname.split('.');
+  let dumpingArray = [];
 	const extname = name[name.length - 1];
 	if (extname !== 'xlsx') {
 	  return res.status(400).end('Invalid extension, please upload .xlsx file');
@@ -2411,7 +2414,6 @@ export async function uploadPracticeMapping(req, res) {
   }
   const dbData = await getDbDataForValidation(req.user_cxt)
   const ContentMapping = await ContentMappingModel(req.user_cxt);
-  const bulk = ContentMapping.collection.initializeUnorderedBulkOp();
   const contentTypes = config.CONTENT_TYPES || {};
 
   for(let i=0; i < data.length; i+=1) {
@@ -2507,7 +2509,15 @@ export async function uploadPracticeMapping(req, res) {
       },
       "assetId" : obj['asset id'] || crypto.randomBytes(10).toString('hex')
     };
-    bulk.find({assetId: temp.assetId}).upsert().updateOne(temp);
+    dumpingArray.push({
+      updateOne: {
+          filter: { "assetId": temp["assetId"] },
+          update: {"$set": temp},
+          upsert: true,
+          setDefaultsOnInsert: true
+      }
+    })
+    // bulk.find({assetId: temp.assetId}).upsert().updateOne(temp);
   }
 if(errors.length) {
   console.info('sending errors..')
@@ -2517,14 +2527,19 @@ if(errors.length) {
     errors,
   })
 }
-console.info('bulk executing..')
-  return bulk.execute().then(() => {
-    console.info(req.file.originalname, 'Uploaded successfully....')
-    return res.send('Data inserted/updated successfully')
-  }).catch((err) => {
-    console.error(err);
-    return res.status(400).end('Error occured');
-  });
+await ContentMapping.bulkWrite(dumpingArray);
+return res.send('Data inserted/updated successfully')
+  }catch(err){
+    console.log(err)
+    return res.status(500).send("Error occured");
+  }
+  // return bulk.execute().then(() => {
+  //   console.info(req.file.originalname, 'Uploaded successfully....')
+  //   return res.send('Data inserted/updated successfully')
+  // }).catch((err) => {
+  //   console.error(err);
+  //   return res.status(400).end('Error occured');
+  // });
 }
 
 export async function getCMSPracticeStatsV2(args, context) {
