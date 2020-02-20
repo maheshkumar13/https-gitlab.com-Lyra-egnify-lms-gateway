@@ -12,21 +12,15 @@ import { getDB } from '../../../db';
 const optionsSchema = new mongoose.Schema({
   optionText: { type: String },
   option: { type: String },
-  error: {},
-  comment: { type: String },
 });
 
 const QuestionSchema = new mongoose.Schema({
   questionPaperId: { type: String },
   question: { type: String },
-  error: {},
+  errors: { type: Array, default: []},
   qno: { type: String },
   isGlobalErroneous: { type: Boolean },
   options: { type: [optionsSchema] },
-  C: { type: Number },
-  W: { type: Number },
-  U: { type: Number },
-  P: { type: Number },
   ADD: { type: Number, default: 0 },
   q_type: { type: String },
   q_category: { type: String },
@@ -38,15 +32,14 @@ const QuestionSchema = new mongoose.Schema({
   skill: { type: String },
   solution: { type: String },
   xml_id: { type: Number },
-  chapter : {
-    code : { type : String , default : null},
-    name : { type : String , default : null}
-  },
   questionNumberId: { type: String},
   subject: { type: String},
   optionHash: { type: String},
   questionHash: { type: String},
-  keyHash: { type: String}
+  keyHash: { type: String},
+  C: { type: Number, default: null},
+  warnings: { type : [String], default: []},
+  table_no: { type: Number, default: null}
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 });
