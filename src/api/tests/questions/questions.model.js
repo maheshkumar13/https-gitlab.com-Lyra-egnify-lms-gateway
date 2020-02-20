@@ -21,7 +21,6 @@ const QuestionSchema = new mongoose.Schema({
   qno: { type: String },
   isGlobalErroneous: { type: Boolean },
   options: { type: [optionsSchema] },
-  ADD: { type: Number, default: 0 },
   q_type: { type: String },
   q_category: { type: String },
   key: { type: [String] },
@@ -39,7 +38,8 @@ const QuestionSchema = new mongoose.Schema({
   keyHash: { type: String},
   C: { type: Number, default: null},
   warnings: { type : [String], default: []},
-  table_no: { type: Number, default: null}
+  table_no: { type: Number, default: null},
+  concept_name: { type: String,default: null}
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 });
