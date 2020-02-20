@@ -324,7 +324,8 @@ const studentAnalysis = new ObjectType({
         "textbook": {type: StringType},
         "Correct": {type: IntType},
         "Wrong": {type: IntType},
-        "Unattempted": {type: IntType}
+        "Unattempted": {type: IntType},
+        "orientation": {type: StringType},
     }
 })
 

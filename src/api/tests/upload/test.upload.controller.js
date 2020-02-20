@@ -1047,7 +1047,8 @@ export async function testAnalysis(args, context) {
               "testInfo.mapping.textbook.name": 1,
               "responseData.questionResponse": 1,
               "studentInfo.hierarchy": 1,
-              "cwuAnalysis": 1
+              "cwuAnalysis": 1,
+              "studentInfo.orientation": 1
           }
       }
       if (testId && testId.length) {
@@ -1117,7 +1118,8 @@ export async function testAnalysis(args, context) {
               "textbook": studentAnalysis[i]["testInfo"]["mapping"]["textbook"]["name"],
               "Correct": studentAnalysis[i]["cwuAnalysis"]["overall"]["C"],
               "Wrong": studentAnalysis[i]["cwuAnalysis"]["overall"]["W"],
-              "Unattempted": studentAnalysis[i]["cwuAnalysis"]["overall"]["U"]
+              "Unattempted": studentAnalysis[i]["cwuAnalysis"]["overall"]["U"],
+              "orientation": studentAnalysis[i]["studentInfo"]["orientation"]
           }
           dumpingArray.push(analysisObject)
       }
