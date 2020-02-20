@@ -17,7 +17,7 @@ const optionsSchema = new mongoose.Schema({
 const QuestionSchema = new mongoose.Schema({
   questionPaperId: { type: String },
   question: { type: String },
-  errors: { type: Array, default: []},
+  error: { type: Array, default: []},
   qno: { type: String },
   isGlobalErroneous: { type: Boolean },
   options: { type: [optionsSchema] },

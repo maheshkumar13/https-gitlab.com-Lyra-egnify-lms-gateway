@@ -22,7 +22,7 @@ export const QuestionType = new ObjectType({
   fields: {
     questionPaperId: { type: StringType, description: 'Unique identifier for question paper' },
     question: { type: StringType, description: 'question text' },
-    errors: { type: GraphQLJSON, description: 'Error if any' },
+    error: { type: GraphQLJSON, description: 'Error if any' },
     qno: { type: StringType, description: 'Question number' },
     options: { type: GraphQLJSON, description: 'List of options' },
     q_type: { type: StringType, description: 'question type' },
