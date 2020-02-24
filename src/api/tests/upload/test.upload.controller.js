@@ -702,7 +702,7 @@ export async function  uploadTestiming(req, res){
 //start date and end date format(18/11/2019 - 17:00:00)
 //duration is in minutes
 function validateTestTimingRows (data){
-  const timeBuff = 60 * 1000 * 2;
+  const timeBuff = 60 * 1000;
   const currentTime = new Date().getTime();
   let errors = []
   const length = data.length
@@ -749,7 +749,7 @@ function validateTestTimingRows (data){
     }else{
       let durationInMsWithBuff = parseInt(data[i]["duration"]) * timeBuff ;
       if(dateDiffInMs <= durationInMsWithBuff ){
-        return errorDetails.push("Minimum difference between start date and end date should be 3hrs plus duration.")
+        return errorDetails.push("Minimum difference between start date and end date should be equal to duration.")
       }
     }
 
