@@ -93,6 +93,9 @@ export async function listTest(args, ctx) {
     if(args.gaStatus){
       find["gaStatus"] = args.gaStatus
     }
+    if(args.reviewed){
+      find["reviewed"] = true;
+    }
     const TestSchema = await Tests(ctx);
     let limit = args.limit ? args.limit : 0;
     let skip = args.pageNumber ? args.pageNumber - 1 : 0;
@@ -122,11 +125,16 @@ export async function listTest(args, ctx) {
 export async function listTextBooksWithTestSubectWise(args, ctx) {
   try {
     const TestSchema = await Tests(ctx);
+    let match = {
+      "active": true,
+      "mapping.textbook.code" : { "$in" : args.textbookCodes },
+      "reviewed": true
+    }
+    if(ctx.dummy){
+      delete match["reviewed"];
+    }
     const list = await TestSchema.aggregate([{
-      $match: {
-        "active": true,
-        "mapping.textbook.code" : { "$in" : args.textbookCodes }
-      }
+      $match: match
     }, {
       $group: {
         "_id": "$mapping.textbook.code",
@@ -173,7 +181,8 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
     orientation,
     header,
     gaStatus,
-    active
+    active,
+    reviewed
   } = args;
   let groupby = 'code';
   if(header === 'class') groupby = 'refs.class.code';
@@ -226,6 +235,9 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
   }
   if(active){
     contentQuery["active"] = true;
+  }
+  if(reviewed){
+    contentQuery["reviewed"] = true;
   }
   const aggregateQuery = []; 
   const contentMatchQuery = {
@@ -828,15 +840,18 @@ export async function publishTest(req, res){
       TestTimings(req.user_cxt),Questions(req.user_cxt),Tests(req.user_cxt)]);
     const [testTiming, questionsCount] = await Promise.all([
       TestTimingSchema.aggregate([{$match: {testId}},
-      {$group: {"_id": "$testId",maxDate: {$max: "$endTime"},maxDuration: {$max: "$duration"}}},
+      {$group: {"_id": "$testId",maxDate: {$max: "$endTime"},minDate: {$min: "$startTime"},maxDuration: {$max: "$duration"}}},
       {$lookup:{from: "tests", foreignField: "testId", "localField": "testId","as": "testInfo"}},
       {$unwind: "$testInfo"},
-      {$project:{testName: "$testInfo.test.name",maxDuration: 1,maxDate: 1}}]),
+      {$project:{testName: "$testInfo.test.name",maxDuration: 1,maxDate: 1, minDate: 1}}]),
       QuestionsSchema.count({questionPaperId})
     ]);
     
     if(!testTiming.length){
       return res.status(400).send("Invalid test id.");
+    }
+    if(new Date(testTiming[0]["maxDate"]).getTime() <= new Date().getTime()){
+      return res.status(409).send("You cannot update the test as test has already started.");
     }
     if(!questionsCount){
       return res.status(400).send("Invalid question paper id.");
@@ -899,7 +914,8 @@ export async function getCMSTestStats(args, context) {
     textbookCode,
     branch,
     orientation,
-    gaStatus
+    gaStatus,
+    reviewed,
   } = args;
 
   // Textbook data;
@@ -924,6 +940,9 @@ export async function getCMSTestStats(args, context) {
   const contentMatchQuery = { active: true }
   if(gaStatus){
     contentMatchQuery["gaStatus"] = "finished";
+  }
+  if(reviewed){
+    contentMatchQuery["reviewed"] = true;
   }
   // const contentTypeMatchOrData = getContentTypeMatchOrData("");
   // if(contentTypeMatchOrData.length) contentMatchQuery['$or'] = contentTypeMatchOrData;
@@ -1317,5 +1336,25 @@ export async function getStudentWiseTestStats(req, res){
   }catch(err){
       console.log(err);
       return res.status(500).send("internal server error");
+  }
+}
+
+export async function makeLive(req, res){
+  try{
+    if(!req.body.testIds){
+      return res.status(400).send("Test id missing in req.");
+    }
+    const testIds = req.body.testIds.split(",");
+    const TestSchema = await Tests(req.user_cxt);
+    await TestSchema.update({ testId: {$in : testIds}},{
+      $set: {
+        reviewed: true,
+        active: true
+      }
+    },{multi: true});
+    return res.status(200).send("Success");
+  }catch(err){
+    console.error(err);
+    return res.status(500).send("internal server error");
   }
 }

@@ -45,6 +45,9 @@ export const ListInputType = new InputType({
         },
         gaStatus : {
             type : StringType
+        },
+        reviewed: {
+            type: BooleanType
         }
     }
 });
@@ -278,7 +281,8 @@ export const TestHeadersAssetCountInputType = new InputType({
       orientation: { type: StringType, description: 'Orientaion name' },
       header: { type: NonNull(TestHeaderEnumType), description: 'Header' },
       gaStatus: { type: BooleanType, description: "Filter for fetching performance data"},
-      active: { type: BooleanType}
+      active: { type: BooleanType},
+      reviewed: { type: BooleanType}
     },
 });
 
@@ -291,7 +295,8 @@ export const CmsTestStatsInputType = new InputType({
       textbookCode: { type: StringType, description: 'Code of the textBook' },
       branch: { type: StringType, description: 'Branch name' },
       orientation: { type: StringType, description: 'Orientaion name' },
-      gaStatus: {type: BooleanType, description: "filter for ga"}
+      gaStatus: {type: BooleanType, description: "filter for ga"},
+      reviewed: {type: BooleanType, description: "filter for reviewed test"}
     },
   });
   
