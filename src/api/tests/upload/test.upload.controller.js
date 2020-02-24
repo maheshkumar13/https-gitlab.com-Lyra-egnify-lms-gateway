@@ -1119,7 +1119,8 @@ export async function testAnalysis(args, context) {
               "Correct": studentAnalysis[i]["cwuAnalysis"]["overall"]["C"],
               "Wrong": studentAnalysis[i]["cwuAnalysis"]["overall"]["W"],
               "Unattempted": studentAnalysis[i]["cwuAnalysis"]["overall"]["U"],
-              "orientation": studentAnalysis[i]["studentInfo"]["orientation"]
+              "orientation": studentAnalysis[i]["studentInfo"]["orientation"],
+              "city": studentAnalysis[i]["studentInfo"]["hierarchy"][3]["child"]
           }
           dumpingArray.push(analysisObject)
       }
