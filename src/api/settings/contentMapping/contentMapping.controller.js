@@ -2634,6 +2634,17 @@ export async function publishQuiz(req, res){
   }
 }
 
+export async function changeAssetStates(args, context){
+  return ContentMappingModel(context).then((ContentMapping) => {
+    return ContentMapping.update({assetId: args.assetId},{$set: args},{multi: true}).then(()=> {
+      return 'Operation successful!!';
+    })
+  }).catch((err) => {
+    console.error(err);
+    throw new Error(err.message);
+  })
+}
+
 export default{
   updateContent,
   getUniqueDataForValidation,
