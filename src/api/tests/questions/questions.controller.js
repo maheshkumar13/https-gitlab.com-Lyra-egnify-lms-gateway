@@ -405,6 +405,8 @@ export async function parseQuestionPaper(req,res){
         questions[j]["keyHash"] = questions[j]["key"] ? md5(JSON.stringify(questions[j]["key"])) : null;
         questions[j]["questionNumberId"] = questions[j]["optionHash"] && questions[j]["questionHash"] && questions[j]["keyHash"] ? md5(questions[j]["optionHash"]+questions[j]["questionHash"]+questions[j]["keyHash"]) : null;
         questions[j]["subject"] = subject;
+        questions[j]["error"] = questions[j]["errors"] || [];
+        delete questions[j]["errors"];
       }
       await Questions.remove({questionPaperId});
       await Questions.create(questions);
