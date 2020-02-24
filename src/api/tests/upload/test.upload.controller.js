@@ -748,7 +748,7 @@ function validateTestTimingRows (data){
       errorDetails.push("duration not present")
     }else{
       let durationInMsWithBuff = parseInt(data[i]["duration"]) * timeBuff ;
-      if(dateDiffInMs <= durationInMsWithBuff ){
+      if(dateDiffInMs < durationInMsWithBuff ){
         return errorDetails.push("Minimum difference between start date and end date should be equal to duration.")
       }
     }
