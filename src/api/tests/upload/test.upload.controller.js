@@ -841,18 +841,17 @@ export async function publishTest(req, res){
     const [testTiming, questionsCount] = await Promise.all([
       TestTimingSchema.aggregate([{$match: {testId}},
       {$group: {"_id": "$testId",maxDate: {$max: "$endTime"},minDate: {$min: "$startTime"},maxDuration: {$max: "$duration"}}},
-      {$lookup:{from: "tests", foreignField: "testId", "localField": "testId","as": "testInfo"}},
+      {$lookup:{from: "tests", foreignField: "testId", "localField": "_id","as": "testInfo"}},
       {$unwind: "$testInfo"},
       {$project:{testName: "$testInfo.test.name",maxDuration: 1,maxDate: 1, minDate: 1}}]),
       QuestionsSchema.count({questionPaperId})
     ]);
-    
     if(!testTiming.length){
-      return res.status(400).send("Invalid test id.");
+      return res.status(400).send("Test timing not uploaded yet.");
     }
-    if(new Date(testTiming[0]["maxDate"]).getTime() <= new Date().getTime()){
-      return res.status(409).send("You cannot update the test as test has already started.");
-    }
+    // if(new Date(testTiming[0]["maxDate"]).getTime() <= new Date().getTime()){
+    //   return res.status(409).send("You cannot update the test as test has already started.");
+    // }
     if(!questionsCount){
       return res.status(400).send("Invalid question paper id.");
     }
