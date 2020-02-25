@@ -22,7 +22,6 @@ import {getModel as Subject} from '../../settings/subject/subject.model';
 import {getModel as MasterResult } from './masterresults.model';
 import {getModel as TestSummarySchema } from './testSummary.model';
 const MAPPING_HEADERS = ["class","subject","textbook","chapter","test name","view order"]
-const SUPPORTED_MEDIA_TYPE = ["docx","xlsx","xml"];
 const TEST_TIMING_HEADERS = ["branches","end date","start date","duration"];
 const axios = require("axios");
 
