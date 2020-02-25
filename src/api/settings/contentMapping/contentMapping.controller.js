@@ -2300,10 +2300,13 @@ export async function getContentMappingUploadedDataReadingMaterialAudio(args,con
 
   const contentQuery = {
     active: true,
+    reviewed: true,
     'content.category': { $in: ['Reading Material']},
     $and: [{$or: topicsFilter},{$or: contentTypeMatchOrData }],
     'metaData.audioFiles': {$exists: true },
   }
+  if(args.active === false) contentQuery.active = false;
+  if(args.reviewed === false) contentQuery.reviewed = false;
   const countQuery = [{$match: contentQuery}];
   countQuery.push({$unwind: '$metaData.audioFiles'});
   countQuery.push({$count: 'total'});
