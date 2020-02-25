@@ -23,4 +23,6 @@ router.get('/testtiming/:testId', timingController.getTestTiming);
 router.post('/publish-test', controller.publishTest);
 router.get('/test-summary',controller.getTestCompletionStats);
 router.get('/student-test-stats',controller.getStudentWiseTestStats);
+router.post('/make-live',controller.makeLive);
+
 module.exports = router

@@ -317,6 +317,10 @@ const TestSchema = new mongoose.Schema({
       }
     ]
   },
+  reviewed: {
+    type: Boolean,
+    default: false
+  }
 }, {
   timestamps: {
     createdAt: 'created_at',
