@@ -119,6 +119,8 @@ export const CategoryWiseFilesInputType = new InputType({
     gaStatus: { type: BooleanType, description: 'gaStatus type' },
     pageNumber: { type: IntType, description: 'Page number' },
     limit: { type: IntType, description: 'Limit of the records to be fetched' },
+    active: { type: BooleanType, description: 'Default is true' },
+    reviewed: { type: BooleanType, description: 'Default is true' },
   },
 });
 

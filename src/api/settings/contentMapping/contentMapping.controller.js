@@ -1401,8 +1401,11 @@ export async function getCategoryWiseFilesPaginatedV2(args, context) {
   
   const contentQuery = {
     active: true,
+    reviewed: true,
     'refs.textbook.code': { $in: textbookCodes },
   }
+  if(args.active === false) contentQuery.active = false;
+  if(args.reviewed === false) contentQuery.reviewed = false;
   const contentTypeMatchOrData = getContentTypeMatchOrData(category);
   contentQuery['$or'] = contentTypeMatchOrData;
   if (chapterCode) contentQuery['refs.topic.code'] = chapterCode;
