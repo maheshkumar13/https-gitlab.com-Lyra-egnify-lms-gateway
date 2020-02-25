@@ -889,6 +889,7 @@ export async function publishTest(req, res){
     await scheduleGA(data,req.user_cxt);
     await TestSchema.update({testId},{$set: setObject});
   }catch(err){
+    console.error(err)
     return res.status(500).send("internal server error.");
   }
 }
@@ -899,7 +900,8 @@ async function scheduleGA(data, user_cxt){
       "accesscontroltoken": user_cxt["token"]["accesscontroltoken"],
       "authorization": user_cxt["token"]["authorization"]
     }
-    await axios({ method: "POST", GA_SCHEDULER_URL, data , headers });
+    const url = GA_SCHEDULER_URL
+    await axios({ method: "POST", url, data , headers });
   }catch(err){
     throw err;
   }
