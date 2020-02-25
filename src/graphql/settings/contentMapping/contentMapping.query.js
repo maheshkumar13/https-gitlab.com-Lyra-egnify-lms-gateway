@@ -87,6 +87,8 @@ export const ContentMappingUploadedDataLearn = {
     branch: { type: StringType, description: 'Branch filter' },
     orientation: { type: StringType, description: 'Orientation filter' },
     contentCategory: { type: new List(StringType), description: 'Category of the content' },
+    active: { type: BooleanType, description: 'Default is true' },
+    reviewed: { type: BooleanType, description: 'Default is true '},
   },
   type: ContentMappingPaginatedType,
   async resolve(obj, args, context) {
