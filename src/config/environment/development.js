@@ -7,7 +7,7 @@ module.exports = {
   mongo: {
     uri: process.env.MONGODB_URI ||
     process.env.MONGODB_URL ||
-    'mongodb://localhost:27017/tenantregistry-lms-qa',
+    'mongodb://localhost:27017/tenantregistry-lms-dev',
   },
   // Seed database on startup
   seedDB: false,
@@ -30,7 +30,7 @@ module.exports = {
 
   redis: {
     auth: process.env.REDIS_AUTH || 1,
-    host: process.env.REDIS_HOST || 'localhost',
+    host: process.env.REDIS_HOST || '35.244.34.84',
     password: process.env.REDIS_PASSWORD || 'rQsVPF2gbiHi',
   },
   parser:{
@@ -43,5 +43,5 @@ module.exports = {
     key: 'secret',
   },
   COUCH_DB_URL : process.env.COUCH_DB_URL || "http://13.235.245.210:5984/",
-  GA_SCHEDULER_URL: process.env.GA_SCHEDULER_URL || "https://rest.dev.rankguru.com/schedule/"
+  GA_SCHEDULER_URL: process.env.GA_SCHEDULER_URL || "https://rest.dev.rankguru.com/schedule"
 };
