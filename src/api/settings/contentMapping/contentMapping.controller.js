@@ -2507,7 +2507,8 @@ export async function uploadPracticeMapping(req, res) {
           code: chapterObj.textbookCode,
         },
       },
-      "assetId" : obj['asset id'] || crypto.randomBytes(10).toString('hex')
+      "assetId" : obj['asset id'] || crypto.randomBytes(10).toString('hex'),
+      "reviewed": false
     };
     dumpingArray.push({
       updateOne: {
@@ -2572,11 +2573,11 @@ export async function getCMSPracticeStatsV2(args, context) {
 
   // Content mapping
   const contentAggregateQuery = [];
-  const contentMatchQuery = { active: true,"content.category": "Practice" }
+  const contentMatchQuery = { active: true,"content.category": "Practice", reviewed: true }
   if(gaStatus){
     contentMatchQuery["gaStatus"] = gaStatus;
   }
-  
+
   contentMatchQuery['refs.textbook.code'] = { $in: textbookCodes };
   if(chapterCode) contentMatchQuery['refs.topic.code'] = chapterCode;
   contentAggregateQuery.push({$match: contentMatchQuery});
