@@ -1127,6 +1127,7 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
 
   const contentQuery = { 
     active: true,
+    reviewed: true,
     'refs.textbook.code': { $in: textbookCodes },
   };
   let contentCategoryLength = contentCategory.length;
@@ -1134,6 +1135,9 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
      && contentCategory[0] === "Practice" && gaStatus){
     contentQuery["gaStatus"] = true
   }
+
+  if(args.active === false) contentQuery.active = false;
+  if(args.reviewed === false) contentQuery.reviewed = false;
 
   if(args.readingMaterialAudio === true) {
     contentQuery['content.category'] = { $in: ['Reading Material']};
