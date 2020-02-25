@@ -265,7 +265,7 @@ const TestSchema = new mongoose.Schema({
   },
   active: {
     type: Boolean,
-    default: true
+    default: false
   },
   fileKey: {
     type: String,
