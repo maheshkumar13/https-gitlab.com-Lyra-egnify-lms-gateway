@@ -1310,7 +1310,10 @@ export async function getCMSCategoryStatsV2(args, context) {
 
   // Content mapping
   const contentAggregateQuery = [];
-  const contentMatchQuery = { active: true }
+  const contentMatchQuery = { active: true, reviewed: true };
+  if(args.active === false) contentMatchQuery.active = false;
+  if(args.reviewed === false) contentMatchQuery.reviewed = false;
+
   const contentTypeMatchOrData = getContentTypeMatchOrData("");
   if(contentTypeMatchOrData.length) contentMatchQuery['$or'] = contentTypeMatchOrData;
   contentMatchQuery['refs.textbook.code'] = { $in: textbookCodes };

@@ -92,6 +92,8 @@ export const CmsCategoryStatsInputType = new InputType({
     textbookCode: { type: StringType, description: 'Code of the textBook' },
     branch: { type: StringType, description: 'Branch name' },
     orientation: { type: StringType, description: 'Orientaion name' },
+    active: {type: BooleanType, description: 'Default value is true' },
+    reviewed: { type: BooleanType, description: 'Default value is true' }
   },
 });
 
