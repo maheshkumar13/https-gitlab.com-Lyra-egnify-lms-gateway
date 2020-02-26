@@ -30,7 +30,7 @@ module.exports = {
 
   redis: {
     auth: process.env.REDIS_AUTH || 1,
-    host: process.env.REDIS_HOST || 'localhost',
+    host: process.env.REDIS_HOST || '35.244.34.84',
     password: process.env.REDIS_PASSWORD || 'rQsVPF2gbiHi',
   },
   parser:{
