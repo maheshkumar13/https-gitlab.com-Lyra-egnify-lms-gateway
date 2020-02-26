@@ -87,6 +87,8 @@ export const ContentMappingUploadedDataLearn = {
     branch: { type: StringType, description: 'Branch filter' },
     orientation: { type: StringType, description: 'Orientation filter' },
     contentCategory: { type: new List(StringType), description: 'Category of the content' },
+    active: { type: BooleanType, description: 'Default is true' },
+    reviewed: { type: BooleanType, description: 'Default is true '},
   },
   type: ContentMappingPaginatedType,
   async resolve(obj, args, context) {
@@ -146,6 +148,8 @@ export const ContentMappingUploadedDataReadingMaterialAudio = {
     chapterCode: { type: StringType, description: 'Internal code of Textbook ' },
     branch: { type: StringType, description: 'Branch filter' },
     orientation: { type: StringType, description: 'Orientation filter' },
+    active: { type: BooleanType, description: 'Default is active' },
+    reviewed: { type: BooleanType, description: 'Default is active' },
   },
   type: ReadingMaterialAudioPaginatedType,
   async resolve(obj, args, context) {
