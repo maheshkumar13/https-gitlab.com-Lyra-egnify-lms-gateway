@@ -849,9 +849,9 @@ export async function publishTest(req, res){
     if(!testTiming.length){
       return res.status(400).send("Test timing not uploaded yet.");
     }
-    // if(new Date(testTiming[0]["maxDate"]).getTime() <= new Date().getTime()){
-    //   return res.status(409).send("You cannot update the test as test has already started.");
-    // }
+    if(new Date(testTiming[0]["maxDate"]).getTime() <= new Date().getTime()){
+      return res.status(409).send("You cannot update the test as test has already started.");
+    }
     if(!questionsCount){
       return res.status(400).send("Invalid question paper id.");
     }
@@ -888,6 +888,7 @@ export async function publishTest(req, res){
     }
     await scheduleGA(data,req.user_cxt);
     await TestSchema.update({testId},{$set: setObject});
+    return res.status(200).send("Test Saved Successfully.");
   }catch(err){
     console.error(err)
     return res.status(500).send("internal server error.");
