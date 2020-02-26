@@ -95,27 +95,35 @@ export async function listTest(args, ctx) {
     if(args.reviewed){
       find["reviewed"] = true;
     }
-    const TestSchema = await Tests(ctx);
     let limit = args.limit ? args.limit : 0;
     let skip = args.pageNumber ? args.pageNumber - 1 : 0;
-    let data = await TestSchema.dataTables({
-      limit: limit,
-      skip: skip * limit,
-      find: find,
-      search: queries.search,
-      sort: queries.sort,
-    });
-
-    data["pageInfo"] = {
-      pageNumber: args.pageNumber,
-      recordsShown: data["data"].length,
-      nextPage: limit !== 0 && limit * args.pageNumber < data["total"],
-      prevPage: args.pageNumber !== 1 && data["total"] > 0,
-      totalEntries: data["total"],
-      totalPages: limit > 0 ? Math.ceil(data["total"] / limit) : 1,
+    const TestSchema = await Tests(ctx);
+    let aggregateQuery  = [ {$match: find},
+      {$skip: skip * limit},
+      { $lookup: { from: "testTimings", let: { testId: "$testId" },
+       pipeline: [{ $match: { $expr: { $eq: ["$testId", "$$testId"] } } },
+      { $group: { "_id": "$testId", maxDate: { $max: "$endTime" }, 
+      minDate: { $min: "$startTime" }, maxDuration: { $max: "$duration" } } }, 
+      { $project: { "endDate": "$maxDate", "startDate": "$minDate", "duration": "$maxDuration", "_id": 0 } }], as: "testTiming" } },
+     {$unwind:"$testTiming"}]
+    
+    if(limit){
+      aggregateQuery.splice(2,0,{$limit:limit});
     }
-
-    return data
+    const [data, count] = await Promise.all([
+      TestSchema.aggregate(aggregateQuery), TestSchema.count(find)
+    ])
+    let response = {};
+    response["data"] = data;
+    response["pageInfo"] = {
+      pageNumber: args.pageNumber,
+      recordsShown: data.length,
+      nextPage: limit !== 0 && limit * args.pageNumber < count,
+      prevPage: args.pageNumber !== 1 && count > 0,
+      totalEntries: count,
+      totalPages: limit > 0 ? Math.ceil(count / limit) : 1,
+    }
+    return response;
   } catch (err) {
     throw err;
   }
