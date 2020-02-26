@@ -398,6 +398,9 @@ export async function parseQuestionPaper(req,res){
     const questionPaperId = md5(asset_id + subject + content_name);
     if(questions){
       questions = JSON.parse(questions);
+      if(!questions.length){
+        return res.status(400).send("Invalid File.")
+      }
       for(let j = 0 ; j < questions.length; j++){
         questions[j]["questionPaperId"] = questionPaperId,
         questions[j]["optionHash"] = questions[j]["options"] ? md5(JSON.stringify(questions[j]["options"])) : null;
@@ -410,6 +413,8 @@ export async function parseQuestionPaper(req,res){
       }
       await Questions.remove({questionPaperId});
       await Questions.create(questions);
+    }else{
+      return res.status(400).send("Invalid File.")
     }
     return res.status(200).send({questionPaperId});
   }catch(err){
