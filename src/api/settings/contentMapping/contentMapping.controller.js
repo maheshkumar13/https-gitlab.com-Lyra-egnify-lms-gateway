@@ -786,7 +786,7 @@ export async function getBranchNameAndCategory(context, obj) {
 }
 
 function getMongoQueryForContentMapping(args) {
-  const query = { active: true };
+  const query = { active: true, reviewed: true };
   if (args.textbookCode) query['refs.textbook.code'] = args.textbookCode;
   if (args.topicCode) query['refs.topic.code'] = args.topicCode;
   if (args.contentCategory) query['content.category'] = { $in: args.contentCategory };
@@ -811,6 +811,7 @@ export async function getContentMapping(args, context) {
         if (branchData.category) args.category = branchData.category;
       }
       const query = getMongoQueryForContentMapping(args);
+      if(context.dummy === true) query.reviewed = false;
       const skip = (args.pageNumber - 1) * args.limit;
       return ContentMappingModel(context).then(ContentMapping => Promise.all([
         ContentMapping.find(query).sort({viewOrder: 1}).skip(skip).limit(args.limit),
@@ -874,8 +875,10 @@ export async function getContentMappingStats(args, context) {
         const textbookCodes = textbooks.map(x => x.code);
         const mappingQuery = {
           active: true,
+          reviewed: true,
           'refs.textbook.code': { $in: textbookCodes },
         };
+        if(context.dummy === true) mappingQuery.reviewed = false;
         if (studentOrientation) mappingQuery['orientation'] = { $in: [null, '', studentOrientation]}
         if (studentBranch) mappingQuery['branches'] = { $in: [null, '', studentBranch]}
         const aggregateQuery = [
