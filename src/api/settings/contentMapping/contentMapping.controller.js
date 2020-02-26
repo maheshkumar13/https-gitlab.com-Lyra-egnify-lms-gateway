@@ -2508,7 +2508,8 @@ export async function uploadPracticeMapping(req, res) {
         },
       },
       "assetId" : obj['asset id'] || crypto.randomBytes(10).toString('hex'),
-      "reviewed": false
+      "reviewed": false,
+      "active": false
     };
     dumpingArray.push({
       updateOne: {
