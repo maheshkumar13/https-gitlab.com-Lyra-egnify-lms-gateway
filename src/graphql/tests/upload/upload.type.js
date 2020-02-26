@@ -234,7 +234,8 @@ const Data = new ObjectType({
         orientations : { type : new ListType(StringType) },
         branches : { type : new ListType(StringType)},
         testId : { type : StringType },
-        coins : {type : IntType}
+        coins : {type : IntType},
+        testTiming: { type: GraphQLJSON}
     }
 })
 

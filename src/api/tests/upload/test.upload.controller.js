@@ -95,27 +95,35 @@ export async function listTest(args, ctx) {
     if(args.reviewed){
       find["reviewed"] = true;
     }
-    const TestSchema = await Tests(ctx);
     let limit = args.limit ? args.limit : 0;
     let skip = args.pageNumber ? args.pageNumber - 1 : 0;
-    let data = await TestSchema.dataTables({
-      limit: limit,
-      skip: skip * limit,
-      find: find,
-      search: queries.search,
-      sort: queries.sort,
-    });
-
-    data["pageInfo"] = {
-      pageNumber: args.pageNumber,
-      recordsShown: data["data"].length,
-      nextPage: limit !== 0 && limit * args.pageNumber < data["total"],
-      prevPage: args.pageNumber !== 1 && data["total"] > 0,
-      totalEntries: data["total"],
-      totalPages: limit > 0 ? Math.ceil(data["total"] / limit) : 1,
+    const TestSchema = await Tests(ctx);
+    let aggregateQuery  = [ {$match: find},
+      {$skip: skip * limit},
+      { $lookup: { from: "testTimings", let: { testId: "$testId" },
+       pipeline: [{ $match: { $expr: { $eq: ["$testId", "$$testId"] } } },
+      { $group: { "_id": "$testId", maxDate: { $max: "$endTime" }, 
+      minDate: { $min: "$startTime" }, maxDuration: { $max: "$duration" } } }, 
+      { $project: { "endDate": "$maxDate", "startDate": "$minDate", "duration": "$maxDuration", "_id": 0 } }], as: "testTiming" } },
+     {$unwind:"$testTiming"}]
+    
+    if(limit){
+      aggregateQuery.splice(2,0,{$limit:limit});
     }
-
-    return data
+    const [data, count] = await Promise.all([
+      TestSchema.aggregate(aggregateQuery), TestSchema.count(find)
+    ])
+    let response = {};
+    response["data"] = data;
+    response["pageInfo"] = {
+      pageNumber: args.pageNumber,
+      recordsShown: data.length,
+      nextPage: limit !== 0 && limit * args.pageNumber < count,
+      prevPage: args.pageNumber !== 1 && count > 0,
+      totalEntries: count,
+      totalPages: limit > 0 ? Math.ceil(count / limit) : 1,
+    }
+    return response;
   } catch (err) {
     throw err;
   }
@@ -587,7 +595,8 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
         "name" : data["test name"]
     },
     "viewOrder" : data["view order"] || null,
-    "reviewed": false
+    "reviewed": false,
+    "active": false
   }
   let upsertObj = {
     updateOne: {
@@ -843,15 +852,15 @@ export async function publishTest(req, res){
       {$group: {"_id": "$testId",maxDate: {$max: "$endTime"},minDate: {$min: "$startTime"},maxDuration: {$max: "$duration"}}},
       {$lookup:{from: "tests", foreignField: "testId", "localField": "_id","as": "testInfo"}},
       {$unwind: "$testInfo"},
-      {$project:{testName: "$testInfo.test.name",maxDuration: 1,maxDate: 1, minDate: 1}}]),
+      {$project:{testName: "$testInfo.test.name",maxDuration: 1,maxDate: 1, minDate: 1,gaSyncId: "$testInfo.gaSyncId"}}]),
       QuestionsSchema.count({questionPaperId})
     ]);
     if(!testTiming.length){
       return res.status(400).send("Test timing not uploaded yet.");
     }
-    if(new Date(testTiming[0]["maxDate"]).getTime() <= new Date().getTime()){
-      return res.status(409).send("You cannot update the test as test has already started.");
-    }
+    // if(new Date(testTiming[0]["maxDate"]).getTime() <= new Date().getTime()){
+    //   return res.status(409).send("You cannot update the test as test has already started.");
+    // }
     if(!questionsCount){
       return res.status(400).send("Invalid question paper id.");
     }
@@ -886,8 +895,12 @@ export async function publishTest(req, res){
         "studentId" : null
       }
     }
-    await scheduleGA(data,req.user_cxt);
+    const scheduledTask = await scheduleGA(data,req.user_cxt);
+    setObject["gaSyncId"] = scheduledTask.job_id
     await TestSchema.update({testId},{$set: setObject});
+    if(testTiming[0]["gaSyncId"]){
+      await cancelGA({jobId: testTiming[0]["gaSyncId"]},req.user_cxt)
+    }
     return res.status(200).send("Test Saved Successfully.");
   }catch(err){
     console.error(err)
@@ -902,6 +915,20 @@ async function scheduleGA(data, user_cxt){
       "authorization": user_cxt["token"]["authorization"]
     }
     const url = GA_SCHEDULER_URL
+    const res = await axios({ method: "POST", url, data , headers });
+    return res.data;
+  }catch(err){
+    throw err;
+  }
+}
+
+async function cancelGA(data,user_cxt){
+  try{
+    const headers = {
+      "accesscontroltoken": user_cxt["token"]["accesscontroltoken"],
+      "authorization": user_cxt["token"]["authorization"]
+    }
+    const url = `${GA_SCHEDULER_URL}/${data.jobId}/cancel`;
     await axios({ method: "POST", url, data , headers });
   }catch(err){
     throw err;
