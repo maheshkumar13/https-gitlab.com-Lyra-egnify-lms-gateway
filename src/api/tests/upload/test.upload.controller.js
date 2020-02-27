@@ -1407,7 +1407,7 @@ export async function testDetails(req, res){
         $project:{
           "class": "$textbook.refs.class",
           "branches": "$textbook.branches",
-          "orientation": "$textbook.orientation",
+          "orientation": "$textbook.orientations",
           "subject": "$textbook.refs.subject",
           "chapter": "$mapping.chapter",
           "test": 1,
