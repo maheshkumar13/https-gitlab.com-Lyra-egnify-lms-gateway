@@ -398,12 +398,12 @@ export async function parseQuestionPaper(req,res){
     const questionPaperId = md5(asset_id + subject + content_name);
     
     if(!questions){
-      return res.status(400).send("Invalid File.")
+      return res.status(400).send(questions || "Invalid File.")
     }
     
     questions = JSON.parse(questions);
     if(!questions.length){
-      return res.status(400).send("Invalid File.")
+      return res.status(400).send(questions ? questions.status : "Invalid File.")
     }
     for(let j = 0 ; j < questions.length; j++){
       questions[j]["questionPaperId"] = questionPaperId,
