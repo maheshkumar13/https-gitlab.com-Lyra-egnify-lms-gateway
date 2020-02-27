@@ -822,7 +822,8 @@ function createTimingMap(data, indexed_branch, ret_data, testId, className){
       endTime: new Date(data["end date"]),
       duration: parseInt(data["duration"]),
       class: className,
-      orientations: data["orientations"] ? data["orientations"].split(",") : []
+      orientations: data["orientations"] ? data["orientations"].split(",") : [],
+      hierarchyId: indexed_branch[branch]["childCode"]
     }
     let upsertObj = {
       updateOne: {
