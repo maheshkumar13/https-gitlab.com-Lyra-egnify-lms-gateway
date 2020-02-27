@@ -811,7 +811,7 @@ export async function getContentMapping(args, context) {
         if (branchData.category) args.category = branchData.category;
       }
       const query = getMongoQueryForContentMapping(args);
-      if(context.dummy === true) query.reviewed = false;
+      if(context.dummy === true) delete query.reviewed;
       const skip = (args.pageNumber - 1) * args.limit;
       return ContentMappingModel(context).then(ContentMapping => Promise.all([
         ContentMapping.find(query).sort({viewOrder: 1}).skip(skip).limit(args.limit),
@@ -878,7 +878,7 @@ export async function getContentMappingStats(args, context) {
           reviewed: true,
           'refs.textbook.code': { $in: textbookCodes },
         };
-        if(context.dummy === true) mappingQuery.reviewed = false;
+        if(context.dummy === true) delete mappingQuery.reviewed;
         if (studentOrientation) mappingQuery['orientation'] = { $in: [null, '', studentOrientation]}
         if (studentBranch) mappingQuery['branches'] = { $in: [null, '', studentBranch]}
         const aggregateQuery = [
@@ -2670,3 +2670,6 @@ export default{
   getUniqueDataForValidation,
   getUniqueBranchesForValidation,
 }
+
+
+
