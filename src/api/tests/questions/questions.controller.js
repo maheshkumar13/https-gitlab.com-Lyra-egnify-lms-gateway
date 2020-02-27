@@ -415,7 +415,7 @@ export async function parseQuestionPaper(req,res){
       questions[j]["error"] = questions[j]["errors"] || [];
       delete questions[j]["errors"];
     }
-    await Questions.remove({questionPaperId});
+    // await Questions.remove({questionPaperId});
     await Questions.create(questions);
     
     return res.status(200).send({questionPaperId});
