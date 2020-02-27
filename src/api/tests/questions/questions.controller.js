@@ -395,7 +395,7 @@ export async function parseQuestionPaper(req,res){
       method: "POST"
     }
     let questions = await parseQuestion(option, content_name, MIME_TYPE[extname], req.file.buffer);
-    const questionPaperId = md5(asset_id + subject + content_name);
+    const questionPaperId = uuidv1();
     
     if(!questions){
       return res.status(400).send(questions || "Invalid File.")
