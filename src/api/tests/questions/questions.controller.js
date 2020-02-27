@@ -395,7 +395,7 @@ export async function parseQuestionPaper(req,res){
       method: "POST"
     }
     let questions = await parseQuestion(option, content_name, MIME_TYPE[extname], req.file.buffer);
-    const questionPaperId = md5(asset_id + subject + content_name);
+    const questionPaperId = uuidv1();
     
     if(!questions){
       return res.status(400).send(questions || "Invalid File.")
@@ -415,7 +415,7 @@ export async function parseQuestionPaper(req,res){
       questions[j]["error"] = questions[j]["errors"] || [];
       delete questions[j]["errors"];
     }
-    await Questions.remove({questionPaperId});
+    // await Questions.remove({questionPaperId});
     await Questions.create(questions);
     
     return res.status(200).send({questionPaperId});
