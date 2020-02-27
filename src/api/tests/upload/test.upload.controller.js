@@ -859,9 +859,9 @@ export async function publishTest(req, res){
     if(!testTiming.length){
       return res.status(400).send("Test timing not uploaded yet.");
     }
-    // if(new Date(testTiming[0]["maxDate"]).getTime() <= new Date().getTime()){
-    //   return res.status(409).send("You cannot update the test as test has already started.");
-    // }
+    if(new Date(testTiming[0]["maxDate"]).getTime() <= new Date().getTime()){
+      return res.status(409).send("You cannot update the test as test has already started.");
+    }
     if(!questionsCount){
       return res.status(400).send("Invalid question paper id.");
     }
@@ -1007,8 +1007,8 @@ export async function getCMSTestStats(args, context) {
 
 export async function testAnalysis(args, context) {
   try {
-      const [TestMasterResultSchema, QuestionSchema] = await Promise.all([
-          MasterResult(context), Questions(context)
+      const [TestMasterResultSchema, QuestionSchema, TestTimingSchema] = await Promise.all([
+          MasterResult(context), Questions(context), TestTimings(context)
       ]);
       let {
           testId,
@@ -1097,7 +1097,8 @@ export async function testAnalysis(args, context) {
               "responseData.questionResponse": 1,
               "studentInfo.hierarchy": 1,
               "cwuAnalysis": 1,
-              "studentInfo.orientation": 1
+              "studentInfo.orientation": 1,
+              "testId": 1
           }
       }
       if (testId && testId.length) {
@@ -1145,9 +1146,20 @@ export async function testAnalysis(args, context) {
               }
           }
       }]).allowDiskUse(true)
+      let branchesOfStudentsWithTestId = new Set();
+      studentAnalysis.forEach( (analysis) => {
+        branchesOfStudentsWithTestId.add(analysis["studentInfo"]["hierarchy"][4]["childCode"]+"_"+analysis["testId"])
+      })
+      
+      branchesOfStudentsWithTestId = Array.from(branchesOfStudentsWithTestId);
+
+      const testTiming = await TestTimingSchema.find({_id: {$in:branchesOfStudentsWithTestId}}).select({startTime: 1, endTime: 1}).lean();
+      const indexed_test_timing_map = testTimingToMap(testTiming);
       let questionPaperIndex = questionPaperIdToIndex(questionsArray);
       for (let i = 0; i < studentAnalysis.length; i++) {
           let data = totalTimeSpentQuestionWise(studentAnalysis[i]["responseData"]["questionResponse"]);
+          let hierarchyId = studentAnalysis[i]["studentInfo"]["hierarchy"][4]["childCode"];
+          let testId = studentAnalysis[i]["testId"]
           let analysisObject = {
               "studentId": studentAnalysis[i]["studentId"],
               "studentName": studentAnalysis[i]["name"],
@@ -1169,7 +1181,9 @@ export async function testAnalysis(args, context) {
               "Wrong": studentAnalysis[i]["cwuAnalysis"]["overall"]["W"],
               "Unattempted": studentAnalysis[i]["cwuAnalysis"]["overall"]["U"],
               "orientation": studentAnalysis[i]["studentInfo"]["orientation"],
-              "city": studentAnalysis[i]["studentInfo"]["hierarchy"][3]["child"]
+              "city": studentAnalysis[i]["studentInfo"]["hierarchy"][3]["child"],
+              "startTime": indexed_test_timing_map[hierarchyId+"_"+testId]["startTime"],
+              "endTime": indexed_test_timing_map[hierarchyId+"_"+testId]["endTime"]
           }
           dumpingArray.push(analysisObject)
       }
@@ -1181,6 +1195,14 @@ export async function testAnalysis(args, context) {
       console.log(err)
       throw err;
   }
+}
+
+function testTimingToMap(testTiming){
+  let retObj = {};
+  testTiming.forEach((data)=>{
+    retObj[data["_id"]] = data
+  });
+  return retObj;
 }
 
 function questionPaperIdToIndex(questions){
