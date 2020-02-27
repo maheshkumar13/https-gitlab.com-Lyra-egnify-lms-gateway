@@ -111,7 +111,7 @@ export async function listTest(args, ctx) {
       aggregateQuery.splice(2,0,{$limit:limit});
     }
     const [data, count] = await Promise.all([
-      TestSchema.aggregate(aggregateQuery), TestSchema.count(find)
+      TestSchema.aggregate(aggregateQuery).allowDiskUse(true), TestSchema.count(find)
     ])
     let response = {};
     response["data"] = data;
@@ -171,7 +171,7 @@ export async function listTextBooksWithTestSubectWise(args, ctx) {
         name: "$textbookInfo.name",
         imageurl: "$textbookInfo.imageUrl"
       }
-    }]);
+    }]).allowDiskUse(true);
     return list;
   } catch (err) {
     throw err;
@@ -852,7 +852,7 @@ export async function publishTest(req, res){
       {$group: {"_id": "$testId",maxDate: {$max: "$endTime"},minDate: {$min: "$startTime"},maxDuration: {$max: "$duration"}}},
       {$lookup:{from: "tests", foreignField: "testId", "localField": "_id","as": "testInfo"}},
       {$unwind: "$testInfo"},
-      {$project:{testName: "$testInfo.test.name",maxDuration: 1,maxDate: 1, minDate: 1,gaSyncId: "$testInfo.gaSyncId"}}]),
+      {$project:{testName: "$testInfo.test.name",maxDuration: 1,maxDate: 1, minDate: 1,gaSyncId: "$testInfo.gaSyncId"}}]).allowDiskUse(true),
       QuestionsSchema.count({questionPaperId})
     ]);
     if(!testTiming.length){
@@ -1385,5 +1385,39 @@ export async function makeLive(req, res){
   }catch(err){
     console.error(err);
     return res.status(500).send("internal server error");
+  }
+}
+
+export async function testDetails(req, res){
+  try{
+    const testId = req.params.testId;
+    const TestSchema = await Tests(req.user_cxt);
+    let data = await TestSchema.aggregate([{
+      $match: {
+        testId: testId
+      }},{
+        $lookup:{
+          from: "textbooks",
+          localField: "mapping.textbook.code",
+          foreignField: "code",
+          as: "textbook"
+        }
+      },{$unwind:"$textbook"},
+      {
+        $project:{
+          "class": "$textbook.refs.class",
+          "branches": "$textbook.branches",
+          "orientation": "$textbook.orientation",
+          "subject": "$textbook.refs.subject",
+          "chapter": "$mapping.chapter",
+          "test": 1,
+          "_id": 0
+        }
+      }
+    ]).allowDiskUse(true);
+    return res.status(200).send(data);
+  }catch(err){
+    console.error(err);
+    return res.status(500).send("internal server error.")
   }
 }
