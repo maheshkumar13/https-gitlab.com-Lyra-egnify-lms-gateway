@@ -25,7 +25,7 @@ import { ContentMapping, ContentMappingStats, CmsCategoryStats, CategoryWiseFile
 import { LaunchRequest, GetS3FileSystem, GetS3SignedUrlForUpload } from './launcher/launchRequest/launchRequest.query';
 import { Questions, Results, QuestionEvaluation } from './tests/questions/questions.query';
 import { MasterResults } from './tests/masterResults/masterResults.query';
-import { InsertContent, UpdateContent, updateMetaData } from './settings/contentMapping/contentMapping.mutation';
+import { InsertContent, UpdateContent, updateMetaData, changeAssetStates } from './settings/contentMapping/contentMapping.mutation';
 import { CreateTestType, DeleteTestType } from './settings/testType/testType.mutation';
 import { TestType } from './settings/testType/testType.query';
 import { PackageList, PackageDetails } from './settings/package/package.query';
@@ -123,7 +123,8 @@ const schema = new Schema({
       DeleteTestType,
       CreatePackage,
       UpdatePackage,
-      FeedbackPackage
+      FeedbackPackage,
+      changeAssetStates
     },
   }),
 });

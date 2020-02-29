@@ -395,20 +395,29 @@ export async function parseQuestionPaper(req,res){
       method: "POST"
     }
     let questions = await parseQuestion(option, content_name, MIME_TYPE[extname], req.file.buffer);
-    const questionPaperId = md5(asset_id + subject + content_name);
-    if(questions){
-      questions = JSON.parse(questions);
-      for(let j = 0 ; j < questions.length; j++){
-        questions[j]["questionPaperId"] = questionPaperId,
-        questions[j]["optionHash"] = questions[j]["options"] ? md5(JSON.stringify(questions[j]["options"])) : null;
-        questions[j]["questionHash"] = questions[j]["question"] ? md5(questions[j]["question"]) : null;
-        questions[j]["keyHash"] = questions[j]["key"] ? md5(JSON.stringify(questions[j]["key"])) : null;
-        questions[j]["questionNumberId"] = questions[j]["optionHash"] && questions[j]["questionHash"] && questions[j]["keyHash"] ? md5(questions[j]["optionHash"]+questions[j]["questionHash"]+questions[j]["keyHash"]) : null;
-        questions[j]["subject"] = subject;
-      }
-      await Questions.remove({questionPaperId});
-      await Questions.create(questions);
+    const questionPaperId = uuidv1();
+    
+    if(!questions){
+      return res.status(400).send(questions || "Invalid File.")
     }
+    
+    questions = JSON.parse(questions);
+    if(!questions.length){
+      return res.status(400).send(questions ? questions.status : "Invalid File.")
+    }
+    for(let j = 0 ; j < questions.length; j++){
+      questions[j]["questionPaperId"] = questionPaperId,
+      questions[j]["optionHash"] = questions[j]["options"] ? md5(JSON.stringify(questions[j]["options"])) : null;
+      questions[j]["questionHash"] = questions[j]["question"] ? md5(questions[j]["question"]) : null;
+      questions[j]["keyHash"] = questions[j]["key"] ? md5(JSON.stringify(questions[j]["key"])) : null;
+      questions[j]["questionNumberId"] = questions[j]["optionHash"] && questions[j]["questionHash"] && questions[j]["keyHash"] ? md5(questions[j]["optionHash"]+questions[j]["questionHash"]+questions[j]["keyHash"]) : null;
+      questions[j]["subject"] = subject;
+      questions[j]["error"] = questions[j]["errors"] || [];
+      delete questions[j]["errors"];
+    }
+    // await Questions.remove({questionPaperId});
+    await Questions.create(questions);
+    
     return res.status(200).send({questionPaperId});
   }catch(err){
     console.log(err);

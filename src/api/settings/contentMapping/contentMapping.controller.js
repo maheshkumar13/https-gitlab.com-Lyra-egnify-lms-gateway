@@ -794,7 +794,7 @@ export async function getBranchNameAndCategory(context, obj) {
 }
 
 function getMongoQueryForContentMapping(args) {
-  const query = { active: true };
+  const query = { active: true, reviewed: true };
   if (args.textbookCode) query['refs.textbook.code'] = args.textbookCode;
   if (args.topicCode) query['refs.topic.code'] = args.topicCode;
   if (args.contentCategory) query['content.category'] = { $in: args.contentCategory };
@@ -819,6 +819,7 @@ export async function getContentMapping(args, context) {
         if (branchData.category) args.category = branchData.category;
       }
       const query = getMongoQueryForContentMapping(args);
+      if(context.dummy === true) delete query.reviewed;
       const skip = (args.pageNumber - 1) * args.limit;
       return ContentMappingModel(context).then(ContentMapping => Promise.all([
         ContentMapping.find(query).sort({viewOrder: 1}).skip(skip).limit(args.limit),
@@ -882,8 +883,10 @@ export async function getContentMappingStats(args, context) {
         const textbookCodes = textbooks.map(x => x.code);
         const mappingQuery = {
           active: true,
+          reviewed: true,
           'refs.textbook.code': { $in: textbookCodes },
         };
+        if(context.dummy === true) delete mappingQuery.reviewed;
         if (studentOrientation) mappingQuery['orientation'] = { $in: [null, '', studentOrientation]}
         if (studentBranch) mappingQuery['branches'] = { $in: [null, '', studentBranch]}
         const aggregateQuery = [
@@ -1135,6 +1138,7 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
 
   const contentQuery = { 
     active: true,
+    reviewed: true,
     'refs.textbook.code': { $in: textbookCodes },
   };
   let contentCategoryLength = contentCategory.length;
@@ -1142,6 +1146,9 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
      && contentCategory[0] === "Practice" && gaStatus){
     contentQuery["gaStatus"] = true
   }
+
+  if(args.active === false) contentQuery.active = false;
+  if(args.reviewed === false) contentQuery.reviewed = false;
 
   if(args.readingMaterialAudio === true) {
     contentQuery['content.category'] = { $in: ['Reading Material']};
@@ -1314,7 +1321,10 @@ export async function getCMSCategoryStatsV2(args, context) {
 
   // Content mapping
   const contentAggregateQuery = [];
-  const contentMatchQuery = { active: true }
+  const contentMatchQuery = { active: true, reviewed: true };
+  if(args.active === false) contentMatchQuery.active = false;
+  if(args.reviewed === false) contentMatchQuery.reviewed = false;
+
   const contentTypeMatchOrData = getContentTypeMatchOrData("");
   if(contentTypeMatchOrData.length) contentMatchQuery['$or'] = contentTypeMatchOrData;
   contentMatchQuery['refs.textbook.code'] = { $in: textbookCodes };
@@ -1402,8 +1412,11 @@ export async function getCategoryWiseFilesPaginatedV2(args, context) {
   
   const contentQuery = {
     active: true,
+    reviewed: true,
     'refs.textbook.code': { $in: textbookCodes },
   }
+  if(args.active === false) contentQuery.active = false;
+  if(args.reviewed === false) contentQuery.reviewed = false;
   const contentTypeMatchOrData = getContentTypeMatchOrData(category);
   contentQuery['$or'] = contentTypeMatchOrData;
   if (chapterCode) contentQuery['refs.topic.code'] = chapterCode;
@@ -2187,9 +2200,13 @@ export async function getContentMappingUploadedDataLearn(args,context){
 
   const contentQuery = {
     active: true,
+    reviewed: true,
     'content.category': { $nin: ['Tests', 'Take Quiz']},
     $and: [{$or: topicsFilter},{$or: contentTypeMatchOrData }]
   }
+  if(args.active === false) contentQuery.active = false;
+  if(args.reviewed === false) contentQuery.reviewed = false;
+
   const skip = (args.pageNumber - 1) * args.limit;
   const [count, data ] = await Promise.all([
     ContentMapping.count(contentQuery),
@@ -2294,10 +2311,13 @@ export async function getContentMappingUploadedDataReadingMaterialAudio(args,con
 
   const contentQuery = {
     active: true,
+    reviewed: true,
     'content.category': { $in: ['Reading Material']},
     $and: [{$or: topicsFilter},{$or: contentTypeMatchOrData }],
     'metaData.audioFiles': {$exists: true },
   }
+  if(args.active === false) contentQuery.active = false;
+  if(args.reviewed === false) contentQuery.reviewed = false;
   const countQuery = [{$match: contentQuery}];
   countQuery.push({$unwind: '$metaData.audioFiles'});
   countQuery.push({$count: 'total'});
@@ -2391,10 +2411,13 @@ function validateHeadersForPractice(data, errors, maxLimit) {
   }
   return errors;
 }
+
 export async function uploadPracticeMapping(req, res) {
-  if (!req.file) return res.status(400).end('File required');
+  try{
+    if (!req.file) return res.status(400).end('File required');
   	// validate extension
-	const name = req.file.originalname.split('.');
+  const name = req.file.originalname.split('.');
+  let dumpingArray = [];
 	const extname = name[name.length - 1];
 	if (extname !== 'xlsx') {
 	  return res.status(400).end('Invalid extension, please upload .xlsx file');
@@ -2419,7 +2442,6 @@ export async function uploadPracticeMapping(req, res) {
   }
   const dbData = await getDbDataForValidation(req.user_cxt)
   const ContentMapping = await ContentMappingModel(req.user_cxt);
-  const bulk = ContentMapping.collection.initializeUnorderedBulkOp();
   const contentTypes = config.CONTENT_TYPES || {};
 
   for(let i=0; i < data.length; i+=1) {
@@ -2513,9 +2535,19 @@ export async function uploadPracticeMapping(req, res) {
           code: chapterObj.textbookCode,
         },
       },
-      "assetId" : obj['asset id'] || crypto.randomBytes(10).toString('hex')
+      "assetId" : obj['asset id'] || crypto.randomBytes(10).toString('hex'),
+      "reviewed": false,
+      "active": false
     };
-    bulk.find({assetId: temp.assetId}).upsert().updateOne(temp);
+    dumpingArray.push({
+      updateOne: {
+          filter: { "assetId": temp["assetId"] },
+          update: {"$set": temp},
+          upsert: true,
+          setDefaultsOnInsert: true
+      }
+    })
+    // bulk.find({assetId: temp.assetId}).upsert().updateOne(temp);
   }
 if(errors.length) {
   console.info('sending errors..')
@@ -2525,14 +2557,19 @@ if(errors.length) {
     errors,
   })
 }
-console.info('bulk executing..')
-  return bulk.execute().then(() => {
-    console.info(req.file.originalname, 'Uploaded successfully....')
-    return res.send('Data inserted/updated successfully')
-  }).catch((err) => {
-    console.error(err);
-    return res.status(400).end('Error occured');
-  });
+await ContentMapping.bulkWrite(dumpingArray);
+return res.send('Data inserted/updated successfully')
+  }catch(err){
+    console.log(err)
+    return res.status(500).send("Error occured");
+  }
+  // return bulk.execute().then(() => {
+  //   console.info(req.file.originalname, 'Uploaded successfully....')
+  //   return res.send('Data inserted/updated successfully')
+  // }).catch((err) => {
+  //   console.error(err);
+  //   return res.status(400).end('Error occured');
+  // });
 }
 
 export async function getCMSPracticeStatsV2(args, context) {
@@ -2565,11 +2602,11 @@ export async function getCMSPracticeStatsV2(args, context) {
 
   // Content mapping
   const contentAggregateQuery = [];
-  const contentMatchQuery = { active: true,"content.category": "Practice" }
+  const contentMatchQuery = { active: true,"content.category": "Practice", reviewed: true }
   if(gaStatus){
     contentMatchQuery["gaStatus"] = gaStatus;
   }
-  
+
   contentMatchQuery['refs.textbook.code'] = { $in: textbookCodes };
   if(chapterCode) contentMatchQuery['refs.topic.code'] = chapterCode;
   contentAggregateQuery.push({$match: contentMatchQuery});
@@ -2762,9 +2799,22 @@ export async function getStudyPlanAssets(args, context){
   
   return assets;
 }
+export async function changeAssetStates(args, context){
+  return ContentMappingModel(context).then((ContentMapping) => {
+    return ContentMapping.update({assetId: args.assetId},{$set: args},{multi: true}).then(()=> {
+      return 'Operation successful!!';
+    })
+  }).catch((err) => {
+    console.error(err);
+    throw new Error(err.message);
+  })
+}
 
 export default{
   updateContent,
   getUniqueDataForValidation,
   getUniqueBranchesForValidation,
 }
+
+
+

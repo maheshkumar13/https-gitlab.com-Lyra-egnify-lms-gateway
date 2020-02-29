@@ -43,5 +43,5 @@ module.exports = {
     key: 'secret',
   },
   COUCH_DB_URL : process.env.COUCH_DB_URL || "http://13.235.245.210:5984/",
-  GA_SCHEDULER_URL: process.env.GA_SCHEDULER_URL || "https://rest.dev.rankguru.com/schedule"
+  GA_SCHEDULER_URL: process.env.GA_SCHEDULER_URL || "http://dev.elk.rankguru.com:8000/schedule"
 };

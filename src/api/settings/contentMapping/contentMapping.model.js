@@ -48,6 +48,7 @@ const contentMappingSchema = new mongoose.Schema({
   category: { type: String, enum: ['A', 'B', 'C', ''], default: null },
   branches: { type: [String], default: null },
   active: { type: Boolean, default: true },
+  reviewed: { type: Boolean, default: false },
   coins: { type: Number, default: 0 },
   timgPath: { type: String },
   viewOrder: { type: Number },
