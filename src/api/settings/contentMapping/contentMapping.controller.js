@@ -6,6 +6,7 @@ import { getModel as ContentMappingModel } from './contentMapping.model';
 import { getModel as InstituteHierarchyModel } from '../instituteHierarchy/instituteHierarchy.model';
 import { getModel as studentInfoModel } from '../student/student.model';
 import { getModel as Questions } from '../../tests/questions/questions.model';
+import { getModel as StudentModel } from '../../settings/student/student.model';
 
 import { config } from '../../../config/environment';
 import { getStudentData } from '../textbook/textbook.controller';
@@ -2624,6 +2625,142 @@ export async function publishQuiz(req, res){
   }catch(err){
     return res.status(500).send("internal server error.");
   }
+}
+
+export async function getStudentDataForStudyPlan(context) {
+  const { studentId } = context;
+  return StudentModel(context).then((Student) => {
+    if (!studentId) return false;
+    const project = {
+      _id: 0,
+      subjects: 1,
+      hierarchy: 1,
+      active: true,
+      orientation: 1,
+    };
+    return Student.findOne({ studentId }, project);
+  });
+}
+
+export async function getStudyPlanAssets(args, context){
+
+  // Fetching models..
+  const [
+    studentData,
+    Subject,
+    Textbook,
+    ConceptTaxonomy,
+    ContentMapping
+  ] = await Promise.all([
+    getStudentDataForStudyPlan(context),
+    SubjectModel(context),
+    TextbookModel(context),
+    ConceptTaxonomyModel(context),
+    ContentMappingModel(context),
+  ]);
+
+  // Fetching subjects
+  const subjectQuery = { active: true };
+  if(args.subjectCode) subjectQuery.code = args.subjectCode;
+  if (studentData) {
+    const classData = studentData.hierarchy.find(x => x.level === 2);
+    subjectQuery['refs.class.code'] = classData.childCode;
+    if (studentData.subjects && studentData.subjects.length) {
+      const codes = studentData.subjects.map(x => x.code);
+      subjectQuery.$or = [
+        { isMandatory: true },
+        { code: { $in: codes } },
+      ];
+    }
+  }
+  const subjects = await Subject.aggregate([
+    { $match: subjectQuery },
+    { $group: { _id: null, vals: { $push: {k: '$code', v: {name: '$subject', viewOrder: '$viewOrder'}}}}},
+    { $project: { _id: 0, vals: {$arrayToObject: '$vals'}}},
+  ])
+  const subjectsObj = subjects && subjects[0] && subjects[0].vals || {};
+  const subjectcodes = Object.keys(subjectsObj);
+  
+
+  // Fetching textbooks
+  const textbookQuery = {
+    active: true,
+    'refs.subject.code': { $in: subjectcodes },
+  };
+  if(args.textbookCode) textbookQuery.code = args.textbookCode;
+  if (studentData) {
+    const { orientation, hierarchy } = studentData;
+    if (orientation) {
+      textbookQuery.orientations = { $in: [null, '', orientation] };
+    }
+    if (hierarchy && hierarchy.length) {
+      const branchData = hierarchy.find(x => x.level === 5);
+      if (branchData && branchData.child) {
+        textbookQuery.branches = { $in: [null, '', branchData.child] };
+      }
+    }
+  }
+  const textbooks = await Textbook.aggregate([
+    { $match: textbookQuery },
+    { $group: { _id: null, vals: { $push: {k: '$code', v: {name: '$name', viewOrder: '$viewOrder', subjectCode: '$refs.subject.code'}}}}},
+    { $project: { _id: 0, vals: {$arrayToObject: '$vals'}}},
+  ])
+  const textbooksObj = textbooks &&  textbooks[0] && textbooks[0].vals || {};
+  const textbookCodes = Object.keys(textbooksObj);
+
+  // Building concept taxonomy query
+  const topicAgrQuery = [
+    { $match: { active: true, levelName: 'topic', 'refs.textbook.code': { $in: textbookCodes } }},
+    { $group: { _id: '$refs.textbook.code', topics: {$push: { k: '$code', v: {name: '$child', viewOrder: '$viewOrder'}}}}},
+    { $project: { textbookCode: '$_id', topics: {$arrayToObject: '$topics'}, _id: 0}},
+  ];
+  if(args.chapterCode) topicAgrQuery[0].$match.code = args.chapterCode;
+
+  // Building content mapping query
+  const contentMatchQuery = {
+    active: true,
+    reviewed: true,
+    studyWeek: args.studyWeek,
+    'refs.textbook.code': {$in: textbookCodes },
+  }
+  if(args.chapterCode) contentMatchQuery['refs.topic.code'] = args.chapterCode;
+  if(context.dummy === true) delete contentMatchQuery.reviewed;
+  const contentTypeMatchOrData = getContentTypeMatchOrData(args.contentCategory);
+  if(contentTypeMatchOrData.length) contentMatchQuery['$or'] = contentTypeMatchOrData;
+
+
+  // Fetching taxonomy and content mappings
+  let [topics, assets] = await Promise.all([
+    ConceptTaxonomy.aggregate(topicAgrQuery),
+    ContentMapping.find(contentMatchQuery).lean(),
+  ])
+
+  const topicsObj = {};
+  topics.forEach(x => { topicsObj[x.textbookCode] = x.topics});
+  console.log("Assets fetched..",  assets.length);
+  assets = assets.map(obj => {
+    const textbookCode = obj && obj.refs && obj.refs.textbook && obj.refs.textbook.code;
+    const topicCode = obj && obj.refs && obj.refs.topic && obj.refs.topic.code;
+    if(textbookCode && topicCode && topicsObj[textbookCode] && topicsObj[textbookCode][topicCode]){
+      const textbook =  textbooksObj[textbookCode];
+      obj.refs.textbook.name = textbook.name;
+      obj.refs.textbook.viewOrder = textbook.viewOrder;
+      
+      obj.refs.topic.name = topicsObj[textbookCode][topicCode].name;
+      obj.refs.topic.viewOrder = topicsObj[textbookCode][topicCode].viewOrder;
+
+      obj.refs.subject = {
+        name: subjectsObj[textbook.subjectCode].name,
+        code: textbook.subjectCode,
+        viewOrder: subjectsObj[textbook.subjectCode].viewOrder,
+      }
+      return obj;
+    }
+  })
+  assets = assets.filter(x => x);
+  console.log("Final assets..",  assets.length);
+  
+  return assets;
 }
 
 export default{

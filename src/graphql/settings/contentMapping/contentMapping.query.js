@@ -246,6 +246,23 @@ export const CmsCategoryStats = {
   },
 };
 
+export const StudyPlanAssets = {
+  args: {
+    studyWeek : { type: IntType, description: 'Week number of the year' },
+    subjectCode: { type: StringType, description: 'Code of the subject' },
+    textbookCode: { type: StringType, description: 'Code of the textbook' },
+    chapterCode: { type: StringType, description: 'Code of the chapter' },
+    contentCategory: { type: StringType, description: 'Content category' },
+  },
+  type: GraphQLJSON,
+  async resolve(obj, args, context) {
+    const validRoles = ['LMS_LEARN_VIEWER'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
+    return controller.getStudyPlanAssets(args, context)
+      .then(async json => json);
+  },
+};
+
 export const CategoryWiseFiles = {
   args: {
     input: { type: CategoryWiseFilesInputType },
