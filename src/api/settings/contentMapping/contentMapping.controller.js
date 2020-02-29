@@ -2681,6 +2681,8 @@ export async function getStudentDataForStudyPlan(context) {
 
 export async function getStudyPlanAssets(args, context){
 
+  if(args.studyPlanWeekNo < 1 || args.studyPlanWeekNo > 52) throw new Error("Invalid studyPlanWeekNo, valid: 1 to 52");
+
   // Fetching models..
   const [
     studentData,
@@ -2757,7 +2759,7 @@ export async function getStudyPlanAssets(args, context){
   const contentMatchQuery = {
     active: true,
     reviewed: true,
-    studyWeek: args.studyWeek,
+    studyWeek: args.studyPlanWeekNo,
     'refs.textbook.code': {$in: textbookCodes },
   }
   if(args.chapterCode) contentMatchQuery['refs.topic.code'] = args.chapterCode;
@@ -2774,7 +2776,7 @@ export async function getStudyPlanAssets(args, context){
 
   const topicsObj = {};
   topics.forEach(x => { topicsObj[x.textbookCode] = x.topics});
-  console.log("Assets fetched..",  assets.length);
+  
   assets = assets.map(obj => {
     const textbookCode = obj && obj.refs && obj.refs.textbook && obj.refs.textbook.code;
     const topicCode = obj && obj.refs && obj.refs.topic && obj.refs.topic.code;
@@ -2794,9 +2796,7 @@ export async function getStudyPlanAssets(args, context){
       return obj;
     }
   })
-  assets = assets.filter(x => x);
-  console.log("Final assets..",  assets.length);
-  
+  assets = assets.filter(x => x);  
   return assets;
 }
 export async function changeAssetStates(args, context){
