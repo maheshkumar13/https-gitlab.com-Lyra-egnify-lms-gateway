@@ -52,6 +52,7 @@ const contentMappingSchema = new mongoose.Schema({
   coins: { type: Number, default: 0 },
   timgPath: { type: String },
   viewOrder: { type: Number },
+  studyWeek: { type: Number },
   gaStatus: { type: Boolean, default: false },
   metaData: {},
 }, {

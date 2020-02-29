@@ -69,6 +69,9 @@ export const ContentMappingType = new ObjectType({
     coins: { type: IntType, description: 'Coins' },
     timgPath: { type: StringType, description: 'Thumbnail image path' },
     viewOrder: { type: IntType, description: 'view order' },
+    active: { type: BooleanType, description: 'Active flag' },
+    reviewed: { type: BooleanType, description: 'Reviewed falg' },
+    studyWeek: { type: IntType, description: 'Study week' },
   },
 });
 
