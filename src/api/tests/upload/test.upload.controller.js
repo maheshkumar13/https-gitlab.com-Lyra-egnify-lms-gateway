@@ -105,7 +105,7 @@ export async function listTest(args, ctx) {
       { $group: { "_id": "$testId", maxDate: { $max: "$endTime" }, 
       minDate: { $min: "$startTime" }, maxDuration: { $max: "$duration" } } }, 
       { $project: { "endDate": "$maxDate", "startDate": "$minDate", "duration": "$maxDuration", "_id": 0 } }], as: "testTiming" } },
-     {$unwind:"$testTiming"}]
+     { "$unwind": {"path": "$testTiming","preserveNullAndEmptyArrays": true} }]
     
     if(limit){
       aggregateQuery.splice(2,0,{$limit:limit});
