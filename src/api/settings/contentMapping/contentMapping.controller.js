@@ -2373,9 +2373,12 @@ export async function publishPractice(req, res){
     }
 
     const contentMapping = await ContentSchema.findOneAndUpdate({assetId,"content.category":"Practice"},
-      {$set:setObj},{new: true}).select({_id: 1}).lean();
+      {$set:setObj});
       if(!contentMapping){
         return res.status(400).send("Invalid asset id.");
+      }
+      if(contentMapping.resource.key){
+        await QuestionSchema.deleteMany({questionPaperId: contentMapping.resource.key})
       }
       return res.status(200).send("Success");
   }catch(err){
@@ -2510,35 +2513,32 @@ export async function uploadPracticeMapping(req, res) {
     if(errors.length) continue;
 
     // PREPARING DATA OBJECT
-    const temp = {
-      content: {
-        name: obj['test name'],
-        category: "Practice",
-        type: obj['content type'] || null,
-      },
-      resource: {
-        size: obj['file size'] || 0,
-        type: obj['media type'] ? obj['media type'].toLowerCase() : null,
-      },
-      publication: {
-        publisher: obj.publisher || null,
-        year: obj['publish year'] || null,
-      },
-      timgPath: null,
-      category: obj.category || "",
-      viewOrder: viewOrder,
-      refs: {
-        topic: {
-          code: chapterObj.topicCode,
-        },
-        textbook : {
-          code: chapterObj.textbookCode,
-        },
-      },
-      "assetId" : obj['asset id'] || crypto.randomBytes(10).toString('hex'),
-      "reviewed": false,
-      "active": false
-    };
+    let temp = {};
+    temp["content.name"] = obj['test name'];
+    temp["content.category"] = "Practice";
+    if(obj['content type']){
+      temp["content.type"] = obj["content type"];
+    }
+    if(obj['file size']){
+      temp["resource.size"] = obj["file size"];
+    }
+    if(obj["media type"]){
+      temp["media type"] = obj["media type"].toLowerCase();
+    }
+    if(obj["publisher"]){
+      temp["publication.publisher"] = obj["publisher"];
+    }
+    if(obj["publish year"]){
+      temp["publication.year"] = obj["publish year"];
+    }
+    if(obj["cateogry"]){
+      temp["category"] = obj["category"];
+    }
+    temp["viewOrder"] = viewOrder;
+    temp["refs.topic.code"] = chapterObj.topicCode;
+    temp["refs.textbook.code"] = chapterObj.textbookCode
+    temp["assetId"] = obj['asset id'] || crypto.randomBytes(10).toString('hex');
+    
     dumpingArray.push({
       updateOne: {
           filter: { "assetId": temp["assetId"] },
@@ -2563,13 +2563,6 @@ return res.send('Data inserted/updated successfully')
     console.log(err)
     return res.status(500).send("Error occured");
   }
-  // return bulk.execute().then(() => {
-  //   console.info(req.file.originalname, 'Uploaded successfully....')
-  //   return res.send('Data inserted/updated successfully')
-  // }).catch((err) => {
-  //   console.error(err);
-  //   return res.status(400).end('Error occured');
-  // });
 }
 
 export async function getCMSPracticeStatsV2(args, context) {
@@ -2654,9 +2647,12 @@ export async function publishQuiz(req, res){
     const setObj = {
       "metaData.questionPaperId": questionPaperId
     };
-    const content = await ContentSchema.findOneAndUpdate({assetId},{$set: setObj},{new: true}).select({_id: 1}).lean();
+    const content = await ContentSchema.findOneAndUpdate({assetId},{$set: setObj});
     if(!content){
       return res.status(400).send("Invalid asset id.");
+    }
+    if(content.resource.key){
+      await QuestionSchema.deleteMany({questionPaperId:content.resource.key})
     }
     return res.status(200).send("Success");
   }catch(err){
