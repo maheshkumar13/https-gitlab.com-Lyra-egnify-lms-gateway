@@ -19,11 +19,9 @@ const TestInfo = new mongoose.Schema({
   },
   startTime: {
     type: Date,
-    default: Date.now()
   },
   endTime: {
     type: Date,
-    default: Date.now()
   },
   date: {
     type: Date,
@@ -31,11 +29,9 @@ const TestInfo = new mongoose.Schema({
   },
   duration: {
     type: Number,
-    default: null
   },
   questionPaperId: {
     type: String,
-    default: null
   }
 });
 
@@ -120,11 +116,9 @@ const TestSchema = new mongoose.Schema({
   },
   questionPaperUrl: {
     type: String,
-    default: null
   },
   questionPaperId: {
     type: String,
-    default: null
   },
   totalStudents: {
     type: Number,
@@ -210,34 +204,6 @@ const TestSchema = new mongoose.Schema({
   },
   markingScheme: {
     type: Schema.Types.Mixed,
-    default: {
-      "totalQuestions": null,
-      "totalMarks": null,
-      "subjects": [{
-        "tieBreaker": 1,
-        "start": 1,
-        "end": null,
-        "subject": null,
-        "totalQuestions": null,
-        "totalMarks": null,
-        "marks": [{
-          "noOfOptions": 4,
-          "numberOfSubQuestions": null,
-          "P": 0,
-          "ADD": 1,
-          "questionType": "Single Answer",
-          "egnifyQuestionType": "Single answer type",
-          "numberOfQuestions": null,
-          "section": null,
-          "C": 1,
-          "W": 0,
-          "U": 0,
-          "start": 1,
-          "end": null,
-          "totalMarks": null
-        }]
-      }]
-    }
   },
   metadata: {
     type: Object,
