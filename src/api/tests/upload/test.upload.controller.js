@@ -588,12 +588,8 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
     },
     "branches" : textBookData["branches"],
     "orientations" : textBookData["orientations"],
-    "test" : {
-        "startTime" : new Date(),
-        "endTime" : new Date(),
-        "date" : new Date(),
-        "name" : data["test name"]
-    },
+    "test.name": data["test name"],
+    "test.date": new Date(),
     "viewOrder" : data["view order"] || null,
     "reviewed": false,
     "active": false
