@@ -87,6 +87,8 @@ export const ContentMappingUploadedDataLearn = {
     branch: { type: StringType, description: 'Branch filter' },
     orientation: { type: StringType, description: 'Orientation filter' },
     contentCategory: { type: new List(StringType), description: 'Category of the content' },
+    active: { type: BooleanType, description: 'Default is true' },
+    reviewed: { type: BooleanType, description: 'Default is true '},
   },
   type: ContentMappingPaginatedType,
   async resolve(obj, args, context) {
@@ -146,6 +148,8 @@ export const ContentMappingUploadedDataReadingMaterialAudio = {
     chapterCode: { type: StringType, description: 'Internal code of Textbook ' },
     branch: { type: StringType, description: 'Branch filter' },
     orientation: { type: StringType, description: 'Orientation filter' },
+    active: { type: BooleanType, description: 'Default is active' },
+    reviewed: { type: BooleanType, description: 'Default is active' },
   },
   type: ReadingMaterialAudioPaginatedType,
   async resolve(obj, args, context) {
@@ -242,6 +246,23 @@ export const CmsCategoryStats = {
     const validRoles = ['CMS_LEARN_VIEWER', 'CMS_PRACTICE_VIEWER'];
     if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     return controller.getCMSCategoryStatsV2(args.input, context)
+      .then(async json => json);
+  },
+};
+
+export const StudyPlanAssets = {
+  args: {
+    studyPlanWeekNo : { type: new NonNull(IntType), description: 'Week number of the year' },
+    subjectCode: { type: StringType, description: 'Code of the subject' },
+    textbookCode: { type: StringType, description: 'Code of the textbook' },
+    chapterCode: { type: StringType, description: 'Code of the chapter' },
+    contentCategory: { type: StringType, description: 'Content category' },
+  },
+  type: new List(ContentMappingType),
+  async resolve(obj, args, context) {
+    const validRoles = ['LMS_LEARN_VIEWER'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
+    return controller.getStudyPlanAssets(args, context)
       .then(async json => json);
   },
 };
