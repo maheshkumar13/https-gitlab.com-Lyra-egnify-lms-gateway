@@ -105,7 +105,7 @@ export async function listTest(args, ctx) {
       { $group: { "_id": "$testId", maxDate: { $max: "$endTime" }, 
       minDate: { $min: "$startTime" }, maxDuration: { $max: "$duration" } } }, 
       { $project: { "endDate": "$maxDate", "startDate": "$minDate", "duration": "$maxDuration", "_id": 0 } }], as: "testTiming" } },
-     {$unwind:"$testTiming"}]
+     { "$unwind": {"path": "$testTiming","preserveNullAndEmptyArrays": true} }]
     
     if(limit){
       aggregateQuery.splice(2,0,{$limit:limit});
@@ -1182,8 +1182,8 @@ export async function testAnalysis(args, context) {
               "Unattempted": studentAnalysis[i]["cwuAnalysis"]["overall"]["U"],
               "orientation": studentAnalysis[i]["studentInfo"]["orientation"],
               "city": studentAnalysis[i]["studentInfo"]["hierarchy"][3]["child"],
-              "startTime": indexed_test_timing_map[hierarchyId+"_"+testId]["startTime"],
-              "endTime": indexed_test_timing_map[hierarchyId+"_"+testId]["endTime"]
+              "startTime": indexed_test_timing_map.hasOwnProperty(hierarchyId+"_"+testId) ? indexed_test_timing_map[hierarchyId+"_"+testId]["startTime"] : "NOT_MAPPED",
+              "endTime":  indexed_test_timing_map.hasOwnProperty(hierarchyId+"_"+testId) ? indexed_test_timing_map[hierarchyId+"_"+testId]["endTime"] : "NOT_MAPPED"
           }
           dumpingArray.push(analysisObject)
       }
