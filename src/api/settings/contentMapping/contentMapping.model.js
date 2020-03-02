@@ -18,7 +18,7 @@ const contentSchema = new mongoose.Schema({
 });
 
 const resourceSchema = new mongoose.Schema({
-  key: { type: String,default: null },
+  key: { type: String },
   size: { type: Number },
   type: { type: String },
 });
