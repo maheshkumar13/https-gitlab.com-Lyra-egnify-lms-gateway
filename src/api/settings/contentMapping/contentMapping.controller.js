@@ -2801,7 +2801,7 @@ export async function getStudyPlanAssets(args, context){
 }
 export async function changeAssetStates(args, context){
   return ContentMappingModel(context).then((ContentMapping) => {
-    return ContentMapping.update({assetId: args.assetId},{$set: args},{multi: true}).then(()=> {
+    return ContentMapping.update({assetId: {$in: args.assetIds}},{$set: { active: args.active, reviewed: args.reviewed }},{multi: true}).then(()=> {
       return 'Operation successful!!';
     })
   }).catch((err) => {

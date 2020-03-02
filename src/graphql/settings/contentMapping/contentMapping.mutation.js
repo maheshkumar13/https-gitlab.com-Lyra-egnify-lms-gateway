@@ -49,7 +49,7 @@ export const updateMetaData = {
 
 export const changeAssetStates = {
   args: {
-    assetId: { type: new NonNull(StringType), description: 'Unique Identifier for asset'},
+    assetIds: { type: new NonNull(new List(StringType)), description: 'Unique Identifier for asset'},
     active: { type: new NonNull(BooleanType), description: 'Active state information' },
     reviewed: { type: new NonNull(BooleanType), description: 'Reviewed state information' },
   },
