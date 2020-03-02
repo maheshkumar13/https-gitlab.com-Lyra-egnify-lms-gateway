@@ -881,9 +881,12 @@ export async function publishTest(req, res){
     }
     const scheduledTask = await scheduleGA(data,req.user_cxt);
     setObject["gaSyncId"] = scheduledTask.job_id
-    await TestSchema.update({testId},{$set: setObject});
+    const oldData = await TestSchema.findOneAndUpdate({testId},{$set: setObject});
     if(testTiming[0]["gaSyncId"]){
       await cancelGA({jobId: testTiming[0]["gaSyncId"]},req.user_cxt)
+    }
+    if(oldData.questionPaperId){
+      await QuestionsSchema.deleteMany({questionPaperId:oldData.questionPaperId});
     }
     return res.status(200).send("Test Saved Successfully.");
   }catch(err){
