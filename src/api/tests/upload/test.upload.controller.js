@@ -579,9 +579,7 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
     "orientations" : textBookData["orientations"],
     "test.name": data["test name"],
     "test.date": new Date(),
-    "viewOrder" : data["view order"] || null,
-    "reviewed": false,
-    "active": false
+    "viewOrder" : data["view order"] || null
   }
   let upsertObj = {
     updateOne: {
