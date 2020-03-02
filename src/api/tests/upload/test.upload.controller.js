@@ -545,29 +545,18 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
             "subjectCode" : subjectData.code
         }
     ],
-
-    "markingSchema" : {
-        "subjects" : [
-            {
-                "tieBreaker" : 1,
-                "start" : 1,
-                "subject" : data["subject"],
-                "marks" : [
-                    {
-                        "noOfOptions" : 4,
-                        "P" : 0,
-                        "ADD" : 1,
-                        "questionType" : "Single Answer",
-                        "egnifyQuestionType" : "Single answer type",
-                        "C" : 1,
-                        "W" : 0,
-                        "U" : 0,
-                        "start" : 1,
-                    }
-                ]
-            }
-        ]
-    },
+    "markingSchema.subjects.0.tieBreaker": 1,
+    "markingSchema.subjects.0.start": 1,
+    "markingSchema.subjects.0.subject": data["subject"],
+    "markingSchema.subjects.0.marks.0.noOfOptions": 4,
+    "markingSchema.subjects.0.marks.0.P": 0,
+    "markingSchema.subjects.0.marks.0.ADD": 1,
+    "markingSchema.subjects.0.marks.0.questionType": "Single Answer",
+    "markingSchema.subjects.0.marks.0.egnifyQuestionType": "Single answer type",
+    "markingSchema.subjects.0.marks.0.C": 1,
+    "markingSchema.subjects.0.marks.0.W": 0,
+    "markingSchema.subjects.0.marks.0.U": 0,
+    "markingSchema.subjects.0.marks.0.start": 1,
     "mapping" : {
         "class" : {
             "code" : classData["childCode"],
