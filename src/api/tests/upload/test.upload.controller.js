@@ -1182,8 +1182,8 @@ export async function testAnalysis(args, context) {
               "Unattempted": studentAnalysis[i]["cwuAnalysis"]["overall"]["U"],
               "orientation": studentAnalysis[i]["studentInfo"]["orientation"],
               "city": studentAnalysis[i]["studentInfo"]["hierarchy"][3]["child"],
-              "startTime": indexed_test_timing_map[hierarchyId+"_"+testId]["startTime"],
-              "endTime": indexed_test_timing_map[hierarchyId+"_"+testId]["endTime"]
+              "startTime": indexed_test_timing_map.hasOwnProperty(hierarchyId+"_"+testId) ? indexed_test_timing_map[hierarchyId+"_"+testId]["startTime"] : "NOT_MAPPED",
+              "endTime":  indexed_test_timing_map.hasOwnProperty(hierarchyId+"_"+testId) ? indexed_test_timing_map[hierarchyId+"_"+testId]["endTime"] : "NOT_MAPPED"
           }
           dumpingArray.push(analysisObject)
       }
