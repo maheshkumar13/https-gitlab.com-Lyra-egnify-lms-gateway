@@ -317,6 +317,11 @@ const TestSchema = new mongoose.Schema({
       }
     ]
   },
+  reviewed: {
+    type: Boolean,
+    default: false
+  },
+  gaSyncId: {type: String,default: ""}
 }, {
   timestamps: {
     createdAt: 'created_at',

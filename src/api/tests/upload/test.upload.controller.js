@@ -22,7 +22,6 @@ import {getModel as Subject} from '../../settings/subject/subject.model';
 import {getModel as MasterResult } from './masterresults.model';
 import {getModel as TestSummarySchema } from './testSummary.model';
 const MAPPING_HEADERS = ["class","subject","textbook","chapter","test name","view order"]
-const SUPPORTED_MEDIA_TYPE = ["docx","xlsx","xml"];
 const TEST_TIMING_HEADERS = ["branches","end date","start date","duration"];
 const axios = require("axios");
 
@@ -86,35 +85,45 @@ function getFileData(req){
 export async function listTest(args, ctx) {
   try {
     const queries = queryForListTest(args);
-    let activeStatus = true;
-    if(args.active === false) {
-      activeStatus = false
-    } 
-    let find = {"mapping.textbook.code":{"$in": args.textbookCode}, active: activeStatus};
+    let find = {"mapping.textbook.code":{"$in": args.textbookCode}};
+    if(args.active) {
+      find["active"] = true;
+    }
     if(args.gaStatus){
       find["gaStatus"] = args.gaStatus
     }
-    const TestSchema = await Tests(ctx);
+    if(args.reviewed){
+      find["reviewed"] = true;
+    }
     let limit = args.limit ? args.limit : 0;
     let skip = args.pageNumber ? args.pageNumber - 1 : 0;
-    let data = await TestSchema.dataTables({
-      limit: limit,
-      skip: skip * limit,
-      find: find,
-      search: queries.search,
-      sort: queries.sort,
-    });
-
-    data["pageInfo"] = {
-      pageNumber: args.pageNumber,
-      recordsShown: data["data"].length,
-      nextPage: limit !== 0 && limit * args.pageNumber < data["total"],
-      prevPage: args.pageNumber !== 1 && data["total"] > 0,
-      totalEntries: data["total"],
-      totalPages: limit > 0 ? Math.ceil(data["total"] / limit) : 1,
+    const TestSchema = await Tests(ctx);
+    let aggregateQuery  = [ {$match: find},
+      {$skip: skip * limit},
+      { $lookup: { from: "testTimings", let: { testId: "$testId" },
+       pipeline: [{ $match: { $expr: { $eq: ["$testId", "$$testId"] } } },
+      { $group: { "_id": "$testId", maxDate: { $max: "$endTime" }, 
+      minDate: { $min: "$startTime" }, maxDuration: { $max: "$duration" } } }, 
+      { $project: { "endDate": "$maxDate", "startDate": "$minDate", "duration": "$maxDuration", "_id": 0 } }], as: "testTiming" } },
+     {$unwind:"$testTiming"}]
+    
+    if(limit){
+      aggregateQuery.splice(2,0,{$limit:limit});
     }
-
-    return data
+    const [data, count] = await Promise.all([
+      TestSchema.aggregate(aggregateQuery).allowDiskUse(true), TestSchema.count(find)
+    ])
+    let response = {};
+    response["data"] = data;
+    response["pageInfo"] = {
+      pageNumber: args.pageNumber,
+      recordsShown: data.length,
+      nextPage: limit !== 0 && limit * args.pageNumber < count,
+      prevPage: args.pageNumber !== 1 && count > 0,
+      totalEntries: count,
+      totalPages: limit > 0 ? Math.ceil(count / limit) : 1,
+    }
+    return response;
   } catch (err) {
     throw err;
   }
@@ -123,11 +132,16 @@ export async function listTest(args, ctx) {
 export async function listTextBooksWithTestSubectWise(args, ctx) {
   try {
     const TestSchema = await Tests(ctx);
+    let match = {
+      "active": true,
+      "mapping.textbook.code" : { "$in" : args.textbookCodes },
+      "reviewed": true
+    }
+    if(ctx.dummy){
+      delete match["reviewed"];
+    }
     const list = await TestSchema.aggregate([{
-      $match: {
-        "active": true,
-        "mapping.textbook.code" : { "$in" : args.textbookCodes }
-      }
+      $match: match
     }, {
       $group: {
         "_id": "$mapping.textbook.code",
@@ -157,7 +171,7 @@ export async function listTextBooksWithTestSubectWise(args, ctx) {
         name: "$textbookInfo.name",
         imageurl: "$textbookInfo.imageUrl"
       }
-    }]);
+    }]).allowDiskUse(true);
     return list;
   } catch (err) {
     throw err;
@@ -173,7 +187,9 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
     branch,
     orientation,
     header,
-    gaStatus
+    gaStatus,
+    active,
+    reviewed
   } = args;
   let groupby = 'code';
   if(header === 'class') groupby = 'refs.class.code';
@@ -214,8 +230,7 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
 
   textbookCodes = Array.from(new Set(textbookCodes));
 
-  const contentQuery = { 
-    active: true,
+  const contentQuery = {
     'mapping.textbook.code': { $in: textbookCodes },
   };
   //const contentTypeMatchOrData = getContentTypeMatchOrData(contentCategory);
@@ -224,6 +239,12 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
   if (chapterCode) contentQuery['mapping.chapter.code'] = chapterCode;
   if (gaStatus){
     contentQuery['gaStatus'] = "finished"
+  }
+  if(active){
+    contentQuery["active"] = true;
+  }
+  if(reviewed){
+    contentQuery["reviewed"] = true;
   }
   const aggregateQuery = []; 
   const contentMatchQuery = {
@@ -573,7 +594,9 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
         "date" : new Date(),
         "name" : data["test name"]
     },
-    "viewOrder" : data["view order"] || null
+    "viewOrder" : data["view order"] || null,
+    "reviewed": false,
+    "active": false
   }
   let upsertObj = {
     updateOne: {
@@ -688,7 +711,7 @@ export async function  uploadTestiming(req, res){
 //start date and end date format(18/11/2019 - 17:00:00)
 //duration is in minutes
 function validateTestTimingRows (data){
-  const timeBuff = 60 * 1000 * 2;
+  const timeBuff = 60 * 1000;
   const currentTime = new Date().getTime();
   let errors = []
   const length = data.length
@@ -734,8 +757,8 @@ function validateTestTimingRows (data){
       errorDetails.push("duration not present")
     }else{
       let durationInMsWithBuff = parseInt(data[i]["duration"]) * timeBuff ;
-      if(dateDiffInMs <= durationInMsWithBuff ){
-        return errorDetails.push("Minimum difference between start date and end date should be 3hrs plus duration.")
+      if(dateDiffInMs < durationInMsWithBuff ){
+        return errorDetails.push("Minimum difference between start date and end date should be equal to duration.")
       }
     }
 
@@ -799,7 +822,8 @@ function createTimingMap(data, indexed_branch, ret_data, testId, className){
       endTime: new Date(data["end date"]),
       duration: parseInt(data["duration"]),
       class: className,
-      orientations: data["orientations"] ? data["orientations"].split(",") : []
+      orientations: data["orientations"] ? data["orientations"].split(",") : [],
+      hierarchyId: indexed_branch[branch]["childCode"]
     }
     let upsertObj = {
       updateOne: {
@@ -826,15 +850,17 @@ export async function publishTest(req, res){
       TestTimings(req.user_cxt),Questions(req.user_cxt),Tests(req.user_cxt)]);
     const [testTiming, questionsCount] = await Promise.all([
       TestTimingSchema.aggregate([{$match: {testId}},
-      {$group: {"_id": "$testId",maxDate: {$max: "$endTime"},maxDuration: {$max: "$duration"}}},
-      {$lookup:{from: "tests", foreignField: "testId", "localField": "testId","as": "testInfo"}},
+      {$group: {"_id": "$testId",maxDate: {$max: "$endTime"},minDate: {$min: "$startTime"},maxDuration: {$max: "$duration"}}},
+      {$lookup:{from: "tests", foreignField: "testId", "localField": "_id","as": "testInfo"}},
       {$unwind: "$testInfo"},
-      {$project:{testName: "$testInfo.test.name",maxDuration: 1,maxDate: 1}}]),
+      {$project:{testName: "$testInfo.test.name",maxDuration: 1,maxDate: 1, minDate: 1,gaSyncId: "$testInfo.gaSyncId"}}]).allowDiskUse(true),
       QuestionsSchema.count({questionPaperId})
     ]);
-    
     if(!testTiming.length){
-      return res.status(400).send("Invalid test id.");
+      return res.status(400).send("Test timing not uploaded yet.");
+    }
+    if(new Date(testTiming[0]["maxDate"]).getTime() <= new Date().getTime()){
+      return res.status(409).send("You cannot update the test as test has already started.");
     }
     if(!questionsCount){
       return res.status(400).send("Invalid question paper id.");
@@ -870,9 +896,15 @@ export async function publishTest(req, res){
         "studentId" : null
       }
     }
-    await scheduleGA(data,req.user_cxt);
+    const scheduledTask = await scheduleGA(data,req.user_cxt);
+    setObject["gaSyncId"] = scheduledTask.job_id
     await TestSchema.update({testId},{$set: setObject});
+    if(testTiming[0]["gaSyncId"]){
+      await cancelGA({jobId: testTiming[0]["gaSyncId"]},req.user_cxt)
+    }
+    return res.status(200).send("Test Saved Successfully.");
   }catch(err){
+    console.error(err)
     return res.status(500).send("internal server error.");
   }
 }
@@ -883,7 +915,22 @@ async function scheduleGA(data, user_cxt){
       "accesscontroltoken": user_cxt["token"]["accesscontroltoken"],
       "authorization": user_cxt["token"]["authorization"]
     }
-    await axios({ method: "POST", GA_SCHEDULER_URL, data , headers });
+    const url = GA_SCHEDULER_URL
+    const res = await axios({ method: "POST", url, data , headers });
+    return res.data;
+  }catch(err){
+    throw err;
+  }
+}
+
+async function cancelGA(data,user_cxt){
+  try{
+    const headers = {
+      "accesscontroltoken": user_cxt["token"]["accesscontroltoken"],
+      "authorization": user_cxt["token"]["authorization"]
+    }
+    const url = `${GA_SCHEDULER_URL}/${data.jobId}/cancel`;
+    await axios({ method: "POST", url, data , headers });
   }catch(err){
     throw err;
   }
@@ -897,7 +944,8 @@ export async function getCMSTestStats(args, context) {
     textbookCode,
     branch,
     orientation,
-    gaStatus
+    gaStatus,
+    reviewed,
   } = args;
 
   // Textbook data;
@@ -922,6 +970,9 @@ export async function getCMSTestStats(args, context) {
   const contentMatchQuery = { active: true }
   if(gaStatus){
     contentMatchQuery["gaStatus"] = "finished";
+  }
+  if(reviewed){
+    contentMatchQuery["reviewed"] = true;
   }
   // const contentTypeMatchOrData = getContentTypeMatchOrData("");
   // if(contentTypeMatchOrData.length) contentMatchQuery['$or'] = contentTypeMatchOrData;
@@ -956,8 +1007,8 @@ export async function getCMSTestStats(args, context) {
 
 export async function testAnalysis(args, context) {
   try {
-      const [TestMasterResultSchema, QuestionSchema] = await Promise.all([
-          MasterResult(context), Questions(context)
+      const [TestMasterResultSchema, QuestionSchema, TestTimingSchema] = await Promise.all([
+          MasterResult(context), Questions(context), TestTimings(context)
       ]);
       let {
           testId,
@@ -1045,7 +1096,9 @@ export async function testAnalysis(args, context) {
               "testInfo.mapping.textbook.name": 1,
               "responseData.questionResponse": 1,
               "studentInfo.hierarchy": 1,
-              "cwuAnalysis": 1
+              "cwuAnalysis": 1,
+              "studentInfo.orientation": 1,
+              "testId": 1
           }
       }
       if (testId && testId.length) {
@@ -1093,9 +1146,20 @@ export async function testAnalysis(args, context) {
               }
           }
       }]).allowDiskUse(true)
+      let branchesOfStudentsWithTestId = new Set();
+      studentAnalysis.forEach( (analysis) => {
+        branchesOfStudentsWithTestId.add(analysis["studentInfo"]["hierarchy"][4]["childCode"]+"_"+analysis["testId"])
+      })
+      
+      branchesOfStudentsWithTestId = Array.from(branchesOfStudentsWithTestId);
+
+      const testTiming = await TestTimingSchema.find({_id: {$in:branchesOfStudentsWithTestId}}).select({startTime: 1, endTime: 1}).lean();
+      const indexed_test_timing_map = testTimingToMap(testTiming);
       let questionPaperIndex = questionPaperIdToIndex(questionsArray);
       for (let i = 0; i < studentAnalysis.length; i++) {
           let data = totalTimeSpentQuestionWise(studentAnalysis[i]["responseData"]["questionResponse"]);
+          let hierarchyId = studentAnalysis[i]["studentInfo"]["hierarchy"][4]["childCode"];
+          let testId = studentAnalysis[i]["testId"]
           let analysisObject = {
               "studentId": studentAnalysis[i]["studentId"],
               "studentName": studentAnalysis[i]["name"],
@@ -1115,7 +1179,11 @@ export async function testAnalysis(args, context) {
               "textbook": studentAnalysis[i]["testInfo"]["mapping"]["textbook"]["name"],
               "Correct": studentAnalysis[i]["cwuAnalysis"]["overall"]["C"],
               "Wrong": studentAnalysis[i]["cwuAnalysis"]["overall"]["W"],
-              "Unattempted": studentAnalysis[i]["cwuAnalysis"]["overall"]["U"]
+              "Unattempted": studentAnalysis[i]["cwuAnalysis"]["overall"]["U"],
+              "orientation": studentAnalysis[i]["studentInfo"]["orientation"],
+              "city": studentAnalysis[i]["studentInfo"]["hierarchy"][3]["child"],
+              "startTime": indexed_test_timing_map[hierarchyId+"_"+testId]["startTime"],
+              "endTime": indexed_test_timing_map[hierarchyId+"_"+testId]["endTime"]
           }
           dumpingArray.push(analysisObject)
       }
@@ -1127,6 +1195,14 @@ export async function testAnalysis(args, context) {
       console.log(err)
       throw err;
   }
+}
+
+function testTimingToMap(testTiming){
+  let retObj = {};
+  testTiming.forEach((data)=>{
+    retObj[data["_id"]] = data
+  });
+  return retObj;
 }
 
 function questionPaperIdToIndex(questions){
@@ -1312,5 +1388,59 @@ export async function getStudentWiseTestStats(req, res){
   }catch(err){
       console.log(err);
       return res.status(500).send("internal server error");
+  }
+}
+
+export async function makeLive(req, res){
+  try{
+    if(!req.body.testIds){
+      return res.status(400).send("Test id missing in req.");
+    }
+    const testIds = req.body.testIds.split(",");
+    const TestSchema = await Tests(req.user_cxt);
+    await TestSchema.update({ testId: {$in : testIds}},{
+      $set: {
+        reviewed: true,
+        active: true
+      }
+    },{multi: true});
+    return res.status(200).send("Success");
+  }catch(err){
+    console.error(err);
+    return res.status(500).send("internal server error");
+  }
+}
+
+export async function testDetails(req, res){
+  try{
+    const testId = req.params.testId;
+    const TestSchema = await Tests(req.user_cxt);
+    let data = await TestSchema.aggregate([{
+      $match: {
+        testId: testId
+      }},{
+        $lookup:{
+          from: "textbooks",
+          localField: "mapping.textbook.code",
+          foreignField: "code",
+          as: "textbook"
+        }
+      },{$unwind:"$textbook"},
+      {
+        $project:{
+          "class": "$textbook.refs.class",
+          "branches": "$textbook.branches",
+          "orientation": "$textbook.orientations",
+          "subject": "$textbook.refs.subject",
+          "chapter": "$mapping.chapter",
+          "test": 1,
+          "_id": 0
+        }
+      }
+    ]).allowDiskUse(true);
+    return res.status(200).send(data);
+  }catch(err){
+    console.error(err);
+    return res.status(500).send("internal server error.")
   }
 }

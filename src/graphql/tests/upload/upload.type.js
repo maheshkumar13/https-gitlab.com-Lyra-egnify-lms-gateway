@@ -45,6 +45,9 @@ export const ListInputType = new InputType({
         },
         gaStatus : {
             type : StringType
+        },
+        reviewed: {
+            type: BooleanType
         }
     }
 });
@@ -231,7 +234,8 @@ const Data = new ObjectType({
         orientations : { type : new ListType(StringType) },
         branches : { type : new ListType(StringType)},
         testId : { type : StringType },
-        coins : {type : IntType}
+        coins : {type : IntType},
+        testTiming: { type: GraphQLJSON}
     }
 })
 
@@ -277,7 +281,9 @@ export const TestHeadersAssetCountInputType = new InputType({
       branch: { type: StringType, description: 'Branch name' },
       orientation: { type: StringType, description: 'Orientaion name' },
       header: { type: NonNull(TestHeaderEnumType), description: 'Header' },
-      gaStatus: { type: BooleanType, description: "Filter for fetching performance data"}
+      gaStatus: { type: BooleanType, description: "Filter for fetching performance data"},
+      active: { type: BooleanType},
+      reviewed: { type: BooleanType}
     },
 });
 
@@ -290,7 +296,8 @@ export const CmsTestStatsInputType = new InputType({
       textbookCode: { type: StringType, description: 'Code of the textBook' },
       branch: { type: StringType, description: 'Branch name' },
       orientation: { type: StringType, description: 'Orientaion name' },
-      gaStatus: {type: BooleanType, description: "filter for ga"}
+      gaStatus: {type: BooleanType, description: "filter for ga"},
+      reviewed: {type: BooleanType, description: "filter for reviewed test"}
     },
   });
   
@@ -323,7 +330,11 @@ const studentAnalysis = new ObjectType({
         "textbook": {type: StringType},
         "Correct": {type: IntType},
         "Wrong": {type: IntType},
-        "Unattempted": {type: IntType}
+        "Unattempted": {type: IntType},
+        "orientation": {type: StringType},
+        "city": {type: StringType},
+        "startTime": { type: StringType},
+        "endTime": { type: StringType}
     }
 })
 
