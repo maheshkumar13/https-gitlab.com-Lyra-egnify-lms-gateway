@@ -7,6 +7,7 @@
 */
 
 import {
+  GraphQLList as List,
   GraphQLString as StringType,
   GraphQLNonNull as NonNull,
   GraphQLBoolean as BooleanType,
