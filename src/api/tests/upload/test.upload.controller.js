@@ -545,29 +545,18 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
             "subjectCode" : subjectData.code
         }
     ],
-
-    "markingSchema" : {
-        "subjects" : [
-            {
-                "tieBreaker" : 1,
-                "start" : 1,
-                "subject" : data["subject"],
-                "marks" : [
-                    {
-                        "noOfOptions" : 4,
-                        "P" : 0,
-                        "ADD" : 1,
-                        "questionType" : "Single Answer",
-                        "egnifyQuestionType" : "Single answer type",
-                        "C" : 1,
-                        "W" : 0,
-                        "U" : 0,
-                        "start" : 1,
-                    }
-                ]
-            }
-        ]
-    },
+    "markingSchema.subjects.0.tieBreaker": 1,
+    "markingSchema.subjects.0.start": 1,
+    "markingSchema.subjects.0.subject": data["subject"],
+    "markingSchema.subjects.0.marks.0.noOfOptions": 4,
+    "markingSchema.subjects.0.marks.0.P": 0,
+    "markingSchema.subjects.0.marks.0.ADD": 1,
+    "markingSchema.subjects.0.marks.0.questionType": "Single Answer",
+    "markingSchema.subjects.0.marks.0.egnifyQuestionType": "Single answer type",
+    "markingSchema.subjects.0.marks.0.C": 1,
+    "markingSchema.subjects.0.marks.0.W": 0,
+    "markingSchema.subjects.0.marks.0.U": 0,
+    "markingSchema.subjects.0.marks.0.start": 1,
     "mapping" : {
         "class" : {
             "code" : classData["childCode"],
@@ -590,9 +579,7 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
     "orientations" : textBookData["orientations"],
     "test.name": data["test name"],
     "test.date": new Date(),
-    "viewOrder" : data["view order"] || null,
-    "reviewed": false,
-    "active": false
+    "viewOrder" : data["view order"] || null
   }
   let upsertObj = {
     updateOne: {
@@ -894,9 +881,12 @@ export async function publishTest(req, res){
     }
     const scheduledTask = await scheduleGA(data,req.user_cxt);
     setObject["gaSyncId"] = scheduledTask.job_id
-    await TestSchema.update({testId},{$set: setObject});
+    const oldData = await TestSchema.findOneAndUpdate({testId},{$set: setObject});
     if(testTiming[0]["gaSyncId"]){
       await cancelGA({jobId: testTiming[0]["gaSyncId"]},req.user_cxt)
+    }
+    if(oldData.questionPaperId){
+      await QuestionsSchema.deleteMany({questionPaperId:oldData.questionPaperId});
     }
     return res.status(200).send("Test Saved Successfully.");
   }catch(err){
