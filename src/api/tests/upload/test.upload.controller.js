@@ -86,15 +86,27 @@ export async function listTest(args, ctx) {
   try {
     const queries = queryForListTest(args);
     let find = {"mapping.textbook.code":{"$in": args.textbookCode}};
+    
     if(args.active) {
       find["active"] = true;
     }
+
+    if(args.active === false){
+      find["active"] = false;
+    }
+
     if(args.gaStatus){
       find["gaStatus"] = args.gaStatus
     }
+
     if(args.reviewed){
       find["reviewed"] = true;
     }
+
+    if(args.reviewed === false){
+      find["reviewed"] = false
+    }
+
     let limit = args.limit ? args.limit : 0;
     let skip = args.pageNumber ? args.pageNumber - 1 : 0;
     const TestSchema = await Tests(ctx);
@@ -243,8 +255,14 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
   if(active){
     contentQuery["active"] = true;
   }
+  if(active === false){
+    contentQuery["active"] = false;
+  }
   if(reviewed){
     contentQuery["reviewed"] = true;
+  }
+  if(reviewed === false){
+    contentQuery["reviewed"] = false;
   }
   const aggregateQuery = []; 
   const contentMatchQuery = {
@@ -932,6 +950,7 @@ export async function getCMSTestStats(args, context) {
     orientation,
     gaStatus,
     reviewed,
+    active
   } = args;
 
   // Textbook data;
@@ -959,6 +978,13 @@ export async function getCMSTestStats(args, context) {
   }
   if(reviewed){
     contentMatchQuery["reviewed"] = true;
+  }
+  if(active === false){
+    contentMatchQuery["active"] = false;
+  }
+
+  if(reviewed === false){
+    contentMatchQuery["reviewed"] = false;
   }
   // const contentTypeMatchOrData = getContentTypeMatchOrData("");
   // if(contentTypeMatchOrData.length) contentMatchQuery['$or'] = contentTypeMatchOrData;
