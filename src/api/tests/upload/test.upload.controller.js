@@ -1190,7 +1190,7 @@ export async function testAnalysis(args, context) {
               "totalMarksObtainedByInference": totalMarksObtainedGrouped(studentAnalysis[i], questionsArray[questionPaperIndex[studentAnalysis[i]["testInfo"]["test"]["questionPaperId"]]]["questions"], "Inference", "revised_blooms_taxonomy"),
               "textbook": studentAnalysis[i]["testInfo"]["mapping"]["textbook"]["name"],
               "Correct": studentAnalysis[i]["cwuAnalysis"]["overall"]["C"],
-              "Wrong": studentAnalysis[i]["cwuAnalysis"]["overall"]["W"],
+              "Wrong": studentAnalysis[i]["cwuAnalysis"]["overall"]["W"] + studentAnalysis[i]["cwuAnalysis"]["overall"]["P"],
               "Unattempted": studentAnalysis[i]["cwuAnalysis"]["overall"]["U"],
               "orientation": studentAnalysis[i]["studentInfo"]["orientation"],
               "city": studentAnalysis[i]["studentInfo"]["hierarchy"][3]["child"],
