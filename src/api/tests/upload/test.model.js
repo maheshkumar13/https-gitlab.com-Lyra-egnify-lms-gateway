@@ -202,7 +202,7 @@ const TestSchema = new mongoose.Schema({
   test: {
     type: TestInfo
   },
-  markingScheme: {
+  markingSchema: {
     type: Schema.Types.Mixed,
   },
   metadata: {
