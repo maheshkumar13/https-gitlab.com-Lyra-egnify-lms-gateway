@@ -21,7 +21,6 @@ import {getModel as Hierarchy} from '../../settings/instituteHierarchy/institute
 import {getModel as Subject} from '../../settings/subject/subject.model';
 import {getModel as MasterResult } from './masterresults.model';
 import {getModel as TestSummarySchema } from './testSummary.model';
-import { UniqueDirectivesPerLocationRule } from 'graphql';
 const MAPPING_HEADERS = ["class","subject","textbook","chapter","test name","view order"]
 const TEST_TIMING_HEADERS = ["branches","end date","start date","duration"];
 const axios = require("axios");
