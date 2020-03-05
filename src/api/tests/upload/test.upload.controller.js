@@ -563,18 +563,6 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
             "subjectCode" : subjectData.code
         }
     ],
-    "markingSchema.subjects.0.tieBreaker": 1,
-    "markingSchema.subjects.0.start": 1,
-    "markingSchema.subjects.0.subject": data["subject"],
-    "markingSchema.subjects.0.marks.0.noOfOptions": 4,
-    "markingSchema.subjects.0.marks.0.P": 0,
-    "markingSchema.subjects.0.marks.0.ADD": 1,
-    "markingSchema.subjects.0.marks.0.questionType": "Single Answer",
-    "markingSchema.subjects.0.marks.0.egnifyQuestionType": "Single answer type",
-    "markingSchema.subjects.0.marks.0.C": 1,
-    "markingSchema.subjects.0.marks.0.W": 0,
-    "markingSchema.subjects.0.marks.0.U": 0,
-    "markingSchema.subjects.0.marks.0.start": 1,
     "mapping" : {
         "class" : {
             "code" : classData["childCode"],
@@ -890,7 +878,7 @@ export async function publishTest(req, res){
       {$group: {"_id": "$testId",maxDate: {$max: "$endTime"},minDate: {$min: "$startTime"},maxDuration: {$max: "$duration"}}},
       {$lookup:{from: "tests", foreignField: "testId", "localField": "_id","as": "testInfo"}},
       {$unwind: "$testInfo"},
-      {$project:{testName: "$testInfo.test.name",maxDuration: 1,maxDate: 1, minDate: 1,gaSyncId: "$testInfo.gaSyncId"}}]).allowDiskUse(true),
+      {$project:{subject: "$testInfo.mapping.subject.name",testName: "$testInfo.test.name",maxDuration: 1,maxDate: 1, minDate: 1,gaSyncId: "$testInfo.gaSyncId"}}]).allowDiskUse(true),
       QuestionsSchema.count({questionPaperId})
     ]);
     if(!testTiming.length){
@@ -907,14 +895,38 @@ export async function publishTest(req, res){
       "test.questionPaperId": questionPaperId,
       "active": true,
       "subject.0.totalQuestions": questionsCount,
-      "markingSchema.totalQuestions": questionsCount,
-      "markingSchema.totalMarks": questionsCount,
-      "markingSchema.subject.0.end": questionsCount,
-      "markingSchema.subject.0.totalQuestions": questionsCount,
-      "markingSchema.subject.0.totalMarks": questionsCount,
-      "markingSchema.subject.0.marks.0.totalMarks": questionsCount,
-      "markingSchema.subject.0.marks.0.end": questionsCount,
-      "markingSchema.subject.0.marks.0.numberOfQuestions": questionsCount,
+      "markingSchema": {
+        "totalQuestions" : questionsCount,
+        "totalMarks" : questionsCount,
+        "subjects" : [
+          {
+            "tieBreaker" : 1,
+            "start" : 1,
+            "end" : questionsCount,
+            "subject" : testTiming[0]["subject"],
+            "totalQuestions" : questionsCount,
+            "totalMarks" : questionsCount,
+            "marks" : [
+              {
+                "noOfOptions" : 4,
+                "numberOfSubQuestions" : questionsCount,
+                "P" : 0,
+                "ADD" : 1,
+                "questionType" : "Single Answer",
+                "egnifyQuestionType" : "Single answer type",
+                "numberOfQuestions" : questionsCount,
+                "section" : null,
+                "C" : 1,
+                "W" : 0,
+                "U" : 0,
+                "start" : 1,
+                "end" : questionsCount,
+                "totalMarks" : questionsCount
+              }
+            ]
+          }
+        ]
+      },
       "coins": questionsCount,
       "questionPaperId": questionPaperId
     }
