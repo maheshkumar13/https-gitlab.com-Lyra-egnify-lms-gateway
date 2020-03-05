@@ -21,6 +21,7 @@ import {getModel as Hierarchy} from '../../settings/instituteHierarchy/institute
 import {getModel as Subject} from '../../settings/subject/subject.model';
 import {getModel as MasterResult } from './masterresults.model';
 import {getModel as TestSummarySchema } from './testSummary.model';
+import { UniqueDirectivesPerLocationRule } from 'graphql';
 const MAPPING_HEADERS = ["class","subject","textbook","chapter","test name","view order"]
 const TEST_TIMING_HEADERS = ["branches","end date","start date","duration"];
 const axios = require("axios");
@@ -110,7 +111,7 @@ export async function listTest(args, ctx) {
     let limit = args.limit ? args.limit : 0;
     let skip = args.pageNumber ? args.pageNumber - 1 : 0;
     const TestSchema = await Tests(ctx);
-    let aggregateQuery  = [ {$match: find},
+    let aggregateQuery  = [ {$match: find},{$sort:{updated_at: -1}},
       {$skip: skip * limit},
       { $lookup: { from: "testTimings", let: { testId: "$testId" },
        pipeline: [{ $match: { $expr: { $eq: ["$testId", "$$testId"] } } },
@@ -680,7 +681,8 @@ export async function  uploadTestiming(req, res){
     const testInfo = await TestSchema.findOne({testId}).select({
       _id: 0,
       mapping : 1,
-      test: 1
+      test: 1,
+      "gaSyncId": 1
     }).lean();
 
     if(!testInfo){
@@ -699,7 +701,31 @@ export async function  uploadTestiming(req, res){
         data: validationCheck.erroredRow
       });
     }
+    await TestTimingSchema.deleteMany({ testId });
     await TestTimingSchema.bulkWrite(validationCheck.mapping);
+    if(testInfo.test.questionPaperId){
+      const date = new Date(validationCheck.maxDate + validationCheck.maxDuration*60000)
+      .toISOString().replace("T"," ").split(".")[0]
+      .replace(/-/g,"/").substring(2);
+      const data = {
+        "date" : date,
+        "function":"couch_to_mongo",
+        "args" : {
+          "test_id" : testId,
+          "questionPaperId": testInfo.test.questionPaperId,
+          "test_name": testInfo.test.name, 
+          "tie_breaking_list":[],
+          "studentId" : null
+        }
+      }
+      if(testInfo.gaSyncId){
+        await cancelGA({jobId: testInfo.gaSyncId},req.user_cxt)
+      }
+      const scheduledTask = await scheduleGA(data,req.user_cxt)
+      const gaSyncId = scheduledTask.job_id
+      console.log(gaSyncId)
+      await TestSchema.updateOne({testId},{$set:{gaSyncId}});
+    }
     return res.status(200).send({error: false, message: "Success"});
   }
   catch(err){
@@ -793,6 +819,8 @@ function validateTestTimingWithDbAndCreateMap(data, branches, testId, className)
   let error = false;
   let mapping = [];
   let erroredRow = [];
+  let maxDate = new Date().getTime();
+  let maxDuration = 0
   const indexed_branch = branchMapOfName(branches);
   for( let i = 0 ; i < length ; i++ ){
     let rowNumber = i+2;
@@ -807,14 +835,23 @@ function validateTestTimingWithDbAndCreateMap(data, branches, testId, className)
       erroredRow.push("Row "+ rowNumber+ " : Invalid Branch "+ missingBranch)
     }
     if(!error){
-      createTimingMap(data[i], indexed_branch, mapping, testId, className);
+      createTimingMap(data[i], indexed_branch, mapping, testId, className, maxDate, maxDuration);
     }
   }
-  return {error, mapping, erroredRow}
+  return {error, mapping, erroredRow, maxDuration, maxDate}
 }
 
-function createTimingMap(data, indexed_branch, ret_data, testId, className){
+function createTimingMap(data, indexed_branch, ret_data, testId, className, maxDate, maxDuration){
   const branches = data["branches"];
+  let dateInMilis = new Date(data["end date"]).getTime(); 
+  if(dateInMilis > maxDate){
+    maxDate = dateInMilis;
+  }
+
+  if(data["duration"] >  maxDuration){
+    maxDuration = data["duration"]
+  }
+
   branches.forEach(function(branch){
     let mapping = {
       testId: testId,
