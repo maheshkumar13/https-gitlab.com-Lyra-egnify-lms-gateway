@@ -86,19 +86,31 @@ export async function listTest(args, ctx) {
   try {
     const queries = queryForListTest(args);
     let find = {"mapping.textbook.code":{"$in": args.textbookCode}};
+    
     if(args.active) {
       find["active"] = true;
     }
+
+    if(args.active === false){
+      find["active"] = false;
+    }
+
     if(args.gaStatus){
       find["gaStatus"] = args.gaStatus
     }
+
     if(args.reviewed){
       find["reviewed"] = true;
     }
+
+    if(args.reviewed === false){
+      find["reviewed"] = false
+    }
+
     let limit = args.limit ? args.limit : 0;
     let skip = args.pageNumber ? args.pageNumber - 1 : 0;
     const TestSchema = await Tests(ctx);
-    let aggregateQuery  = [ {$match: find},
+    let aggregateQuery  = [ {$match: find},{$sort:{updated_at: -1}},
       {$skip: skip * limit},
       { $lookup: { from: "testTimings", let: { testId: "$testId" },
        pipeline: [{ $match: { $expr: { $eq: ["$testId", "$$testId"] } } },
@@ -243,8 +255,14 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
   if(active){
     contentQuery["active"] = true;
   }
+  if(active === false){
+    contentQuery["active"] = false;
+  }
   if(reviewed){
     contentQuery["reviewed"] = true;
+  }
+  if(reviewed === false){
+    contentQuery["reviewed"] = false;
   }
   const aggregateQuery = []; 
   const contentMatchQuery = {
@@ -545,18 +563,6 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
             "subjectCode" : subjectData.code
         }
     ],
-    "markingSchema.subjects.0.tieBreaker": 1,
-    "markingSchema.subjects.0.start": 1,
-    "markingSchema.subjects.0.subject": data["subject"],
-    "markingSchema.subjects.0.marks.0.noOfOptions": 4,
-    "markingSchema.subjects.0.marks.0.P": 0,
-    "markingSchema.subjects.0.marks.0.ADD": 1,
-    "markingSchema.subjects.0.marks.0.questionType": "Single Answer",
-    "markingSchema.subjects.0.marks.0.egnifyQuestionType": "Single answer type",
-    "markingSchema.subjects.0.marks.0.C": 1,
-    "markingSchema.subjects.0.marks.0.W": 0,
-    "markingSchema.subjects.0.marks.0.U": 0,
-    "markingSchema.subjects.0.marks.0.start": 1,
     "mapping" : {
         "class" : {
             "code" : classData["childCode"],
@@ -662,7 +668,8 @@ export async function  uploadTestiming(req, res){
     const testInfo = await TestSchema.findOne({testId}).select({
       _id: 0,
       mapping : 1,
-      test: 1
+      test: 1,
+      "gaSyncId": 1
     }).lean();
 
     if(!testInfo){
@@ -681,7 +688,31 @@ export async function  uploadTestiming(req, res){
         data: validationCheck.erroredRow
       });
     }
+    await TestTimingSchema.deleteMany({ testId });
     await TestTimingSchema.bulkWrite(validationCheck.mapping);
+    if(testInfo.test.questionPaperId){
+      const date = new Date(validationCheck.maxDate + validationCheck.maxDuration*60000)
+      .toISOString().replace("T"," ").split(".")[0]
+      .replace(/-/g,"/").substring(2);
+      const data = {
+        "date" : date,
+        "function":"couch_to_mongo",
+        "args" : {
+          "test_id" : testId,
+          "questionPaperId": testInfo.test.questionPaperId,
+          "test_name": testInfo.test.name, 
+          "tie_breaking_list":[],
+          "studentId" : null
+        }
+      }
+      if(testInfo.gaSyncId){
+        await cancelGA({jobId: testInfo.gaSyncId},req.user_cxt)
+      }
+      const scheduledTask = await scheduleGA(data,req.user_cxt)
+      const gaSyncId = scheduledTask.job_id
+      console.log(gaSyncId)
+      await TestSchema.updateOne({testId},{$set:{gaSyncId}});
+    }
     return res.status(200).send({error: false, message: "Success"});
   }
   catch(err){
@@ -775,6 +806,8 @@ function validateTestTimingWithDbAndCreateMap(data, branches, testId, className)
   let error = false;
   let mapping = [];
   let erroredRow = [];
+  let maxDate = new Date().getTime();
+  let maxDuration = 0
   const indexed_branch = branchMapOfName(branches);
   for( let i = 0 ; i < length ; i++ ){
     let rowNumber = i+2;
@@ -789,14 +822,23 @@ function validateTestTimingWithDbAndCreateMap(data, branches, testId, className)
       erroredRow.push("Row "+ rowNumber+ " : Invalid Branch "+ missingBranch)
     }
     if(!error){
-      createTimingMap(data[i], indexed_branch, mapping, testId, className);
+      createTimingMap(data[i], indexed_branch, mapping, testId, className, maxDate, maxDuration);
     }
   }
-  return {error, mapping, erroredRow}
+  return {error, mapping, erroredRow, maxDuration, maxDate}
 }
 
-function createTimingMap(data, indexed_branch, ret_data, testId, className){
+function createTimingMap(data, indexed_branch, ret_data, testId, className, maxDate, maxDuration){
   const branches = data["branches"];
+  let dateInMilis = new Date(data["end date"]).getTime(); 
+  if(dateInMilis > maxDate){
+    maxDate = dateInMilis;
+  }
+
+  if(data["duration"] >  maxDuration){
+    maxDuration = data["duration"]
+  }
+
   branches.forEach(function(branch){
     let mapping = {
       testId: testId,
@@ -836,7 +878,7 @@ export async function publishTest(req, res){
       {$group: {"_id": "$testId",maxDate: {$max: "$endTime"},minDate: {$min: "$startTime"},maxDuration: {$max: "$duration"}}},
       {$lookup:{from: "tests", foreignField: "testId", "localField": "_id","as": "testInfo"}},
       {$unwind: "$testInfo"},
-      {$project:{testName: "$testInfo.test.name",maxDuration: 1,maxDate: 1, minDate: 1,gaSyncId: "$testInfo.gaSyncId"}}]).allowDiskUse(true),
+      {$project:{subject: "$testInfo.mapping.subject.name",testName: "$testInfo.test.name",maxDuration: 1,maxDate: 1, minDate: 1,gaSyncId: "$testInfo.gaSyncId"}}]).allowDiskUse(true),
       QuestionsSchema.count({questionPaperId})
     ]);
     if(!testTiming.length){
@@ -853,14 +895,38 @@ export async function publishTest(req, res){
       "test.questionPaperId": questionPaperId,
       "active": true,
       "subject.0.totalQuestions": questionsCount,
-      "markingSchema.totalQuestions": questionsCount,
-      "markingSchema.totalMarks": questionsCount,
-      "markingSchema.subject.0.end": questionsCount,
-      "markingSchema.subject.0.totalQuestions": questionsCount,
-      "markingSchema.subject.0.totalMarks": questionsCount,
-      "markingSchema.subject.0.marks.0.totalMarks": questionsCount,
-      "markingSchema.subject.0.marks.0.end": questionsCount,
-      "markingSchema.subject.0.marks.0.numberOfQuestions": questionsCount,
+      "markingSchema": {
+        "totalQuestions" : questionsCount,
+        "totalMarks" : questionsCount,
+        "subjects" : [
+          {
+            "tieBreaker" : 1,
+            "start" : 1,
+            "end" : questionsCount,
+            "subject" : testTiming[0]["subject"],
+            "totalQuestions" : questionsCount,
+            "totalMarks" : questionsCount,
+            "marks" : [
+              {
+                "noOfOptions" : 4,
+                "numberOfSubQuestions" : questionsCount,
+                "P" : 0,
+                "ADD" : 1,
+                "questionType" : "Single Answer",
+                "egnifyQuestionType" : "Single answer type",
+                "numberOfQuestions" : questionsCount,
+                "section" : null,
+                "C" : 1,
+                "W" : 0,
+                "U" : 0,
+                "start" : 1,
+                "end" : questionsCount,
+                "totalMarks" : questionsCount
+              }
+            ]
+          }
+        ]
+      },
       "coins": questionsCount,
       "questionPaperId": questionPaperId
     }
@@ -932,6 +998,7 @@ export async function getCMSTestStats(args, context) {
     orientation,
     gaStatus,
     reviewed,
+    active
   } = args;
 
   // Textbook data;
@@ -959,6 +1026,13 @@ export async function getCMSTestStats(args, context) {
   }
   if(reviewed){
     contentMatchQuery["reviewed"] = true;
+  }
+  if(active === false){
+    contentMatchQuery["active"] = false;
+  }
+
+  if(reviewed === false){
+    contentMatchQuery["reviewed"] = false;
   }
   // const contentTypeMatchOrData = getContentTypeMatchOrData("");
   // if(contentTypeMatchOrData.length) contentMatchQuery['$or'] = contentTypeMatchOrData;
@@ -1164,7 +1238,7 @@ export async function testAnalysis(args, context) {
               "totalMarksObtainedByInference": totalMarksObtainedGrouped(studentAnalysis[i], questionsArray[questionPaperIndex[studentAnalysis[i]["testInfo"]["test"]["questionPaperId"]]]["questions"], "Inference", "revised_blooms_taxonomy"),
               "textbook": studentAnalysis[i]["testInfo"]["mapping"]["textbook"]["name"],
               "Correct": studentAnalysis[i]["cwuAnalysis"]["overall"]["C"],
-              "Wrong": studentAnalysis[i]["cwuAnalysis"]["overall"]["W"],
+              "Wrong": studentAnalysis[i]["cwuAnalysis"]["overall"]["W"] + studentAnalysis[i]["cwuAnalysis"]["overall"]["P"],
               "Unattempted": studentAnalysis[i]["cwuAnalysis"]["overall"]["U"],
               "orientation": studentAnalysis[i]["studentInfo"]["orientation"],
               "city": studentAnalysis[i]["studentInfo"]["hierarchy"][3]["child"],

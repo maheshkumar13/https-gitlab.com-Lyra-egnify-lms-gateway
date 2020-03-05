@@ -297,7 +297,8 @@ export const CmsTestStatsInputType = new InputType({
       branch: { type: StringType, description: 'Branch name' },
       orientation: { type: StringType, description: 'Orientaion name' },
       gaStatus: {type: BooleanType, description: "filter for ga"},
-      reviewed: {type: BooleanType, description: "filter for reviewed test"}
+      reviewed: {type: BooleanType, description: "filter for reviewed test"},
+      active: { type: BooleanType, description: "filter fetching active state tests"}
     },
   });
   
