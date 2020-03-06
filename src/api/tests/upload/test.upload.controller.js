@@ -257,7 +257,10 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
   if (chapterCode) contentQuery['mapping.chapter.code'] = chapterCode;
   if (gaStatus){
     contentQuery['gaStatus'] = "finished"
+  }else{
+    contentQuery['gaStatus'] = {"$ne": "finished"}
   }
+
   if(active){
     contentQuery["active"] = true;
   }
@@ -269,6 +272,10 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
   }
   if(reviewed === false){
     contentQuery["reviewed"] = false;
+  }
+
+  if(active && reviewed){
+    delete contentQuery["gaStatus"]
   }
   const aggregateQuery = []; 
   const contentMatchQuery = {
