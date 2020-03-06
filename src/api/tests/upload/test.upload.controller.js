@@ -789,8 +789,11 @@ function convertToDateString(dateString){
   let b = a[0].split("/");
   let temp = b[0];
   b[0] = b[2];
-  b[2] = temp
-  return b.join("-")+"T"+a[1];
+  b[2] = temp;
+  const IST_OFFSET = 19800000;
+  const UTC_TIME = b.join("-")+"T"+a[1];
+  let IST_TIME = new Date(UTC_TIME).getTime() - IST_OFFSET;
+  return new Date(IST_TIME);
 }
 
 function branchMapOfName(branches){
