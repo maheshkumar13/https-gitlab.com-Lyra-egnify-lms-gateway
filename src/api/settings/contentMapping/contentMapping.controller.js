@@ -2199,14 +2199,13 @@ export async function getContentMappingUploadedDataLearn(args,context){
   const contentTypeMatchOrData = getContentTypeMatchOrDataWithList(args.contentCategory);
 
   const contentQuery = {
-    active: true,
-    reviewed: true,
     'content.category': { $nin: ['Tests', 'Take Quiz']},
     $and: [{$or: topicsFilter},{$or: contentTypeMatchOrData }]
   }
   if(args.active === false) contentQuery.active = false;
   if(args.reviewed === false) contentQuery.reviewed = false;
-
+  if(args.active) contentQuery.active = true;
+  if(args.reviewed) contentQuery.reviewed = true;
   const skip = (args.pageNumber - 1) * args.limit;
   const [count, data ] = await Promise.all([
     ContentMapping.count(contentQuery),
