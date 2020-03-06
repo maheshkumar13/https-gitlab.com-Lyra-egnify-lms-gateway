@@ -1095,7 +1095,7 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
     orientation,
     contentCategory,
     header,
-    gaStatus
+    gaStatus,
   } = args;
   let groupby = 'code';
   if(header === 'class') groupby = 'refs.class.code';
@@ -1137,8 +1137,6 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
   textbookCodes = Array.from(new Set(textbookCodes));
 
   const contentQuery = { 
-    active: true,
-    reviewed: true,
     'refs.textbook.code': { $in: textbookCodes },
   };
   let contentCategoryLength = contentCategory.length;
@@ -1149,7 +1147,8 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
 
   if(args.active === false) contentQuery.active = false;
   if(args.reviewed === false) contentQuery.reviewed = false;
-
+  if(args.reviewed) contentQuery.reviewed = true;
+  if(args.active) contentQuery.active = true;
   if(args.readingMaterialAudio === true) {
     contentQuery['content.category'] = { $in: ['Reading Material']};
     contentQuery['metaData.audioFiles'] = {$exists: true };
