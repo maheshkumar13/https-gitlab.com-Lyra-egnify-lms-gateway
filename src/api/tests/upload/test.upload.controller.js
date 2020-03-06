@@ -97,6 +97,12 @@ export async function listTest(args, ctx) {
 
     if(args.gaStatus){
       find["gaStatus"] = args.gaStatus
+    }else{
+      find["gaStatus"] = {"$ne":"finished"}
+    }
+
+    if(args.active && args.reviewed){
+      delete find["gaStatus"];
     }
 
     if(args.reviewed){
