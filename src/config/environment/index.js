@@ -70,6 +70,7 @@ const all = {
     Activity: ['html'],
     'Slide Show': ['html'],
     'Reading Material': ['pdf', 'jpg', 'html'],
+    Practice: null,
     Games: ['html'],
     Audio: ['mp3'],
   },

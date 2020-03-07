@@ -18,9 +18,9 @@ const contentSchema = new mongoose.Schema({
 });
 
 const resourceSchema = new mongoose.Schema({
-  key: { type: String },
-  size: { type: Number },
-  type: { type: String },
+  key: { type: String, default: '' },
+  size: { type: Number , default: 0},
+  type: { type: String ,default: ''},
 });
 
 const publicationSchema = new mongoose.Schema({
