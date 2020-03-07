@@ -1164,7 +1164,6 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
   groupby = 'refs.textbook.code';
   if(header === 'chapter') groupby = 'refs.topic.code';
   aggregateQuery.push(contentMatchQuery);
-  aggregateQuery.push({"$sort":{updated_at: -1}});
   const contentGroupQuery = {
     $group: {
       _id: `$${groupby}`,
@@ -2209,7 +2208,7 @@ export async function getContentMappingUploadedDataLearn(args,context){
   const skip = (args.pageNumber - 1) * args.limit;
   const [count, data ] = await Promise.all([
     ContentMapping.count(contentQuery),
-    ContentMapping.find(contentQuery).skip(skip).limit(args.limit).lean(),
+    ContentMapping.find(contentQuery).sort({updated_at: -1}).skip(skip).limit(args.limit).lean(),
   ])
   data.forEach(obj => {
     const topicCode = obj.refs.topic.code;
@@ -2532,6 +2531,12 @@ export async function uploadPracticeMapping(req, res) {
     }
     if(obj["cateogry"]){
       temp["category"] = obj["category"];
+    }
+    if(obj["media type"]){
+      temp["resource.type"] = obj["media type"]
+    }
+    if(obj["file size"]){
+      temp["resource.size"] = obj["file size"]
     }
     temp["viewOrder"] = viewOrder;
     temp["refs.topic.code"] = chapterObj.topicCode;
