@@ -1164,6 +1164,7 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
   groupby = 'refs.textbook.code';
   if(header === 'chapter') groupby = 'refs.topic.code';
   aggregateQuery.push(contentMatchQuery);
+  aggregateQuery.push({"$sort":{updated_at: -1}});
   const contentGroupQuery = {
     $group: {
       _id: `$${groupby}`,
