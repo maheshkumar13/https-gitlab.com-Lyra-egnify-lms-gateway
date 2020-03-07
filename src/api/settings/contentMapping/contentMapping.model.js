@@ -13,8 +13,8 @@ import { getDB } from '../../../db';
 
 const contentSchema = new mongoose.Schema({
   name: { type: String },
-  category: { type: String },
-  type: { type: String },
+  category: { type: String,default: '' },
+  type: { type: String, default: '' },
 });
 
 const resourceSchema = new mongoose.Schema({
@@ -24,8 +24,8 @@ const resourceSchema = new mongoose.Schema({
 });
 
 const publicationSchema = new mongoose.Schema({
-  publisher: { type: String },
-  year: { type: String },
+  publisher: { type: String, default: '' },
+  year: { type: String, default: '' },
 });
 
 const nameCodeSchema = new mongoose.Schema({
