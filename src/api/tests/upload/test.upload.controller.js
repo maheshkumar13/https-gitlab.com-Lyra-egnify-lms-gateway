@@ -944,7 +944,8 @@ export async function publishTest(req, res){
         ]
       },
       "coins": questionsCount,
-      "questionPaperId": questionPaperId
+      "questionPaperId": questionPaperId,
+      "reviewed": false
     }
     const date = new Date(new Date(testTiming[0]["maxDate"]).getTime() + testTiming[0]["maxDuration"]*60000)
     .toISOString().replace("T"," ").split(".")[0]
