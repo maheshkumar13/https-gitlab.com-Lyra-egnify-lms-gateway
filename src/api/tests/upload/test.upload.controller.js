@@ -696,7 +696,7 @@ export async function  uploadTestiming(req, res){
     });
 
     let invalidBranches = [];
-    
+
     const testBranches = new Set(testForBranches["branches"]);
     branchesArr.forEach(function(brn){
       if(!testBranches.has(brn)){
@@ -708,7 +708,7 @@ export async function  uploadTestiming(req, res){
       return res.status(400).send({
         error: true,
         message: "invalid branches in sheet",
-        data: invalidBranches
+        data: `Invlalid branches in the sheet ${invalidBranches.join(",")}`
       });
     }
 
