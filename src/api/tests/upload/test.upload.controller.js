@@ -708,7 +708,7 @@ export async function  uploadTestiming(req, res){
       return res.status(400).send({
         error: true,
         message: "invalid branches in sheet",
-        data: `Invlalid branches in the sheet ${invalidBranches.join(",")}`
+        data: [`Invalid branches in the sheet ${invalidBranches.join(",")}`]
       });
     }
 
