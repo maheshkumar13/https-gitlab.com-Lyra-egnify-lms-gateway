@@ -7,11 +7,14 @@
 */
 
 import {
+  GraphQLList as List,
   GraphQLString as StringType,
   GraphQLNonNull as NonNull,
+  GraphQLBoolean as BooleanType,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import { ContentMappingInsertionInputType,UpdateContentOutputType,UpdateContentInputType,UpdateMetaDataInputType } from './contentMapping.type';
+import { validateAccess } from '../../../utils/validator';
 
 const controller = require('../../../api/settings/contentMapping/contentMapping.controller');
 
@@ -44,6 +47,21 @@ export const updateMetaData = {
     return controller.updateAnimationMetaData(args.input, context);
   }
 };
+
+export const changeAssetStates = {
+  args: {
+    assetIds: { type: new NonNull(new List(StringType)), description: 'Unique Identifier for asset'},
+    active: { type: new NonNull(BooleanType), description: 'Active state information' },
+    reviewed: { type: new NonNull(BooleanType), description: 'Reviewed state information' },
+  },
+  type: StringType,
+  async resolve(obj, args, context){
+    const validRoles = ['CMS_CONTENT_MANAGER'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
+    return controller.changeAssetStates(args, context);
+  }
+}
+
 
 export default { 
   InsertContent,

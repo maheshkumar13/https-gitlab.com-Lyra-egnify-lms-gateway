@@ -69,6 +69,9 @@ export const ContentMappingType = new ObjectType({
     coins: { type: IntType, description: 'Coins' },
     timgPath: { type: StringType, description: 'Thumbnail image path' },
     viewOrder: { type: IntType, description: 'view order' },
+    active: { type: BooleanType, description: 'Active flag' },
+    reviewed: { type: BooleanType, description: 'Reviewed falg' },
+    studyWeek: { type: IntType, description: 'Study week' },
   },
 });
 
@@ -92,6 +95,8 @@ export const CmsCategoryStatsInputType = new InputType({
     textbookCode: { type: StringType, description: 'Code of the textBook' },
     branch: { type: StringType, description: 'Branch name' },
     orientation: { type: StringType, description: 'Orientaion name' },
+    active: {type: BooleanType, description: 'Default value is true' },
+    reviewed: { type: BooleanType, description: 'Default value is true' }
   },
 });
 
@@ -117,6 +122,8 @@ export const CategoryWiseFilesInputType = new InputType({
     gaStatus: { type: BooleanType, description: 'gaStatus type' },
     pageNumber: { type: IntType, description: 'Page number' },
     limit: { type: IntType, description: 'Limit of the records to be fetched' },
+    active: { type: BooleanType, description: 'Default is true' },
+    reviewed: { type: BooleanType, description: 'Default is true' },
   },
 });
 
@@ -156,6 +163,9 @@ export const DashboardHeadersAssetCountInputType = new InputType({
     contentCategory: { type: new List(StringType), description: 'content category' },
     header: { type: NonNull(DashboardHeaderEnumType), description: 'Header' },
     readingMaterialAudio: { type: BooleanType, description: 'Default false, set true for headers count for the reading materials which has audios' },
+    gaStatus: { type: BooleanType, description: "Filter for teacher corner performance"},
+    active: { type: BooleanType, description: "Default value is true" },
+    reviewed: { type: BooleanType, description: "Default value is true" },
   },
 });
 

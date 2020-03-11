@@ -6,7 +6,8 @@ import {
   getModel as TextBook
 } from '../../settings/textbook/textbook.model';
 const xlsx = require('xlsx');
-
+import {getModel as Questions} from '../questions/questions.model';
+import {getModel as StudentInfoSchema} from '../../settings/student/student.model'
 import {
   getModel as Chapter
 } from '../../settings/conceptTaxonomy/concpetTaxonomy.model'
@@ -14,13 +15,15 @@ import {
 import {
   getModel as TestTimings
 } from '../testTiming/testtiming.model'
-
+const GA_SCHEDULER_URL = require('../../../config/environment')["config"]["GA_SCHEDULER_URL"];
 const uuidv4 = require("uuid/v4");
 import {getModel as Hierarchy} from '../../settings/instituteHierarchy/instituteHierarchy.model';
 import {getModel as Subject} from '../../settings/subject/subject.model';
+import {getModel as MasterResult } from './masterresults.model';
+import {getModel as TestSummarySchema } from './testSummary.model';
 const MAPPING_HEADERS = ["class","subject","textbook","chapter","test name","view order"]
-const SUPPORTED_MEDIA_TYPE = ["docx","xlsx","xml"];
 const TEST_TIMING_HEADERS = ["branches","end date","start date","duration"];
+const axios = require("axios");
 
 function queryForListTest(args) {
   let query = {
@@ -82,35 +85,63 @@ function getFileData(req){
 export async function listTest(args, ctx) {
   try {
     const queries = queryForListTest(args);
-    let activeStatus = true;
-    if(args.active === false) {
-      activeStatus = false
-    } 
-    let find = {"mapping.textbook.code":{"$in": args.textbookCode}, active: activeStatus};
+    let find = {"mapping.textbook.code":{"$in": args.textbookCode}};
+    
+    if(args.active) {
+      find["active"] = true;
+    }
+
+    if(args.active === false){
+      find["active"] = false;
+    }
+
     if(args.gaStatus){
       find["gaStatus"] = args.gaStatus
+    }else{
+      find["gaStatus"] = {"$ne":"finished"}
     }
-    const TestSchema = await Tests(ctx);
+
+    if(args.active && args.reviewed){
+      delete find["gaStatus"];
+    }
+
+    if(args.reviewed){
+      find["reviewed"] = true;
+    }
+
+    if(args.reviewed === false){
+      find["reviewed"] = false
+    }
+
     let limit = args.limit ? args.limit : 0;
     let skip = args.pageNumber ? args.pageNumber - 1 : 0;
-    let data = await TestSchema.dataTables({
-      limit: limit,
-      skip: skip * limit,
-      find: find,
-      search: queries.search,
-      sort: queries.sort,
-    });
-
-    data["pageInfo"] = {
-      pageNumber: args.pageNumber,
-      recordsShown: data["data"].length,
-      nextPage: limit !== 0 && limit * args.pageNumber < data["total"],
-      prevPage: args.pageNumber !== 1 && data["total"] > 0,
-      totalEntries: data["total"],
-      totalPages: limit > 0 ? Math.ceil(data["total"] / limit) : 1,
+    const TestSchema = await Tests(ctx);
+    let aggregateQuery  = [ {$match: find},{$sort:{updated_at: -1}},
+      {$skip: skip * limit},
+      { $lookup: { from: "testTimings", let: { testId: "$testId" },
+       pipeline: [{ $match: { $expr: { $eq: ["$testId", "$$testId"] } } },
+      { $group: { "_id": "$testId", maxDate: { $max: "$endTime" }, 
+      minDate: { $min: "$startTime" }, maxDuration: { $max: "$duration" } } }, 
+      { $project: { "endDate": "$maxDate", "startDate": "$minDate", "duration": "$maxDuration", "_id": 0 } }], as: "testTiming" } },
+     { "$unwind": {"path": "$testTiming","preserveNullAndEmptyArrays": true} }]
+    
+    if(limit){
+      aggregateQuery.splice(2,0,{$limit:limit});
     }
-
-    return data
+    const [data, count] = await Promise.all([
+      TestSchema.aggregate(aggregateQuery).allowDiskUse(true), TestSchema.count(find)
+    ])
+    let response = {};
+    response["data"] = data;
+    response["pageInfo"] = {
+      pageNumber: args.pageNumber,
+      recordsShown: data.length,
+      nextPage: limit !== 0 && limit * args.pageNumber < count,
+      prevPage: args.pageNumber !== 1 && count > 0,
+      totalEntries: count,
+      totalPages: limit > 0 ? Math.ceil(count / limit) : 1,
+    }
+    return response;
   } catch (err) {
     throw err;
   }
@@ -119,11 +150,16 @@ export async function listTest(args, ctx) {
 export async function listTextBooksWithTestSubectWise(args, ctx) {
   try {
     const TestSchema = await Tests(ctx);
+    let match = {
+      "active": true,
+      "mapping.textbook.code" : { "$in" : args.textbookCodes },
+      "reviewed": true
+    }
+    if(ctx.dummy){
+      delete match["reviewed"];
+    }
     const list = await TestSchema.aggregate([{
-      $match: {
-        "active": true,
-        "mapping.textbook.code" : { "$in" : args.textbookCodes }
-      }
+      $match: match
     }, {
       $group: {
         "_id": "$mapping.textbook.code",
@@ -153,7 +189,7 @@ export async function listTextBooksWithTestSubectWise(args, ctx) {
         name: "$textbookInfo.name",
         imageurl: "$textbookInfo.imageUrl"
       }
-    }]);
+    }]).allowDiskUse(true);
     return list;
   } catch (err) {
     throw err;
@@ -168,7 +204,10 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
     textbookCode,
     branch,
     orientation,
-    header
+    header,
+    gaStatus,
+    active,
+    reviewed
   } = args;
   let groupby = 'code';
   if(header === 'class') groupby = 'refs.class.code';
@@ -209,14 +248,35 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
 
   textbookCodes = Array.from(new Set(textbookCodes));
 
-  const contentQuery = { 
-    active: true,
+  const contentQuery = {
     'mapping.textbook.code': { $in: textbookCodes },
   };
   //const contentTypeMatchOrData = getContentTypeMatchOrData(contentCategory);
   // if(contentTypeMatchOrData.length) contentQuery['$or'] = contentTypeMatchOrData;
   
   if (chapterCode) contentQuery['mapping.chapter.code'] = chapterCode;
+  if (gaStatus){
+    contentQuery['gaStatus'] = "finished"
+  }else{
+    contentQuery['gaStatus'] = {"$ne": "finished"}
+  }
+
+  if(active){
+    contentQuery["active"] = true;
+  }
+  if(active === false){
+    contentQuery["active"] = false;
+  }
+  if(reviewed){
+    contentQuery["reviewed"] = true;
+  }
+  if(reviewed === false){
+    contentQuery["reviewed"] = false;
+  }
+
+  if(active && reviewed){
+    delete contentQuery["gaStatus"]
+  }
   const aggregateQuery = []; 
   const contentMatchQuery = {
     $match: contentQuery,
@@ -516,29 +576,6 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
             "subjectCode" : subjectData.code
         }
     ],
-
-    "markingSchema" : {
-        "subjects" : [
-            {
-                "tieBreaker" : 1,
-                "start" : 1,
-                "subject" : data["subject"],
-                "marks" : [
-                    {
-                        "noOfOptions" : 4,
-                        "P" : 0,
-                        "ADD" : 1,
-                        "questionType" : "Single Answer",
-                        "egnifyQuestionType" : "Single answer type",
-                        "C" : 1,
-                        "W" : 0,
-                        "U" : 0,
-                        "start" : 1,
-                    }
-                ]
-            }
-        ]
-    },
     "mapping" : {
         "class" : {
             "code" : classData["childCode"],
@@ -559,12 +596,8 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
     },
     "branches" : textBookData["branches"],
     "orientations" : textBookData["orientations"],
-    "test" : {
-        "startTime" : new Date(),
-        "endTime" : new Date(),
-        "date" : new Date(),
-        "name" : data["test name"]
-    },
+    "test.name": data["test name"],
+    "test.date": new Date(),
     "viewOrder" : data["view order"] || null
   }
   let upsertObj = {
@@ -639,21 +672,48 @@ export async function  uploadTestiming(req, res){
     }
 
     const promiseSchema = await Promise.all([Tests(req.user_cxt),Hierarchy(req.user_cxt),
-      TestTimings(req.user_cxt)]);
+      TestTimings(req.user_cxt), TextBook(req.user_cxt)]);
 
     const TestSchema = promiseSchema[0];
     const HierarchySchema = promiseSchema[1];
-    const TestTimingSchema = promiseSchema[2]
+    const TestTimingSchema = promiseSchema[2];
+    const TextbookSchema = promiseSchema[3];
 
     const testInfo = await TestSchema.findOne({testId}).select({
       _id: 0,
       mapping : 1,
-      test: 1
+      test: 1,
+      "gaSyncId": 1
     }).lean();
 
     if(!testInfo){
       return res.status(400).send({error: true, message: "Invalid test id."});
     }
+
+    const testForBranches = await TextbookSchema.findOne({ code:testInfo.mapping.textbook.code, active: 1}).select({
+      _id: 0,
+      branches: 1
+    });
+
+    let invalidBranches = [];
+
+    const testBranches = new Set(testForBranches["branches"]);
+    branchesArr.forEach(function(brn){
+      if(!testBranches.has(brn)){
+        invalidBranches.push(brn)
+      }
+    });
+
+    if(invalidBranches.length){
+      return res.status(400).send({
+        error: true,
+        message: "invalid branches in sheet",
+        data: [`Invalid branches in the sheet ${invalidBranches.join(",")}`]
+      });
+    }
+
+
+
     const branches = await HierarchySchema.find({
       "child": { $in: branchesArr },
       "anscetors.childCode" : testInfo.mapping.class.code,
@@ -667,7 +727,31 @@ export async function  uploadTestiming(req, res){
         data: validationCheck.erroredRow
       });
     }
+    await TestTimingSchema.deleteMany({ testId });
     await TestTimingSchema.bulkWrite(validationCheck.mapping);
+    if(testInfo.test.questionPaperId){
+      const date = new Date(validationCheck.maxDate + validationCheck.maxDuration*60000)
+      .toISOString().replace("T"," ").split(".")[0]
+      .replace(/-/g,"/").substring(2);
+      const data = {
+        "date" : date,
+        "function":"couch_to_mongo",
+        "args" : {
+          "test_id" : testId,
+          "questionPaperId": testInfo.test.questionPaperId,
+          "test_name": testInfo.test.name, 
+          "tie_breaking_list":[],
+          "studentId" : null
+        }
+      }
+      if(testInfo.gaSyncId){
+        await cancelGA({jobId: testInfo.gaSyncId},req.user_cxt)
+      }
+      const scheduledTask = await scheduleGA(data,req.user_cxt)
+      const gaSyncId = scheduledTask.job_id
+      console.log(gaSyncId)
+      await TestSchema.updateOne({testId},{$set:{gaSyncId}});
+    }
     return res.status(200).send({error: false, message: "Success"});
   }
   catch(err){
@@ -680,7 +764,7 @@ export async function  uploadTestiming(req, res){
 //start date and end date format(18/11/2019 - 17:00:00)
 //duration is in minutes
 function validateTestTimingRows (data){
-  const timeBuff = 60 * 1000 * 2;
+  const timeBuff = 60 * 1000;
   const currentTime = new Date().getTime();
   let errors = []
   const length = data.length
@@ -726,8 +810,8 @@ function validateTestTimingRows (data){
       errorDetails.push("duration not present")
     }else{
       let durationInMsWithBuff = parseInt(data[i]["duration"]) * timeBuff ;
-      if(dateDiffInMs <= durationInMsWithBuff ){
-        return errorDetails.push("Minimum difference between start date and end date should be 3hrs plus duration.")
+      if(dateDiffInMs < durationInMsWithBuff ){
+        return errorDetails.push("Minimum difference between start date and end date should be equal to duration.")
       }
     }
 
@@ -744,8 +828,11 @@ function convertToDateString(dateString){
   let b = a[0].split("/");
   let temp = b[0];
   b[0] = b[2];
-  b[2] = temp
-  return b.join("-")+"T"+a[1];
+  b[2] = temp;
+  const IST_OFFSET = 19800000;
+  const UTC_TIME = b.join("-")+"T"+a[1];
+  let IST_TIME = new Date(UTC_TIME).getTime() - IST_OFFSET;
+  return new Date(IST_TIME);
 }
 
 function branchMapOfName(branches){
@@ -761,6 +848,8 @@ function validateTestTimingWithDbAndCreateMap(data, branches, testId, className)
   let error = false;
   let mapping = [];
   let erroredRow = [];
+  let maxDate = new Date().getTime();
+  let maxDuration = 0
   const indexed_branch = branchMapOfName(branches);
   for( let i = 0 ; i < length ; i++ ){
     let rowNumber = i+2;
@@ -775,14 +864,23 @@ function validateTestTimingWithDbAndCreateMap(data, branches, testId, className)
       erroredRow.push("Row "+ rowNumber+ " : Invalid Branch "+ missingBranch)
     }
     if(!error){
-      createTimingMap(data[i], indexed_branch, mapping, testId, className);
+      createTimingMap(data[i], indexed_branch, mapping, testId, className, maxDate, maxDuration);
     }
   }
-  return {error, mapping, erroredRow}
+  return {error, mapping, erroredRow, maxDuration, maxDate}
 }
 
-function createTimingMap(data, indexed_branch, ret_data, testId, className){
+function createTimingMap(data, indexed_branch, ret_data, testId, className, maxDate, maxDuration){
   const branches = data["branches"];
+  let dateInMilis = new Date(data["end date"]).getTime(); 
+  if(dateInMilis > maxDate){
+    maxDate = dateInMilis;
+  }
+
+  if(data["duration"] >  maxDuration){
+    maxDuration = data["duration"]
+  }
+
   branches.forEach(function(branch){
     let mapping = {
       testId: testId,
@@ -791,7 +889,8 @@ function createTimingMap(data, indexed_branch, ret_data, testId, className){
       endTime: new Date(data["end date"]),
       duration: parseInt(data["duration"]),
       class: className,
-      orientations: data["orientations"] ? data["orientations"].split(",") : []
+      orientations: data["orientations"] ? data["orientations"].split(",") : [],
+      hierarchyId: indexed_branch[branch]["childCode"]
     }
     let upsertObj = {
       updateOne: {
@@ -806,6 +905,132 @@ function createTimingMap(data, indexed_branch, ret_data, testId, className){
   return true;
 }
 
+export async function publishTest(req, res){
+  try{
+    const { questionPaperId, testId } = req.body;
+  
+    if(!questionPaperId || !testId){
+      return res.status(400).send("Bad_Args");
+    }
+  
+    const [TestTimingSchema,QuestionsSchema,TestSchema] = await Promise.all([
+      TestTimings(req.user_cxt),Questions(req.user_cxt),Tests(req.user_cxt)]);
+    const [testTiming, questionsCount] = await Promise.all([
+      TestTimingSchema.aggregate([{$match: {testId}},
+      {$group: {"_id": "$testId",maxDate: {$max: "$endTime"},minDate: {$min: "$startTime"},maxDuration: {$max: "$duration"}}},
+      {$lookup:{from: "tests", foreignField: "testId", "localField": "_id","as": "testInfo"}},
+      {$unwind: "$testInfo"},
+      {$project:{subject: "$testInfo.mapping.subject.name",testName: "$testInfo.test.name",maxDuration: 1,maxDate: 1, minDate: 1,gaSyncId: "$testInfo.gaSyncId"}}]).allowDiskUse(true),
+      QuestionsSchema.count({questionPaperId})
+    ]);
+    if(!testTiming.length){
+      return res.status(400).send("Test timing not uploaded yet.");
+    }
+    if(new Date(testTiming[0]["maxDate"]).getTime() <= new Date().getTime()){
+      return res.status(409).send("You cannot update the test as test has already started.");
+    }
+    if(!questionsCount){
+      return res.status(400).send("Invalid question paper id.");
+    }
+  
+    const setObject = {
+      "test.questionPaperId": questionPaperId,
+      "active": true,
+      "subject.0.totalQuestions": questionsCount,
+      "markingSchema": {
+        "totalQuestions" : questionsCount,
+        "totalMarks" : questionsCount,
+        "subjects" : [
+          {
+            "tieBreaker" : 1,
+            "start" : 1,
+            "end" : questionsCount,
+            "subject" : testTiming[0]["subject"],
+            "totalQuestions" : questionsCount,
+            "totalMarks" : questionsCount,
+            "marks" : [
+              {
+                "noOfOptions" : 4,
+                "numberOfSubQuestions" : questionsCount,
+                "P" : 0,
+                "ADD" : 1,
+                "questionType" : "Single Answer",
+                "egnifyQuestionType" : "Single answer type",
+                "numberOfQuestions" : questionsCount,
+                "section" : null,
+                "C" : 1,
+                "W" : 0,
+                "U" : 0,
+                "start" : 1,
+                "end" : questionsCount,
+                "totalMarks" : questionsCount
+              }
+            ]
+          }
+        ]
+      },
+      "coins": questionsCount,
+      "questionPaperId": questionPaperId,
+      "reviewed": false
+    }
+    const date = new Date(new Date(testTiming[0]["maxDate"]).getTime() + testTiming[0]["maxDuration"]*60000)
+    .toISOString().replace("T"," ").split(".")[0]
+    .replace(/-/g,"/").substring(2);
+  
+    const data = {
+      "date" : date,
+      "function":"couch_to_mongo",
+      "args" : {
+        "test_id" : testId,
+        "questionPaperId": questionPaperId,
+        "test_name": testTiming[0]["testName"], 
+        "tie_breaking_list":[],
+        "studentId" : null
+      }
+    }
+    const scheduledTask = await scheduleGA(data,req.user_cxt);
+    setObject["gaSyncId"] = scheduledTask.job_id
+    const oldData = await TestSchema.findOneAndUpdate({testId},{$set: setObject});
+    if(testTiming[0]["gaSyncId"]){
+      await cancelGA({jobId: testTiming[0]["gaSyncId"]},req.user_cxt)
+    }
+    if(oldData.questionPaperId){
+      await QuestionsSchema.deleteMany({questionPaperId:oldData.questionPaperId});
+    }
+    return res.status(200).send("Test Saved Successfully.");
+  }catch(err){
+    console.error(err)
+    return res.status(500).send("internal server error.");
+  }
+}
+
+async function scheduleGA(data, user_cxt){
+  try{
+    const headers = {
+      "accesscontroltoken": user_cxt["token"]["accesscontroltoken"],
+      "authorization": user_cxt["token"]["authorization"]
+    }
+    const url = GA_SCHEDULER_URL
+    const res = await axios({ method: "POST", url, data , headers });
+    return res.data;
+  }catch(err){
+    throw err;
+  }
+}
+
+async function cancelGA(data,user_cxt){
+  try{
+    const headers = {
+      "accesscontroltoken": user_cxt["token"]["accesscontroltoken"],
+      "authorization": user_cxt["token"]["authorization"]
+    }
+    const url = `${GA_SCHEDULER_URL}/${data.jobId}/cancel`;
+    await axios({ method: "POST", url, data , headers });
+  }catch(err){
+    throw err;
+  }
+}
+
 export async function getCMSTestStats(args, context) {
   const {
     classCode,
@@ -814,7 +1039,9 @@ export async function getCMSTestStats(args, context) {
     textbookCode,
     branch,
     orientation,
-    gaStatus
+    gaStatus,
+    reviewed,
+    active
   } = args;
 
   // Textbook data;
@@ -839,6 +1066,16 @@ export async function getCMSTestStats(args, context) {
   const contentMatchQuery = { active: true }
   if(gaStatus){
     contentMatchQuery["gaStatus"] = "finished";
+  }
+  if(reviewed){
+    contentMatchQuery["reviewed"] = true;
+  }
+  if(active === false){
+    contentMatchQuery["active"] = false;
+  }
+
+  if(reviewed === false){
+    contentMatchQuery["reviewed"] = false;
   }
   // const contentTypeMatchOrData = getContentTypeMatchOrData("");
   // if(contentTypeMatchOrData.length) contentMatchQuery['$or'] = contentTypeMatchOrData;
@@ -869,4 +1106,444 @@ export async function getCMSTestStats(args, context) {
     }
   }
   return finalData;
+}
+
+export async function testAnalysis(args, context) {
+  try {
+      const [TestMasterResultSchema, QuestionSchema, TestTimingSchema] = await Promise.all([
+          MasterResult(context), Questions(context), TestTimings(context)
+      ]);
+      let {
+          testId,
+          studentId,
+          limit,
+          skip
+      } = args;
+      skip = skip || 0;
+      limit = limit || 0;
+      var dumpingArray = []
+      const aggregatePipeline = [{
+              $skip: skip
+          },
+          {
+              $lookup: {
+                  "from": "tests",
+                  "localField": "testId",
+                  "foreignField": "testId",
+                  "as": "testInfo"
+              }
+          }, {
+              $unwind: "$testInfo"
+          },
+          {
+              $lookup: {
+                  "from": "studentInfo",
+                  "localField": "studentId",
+                  "foreignField": "studentId",
+                  "as": "studentInfo"
+              }
+          },
+          {
+              "$unwind": "$studentInfo"
+          }
+      ]
+      const countQuery = [{
+              $lookup: {
+                  "from": "tests",
+                  "localField": "testId",
+                  "foreignField": "testId",
+                  "as": "testInfo"
+              }
+          }, {
+              $unwind: "$testInfo"
+          },
+          {
+              $lookup: {
+                  "from": "studentInfo",
+                  "localField": "studentId",
+                  "foreignField": "studentId",
+                  "as": "studentInfo"
+              }
+          },
+          {
+              "$unwind": "$studentInfo"
+          }, {
+              $group: {
+                  _id: {
+                      "studentId": "$studentInfo.studentId",
+                      "testId": "$testInfo.testId"
+                  },
+                  count: {
+                      $sum: 1
+                  }
+              }
+          },
+          {
+              $project: {
+                  _id: 0,
+                  count: 1
+              }
+          }
+      ]
+      let matchQuery = {
+          $match: {}
+      }
+      let project = {
+          $project: {
+              "studentId": 1,
+              "name": 1,
+              "testInfo.test.questionPaperId": 1,
+              "testInfo.mapping.subject.name": 1,
+              "testInfo.markingSchema.totalQuestions": 1,
+              "testInfo.test.name": 1,
+              "testInfo.mapping.textbook.name": 1,
+              "responseData.questionResponse": 1,
+              "studentInfo.hierarchy": 1,
+              "cwuAnalysis": 1,
+              "studentInfo.orientation": 1,
+              "testId": 1
+          }
+      }
+      if (testId && testId.length) {
+          matchQuery["$match"]["testId"] = testId
+      }
+      if (studentId && studentId.length) {
+          matchQuery["$match"]["studentId"] = studentId
+      }
+      if (Object.keys(matchQuery["$match"]).length) {
+          aggregatePipeline.unshift(matchQuery);
+          countQuery.unshift(matchQuery);
+      }
+      if (limit) {
+          aggregatePipeline.splice(2, 0, {
+              $limit: limit
+          })
+      }
+      aggregatePipeline.push(project);
+      const [studentAnalysis, count] = await Promise.all([
+          TestMasterResultSchema.aggregate(aggregatePipeline).allowDiskUse(true),
+          TestMasterResultSchema.aggregate(countQuery).allowDiskUse(true)
+      ])
+      if (!studentAnalysis || !studentAnalysis.length) {
+          return [];
+      }
+      let questionPaperIds = {}
+      studentAnalysis.forEach((studentData) => {
+          questionPaperIds[studentData["testInfo"]["test"]["questionPaperId"]] = true
+      });
+      let questionPaperIdsArray = Object.keys(questionPaperIds);
+      let questionsArray = await QuestionSchema.aggregate([{
+          $match: {
+              questionPaperId: {
+                  $in: questionPaperIdsArray
+              }
+          }
+      }, {
+          $group: {
+              "_id": "$questionPaperId",
+              "questions": {
+                  $push: {
+                      "qno": "$qno",
+                      "revised_blooms_taxonomy": "$revised_blooms_taxonomy"
+                  }
+              }
+          }
+      }]).allowDiskUse(true)
+      let branchesOfStudentsWithTestId = new Set();
+      studentAnalysis.forEach( (analysis) => {
+        branchesOfStudentsWithTestId.add(analysis["studentInfo"]["hierarchy"][4]["childCode"]+"_"+analysis["testId"])
+      })
+      
+      branchesOfStudentsWithTestId = Array.from(branchesOfStudentsWithTestId);
+
+      const testTiming = await TestTimingSchema.find({_id: {$in:branchesOfStudentsWithTestId}}).select({startTime: 1, endTime: 1}).lean();
+      const indexed_test_timing_map = testTimingToMap(testTiming);
+      let questionPaperIndex = questionPaperIdToIndex(questionsArray);
+      for (let i = 0; i < studentAnalysis.length; i++) {
+          let data = totalTimeSpentQuestionWise(studentAnalysis[i]["responseData"]["questionResponse"]);
+          let hierarchyId = studentAnalysis[i]["studentInfo"]["hierarchy"][4]["childCode"];
+          let testId = studentAnalysis[i]["testId"]
+          let analysisObject = {
+              "studentId": studentAnalysis[i]["studentId"],
+              "studentName": studentAnalysis[i]["name"],
+              "branchName": studentAnalysis[i]["studentInfo"]["hierarchy"][4]["child"],
+              "class": studentAnalysis[i]["studentInfo"]["hierarchy"][1]["child"],
+              "section": studentAnalysis[i]["studentInfo"]["hierarchy"][5]["child"],
+              "subject": studentAnalysis[i]["testInfo"]["mapping"]["subject"]["name"],
+              "testName": studentAnalysis[i]["testInfo"]["test"]["name"],
+              "totalNumberOfQuestions": studentAnalysis[i]["testInfo"]["markingSchema"]["totalQuestions"],
+              "cwuDetailsInGroupOfDifficulty": cwuDetailsInGroupOfDifficulty(studentAnalysis[i]),
+              "timeSpentOnEachQuestion": data.timeSpent,
+              "questionWiseCwu": data.marksObtained,
+              "totalMarksObtianed": studentAnalysis[i]["cwuAnalysis"]["overall"]["C"],
+              "totalMarksObtainedByApplication": totalMarksObtainedGrouped(studentAnalysis[i], questionsArray[questionPaperIndex[studentAnalysis[i]["testInfo"]["test"]["questionPaperId"]]]["questions"], "Application", "revised_blooms_taxonomy"),
+              "totalMarksObtainedByKnowledge": totalMarksObtainedGrouped(studentAnalysis[i], questionsArray[questionPaperIndex[studentAnalysis[i]["testInfo"]["test"]["questionPaperId"]]]["questions"], "Knowledge", "revised_blooms_taxonomy"),
+              "totalMarksObtainedByInference": totalMarksObtainedGrouped(studentAnalysis[i], questionsArray[questionPaperIndex[studentAnalysis[i]["testInfo"]["test"]["questionPaperId"]]]["questions"], "Inference", "revised_blooms_taxonomy"),
+              "textbook": studentAnalysis[i]["testInfo"]["mapping"]["textbook"]["name"],
+              "Correct": studentAnalysis[i]["cwuAnalysis"]["overall"]["C"],
+              "Wrong": studentAnalysis[i]["cwuAnalysis"]["overall"]["W"] + studentAnalysis[i]["cwuAnalysis"]["overall"]["P"],
+              "Unattempted": studentAnalysis[i]["cwuAnalysis"]["overall"]["U"],
+              "orientation": studentAnalysis[i]["studentInfo"]["orientation"],
+              "city": studentAnalysis[i]["studentInfo"]["hierarchy"][3]["child"],
+              "startTime": indexed_test_timing_map.hasOwnProperty(hierarchyId+"_"+testId) ? indexed_test_timing_map[hierarchyId+"_"+testId]["startTime"] : "NOT_MAPPED",
+              "endTime":  indexed_test_timing_map.hasOwnProperty(hierarchyId+"_"+testId) ? indexed_test_timing_map[hierarchyId+"_"+testId]["endTime"] : "NOT_MAPPED"
+          }
+          dumpingArray.push(analysisObject)
+      }
+      return {
+          "studentAnalysis": dumpingArray,
+          count: count.length
+      };
+  } catch (err) {
+      console.log(err)
+      throw err;
+  }
+}
+
+function testTimingToMap(testTiming){
+  let retObj = {};
+  testTiming.forEach((data)=>{
+    retObj[data["_id"]] = data
+  });
+  return retObj;
+}
+
+function questionPaperIdToIndex(questions){
+	let ret_obj = {};
+	for(let i = 0 ; i < questions.length ; i++){
+		ret_obj[questions[i]["_id"]] = i
+	}
+	return ret_obj;
+}
+
+//[ "Easy", "Medium", "Hard", "Difficult", "EASY", "MEDIUM", "HARD" ]
+function cwuDetailsInGroupOfDifficulty(data){
+	let difficulty = {"easy": {"C":0,"W":0,"U":0} ,"medium":{"C":0,"W":0,"U":0}, "hard" : {"C":0,"W":0,"U":0}, "difficult":{"C":0,"W":0,"U":0}}
+	for ( let key in data["responseData"]["questionResponse"]){
+		if([ "Easy", "Medium", "Hard", "Difficult", "EASY", "MEDIUM", "HARD" ].includes(data["responseData"]["questionResponse"][key]["difficulty"])){
+			if(data["responseData"]["questionResponse"][key].hasOwnProperty("C")){
+				difficulty[data["responseData"]["questionResponse"][key]["difficulty"].toLowerCase()]["C"] = difficulty[data["responseData"]["questionResponse"][key]["difficulty"].toLowerCase()]["C"] + 1;
+			}
+			if(data["responseData"]["questionResponse"][key].hasOwnProperty("W")){
+				difficulty[data["responseData"]["questionResponse"][key]["difficulty"].toLowerCase()]["W"] = difficulty[data["responseData"]["questionResponse"][key]["difficulty"].toLowerCase()]["W"] + 1
+			}
+			if(data["responseData"]["questionResponse"][key].hasOwnProperty("U")){
+				difficulty[data["responseData"]["questionResponse"][key]["difficulty"].toLowerCase()]["U"] = difficulty[data["responseData"]["questionResponse"][key]["difficulty"].toLowerCase()]["U"] + 1
+			}
+		}
+	}
+	return difficulty;
+}
+
+function totalMarksObtainedGrouped(data,  question , groupBy, type){
+	let marksObtained = 0;
+	let groupByquestions = {};
+	let questions = JSON.parse(JSON.stringify(question))
+	for (let i = 0 ; i < questions.length ; i++){
+		if(!questions[i][type]){
+			return "NOT_MAPPED"
+		}
+		if(questions[i][type].toLowerCase() === groupBy.toLowerCase()){
+			groupByquestions[questions[i]["qno"]] = true;
+		}
+	}
+	for ( let qno in groupByquestions){
+		if(data["responseData"]["questionResponse"][qno].hasOwnProperty("C")){
+			marksObtained = marksObtained + 1
+		}
+	}
+	return marksObtained;
+}
+
+function totalTimeSpentQuestionWise(questionResponse){
+	let timeSpent = {};
+	let marksObtained = {
+		"correct": [],
+		"wrong": [],
+		"unattempted": []	
+	}
+	for(let qno in questionResponse){
+		timeSpent[qno] = questionResponse[qno]["timespent"];
+		if(questionResponse[qno].hasOwnProperty("C")){
+			marksObtained.correct.push(qno);
+		}
+		if(questionResponse[qno].hasOwnProperty("W")){
+			marksObtained.wrong.push(qno);
+		}
+
+		if(questionResponse[qno].hasOwnProperty("U")){
+			marksObtained.unattempted.push(qno);
+		}
+	}
+	return {timeSpent, marksObtained};
+}
+
+export async function getTestCompletionStats(req, res){
+  try{
+    let { Branch, Orientation , Class, limit, skip } = req.query;
+    let getQuery = {
+      "numberOfTests":{$gt: 0}
+    }
+    if(Branch){
+        getQuery["branch"] = Branch
+    }
+    if(Orientation){
+        getQuery["orientation"] = Orientation
+    }
+    if(Class){
+        getQuery["class"] = Class
+    }
+    limit = parseInt(limit) ? limit : 0;
+    skip = parseInt(skip) ? skip : 0;
+    limit = parseInt(limit)
+    skip = parseInt(skip)
+    const TestSummary = await TestSummarySchema(req.user_cxt);
+    const [result,count] = await Promise.all([
+        TestSummary.find(getQuery).skip(skip).limit(limit).lean(),
+        TestSummary.count(getQuery)])
+    return res.status(200).send({result,count})
+  }catch(err){
+    console.log(err);
+    return res.status(500).send("internal server error");
+  }
+}
+
+export async function getStudentWiseTestStats(req, res){
+  try{
+      let { Branch, Class, Orientation, Section, limit, skip} = req.query;
+      limit = parseInt(limit) ? limit : 0;
+      skip = parseInt(skip) ? skip : 0;
+      limit = parseInt(limit)
+      skip = parseInt(skip)
+      if( !Branch || !Class || !Orientation){
+          return res.status(400).send("Bad Req.")
+      }
+      let aggregateQuery = [
+          {
+              "$lookup":{
+                  "from": "test_masterresults",
+                  "let": { studentId: "$studentId"},
+                  "pipeline": [
+                      {
+                          "$match": {
+                              "$expr":{
+                                  "$eq": ["$studentId", "$$studentId"]
+                              }
+                          }
+                      },
+                      {
+                          "$group":{
+                              "_id": {
+                                  "studentId": "$studentId",
+                                  "testId": "$testId"
+                              }
+                          }
+                      }
+                  ],		
+                  "as": "testInfo"
+              }
+          },{
+              "$project":{
+                  "studentId": 1,
+                  "class": "$hierarchyLevels.L_2",
+                  "branch": "$hierarchyLevels.L_5",
+                  "orientation": 1,
+                  "section": "$hierarchyLevels.L_6",
+                  "attemptedTest": {
+                      $cond: {
+                          if: {
+                              $isArray: "$testInfo"
+                          },
+                          then: {
+                              $size: "$testInfo"
+                          },
+                          else: 0
+                      }
+                  },
+                  studentName: 1,
+                  _id: 0
+              }
+          }
+      ];
+      let matchQuery = {
+          "$match":{
+              "orientation": Orientation,
+              "hierarchyLevels.L_5": Branch,
+              "hierarchyLevels.L_2": Class,
+              "active": true
+          }
+      }
+      if(Section){
+          matchQuery["$match"]["hierarchyLevels.L_6"] = Section; 
+      }
+      aggregateQuery.splice(0,0,matchQuery);
+      aggregateQuery.splice(1,0,{$skip: skip})
+      if(limit){
+          aggregateQuery.splice(2,0,{$limit: limit});
+      }
+
+      const StudentInfo = await StudentInfoSchema(req.user_cxt);
+      let [results,count] = await Promise.all([
+          StudentInfo.aggregate(aggregateQuery).allowDiskUse(true),
+          StudentInfo.count(matchQuery["$match"])
+      ]);
+      return res.status(200).send({ results, count});        
+  }catch(err){
+      console.log(err);
+      return res.status(500).send("internal server error");
+  }
+}
+
+export async function makeLive(req, res){
+  try{
+    if(!req.body.testIds){
+      return res.status(400).send("Test id missing in req.");
+    }
+    const testIds = req.body.testIds.split(",");
+    const TestSchema = await Tests(req.user_cxt);
+    await TestSchema.update({ testId: {$in : testIds}},{
+      $set: {
+        reviewed: true,
+        active: true
+      }
+    },{multi: true});
+    return res.status(200).send("Success");
+  }catch(err){
+    console.error(err);
+    return res.status(500).send("internal server error");
+  }
+}
+
+export async function testDetails(req, res){
+  try{
+    const testId = req.params.testId;
+    const TestSchema = await Tests(req.user_cxt);
+    let data = await TestSchema.aggregate([{
+      $match: {
+        testId: testId
+      }},{
+        $lookup:{
+          from: "textbooks",
+          localField: "mapping.textbook.code",
+          foreignField: "code",
+          as: "textbook"
+        }
+      },{$unwind:"$textbook"},
+      {
+        $project:{
+          "class": "$textbook.refs.class",
+          "branches": "$textbook.branches",
+          "orientation": "$textbook.orientations",
+          "subject": "$textbook.refs.subject",
+          "chapter": "$mapping.chapter",
+          "test": 1,
+          "_id": 0
+        }
+      }
+    ]).allowDiskUse(true);
+    return res.status(200).send(data);
+  }catch(err){
+    console.error(err);
+    return res.status(500).send("internal server error.")
+  }
 }

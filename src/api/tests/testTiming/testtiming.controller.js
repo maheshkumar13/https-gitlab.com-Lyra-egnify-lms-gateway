@@ -38,7 +38,7 @@ export async function getTestTiming(req, res) {
     }
 
     aggrArr.push(matchQuery);
-    
+    aggrArr.push({$sort: {startTime: 1}})
     let skipQuery = {$skip: skip };
     aggrArr.push(skipQuery);
 
@@ -72,6 +72,7 @@ export async function getTestTiming(req, res) {
             "class": 1
         }
     });
+
 
     const TestTimingSchema = await TestTimings(req.user_cxt);    
     const [count,data] = await Promise.all([

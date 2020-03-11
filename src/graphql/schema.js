@@ -21,17 +21,17 @@ import { createTextbook, updateTextbook, deleteTextbook } from './settings/textb
 import { Students, StudentUniqueValues, StudentsByLastNode, StudentById, studentHeader,StudentListByFilters} from './settings/student/student.query';
 import { updateStudentAvatar, updateStudentSubjects } from './settings/student/student.mutation';
 import { ConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.query';
-import { ContentMapping, ContentMappingStats, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats, TextbookBasedQuiz, DashboardHeadersAssetCount, ContentMappingUploadedDataLearn, ContentMappingUploadedDataReadingMaterialAudio, CmsPracticeStats } from './settings/contentMapping/contentMapping.query';
+import { ContentMapping, ContentMappingStats, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats, TextbookBasedQuiz, DashboardHeadersAssetCount, ContentMappingUploadedDataLearn, ContentMappingUploadedDataReadingMaterialAudio, CmsPracticeStats, StudyPlanAssets } from './settings/contentMapping/contentMapping.query';
 import { LaunchRequest, GetS3FileSystem, GetS3SignedUrlForUpload } from './launcher/launchRequest/launchRequest.query';
 import { Questions, Results, QuestionEvaluation } from './tests/questions/questions.query';
 import { MasterResults } from './tests/masterResults/masterResults.query';
-import { InsertContent, UpdateContent, updateMetaData } from './settings/contentMapping/contentMapping.mutation';
+import { InsertContent, UpdateContent, updateMetaData, changeAssetStates } from './settings/contentMapping/contentMapping.mutation';
 import { CreateTestType, DeleteTestType } from './settings/testType/testType.mutation';
 import { TestType } from './settings/testType/testType.query';
 import { PackageList, PackageDetails } from './settings/package/package.query';
 import { CreatePackage, UpdatePackage, FeedbackPackage } from './settings/package/package.mutation';
 import { autoComplete, searchResult } from './search/searchRequest/search.query';
-import { ListTest, ListSubjectWiseBooksAndTestCount, HeaderCountForTextBookBasedTest, CmsTestStats } from '../graphql/tests/upload/upload.query';
+import { ListTest, ListSubjectWiseBooksAndTestCount, HeaderCountForTextBookBasedTest, CmsTestStats, TestAnalysis } from '../graphql/tests/upload/upload.query';
 import { TimeAnalysis, TimeAnalysisStudentsList, TimeAnalysisHeaders, TimeAnalysisStudentsListByDay, StudentLevelTimeAnalysis, TeacherLevelTimeAnalysis, TimeAnalysisHeadersv2, TimeAnalysisStudentsListByDayv2, TimeAnalysisStudentsListBySubjects, TimeAnalysisStudentsListByCategory, TimeAnalysisUniqueSubjectsByFilters, TimeAnalysisStudentsListBySubjectDateWise, TimeAnalysisStudentsListByDate } from './analysis/timeAnalysis/timeAnalysis.query';
 import { StudentCompletionStats, TeacherLevelCompletionStats, TeacherLevelCompletionHeaders } from './analysis/completion/completion.query';
 
@@ -101,7 +101,9 @@ const schema = new Schema({
       GetS3FileSystem,
       GetS3SignedUrlForUpload,
       CmsPracticeStats,
-      CmsTestStats
+      CmsTestStats,
+      TestAnalysis,
+      StudyPlanAssets
     },
   }),
   mutation: new ObjectType({
@@ -121,7 +123,8 @@ const schema = new Schema({
       DeleteTestType,
       CreatePackage,
       UpdatePackage,
-      FeedbackPackage
+      FeedbackPackage,
+      changeAssetStates
     },
   }),
 });
