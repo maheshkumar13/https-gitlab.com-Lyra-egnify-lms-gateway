@@ -235,7 +235,8 @@ const Data = new ObjectType({
         branches : { type : new ListType(StringType)},
         testId : { type : StringType },
         coins : {type : IntType},
-        testTiming: { type: GraphQLJSON}
+        testTiming: { type: GraphQLJSON},
+        reviewed: { type: BooleanType}
     }
 })
 

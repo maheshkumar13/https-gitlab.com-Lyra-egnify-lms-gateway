@@ -97,6 +97,12 @@ export async function listTest(args, ctx) {
 
     if(args.gaStatus){
       find["gaStatus"] = args.gaStatus
+    }else{
+      find["gaStatus"] = {"$ne":"finished"}
+    }
+
+    if(args.active && args.reviewed){
+      delete find["gaStatus"];
     }
 
     if(args.reviewed){
@@ -251,7 +257,10 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
   if (chapterCode) contentQuery['mapping.chapter.code'] = chapterCode;
   if (gaStatus){
     contentQuery['gaStatus'] = "finished"
+  }else{
+    contentQuery['gaStatus'] = {"$ne": "finished"}
   }
+
   if(active){
     contentQuery["active"] = true;
   }
@@ -263,6 +272,10 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
   }
   if(reviewed === false){
     contentQuery["reviewed"] = false;
+  }
+
+  if(active && reviewed){
+    delete contentQuery["gaStatus"]
   }
   const aggregateQuery = []; 
   const contentMatchQuery = {
@@ -659,11 +672,12 @@ export async function  uploadTestiming(req, res){
     }
 
     const promiseSchema = await Promise.all([Tests(req.user_cxt),Hierarchy(req.user_cxt),
-      TestTimings(req.user_cxt)]);
+      TestTimings(req.user_cxt), TextBook(req.user_cxt)]);
 
     const TestSchema = promiseSchema[0];
     const HierarchySchema = promiseSchema[1];
-    const TestTimingSchema = promiseSchema[2]
+    const TestTimingSchema = promiseSchema[2];
+    const TextbookSchema = promiseSchema[3];
 
     const testInfo = await TestSchema.findOne({testId}).select({
       _id: 0,
@@ -675,6 +689,31 @@ export async function  uploadTestiming(req, res){
     if(!testInfo){
       return res.status(400).send({error: true, message: "Invalid test id."});
     }
+
+    const testForBranches = await TextbookSchema.findOne({ code:testInfo.mapping.textbook.code, active: 1}).select({
+      _id: 0,
+      branches: 1
+    });
+
+    let invalidBranches = [];
+
+    const testBranches = new Set(testForBranches["branches"]);
+    branchesArr.forEach(function(brn){
+      if(!testBranches.has(brn)){
+        invalidBranches.push(brn)
+      }
+    });
+
+    if(invalidBranches.length){
+      return res.status(400).send({
+        error: true,
+        message: "invalid branches in sheet",
+        data: [`Invalid branches in the sheet ${invalidBranches.join(",")}`]
+      });
+    }
+
+
+
     const branches = await HierarchySchema.find({
       "child": { $in: branchesArr },
       "anscetors.childCode" : testInfo.mapping.class.code,
@@ -931,7 +970,8 @@ export async function publishTest(req, res){
         ]
       },
       "coins": questionsCount,
-      "questionPaperId": questionPaperId
+      "questionPaperId": questionPaperId,
+      "reviewed": false
     }
     const date = new Date(new Date(testTiming[0]["maxDate"]).getTime() + testTiming[0]["maxDuration"]*60000)
     .toISOString().replace("T"," ").split(".")[0]

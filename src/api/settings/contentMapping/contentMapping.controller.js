@@ -1095,7 +1095,7 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
     orientation,
     contentCategory,
     header,
-    gaStatus
+    gaStatus,
   } = args;
   let groupby = 'code';
   if(header === 'class') groupby = 'refs.class.code';
@@ -1137,8 +1137,6 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
   textbookCodes = Array.from(new Set(textbookCodes));
 
   const contentQuery = { 
-    active: true,
-    reviewed: true,
     'refs.textbook.code': { $in: textbookCodes },
   };
   let contentCategoryLength = contentCategory.length;
@@ -1149,7 +1147,8 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
 
   if(args.active === false) contentQuery.active = false;
   if(args.reviewed === false) contentQuery.reviewed = false;
-
+  if(args.reviewed) contentQuery.reviewed = true;
+  if(args.active) contentQuery.active = true;
   if(args.readingMaterialAudio === true) {
     contentQuery['content.category'] = { $in: ['Reading Material']};
     contentQuery['metaData.audioFiles'] = {$exists: true };
@@ -2199,18 +2198,17 @@ export async function getContentMappingUploadedDataLearn(args,context){
   const contentTypeMatchOrData = getContentTypeMatchOrDataWithList(args.contentCategory);
 
   const contentQuery = {
-    active: true,
-    reviewed: true,
     'content.category': { $nin: ['Tests', 'Take Quiz']},
     $and: [{$or: topicsFilter},{$or: contentTypeMatchOrData }]
   }
   if(args.active === false) contentQuery.active = false;
   if(args.reviewed === false) contentQuery.reviewed = false;
-
+  if(args.active) contentQuery.active = true;
+  if(args.reviewed) contentQuery.reviewed = true;
   const skip = (args.pageNumber - 1) * args.limit;
   const [count, data ] = await Promise.all([
     ContentMapping.count(contentQuery),
-    ContentMapping.find(contentQuery).skip(skip).limit(args.limit).lean(),
+    ContentMapping.find(contentQuery).sort({updated_at: -1}).skip(skip).limit(args.limit).lean(),
   ])
   data.forEach(obj => {
     const topicCode = obj.refs.topic.code;
@@ -2369,7 +2367,8 @@ export async function publishPractice(req, res){
     const setObj = {
       "resource.key": questionPaperId,
       "coins": questionsCount,
-      "active": true
+      "active": true,
+      "reviewed": false
     }
 
     const contentMapping = await ContentSchema.findOneAndUpdate({assetId,"content.category":"Practice"},
@@ -2533,6 +2532,12 @@ export async function uploadPracticeMapping(req, res) {
     }
     if(obj["cateogry"]){
       temp["category"] = obj["category"];
+    }
+    if(obj["media type"]){
+      temp["resource.type"] = obj["media type"]
+    }
+    if(obj["file size"]){
+      temp["resource.size"] = obj["file size"]
     }
     temp["viewOrder"] = viewOrder;
     temp["refs.topic.code"] = chapterObj.topicCode;
