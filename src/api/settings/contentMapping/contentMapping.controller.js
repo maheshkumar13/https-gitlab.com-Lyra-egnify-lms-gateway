@@ -572,6 +572,7 @@ export async function uploadContentMappingv2(req, res) {
         },
       },
       active: true,
+      reviewed: false
     };
     if(obj['asset id']) {
       temp.assetId = obj['asset id'];
