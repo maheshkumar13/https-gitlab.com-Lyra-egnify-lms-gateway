@@ -572,6 +572,7 @@ export async function uploadContentMappingv2(req, res) {
         },
       },
       active: true,
+      reviewed: false
     };
     if(obj['asset id']) {
       temp.assetId = obj['asset id'];
@@ -803,8 +804,8 @@ function getMongoQueryForContentMapping(args) {
     args.resourceType = args.resourceType.map(x => x.toLowerCase());
     query['resource.type'] = { $in: args.resourceType };
   }
-  if (args.orientation) query.orientation = { $in: [null, args.orientation] };
-  if (args.branch) query.branches = { $in: [null, args.branch] };
+  // if (args.orientation) query.orientation = { $in: [null, args.orientation] };
+  // if (args.branch) query.branches = { $in: [null, args.branch] };
   if (args.category) query.category = { $in: [null, args.category] };
   return query;
 }

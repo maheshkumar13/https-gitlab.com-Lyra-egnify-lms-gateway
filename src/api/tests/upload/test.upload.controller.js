@@ -126,7 +126,7 @@ export async function listTest(args, ctx) {
      { "$unwind": {"path": "$testTiming","preserveNullAndEmptyArrays": true} }]
     
     if(limit){
-      aggregateQuery.splice(2,0,{$limit:limit});
+      aggregateQuery.splice(3,0,{$limit:limit});
     }
     const [data, count] = await Promise.all([
       TestSchema.aggregate(aggregateQuery).allowDiskUse(true), TestSchema.count(find)
