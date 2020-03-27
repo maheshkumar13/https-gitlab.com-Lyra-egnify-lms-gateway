@@ -202,6 +202,17 @@ export const ContentMapping = {
     return controller.getContentMapping(args, context)
       .then(async (json) => {
         if (json && json.data) {
+          if(args.contentCategory === "Animation" && context.dummy === false){
+            json.data.forEach((data, index)=>{
+              if(data.metaData && data.metaData.questionpaperId){
+                if(!data.metaData["active"]){
+                  data.metaData = {}
+                }else if(!data.metaData.reviewed){
+                  data.metaData = {}
+                }
+              }
+            })
+          }
           const pageInfo = {};
           const resp = {};
           pageInfo.prevPage = true;

@@ -1067,16 +1067,20 @@ function getContentTypeMatchOrData(contentCategory){
   return orData;
 }
 
-function getContentTypeMatchOrDataWithList(contentCategory){
+function getContentTypeMatchOrDataWithList(contentCategory, args){
   const orData = [];
   let contentTypes = config.CONTENT_TYPES || {};
   if(contentCategory && contentCategory.length) {
     contentCategory.forEach(x => {
-      if(contentTypes[x]){
-        orData.push({'content.category': x, 'resource.type': { $in: contentTypes[x]}});
-      } else {
-        orData.push({'content.category': x });
+      let obj = {'content.category': x};
+      if(args.active && args.reviewed === false && x === "Animation"){
+        obj["metaData.active"] = true;
+        obj["metaData.reviewed"] = false;
       }
+      if(contentTypes[x]){
+        obj['resource.type'] = {$in: contentTypes[x]}
+      }
+      orData.push(obj);
     })
     return orData;
   }
@@ -2196,7 +2200,7 @@ export async function getContentMappingUploadedDataLearn(args,context){
       data: []
     }
   }
-  const contentTypeMatchOrData = getContentTypeMatchOrDataWithList(args.contentCategory);
+  const contentTypeMatchOrData = getContentTypeMatchOrDataWithList(args.contentCategory,args);
 
   const contentQuery = {
     'content.category': { $nin: ['Tests', 'Take Quiz']},
@@ -2651,14 +2655,16 @@ export async function publishQuiz(req, res){
       return res.status(400).send("Invalid question paper id");
     }
     const setObj = {
-      "metaData.questionPaperId": questionPaperId
+      "metaData.questionpaperId": questionPaperId,
+      "metaData.active": true,
+      "metaData.reviewed": false
     };
     const content = await ContentSchema.findOneAndUpdate({assetId},{$set: setObj});
     if(!content){
       return res.status(400).send("Invalid asset id.");
     }
-    if(content.resource.key){
-      await QuestionSchema.deleteMany({questionPaperId:content.resource.key})
+    if(content.metaData && content.metaData.questionpaperId){
+      await QuestionSchema.deleteMany({questionPaperId:content.metaData.questionpaperId})
     }
     return res.status(200).send("Success");
   }catch(err){
@@ -2810,6 +2816,29 @@ export async function changeAssetStates(args, context){
     console.error(err);
     throw new Error(err.message);
   })
+}
+
+export async function makeQuizLive(req, res){
+  try{
+    //assetIds is comma seperated assetId
+    if(!req.body.assetIds){
+      return res.status(400).send("Asset Ids missing from request");
+    }
+    const assetIds = req.body.assetIds.split(",")
+    const ContentMappingModel = await ContentMappingModel(req.user_cxt);
+    await ContentMappingModel.update({
+      assetId: {$in: assetIds}
+    },{
+      $set:{
+        "metaData.reviewed": true,
+        "metaData.active": true
+      }
+    },{multi:true});
+    return res.status(200).send("Success");
+  }catch(err){
+    console.error(err);
+    return res.status(500).send("internal server error.");
+  }
 }
 
 export default{
