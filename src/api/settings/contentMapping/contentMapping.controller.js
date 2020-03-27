@@ -1158,7 +1158,7 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
     contentQuery['content.category'] = { $in: ['Reading Material']};
     contentQuery['metaData.audioFiles'] = {$exists: true };
   }
-  const contentTypeMatchOrData = getContentTypeMatchOrDataWithList(contentCategory);
+  const contentTypeMatchOrData = getContentTypeMatchOrDataWithList(contentCategory,args);
   if(contentTypeMatchOrData.length) contentQuery['$or'] = contentTypeMatchOrData;
   
   if (chapterCode) contentQuery['refs.topic.code'] = chapterCode;
