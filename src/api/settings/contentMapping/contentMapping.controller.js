@@ -1073,7 +1073,7 @@ function getContentTypeMatchOrDataWithList(contentCategory, args){
   if(contentCategory && contentCategory.length) {
     contentCategory.forEach(x => {
       let obj = {'content.category': x};
-      if(args.active && args.reviewed === false && x === "Animation"){
+      if(args.active && args.reviewed && x === "Animation"){
         obj["metaData.active"] = true;
         obj["metaData.reviewed"] = false;
       }
@@ -2336,7 +2336,6 @@ export async function getContentMappingUploadedDataReadingMaterialAudio(args,con
   const skip = (args.pageNumber - 1) * args.limit;
   if(skip) agrQuery.push({$skip: skip});
   if(args.limit) agrQuery.push({$limit: args.limit});
-  
   return Promise.all([
     ContentMapping.aggregate(countQuery).allowDiskUse(true),
     ContentMapping.aggregate(agrQuery).allowDiskUse(true)
