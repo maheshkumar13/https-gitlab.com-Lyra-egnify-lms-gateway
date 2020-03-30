@@ -202,16 +202,16 @@ export const ContentMapping = {
     return controller.getContentMapping(args, context)
       .then(async (json) => {
         if (json && json.data) {
-          if(args.contentCategory === "Animation" && context.dummy === false){
-            json.data.forEach((data, index)=>{
-              if(data.metaData && data.metaData.questionpaperId){
-                if(!data.metaData["active"]){
-                  data.metaData = {}
-                }else if(!data.metaData.reviewed){
-                  data.metaData = {}
+          if(args.contentCategory.includes("Animation") && context.dummy === false){
+            for(let i = 0 ; i < json.data.length ; i++){
+              if(json.data[i].metaData && json.data[i].metaData.questionpaperId){
+                if(!json.data[i].metaData["active"]){
+                  json.data[i].metaData = {}
+                }else if(!json.data[i].metaData.reviewed){
+                  json.data[i].metaData = {}
                 }
               }
-            })
+            }
           }
           const pageInfo = {};
           const resp = {};
