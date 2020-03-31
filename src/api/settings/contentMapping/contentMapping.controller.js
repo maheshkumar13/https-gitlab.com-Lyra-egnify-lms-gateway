@@ -1073,7 +1073,8 @@ function getContentTypeMatchOrDataWithList(contentCategory, args){
   if(contentCategory && contentCategory.length) {
     contentCategory.forEach(x => {
       let obj = {'content.category': x};
-      if(args.active && args.reviewed && x === "Animation"){
+      if(args.active && args.reviewed &&
+         x === "Animation" && args.publish){
         obj["metaData.active"] = true;
         obj["metaData.reviewed"] = false;
       }
