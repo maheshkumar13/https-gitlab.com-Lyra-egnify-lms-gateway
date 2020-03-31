@@ -89,6 +89,7 @@ export const ContentMappingUploadedDataLearn = {
     contentCategory: { type: new List(StringType), description: 'Category of the content' },
     active: { type: BooleanType, description: 'Default is true' },
     reviewed: { type: BooleanType, description: 'Default is true '},
+    publish: {type : BooleanType,description: "Fetch Result for publish list page"}
   },
   type: ContentMappingPaginatedType,
   async resolve(obj, args, context) {
