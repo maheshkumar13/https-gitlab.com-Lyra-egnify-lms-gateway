@@ -2211,6 +2211,12 @@ export async function getContentMappingUploadedDataLearn(args,context){
   if(args.reviewed === false) contentQuery.reviewed = false;
   if(args.active) contentQuery.active = true;
   if(args.reviewed) contentQuery.reviewed = true;
+  
+  if(args.publish === false && args.contentCategory.includes("Animation")){
+    contentQuery.reviewed = true;
+    contentQuery.active = true;
+  }
+
   const skip = (args.pageNumber - 1) * args.limit;
   const [count, data ] = await Promise.all([
     ContentMapping.count(contentQuery),
