@@ -2402,8 +2402,7 @@ function validateHeadersForPractice(data, errors, maxLimit) {
   ];
   const headers  = [
     'class', 'subject', 'textbook', 'chapter',
-    'test name', 'content type','file size', 'media type',
-    'view order','category', 'publish year', 'publisher',
+    'test name', 'view order'
   ]
   const sheetHeaders = Object.keys(data[0]);
   let diffHeaders = _.difference(headers,sheetHeaders);
