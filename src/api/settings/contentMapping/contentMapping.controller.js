@@ -2824,8 +2824,8 @@ export async function makeQuizLive(req, res){
       return res.status(400).send("Asset Ids missing from request");
     }
     const assetIds = req.body.assetIds.split(",")
-    const ContentMappingModel = await ContentMappingModel(req.user_cxt);
-    await ContentMappingModel.update({
+    const ContentMapping = await ContentMappingModel(req.user_cxt);
+    await ContentMapping.update({
       assetId: {$in: assetIds}
     },{
       $set:{
