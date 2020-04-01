@@ -41,6 +41,7 @@ export const GetSignedUrlForUploadDataInputType = new InputType({
   fields: {
     key: { type: new NonNull(StringType), description: 'Storage key' },
     size: { type: new NonNull(IntType), description: 'File size' },
+    contentType: { type: StringType, description: 'Content type' },
   },
 });
 

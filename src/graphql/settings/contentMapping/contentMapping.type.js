@@ -166,6 +166,7 @@ export const DashboardHeadersAssetCountInputType = new InputType({
     gaStatus: { type: BooleanType, description: "Filter for teacher corner performance"},
     active: { type: BooleanType, description: "Default value is true" },
     reviewed: { type: BooleanType, description: "Default value is true" },
+    publish: { type: BooleanType, description: "Default value false"}
   },
 });
 
