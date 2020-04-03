@@ -89,6 +89,7 @@ export const ContentMappingUploadedDataLearn = {
     contentCategory: { type: new List(StringType), description: 'Category of the content' },
     active: { type: BooleanType, description: 'Default is true' },
     reviewed: { type: BooleanType, description: 'Default is true '},
+    publish: {type : BooleanType,description: "Fetch Result for publish list page"}
   },
   type: ContentMappingPaginatedType,
   async resolve(obj, args, context) {
@@ -202,6 +203,17 @@ export const ContentMapping = {
     return controller.getContentMapping(args, context)
       .then(async (json) => {
         if (json && json.data) {
+          if(args.contentCategory.includes("Animation") && context.dummy === false){
+            for(let i = 0 ; i < json.data.length ; i++){
+              if(json.data[i].metaData && json.data[i].metaData.questionpaperId){
+                if(!json.data[i].metaData["active"]){
+                  json.data[i].metaData = {}
+                }else if(!json.data[i].metaData.reviewed){
+                  json.data[i].metaData = {}
+                }
+              }
+            }
+          }
           const pageInfo = {};
           const resp = {};
           pageInfo.prevPage = true;

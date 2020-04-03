@@ -28,5 +28,6 @@ router.post('/uploadReadingMaterialAudioMapping', multer.single('file'), control
 router.post('/publish-quiz/:assetId',controller.publishQuiz);
 router.post('/publish-practice/:assetId', controller.publishPractice);
 router.post('/upload-practice', multer.single('file'), controller.uploadPracticeMapping)
+router.post('/make-live-quiz',controller.makeQuizLive);
 
 module.exports = router
