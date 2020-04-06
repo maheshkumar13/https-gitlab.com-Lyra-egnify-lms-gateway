@@ -2823,6 +2823,25 @@ export async function changeAssetStates(args, context){
   })
 }
 
+export async function removeAudioMapping(argsList, context){
+  const ContentMapping = await ContentMappingModel(context);
+  const bulk = ContentMapping.collection.initializeUnorderedBulkOp();
+  argsList.forEach(obj => {
+    bulk.find({
+      assetId: obj.assetId,
+    }).updateOne({
+      $pull: { 'metaData.audioFiles': {$and: obj.audioFiles }},
+    })
+  })
+  return bulk.execute().then(() => {
+    return 'Operation successful!!!';
+  }).catch((err) => {
+    console.error(err);
+    throw new Error('Something went wrong!!!');
+  })
+  
+}
+
 export async function makeQuizLive(req, res){
   try{
     //assetIds is comma seperated assetId
