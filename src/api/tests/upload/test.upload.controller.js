@@ -1547,3 +1547,19 @@ export async function testDetails(req, res){
     return res.status(500).send("internal server error.")
   }
 }
+
+export async function deletetests(req, res){
+  try{
+    if(!req.body.testIds){
+      return res.status(400).send("Test ids missing.")
+    }
+    
+    const testIds = req.body.testIds.split(",");
+    
+
+
+  }catch(err){
+    console.error(err);
+    return res.status(500).send("internal server error");
+  }
+}
