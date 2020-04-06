@@ -2846,6 +2846,28 @@ export async function makeQuizLive(req, res){
   }
 }
 
+export async function deleteQuizzes(req, res){
+  try{
+    if(!req.body.assetIds){
+      return res.status(400).send("AssetIds missing.")
+    }
+    let assetIds = req.body.assetIds.split(",");
+    const ContentMappingSchema = await ContentMappingModel(req.user_cxt);
+    await ContentMappingSchema.update({
+      assetId: {$in: assetIds},
+      "content.category":"Animation"},
+      {$unset: {
+        "metaData.questionpaperId": 1,
+        "metaData.reviewed": 1,
+        "metaData.active": 1
+      }},{multi:true})
+      return res.status(200).send("Success");
+  }catch(err){
+    console.error(err);
+    return res.status(500).send("internal server error");
+  }
+}
+
 export default{
   updateContent,
   getUniqueDataForValidation,
