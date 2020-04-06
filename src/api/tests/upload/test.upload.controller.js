@@ -1555,9 +1555,37 @@ export async function deletetests(req, res){
     }
     
     const testIds = req.body.testIds.split(",");
+    const SchemaPromise = await Promise.all([
+      Tests(req.user_cxt),TestTimings(req.user_cxt)
+    ])
+
+    const TestSchema = SchemaPromise[0];
+    const TestTimingSchema = SchemaPromise[1];
+
+    let testTimings = await TestTimingSchema.aggregate(
+      [
+        {
+          $match:{
+            testId: {$in: testIds}
+          }
+        },
+        {
+          $group:{
+            "_id":"$testId",
+            "minDate":{"$min":"$startTime"},
+          }
+        }
+      ]
+    ).allowDiskUse(true);
+
+    let testIdsToDelete = testTimings.filter((testObj)=>{
+      if(new Date(testObj.minDate).getTime() > new Date().getTime()){
+        return testObj["_id"];
+      }
+    })
     
-
-
+    await TestSchema.deleteMany({testId: {$in: testIdsToDelete}})
+    return res.status(200).send("Success");
   }catch(err){
     console.error(err);
     return res.status(500).send("internal server error");
