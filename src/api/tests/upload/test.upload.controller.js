@@ -1547,3 +1547,57 @@ export async function testDetails(req, res){
     return res.status(500).send("internal server error.")
   }
 }
+
+export async function deletetests(req, res){
+  try{
+    if(!req.body.testIds){
+      return res.status(400).send("Test ids missing.")
+    }
+    
+    const testIds = req.body.testIds.split(",");
+    const SchemaPromise = await Promise.all([
+      Tests(req.user_cxt),TestTimings(req.user_cxt)
+    ])
+
+    const TestSchema = SchemaPromise[0];
+    const TestTimingSchema = SchemaPromise[1];
+
+    let testTimings = await TestTimingSchema.aggregate(
+      [
+        {
+          $match:{
+            testId: {$in: testIds}
+          }
+        },
+        {
+          $group:{
+            "_id":"$testId",
+            "minDate":{"$min":"$startTime"},
+          }
+        }
+      ]
+    ).allowDiskUse(true);
+    
+    let testIdsToDelete =[];
+    testTimings.forEach((testObj) => {
+      if(new Date(testObj.minDate).getTime() > new Date().getTime()){
+        testIdsToDelete.push(testObj["_id"]);
+      }
+    })
+
+    testIds.forEach((testId)=>{
+      let index = testTimings.findIndex((obj)=>{
+        return obj["_id"] === testId
+      })
+      if(index === -1){
+        testIdsToDelete.push(testId)
+      }
+    })
+
+    await TestSchema.deleteMany({testId: {$in: testIdsToDelete}})
+    return res.status(200).send("Success");
+  }catch(err){
+    console.error(err);
+    return res.status(500).send("internal server error");
+  }
+}

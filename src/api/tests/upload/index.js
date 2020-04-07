@@ -25,5 +25,6 @@ router.get('/test-summary',controller.getTestCompletionStats);
 router.get('/student-test-stats',controller.getStudentWiseTestStats);
 router.post('/make-live',controller.makeLive);
 router.get('/details/:testId', controller.testDetails)
+router.post('/delete-test', controller.deletetests)
 
 module.exports = router
