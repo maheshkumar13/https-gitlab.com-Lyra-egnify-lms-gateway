@@ -352,6 +352,22 @@ export const CmsPracticeStatsOutputType = new ObjectType({
   },
 });
 
+export const RemoveAudioMappingAudioFilesInputType = new InputType({
+  name: 'RemoveAudioMappingAudioFilesInputType',
+  fields: {
+    key: { type: new NonNull(StringType), description: 'Audio file key' },
+    name: { type: StringType, description: 'Audio file name' }
+  }
+});
+
+export const RemoveAudioMappingInputType = new InputType({
+  name: 'RemoveAudioMappingInputType',
+  fields: {
+    assetId: { type: StringType, description: 'Unique identifier for the asset' },
+    audioFiles: { type: new NonNull(new List(RemoveAudioMappingAudioFilesInputType)), description: 'List of audio files'}
+  }
+});
+
 export default {
   ContentMappingType,
   CmsCategoryStatsOutputType,
@@ -366,6 +382,7 @@ export default {
   TextbookBasedQuizInputType,
   TextbookBasedQuizOutputType,
   CmsPracticeStatsInputType,
-  CmsPracticeStatsOutputType
+  CmsPracticeStatsOutputType,
+  RemoveAudioMappingInputType,
 };
 
