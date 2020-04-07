@@ -1583,6 +1583,15 @@ export async function deletetests(req, res){
         return testObj["_id"];
       }
     })
+
+    testIds.forEach((testId)=>{
+      let index = testTimings.findIndex((obj)=>{
+        return obj["_id"] === testId
+      })
+      if(index === -1){
+        testIdsToDelete.push(testId)
+      }
+    })
     
     await TestSchema.deleteMany({testId: {$in: testIdsToDelete}})
     return res.status(200).send("Success");
