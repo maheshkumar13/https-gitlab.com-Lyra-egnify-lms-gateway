@@ -1577,10 +1577,11 @@ export async function deletetests(req, res){
         }
       ]
     ).allowDiskUse(true);
-
-    let testIdsToDelete = testTimings.filter((testObj)=>{
+    
+    let testIdsToDelete =[];
+    testTimings.forEach((testObj) => {
       if(new Date(testObj.minDate).getTime() > new Date().getTime()){
-        return testObj["_id"];
+        testIdsToDelete.push(testObj["_id"]);
       }
     })
 
@@ -1592,7 +1593,7 @@ export async function deletetests(req, res){
         testIdsToDelete.push(testId)
       }
     })
-    
+
     await TestSchema.deleteMany({testId: {$in: testIdsToDelete}})
     return res.status(200).send("Success");
   }catch(err){
