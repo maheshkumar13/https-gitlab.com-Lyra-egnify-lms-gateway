@@ -729,6 +729,7 @@ export async function  uploadTestiming(req, res){
     }
     await TestTimingSchema.deleteMany({ testId });
     await TestTimingSchema.bulkWrite(validationCheck.mapping);
+    let gaSyncId = null;
     if(testInfo.test.questionPaperId){
       const date = new Date(validationCheck.maxDate + validationCheck.maxDuration*60000)
       .toISOString().replace("T"," ").split(".")[0]
@@ -748,10 +749,9 @@ export async function  uploadTestiming(req, res){
         await cancelGA({jobId: testInfo.gaSyncId},req.user_cxt)
       }
       const scheduledTask = await scheduleGA(data,req.user_cxt)
-      const gaSyncId = scheduledTask.job_id
-      console.log(gaSyncId)
-      await TestSchema.updateOne({testId},{$set:{gaSyncId}});
+      gaSyncId = scheduledTask.job_id
     }
+    await TestSchema.updateOne({testId},{$set:{gaSyncId,reviewed: false}});
     return res.status(200).send({error: false, message: "Success"});
   }
   catch(err){
