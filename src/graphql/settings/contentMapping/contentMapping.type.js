@@ -78,6 +78,7 @@ export const ContentMappingType = new ObjectType({
 export const ReadingMaterialAudioType = new ObjectType({
   name: 'ReadingMaterialAudioType',
   fields: {
+    assetId: { type: StringType, description: 'Unique Id for asset' },
     filePath: { type: StringType, description: 'File path' },
     audioFilePath: { type: StringType, description: 'Audio file path'},
     audioFileName: { type: StringType, description: 'Audio file name'},
