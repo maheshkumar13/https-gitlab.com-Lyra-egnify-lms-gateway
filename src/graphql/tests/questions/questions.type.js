@@ -38,7 +38,8 @@ export const QuestionType = new ObjectType({
     concept_name: { type: StringType ,description: "Concept Provided by the vendor"},
     subject: { type: StringType},
     C: { type: IntType},
-    table_no: { type: IntType}
+    table_no: { type: IntType},
+    questionTypeMetaData: { type: GraphQLJSON }
   },
 });
 

@@ -356,15 +356,15 @@ function validateSheetAndGetData(req, classBranchData, dbOrientations) {
     classBranchCombo.forEach(combo => {
       const classData = classBranchData.find(x => x.className.toLowerCase() === combo.className.toLowerCase())
       if(!classData) {
-        result.success = false;
-        result.message = `Row ${row}, (${combo.className})  class not found`;
-        errors.push(result.message);
+        // result.success = false;
+        // result.message = `Row ${row}, (${combo.className})  class not found`;
+        // errors.push(result.message);
       } else {
         const branchData = classData.branches.find( x => x.child.toLowerCase() === combo.branchName.toLowerCase())
         if(!branchData){
-          result.success = false;
-          result.message = `Row ${row}, (${combo.branchName}) branch not found in (${combo.className})`;
-          errors.push(result.message);
+          // result.success = false;
+          // result.message = `Row ${row}, (${combo.branchName}) branch not found in (${combo.className})`;
+          // errors.push(result.message);
         } else hierarchy.push(branchData);
       }
     })

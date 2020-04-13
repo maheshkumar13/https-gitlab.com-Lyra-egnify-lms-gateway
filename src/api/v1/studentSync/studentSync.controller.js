@@ -93,7 +93,9 @@ export function student(req, res) {
   args.digital_content = args.digital_content.toLowerCase().trim();
 
   return InstituteHierarchyModel(req.user_cxt).then((InstituteHierarchy) => {
-    const hierarchyPath = `${args.country}-${args.class}-${args.state}-${args.city}-${args.branch}-${args.section}`;
+    let hierarchyPath = `${args.country}-${args.class}-${args.state}-${args.city}-${args.branch}-${args.section}`;
+    hierarchyPath = hierarchyPath.replace('(', '\\(');
+    hierarchyPath = hierarchyPath.replace(')', '\\)');
     const checkHierarhcyQuery = {
       pathId: { $regex: hierarchyPath, $options: 'i' },
     };
