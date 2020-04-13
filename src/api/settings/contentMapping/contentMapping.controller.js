@@ -1157,7 +1157,6 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
   if(args.active) contentQuery.active = true;
   if(args.readingMaterialAudio === true) {
     contentQuery['content.category'] = { $in: ['Reading Material']};
-    contentQuery['metaData.audioFiles'] = {$exists: true };
   }
   const contentTypeMatchOrData = getContentTypeMatchOrDataWithList(contentCategory,args);
   if(contentTypeMatchOrData.length) contentQuery['$or'] = contentTypeMatchOrData;
@@ -1177,7 +1176,7 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
     }
   }
   if(args.readingMaterialAudio === true) {
-    aggregateQuery.push({$unwind: '$metaData.audioFiles'});
+    aggregateQuery.push({$unwind: { path: '$metaData.audioFiles', preserveNullAndEmptyArrays: true}});
   }
   aggregateQuery.push(contentGroupQuery)
   const result = await ContentMapping.aggregate(aggregateQuery).allowDiskUse(true);
