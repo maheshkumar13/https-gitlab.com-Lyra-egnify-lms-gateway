@@ -592,7 +592,8 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
     "orientations" : textBookData["orientations"],
     "test.name": data["test name"],
     "test.date": new Date(),
-    "viewOrder" : data["view order"] || null
+    "viewOrder" : data["view order"] || null,
+    "reviewed": false
   }
   let upsertObj = {
     updateOne: {
@@ -745,7 +746,7 @@ export async function  uploadTestiming(req, res){
       const scheduledTask = await scheduleGA(data,req.user_cxt)
       gaSyncId = scheduledTask.job_id
     }
-    await TestSchema.updateOne({testId},{$set:{gaSyncId,"gaStatus":null}});
+    await TestSchema.updateOne({testId},{$set:{gaSyncId,"gaStatus":null,reviewed: false}});
     return res.status(200).send({error: false, message: "Success"});
   }
   catch(err){
