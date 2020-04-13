@@ -2328,11 +2328,11 @@ export async function getContentMappingUploadedDataReadingMaterialAudio(args,con
   if(args.active === false) contentQuery.active = false;
   if(args.reviewed === false) contentQuery.reviewed = false;
   const countQuery = [{$match: contentQuery}];
-  countQuery.push({$unwind: '$metaData.audioFiles'});
+  countQuery.push({$unwind: { path: '$metaData.audioFiles', preserveNullAndEmptyArrays: true}});
   countQuery.push({$count: 'total'});
 
   const agrQuery = [{$match: contentQuery}];
-  agrQuery.push({$unwind: '$metaData.audioFiles'});
+  agrQuery.push({$unwind: { path: '$metaData.audioFiles', preserveNullAndEmptyArrays: true}});
   agrQuery.push({$project: { 
     _id: 0,
     assetId: 1,
