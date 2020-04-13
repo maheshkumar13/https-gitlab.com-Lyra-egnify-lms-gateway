@@ -745,7 +745,7 @@ export async function  uploadTestiming(req, res){
       const scheduledTask = await scheduleGA(data,req.user_cxt)
       gaSyncId = scheduledTask.job_id
     }
-    await TestSchema.updateOne({testId},{$set:{gaSyncId,reviewed: false}});
+    await TestSchema.updateOne({testId},{$set:{gaSyncId,"gaStatus":null}});
     return res.status(200).send({error: false, message: "Success"});
   }
   catch(err){
@@ -965,7 +965,8 @@ export async function publishTest(req, res){
       },
       "coins": questionsCount,
       "questionPaperId": questionPaperId,
-      "reviewed": false
+      "reviewed": false,
+      "gaStatus":null
     }
     const date = new Date(new Date(testTiming[0]["maxDate"]).getTime() + testTiming[0]["maxDuration"]*60000)
     .toISOString().replace("T"," ").split(".")[0]
