@@ -2336,6 +2336,7 @@ export async function getContentMappingUploadedDataReadingMaterialAudio(args,con
   agrQuery.push({$unwind: '$metaData.audioFiles'});
   agrQuery.push({$project: { 
     _id: 0,
+    assetId: 1,
     filePath: '$resource.key',
     audioFilePath: '$metaData.audioFiles.key',
     audioFileName: '$metaData.audioFiles.name',
