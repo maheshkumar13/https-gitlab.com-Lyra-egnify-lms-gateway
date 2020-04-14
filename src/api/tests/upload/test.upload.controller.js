@@ -251,8 +251,6 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
   if (chapterCode) contentQuery['mapping.chapter.code'] = chapterCode;
   if (gaStatus){
     contentQuery['gaStatus'] = "finished"
-  }else{
-    contentQuery['gaStatus'] = {"$ne": "finished"}
   }
 
   if(active){
@@ -267,10 +265,7 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
   if(reviewed === false){
     contentQuery["reviewed"] = false;
   }
-
-  if(active && reviewed){
-    delete contentQuery["gaStatus"]
-  }
+  
   const aggregateQuery = []; 
   const contentMatchQuery = {
     $match: contentQuery,
@@ -592,7 +587,8 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
     "orientations" : textBookData["orientations"],
     "test.name": data["test name"],
     "test.date": new Date(),
-    "viewOrder" : data["view order"] || null
+    "viewOrder" : data["view order"] || null,
+    "reviewed": false
   }
   let upsertObj = {
     updateOne: {
@@ -745,7 +741,7 @@ export async function  uploadTestiming(req, res){
       const scheduledTask = await scheduleGA(data,req.user_cxt)
       gaSyncId = scheduledTask.job_id
     }
-    await TestSchema.updateOne({testId},{$set:{gaSyncId,reviewed: false}});
+    await TestSchema.updateOne({testId},{$set:{gaSyncId,"gaStatus":null,reviewed: false}});
     return res.status(200).send({error: false, message: "Success"});
   }
   catch(err){
@@ -965,7 +961,8 @@ export async function publishTest(req, res){
       },
       "coins": questionsCount,
       "questionPaperId": questionPaperId,
-      "reviewed": false
+      "reviewed": false,
+      "gaStatus":null
     }
     const date = new Date(new Date(testTiming[0]["maxDate"]).getTime() + testTiming[0]["maxDuration"]*60000)
     .toISOString().replace("T"," ").split(".")[0]
@@ -1539,5 +1536,59 @@ export async function testDetails(req, res){
   }catch(err){
     console.error(err);
     return res.status(500).send("internal server error.")
+  }
+}
+
+export async function deletetests(req, res){
+  try{
+    if(!req.body.testIds){
+      return res.status(400).send("Test ids missing.")
+    }
+    
+    const testIds = req.body.testIds.split(",");
+    const SchemaPromise = await Promise.all([
+      Tests(req.user_cxt),TestTimings(req.user_cxt)
+    ])
+
+    const TestSchema = SchemaPromise[0];
+    const TestTimingSchema = SchemaPromise[1];
+
+    let testTimings = await TestTimingSchema.aggregate(
+      [
+        {
+          $match:{
+            testId: {$in: testIds}
+          }
+        },
+        {
+          $group:{
+            "_id":"$testId",
+            "minDate":{"$min":"$startTime"},
+          }
+        }
+      ]
+    ).allowDiskUse(true);
+    
+    let testIdsToDelete =[];
+    testTimings.forEach((testObj) => {
+      if(new Date(testObj.minDate).getTime() > new Date().getTime()){
+        testIdsToDelete.push(testObj["_id"]);
+      }
+    })
+
+    testIds.forEach((testId)=>{
+      let index = testTimings.findIndex((obj)=>{
+        return obj["_id"] === testId
+      })
+      if(index === -1){
+        testIdsToDelete.push(testId)
+      }
+    })
+
+    await TestSchema.deleteMany({testId: {$in: testIdsToDelete}})
+    return res.status(200).send("Success");
+  }catch(err){
+    console.error(err);
+    return res.status(500).send("internal server error");
   }
 }
