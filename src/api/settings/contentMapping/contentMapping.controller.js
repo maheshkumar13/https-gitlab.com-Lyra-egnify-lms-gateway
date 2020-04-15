@@ -2339,6 +2339,7 @@ export async function getContentMappingUploadedDataReadingMaterialAudio(args,con
     audioFilePath: '$metaData.audioFiles.key',
     audioFileName: '$metaData.audioFiles.name',
   }});
+  agrQuery.push({$sort: { assetId: 1}});
   const skip = (args.pageNumber - 1) * args.limit;
   if(skip) agrQuery.push({$skip: skip});
   if(args.limit) agrQuery.push({$limit: args.limit});
