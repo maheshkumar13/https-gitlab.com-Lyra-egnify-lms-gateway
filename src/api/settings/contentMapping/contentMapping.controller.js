@@ -1157,7 +1157,6 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
   if(args.active) contentQuery.active = true;
   if(args.readingMaterialAudio === true) {
     contentQuery['content.category'] = { $in: ['Reading Material']};
-    contentQuery['metaData.audioFiles'] = {$exists: true };
   }
   const contentTypeMatchOrData = getContentTypeMatchOrDataWithList(contentCategory,args);
   if(contentTypeMatchOrData.length) contentQuery['$or'] = contentTypeMatchOrData;
@@ -1177,7 +1176,7 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
     }
   }
   if(args.readingMaterialAudio === true) {
-    aggregateQuery.push({$unwind: '$metaData.audioFiles'});
+    aggregateQuery.push({$unwind: { path: '$metaData.audioFiles', preserveNullAndEmptyArrays: true}});
   }
   aggregateQuery.push(contentGroupQuery)
   const result = await ContentMapping.aggregate(aggregateQuery).allowDiskUse(true);
@@ -2324,22 +2323,23 @@ export async function getContentMappingUploadedDataReadingMaterialAudio(args,con
     reviewed: true,
     'content.category': { $in: ['Reading Material']},
     $and: [{$or: topicsFilter},{$or: contentTypeMatchOrData }],
-    'metaData.audioFiles': {$exists: true },
   }
   if(args.active === false) contentQuery.active = false;
   if(args.reviewed === false) contentQuery.reviewed = false;
   const countQuery = [{$match: contentQuery}];
-  countQuery.push({$unwind: '$metaData.audioFiles'});
+  countQuery.push({$unwind: { path: '$metaData.audioFiles', preserveNullAndEmptyArrays: true}});
   countQuery.push({$count: 'total'});
 
   const agrQuery = [{$match: contentQuery}];
-  agrQuery.push({$unwind: '$metaData.audioFiles'});
+  agrQuery.push({$unwind: { path: '$metaData.audioFiles', preserveNullAndEmptyArrays: true}});
   agrQuery.push({$project: { 
     _id: 0,
+    assetId: 1,
     filePath: '$resource.key',
     audioFilePath: '$metaData.audioFiles.key',
     audioFileName: '$metaData.audioFiles.name',
   }});
+  agrQuery.push({$sort: { assetId: 1}});
   const skip = (args.pageNumber - 1) * args.limit;
   if(skip) agrQuery.push({$skip: skip});
   if(args.limit) agrQuery.push({$limit: args.limit});
@@ -2823,6 +2823,25 @@ export async function changeAssetStates(args, context){
   })
 }
 
+export async function removeAudioMapping(argsList, context){
+  const ContentMapping = await ContentMappingModel(context);
+  const bulk = ContentMapping.collection.initializeUnorderedBulkOp();
+  argsList.forEach(obj => {
+    bulk.find({
+      assetId: obj.assetId,
+    }).updateOne({
+      $pull: { 'metaData.audioFiles': {$and: obj.audioFiles }},
+    })
+  })
+  return bulk.execute().then(() => {
+    return 'Operation successful!!!';
+  }).catch((err) => {
+    console.error(err);
+    throw new Error('Something went wrong!!!');
+  })
+  
+}
+
 export async function makeQuizLive(req, res){
   try{
     //assetIds is comma seperated assetId
@@ -2843,6 +2862,28 @@ export async function makeQuizLive(req, res){
   }catch(err){
     console.error(err);
     return res.status(500).send("internal server error.");
+  }
+}
+
+export async function deleteQuizzes(req, res){
+  try{
+    if(!req.body.assetIds){
+      return res.status(400).send("AssetIds missing.")
+    }
+    let assetIds = req.body.assetIds.split(",");
+    const ContentMappingSchema = await ContentMappingModel(req.user_cxt);
+    await ContentMappingSchema.update({
+      assetId: {$in: assetIds},
+      "content.category":"Animation"},
+      {$unset: {
+        "metaData.questionpaperId": 1,
+        "metaData.reviewed": 1,
+        "metaData.active": 1
+      }},{multi:true})
+      return res.status(200).send("Success");
+  }catch(err){
+    console.error(err);
+    return res.status(500).send("internal server error");
   }
 }
 

@@ -13,7 +13,7 @@ import {
   GraphQLBoolean as BooleanType,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
-import { ContentMappingInsertionInputType,UpdateContentOutputType,UpdateContentInputType,UpdateMetaDataInputType } from './contentMapping.type';
+import { ContentMappingInsertionInputType,UpdateContentOutputType,UpdateContentInputType,UpdateMetaDataInputType, RemoveAudioMappingInputType } from './contentMapping.type';
 import { validateAccess } from '../../../utils/validator';
 
 const controller = require('../../../api/settings/contentMapping/contentMapping.controller');
@@ -59,6 +59,19 @@ export const changeAssetStates = {
     const validRoles = ['CMS_CONTENT_MANAGER'];
     if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
     return controller.changeAssetStates(args, context);
+  }
+}
+
+export const removeAudioMapping = {
+  args: {
+    input: { type: new NonNull(new List(RemoveAudioMappingInputType))},
+  },
+  type: StringType,
+  async resolve(obj, args, context){
+    const validRoles = ['CMS_CONTENT_MANAGER'];
+    if (!validateAccess(validRoles, context)) throw new Error('Access Denied');
+    if(!args.input || !args.input.length) throw new Error('Invalid data');
+    return controller.removeAudioMapping(args.input, context);
   }
 }
 
