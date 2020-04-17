@@ -2812,6 +2812,22 @@ export async function changeAssetStates(args, context){
   })
 }
 
+export async function deletePractices(req, res){
+  try{
+    const {assetIds} = req.body;
+    if(!assetIds){
+      return res.status(400).send("Bad Req.");
+    }
+    const assets = assetIds.split(",");
+    const ContentMappingSchema = await ContentMappingModel(req.user_cxt);
+    await ContentMappingSchema.deleteMany({assetId:{$in : assets}});
+    return res.status(200).send("Success");
+  }catch(err){
+    console.error(err);
+    return res.status(500).send("internal server error")
+  }
+}
+
 export default{
   updateContent,
   getUniqueDataForValidation,
