@@ -104,6 +104,8 @@ export async function getSignedUrlForUpload(args, context) {
   };
   args.data.forEach(x => {
     params.Key = x.key;
+    if(x.contentType) params.ContentType = x.contentType;
+    else delete params.ContentType;
     x.uploadUrl = s3.getSignedUrl('putObject', params);
   })
   return args.data;

@@ -78,6 +78,7 @@ export const ContentMappingType = new ObjectType({
 export const ReadingMaterialAudioType = new ObjectType({
   name: 'ReadingMaterialAudioType',
   fields: {
+    assetId: { type: StringType, description: 'Unique Id for asset' },
     filePath: { type: StringType, description: 'File path' },
     audioFilePath: { type: StringType, description: 'Audio file path'},
     audioFileName: { type: StringType, description: 'Audio file name'},
@@ -166,6 +167,7 @@ export const DashboardHeadersAssetCountInputType = new InputType({
     gaStatus: { type: BooleanType, description: "Filter for teacher corner performance"},
     active: { type: BooleanType, description: "Default value is true" },
     reviewed: { type: BooleanType, description: "Default value is true" },
+    publish: { type: BooleanType, description: "Default value false"}
   },
 });
 
@@ -351,6 +353,22 @@ export const CmsPracticeStatsOutputType = new ObjectType({
   },
 });
 
+export const RemoveAudioMappingAudioFilesInputType = new InputType({
+  name: 'RemoveAudioMappingAudioFilesInputType',
+  fields: {
+    key: { type: new NonNull(StringType), description: 'Audio file key' },
+    name: { type: StringType, description: 'Audio file name' }
+  }
+});
+
+export const RemoveAudioMappingInputType = new InputType({
+  name: 'RemoveAudioMappingInputType',
+  fields: {
+    assetId: { type: StringType, description: 'Unique identifier for the asset' },
+    audioFiles: { type: new NonNull(new List(RemoveAudioMappingAudioFilesInputType)), description: 'List of audio files'}
+  }
+});
+
 export default {
   ContentMappingType,
   CmsCategoryStatsOutputType,
@@ -365,6 +383,7 @@ export default {
   TextbookBasedQuizInputType,
   TextbookBasedQuizOutputType,
   CmsPracticeStatsInputType,
-  CmsPracticeStatsOutputType
+  CmsPracticeStatsOutputType,
+  RemoveAudioMappingInputType,
 };
 
