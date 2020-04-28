@@ -2223,7 +2223,8 @@ export async function getContentMappingUploadedDataLearn(args,context){
   ])
   data.forEach(obj => {
     const topicCode = obj.refs.topic.code;
-    obj.refs = textbookObj[obj.refs.textbook.code];
+    const textbookref = textbookObj[obj.refs.textbook.code] || {};
+    obj.refs = JSON.parse(JSON.stringify(textbookref));
     obj.refs.topic = {
       name: topicObj[obj.refs.textbook.code][topicCode],
       code: topicCode,
