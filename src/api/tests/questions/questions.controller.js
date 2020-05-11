@@ -372,7 +372,7 @@ export async function parserStatus(req, res) {
 export async function parseQuestionPaper(req,res){
   try{
     const Questions = await QuestionModel(req.user_cxt);
-    const {content_name,subject, asset_id} = req.body;
+    const {content_name,subject, asset_id, font} = req.body;
     if(!content_name || !subject || !asset_id){
       return res.status(400).send("BAD_ARGS");
     }
@@ -391,7 +391,7 @@ export async function parseQuestionPaper(req,res){
     }
 
     const option = {
-      url: `${config.parser.uri}?subject=${subject.trim()}&file_name=${content_name.trim()}&file_type=${extname.trim()}`,
+      url: `${config.parser.uri}?subject=${subject.trim()}&file_name=${content_name.trim()}&file_type=${extname.trim()}&font=${font}`,
       method: "POST"
     }
     let questions = await parseQuestion(option, content_name, MIME_TYPE[extname], req.file.buffer);
