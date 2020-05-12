@@ -390,8 +390,12 @@ export async function parseQuestionPaper(req,res){
       extname = "xml"
     }
 
+    let url = `${config.parser.uri}?subject=${subject.trim()}&file_name=${content_name.trim()}&file_type=${extname.trim()}&font=`,
+    if(font){
+      url = `${url}${font.trim()}`
+    }
     const option = {
-      url: `${config.parser.uri}?subject=${subject.trim()}&file_name=${content_name.trim()}&file_type=${extname.trim()}&font=${font}`,
+      url: url,
       method: "POST"
     }
     let questions = await parseQuestion(option, content_name, MIME_TYPE[extname], req.file.buffer);

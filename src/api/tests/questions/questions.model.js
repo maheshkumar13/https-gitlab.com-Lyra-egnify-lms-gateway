@@ -39,7 +39,7 @@ const QuestionSchema = new mongoose.Schema({
   C: { type: Number, default: null},
   warnings: { type : [String], default: []},
   table_no: { type: Number, default: null},
-  concept_name: { type: String,default: null}
+  concept_name: { type: String,default: "unidentified"}
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 });
