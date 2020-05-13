@@ -390,7 +390,7 @@ export async function parseQuestionPaper(req,res){
       extname = "xml"
     }
 
-    let url = `${config.parser.uri}?subject=${subject.trim()}&file_name=${content_name.trim()}&file_type=${extname.trim()}&font=`,
+    let url = `${config.parser.uri}?subject=${subject.trim()}&file_name=${content_name.trim()}&file_type=${extname.trim()}&font=`;
     if(font){
       url = `${url}${font.trim()}`
     }
