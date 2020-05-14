@@ -111,3 +111,25 @@ export async function getSignedUrlForUpload(args, context) {
   return args.data;
 }
 
+export async function checkIfFileOrFolderExists(args, context){
+  const params = {
+    Bucket: args.html === true ? config.AWS_PUBLIC_BUCKET : config.AWS_PRIVATE_BUCKET,
+    Prefix: args.key.slice(-1) === '/' ? args.key = args.key.substring(0, args.key.length - 1) : args.key,
+    Delimiter: '/',
+  }
+  return s3.listObjectsV2(params)
+    .promise()
+    .then(data => {
+      if (args.folder === true){
+        if(data && data.CommonPrefixes && data.CommonPrefixes.length) return { found: true }
+        return { found: false }
+      }
+      if(data && data.Contents && data.Contents.length) return { found: true }
+      return { found: false }
+    })
+    .catch(err => {
+      console.error(err);
+      throw new Error('Something went wrong!');
+    })
+  
+}
