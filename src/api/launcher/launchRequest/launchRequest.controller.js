@@ -89,7 +89,7 @@ export async function getS3FileSystem(args) {
 
 export async function getSignedUrlForUpload(args, context) {
 
-  const FILES_LIMIT = 1000;
+  const FILES_LIMIT = 10000;
   const TOTAL_SIZE_LIMIT = 1024 * 1024 * 1024; // 1024 MB
   const Expires = 4 * 60 * 60; // 4 hrs
   if(args.data.length > FILES_LIMIT) throw new Error('Number of files limit exceeded'); 
