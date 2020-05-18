@@ -22,6 +22,7 @@ const hierarchySync = require('./v1/hierarchySync');
 const elasticindexing = require('./indexelasticsearch/indexcontent/index');
 const test = require('./tests/upload');
 const timeAnalysis = require('./analysis/timeAnalysis');
+const fileStatus = require('../utils/fileStatus');
 
 export default function (app) {
   //  Insert API below
@@ -46,4 +47,5 @@ export default function (app) {
   app.use('/api/timeAnalysis', timeAnalysis);
   app.use('/api/practiceStudent', practiceStudent);
   app.use('/api/practiceAnalysis', practiceAnalysis);
+  app.use('/api/fileStatus', fileStatus);
 }
