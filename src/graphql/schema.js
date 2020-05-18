@@ -22,7 +22,7 @@ import { Students, StudentUniqueValues, StudentsByLastNode, StudentById, student
 import { updateStudentAvatar, updateStudentSubjects } from './settings/student/student.mutation';
 import { ConceptTaxonomy } from './settings/conceptTaxonomy/conceptTaxonomy.query';
 import { ContentMapping, ContentMappingStats, CmsCategoryStats, CategoryWiseFiles, FileData, CmsTopicLevelStats, TextbookBasedQuiz, DashboardHeadersAssetCount, ContentMappingUploadedDataLearn, ContentMappingUploadedDataReadingMaterialAudio, CmsPracticeStats, StudyPlanAssets } from './settings/contentMapping/contentMapping.query';
-import { LaunchRequest, GetS3FileSystem, GetS3SignedUrlForUpload } from './launcher/launchRequest/launchRequest.query';
+import { LaunchRequest, GetS3FileSystem, GetS3SignedUrlForUpload, checkS3FileOrFolderExist } from './launcher/launchRequest/launchRequest.query';
 import { Questions, Results, QuestionEvaluation } from './tests/questions/questions.query';
 import { MasterResults } from './tests/masterResults/masterResults.query';
 import { InsertContent, UpdateContent, updateMetaData, changeAssetStates, removeAudioMapping } from './settings/contentMapping/contentMapping.mutation';
@@ -104,7 +104,8 @@ const schema = new Schema({
       CmsTestStats,
       TestAnalysis,
       StudyPlanAssets,
-      BranchFromOrientationAndClass
+      checkS3FileOrFolderExist,
+      BranchFromOrientationAndClass,
     },
   }),
   mutation: new ObjectType({
