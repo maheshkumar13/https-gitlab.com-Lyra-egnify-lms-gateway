@@ -10,6 +10,7 @@ import { getModel as StudentModel } from '../../settings/student/student.model';
 
 import { config } from '../../../config/environment';
 import { getStudentData } from '../textbook/textbook.controller';
+import { checkIfFileOrFolderExists } from '../../launcher/launchRequest/launchRequest.controller';
 
 
 const xlsx = require('xlsx');
@@ -596,21 +597,21 @@ export async function uploadContentMappingv2(req, res) {
     }
   }
 
-if(errors.length) {
-  console.info('sending errors..')
-  return res.send({
-    success: false,
-    message: 'Invalid data',
-    errors,
-  })
-}
-console.info('bulk executing..')
-  return bulk.execute().then(() => {
-    console.info(req.file.originalname, 'Uploaded successfully....')
-    return res.send('Data inserted/updated successfully')
-  }).catch((err) => {
-    console.error(err);
-    return res.status(400).end('Error occured');
+  if(errors.length) {
+    console.info('sending errors..')
+    return res.send({
+      success: false,
+      message: 'Invalid data',
+      errors,
+    })
+  }
+  console.info('bulk executing..')
+    return bulk.execute().then(() => {
+      console.info(req.file.originalname, 'Uploaded successfully....')
+      return res.send('Data inserted/updated successfully')
+    }).catch((err) => {
+      console.error(err);
+      return res.status(400).end('Error occured');
   });
 }
 function validateHeadersReadingMaterialAudioMapping(data, errors, maxLimit) {
