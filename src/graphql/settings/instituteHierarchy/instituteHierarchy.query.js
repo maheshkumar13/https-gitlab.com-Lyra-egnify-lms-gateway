@@ -17,6 +17,8 @@ import {
   GraphQLEnumType as EnumType,
 } from 'graphql';
 
+import GraphQLJSON from 'graphql-type-json';
+
 import { InstituteHierarchyType,ChildListType ,childLevelEnum,parentLevelEnum} from './instituteHierarchy.type';
 import { LIST } from 'graphql/language/kinds';
 
@@ -152,6 +154,17 @@ export const ChildDataFromParent= {
     return controller.getChildDataFromParent(args, context)    
   }
   
+};
+
+export const BranchFromOrientationAndClass = {
+  args: {
+    className: {type : new List(StringType)},
+    orientation : {type : new List(StringType)},
+  },
+  type: GraphQLJSON,
+  async resolve(obj, args , context) {
+    return controller.getBranchFromOrientationAndClass(args, context)    
+  }
 };
 
 export default { InstituteHierarchy, InstituteHierarchyPaginated ,ChildDataFromParent};

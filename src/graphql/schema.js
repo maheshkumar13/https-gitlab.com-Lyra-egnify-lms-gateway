@@ -10,7 +10,7 @@ import {
 } from 'graphql';
 
 import { Subjects, getSubjectTextbookTopic, TextbooksForEachSubject } from './settings/subject/subject.query';
-import { InstituteHierarchy, InstituteHierarchyPaginated, ChildDataFromParent } from './settings/instituteHierarchy/instituteHierarchy.query';
+import { InstituteHierarchy, InstituteHierarchyPaginated, ChildDataFromParent, BranchFromOrientationAndClass } from './settings/instituteHierarchy/instituteHierarchy.query';
 import { Institute } from './settings/institute/institute.query';
 import { InstituteHierarchyGrid } from './settings/instituteHierarchy/instituteHierarchyGrid.query';
 import { updateCategory } from './settings/instituteHierarchy/instituteHierarchy.mutaion';
@@ -104,7 +104,8 @@ const schema = new Schema({
       CmsTestStats,
       TestAnalysis,
       StudyPlanAssets,
-      checkS3FileOrFolderExist
+      checkS3FileOrFolderExist,
+      BranchFromOrientationAndClass,
     },
   }),
   mutation: new ObjectType({
