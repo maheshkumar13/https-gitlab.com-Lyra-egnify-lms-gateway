@@ -7,11 +7,9 @@ import { getModel as InstituteHierarchyModel } from '../instituteHierarchy/insti
 import { getModel as studentInfoModel } from '../student/student.model';
 import { getModel as Questions } from '../../tests/questions/questions.model';
 import { getModel as StudentModel } from '../../settings/student/student.model';
-import { getModel as FileStatusModel } from '../../../utils/fileStatus/fileStatus.model';
 
 import { config } from '../../../config/environment';
 import { getStudentData } from '../textbook/textbook.controller';
-import { checkIfFileOrFolderExists } from '../../launcher/launchRequest/launchRequest.controller';
 
 
 const xlsx = require('xlsx');
@@ -329,8 +327,7 @@ function getCleanFileData(req){
 		for (let i = 0; i < keys.length; i += 1) {
 			const key = keys[i];
 			const lowerKey = key.toLowerCase();
-      if(lowerKey !== 'file path') obj[lowerKey] = obj[key].toString().replace(/\s\s+/g, ' ').trim();
-      else obj[lowerKey] = obj[key].toString();
+			obj[lowerKey] = obj[key].toString().replace(/\s\s+/g, ' ').trim();
 			if (key !== lowerKey) delete obj[key];
 		}
 	});
@@ -437,30 +434,16 @@ export async function uploadContentMappingv2(req, res) {
   if(data.length > 10000) {
     return res.status(400).end('Limit exceeded, max rows 10k');
   }
-  const FileStatus = await FileStatusModel(req.user_cxt);
-  const fileStatusId = crypto.randomBytes(10).toString('hex');
-  const statusObj = {
-    fileStatusId,
-    response: false,
-    success: false,
-    message: 'Invalid data',
-    percentage: 0,
-    data: [],
-  }
-  FileStatus.create(statusObj).then(() => {
-    res.send({fileStatusId});
-  }).catch(err => {
-    console.error(err);
-    res.status(400).end('Something went wrong!');
-  })
-  
-  
   let errors = [];
   const maxLimit = 1000;
   errors = validateHeaders(data, errors, maxLimit);
   
   if(errors.length) {
-    return FileStatus.updateOne({fileStatusId},{$set: { response: true, data: errors }});
+    return res.send({
+      success: false,
+      message: 'Invalid data',
+      errors,
+    })
   }
   const dbData = await getDbDataForValidation(req.user_cxt)
   const ContentMapping = await ContentMappingModel(req.user_cxt);
@@ -473,10 +456,14 @@ export async function uploadContentMappingv2(req, res) {
     'Games',
     'Audio' ]
   const contentTypes = config.CONTENT_TYPES || {};
-  
+
   for(let i=0; i < data.length; i+=1) {
     if(errors.length > maxLimit) {
-      return FileStatus.updateOne({fileStatusId},{$set: { response: true, data: errors }});
+      return res.send({
+        success: false,
+        message: 'Invalid data',
+        errors,
+      })
     }
 
     const row = i+2;
@@ -608,59 +595,21 @@ export async function uploadContentMappingv2(req, res) {
     }
   }
 
-
-  if(errors.length) {
-    return FileStatus.updateOne({fileStatusId},{$set: { response: true, data: errors }});
-  }
-  let prevPercentage = 0;
-  for(let i=0; i < data.length; i+=1) {
-    if(errors.length > maxLimit) {
-      return FileStatus.updateOne({fileStatusId},{$set: { response: true, data: errors }});
-    }
-    
-    const row = i+2;
-    const obj = data[i];
-  
-    // CHECKING IF FILE EXISTS
-    const file_extension = obj['file path'].split('.').splice(-1)[0];
-    const params = {
-      html: ['html', 'htm'].includes(file_extension),
-      folder: false,
-      key: upath.toUnix(obj['file path'])
-    }
-    let isError = false;
-    let checkObj = await checkIfFileOrFolderExists(params, {}).catch((err) => {
-      console.error(err);
-      isError = true;
-    })
-    if(isError) return FileStatus.updateOne({fileStatusId},{$set: { response: true, data: [], message: 'S3 Service Error' }});
-    
-    
-    if(!checkObj.found)
-      errors.push(`File does not exist: row ${row}, {${obj['file path']}}`);
-
-    const percentage = Math.min(Math.round((i+1)/data.length*100),99);
-    if(percentage - prevPercentage >= 1) {
-      prevPercentage = percentage;
-      await FileStatus.updateOne({fileStatusId},{$set: { percentage }});
-    }
-  }
-  if(errors.length) {
-    return FileStatus.updateOne({fileStatusId},{$set: { response: true, data: errors }});
-  }
-  console.info('bulk executing..')
+if(errors.length) {
+  console.info('sending errors..')
+  return res.send({
+    success: false,
+    message: 'Invalid data',
+    errors,
+  })
+}
+console.info('bulk executing..')
   return bulk.execute().then(() => {
     console.info(req.file.originalname, 'Uploaded successfully....')
-    return FileStatus.updateOne({fileStatusId},{$set: { 
-      response: true,
-      success: true,
-      message: 'Data Inserted/Updated successfully!!!',
-      percentage: 100,
-      data: [],
-    }});
+    return res.send('Data inserted/updated successfully')
   }).catch((err) => {
     console.error(err);
-    return FileStatus.updateOne({fileStatusId},{$set: { response: true, data: [], message: 'Unable to store into DB' }});
+    return res.status(400).end('Error occured');
   });
 }
 function validateHeadersReadingMaterialAudioMapping(data, errors, maxLimit) {

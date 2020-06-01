@@ -53,18 +53,6 @@ export const GetS3SignedUrlForUpload = {
   },
 };
 
-export const checkS3FileOrFolderExist = {
-  args: {
-    html: { type: new NonNull(BooleanType), description: 'true if checking in html bucket, false if non html bucket'},
-    folder: { type: new NonNull(BooleanType), description: 'true if checking for folder else false' },
-    key: { type: new NonNull(StringType), description: 'Key to check' },
-  },
-  type: GraphQLJSON,
-  async resolve(obj, args, context) {
-    return controller.checkIfFileOrFolderExists(args, context);
-  },
-};
-
 export default {
   LaunchRequest,
   GetS3FileSystem,
