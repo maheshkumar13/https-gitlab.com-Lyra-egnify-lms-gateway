@@ -327,7 +327,8 @@ function getCleanFileData(req){
 		for (let i = 0; i < keys.length; i += 1) {
 			const key = keys[i];
 			const lowerKey = key.toLowerCase();
-			obj[lowerKey] = obj[key].toString().replace(/\s\s+/g, ' ').trim();
+      if(lowerKey !== 'file path') obj[lowerKey] = obj[key].toString().replace(/\s\s+/g, ' ').trim();
+      else obj[lowerKey] = obj[key].toString();
 			if (key !== lowerKey) delete obj[key];
 		}
 	});
