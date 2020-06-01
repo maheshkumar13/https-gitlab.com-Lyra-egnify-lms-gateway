@@ -1,7 +1,7 @@
 import { getModel } from './instituteHierarchy.model';
 import InstituteModel from '../institute/institute.model';
 import { config } from '../../../config/environment';
-
+import { getModel as StudentInfo } from '../student/student.model';
 const Excel = require('exceljs');
 const xlsx = require('xlsx');
 const csvjson = require('csvjson');
@@ -570,6 +570,18 @@ export async function getChildDataFromParent(args, context){
       });
     });
 }
+
+export async function getBranchFromOrientationAndClass(args, context){
+  try{
+    const StudentInfoSchema = await StudentInfo(context);
+    const branches = await StudentInfoSchema.distinct("hierarchyLevels.L_5",{"orientation": {$in:args.orientation}, "hierarchyLevels.L_2":{$in:args.className }, active:true})
+    return branches;
+  }catch(err){
+    console.error(err);
+    throw new Error(err);
+  }
+}
+
 export default {
   fetchNodes,
   getChildDataFromParent,
