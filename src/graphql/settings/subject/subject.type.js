@@ -70,7 +70,19 @@ export const SubjectInputType = new InputType({
   }
 })
 
+export const UpdateSubjectInputType = new InputType({
+  name: 'UpdateSubjectInputType',
+  fields: {
+    subjectCode: { type: new NonNull(StringType), description: 'Code of the subject' },
+    subject: { type: new NonNull(StringType), description: 'Name of the subject' },
+    isMandatory: { type: BooleanType, description: 'is mandatory' },
+    classCode: { type: new NonNull(StringType), description: 'Class code' }
+  }
+})
+
+
 export default {
   SubjectType,
   SubjectInputType,
+  UpdateSubjectInputType,
 };
