@@ -422,7 +422,8 @@ function  validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, u
   const errors = [];
   const uniqueBranchesObj = {};
   uniqueBranches.forEach(x => {
-    uniqueBranchesObj[x.toLowerCase()] = x;
+    if(x.toLowerCase() in uniqueBranchesObj) uniqueBranchesObj[x.toLowerCase()].push(x);
+    else uniqueBranchesObj[x.toLowerCase()] = [x]
   })
   const uniqueBranchesLower = Object.keys(uniqueBranchesObj);
 
@@ -497,9 +498,9 @@ function  validateUploadBranchAndOrientationiMappingTextbookData(data, dbData, u
       errors.push(result.message);
       continue;
     }
-    const finalBranches = [];
+    let finalBranches = [];
     branches.forEach(x => {
-      finalBranches.push(uniqueBranchesObj[x]);
+      finalBranches = finalBranches.concat(uniqueBranchesObj[x]);
     })
     obj.branches = finalBranches;
 
