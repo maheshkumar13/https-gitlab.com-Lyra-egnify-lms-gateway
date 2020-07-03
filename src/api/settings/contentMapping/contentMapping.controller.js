@@ -889,8 +889,8 @@ export async function getContentMappingStats(args, context) {
           'refs.textbook.code': { $in: textbookCodes },
         };
         if(context.dummy === true) delete mappingQuery.reviewed;
-        if (studentOrientation) mappingQuery['orientation'] = { $in: [null, '', studentOrientation]}
-        if (studentBranch) mappingQuery['branches'] = { $in: [null, '', studentBranch]}
+        // if (studentOrientation) mappingQuery['orientation'] = { $in: [null, '', studentOrientation]}
+        // if (studentBranch) mappingQuery['branches'] = { $in: [null, '', studentBranch]}
         const aggregateQuery = [
           {
             $match: mappingQuery
@@ -934,6 +934,7 @@ export async function getContentMappingStats(args, context) {
               }
           }
         ]
+
         return ContentMapping.aggregate(aggregateQuery).allowDiskUse(true).then((data) => {
           const finalData = {}
           data.forEach((obj) => {
