@@ -67,6 +67,7 @@ export function createHierarchy(req, res) {
         const tempObj = {
           childCode: `${currentParentObj.childCode}-l${currentParentObj.level + 1}${currentParentObj.numberOfChildren}`,
           pathId: `${currentParentObj.pathId}-${args[x]}`,
+          lowerPathId: `${currentParentObj.pathId}-${args[x]}`.toLowerCase(),
           child: args[x],
           parentCode: currentParentObj.childCode,
           parent: currentParentObj.child,
