@@ -93,11 +93,9 @@ export function student(req, res) {
   args.digital_content = args.digital_content.toLowerCase().trim();
 
   return InstituteHierarchyModel(req.user_cxt).then((InstituteHierarchy) => {
-    let hierarchyPath = `${args.country}-${args.class}-${args.state}-${args.city}-${args.branch}-${args.section}`;
-    hierarchyPath = hierarchyPath.replace('(', '\\(');
-    hierarchyPath = hierarchyPath.replace(')', '\\)');
+    let hierarchyPath = `${args.country}-${args.class}-${args.state}-${args.city}-${args.branch}-${args.section}`.toLowerCase();
     const checkHierarhcyQuery = {
-      pathId: { $regex: hierarchyPath, $options: 'i' },
+      lowerPathId: hierarchyPath, //{ $regex: hierarchyPath, $options: 'i' },
     };
     return InstituteHierarchy.findOne(checkHierarhcyQuery).then((hierarchyObj) => {
       if (!hierarchyObj) {

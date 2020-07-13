@@ -12,7 +12,8 @@ const ancestorSchema = new mongoose.Schema({
 });
 
 const instituteHierarchy = new mongoose.Schema({
-  pathId: { type: String, default: '' },
+  pathId: { type: String, default: '', index: true },
+  lowerPathId: {type: String, default: '', index: true},
   child: { type: String, required: true, maxlength: 50 },
   childCode: { type: String, required: true, unique: true },
   parent: { type: String },
