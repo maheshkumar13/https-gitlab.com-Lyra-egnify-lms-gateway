@@ -14,7 +14,7 @@ import { InstituteHierarchy, InstituteHierarchyPaginated, ChildDataFromParent, B
 import { Institute } from './settings/institute/institute.query';
 import { InstituteHierarchyGrid } from './settings/instituteHierarchy/instituteHierarchyGrid.query';
 import { updateCategory } from './settings/instituteHierarchy/instituteHierarchy.mutaion';
-import { createSubject } from './settings/subject/subject.mutation';
+import { createSubject, updateSubject, deleteSubject } from './settings/subject/subject.mutation';
 import { Programs } from './settings/programs/programs.query';
 import { Textbooks, TextbooksInfo, TextbookByPagination, ChapterWiseList} from './settings/textbook/textbook.query';
 import { createTextbook, updateTextbook, deleteTextbook } from './settings/textbook/textbook.mutation';
@@ -128,6 +128,8 @@ const schema = new Schema({
       FeedbackPackage,
       changeAssetStates,
       removeAudioMapping,
+      updateSubject,
+      deleteSubject,
     },
   }),
 });

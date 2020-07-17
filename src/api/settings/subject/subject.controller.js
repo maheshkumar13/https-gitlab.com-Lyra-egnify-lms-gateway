@@ -3,6 +3,7 @@ import { getModel as InstituteHierarchyModel } from '../instituteHierarchy/insti
 import { getModel as StudentModel } from '../student/student.model';
 import { getModel as TextbookModel } from '../textbook/textbook.model';
 import { getModel as ConceptTaxonomyModel } from '../conceptTaxonomy/concpetTaxonomy.model';
+import { getModel as ContentMappingModel } from '../contentMapping/contentMapping.model';
 
 import { config } from '../../../config/environment';
 
@@ -140,6 +141,115 @@ export async function createSubject(args, context) {
       throw new Error('Could not insert data');
     });
   });
+}
+
+export async function updateSubject(args, context){
+  const subjectCode = args.subjectCode;
+  const subject = args.subject ? args.subject.replace(/\s\s+/g, ' ').trim() : '';
+  return Promise.all([
+    validateAndGetHierarchyData(context, [args.classCode]),
+    SubjectModel(context),
+    TextbookModel(context),
+  ]).then( async ([hierarchyData, Subject, Textbook]) => {
+    const classData = hierarchyData.find(x => x.levelName === 'Class' && x.childCode === args.classCode)
+    if(!classData) throw new Error('Invalid Class code');
+    const findQuery = {
+      subject,
+      'refs.class.code': classData.childCode,
+      'refs.subjecttype.name': 'Scholastics',
+      active: true,
+      code: { $ne: subjectCode }
+    }
+    const doc = await Subject.findOne(findQuery);
+    if(doc) throw new Error('Subject already there');
+
+    // Subject Find and Patch
+    const subjectFind = { code: subjectCode };
+    const subjectPatch = {
+      subject,
+      refs: {
+        class: {
+          name: classData.child,
+          code: classData.childCode,
+        },
+        subjecttype: {
+          name: 'Scholastics',
+          code: '',
+        },
+      },
+    };
+
+    if('isMandatory' in args) subjectPatch['isMandatory'] = args.isMandatory;
+    
+    // Textbook Find and Patch
+    const textbookFind = { 'refs.subject.code': subjectCode };
+    const textbookPatch = {
+      refs: {
+        class: {
+          name: classData.child,
+          code: classData.childCode,
+        },
+        subject: {
+          name: subject,
+          code: subjectCode
+        },
+      }
+    }
+    
+    return Promise.all([
+      Subject.update(subjectFind, {$set: subjectPatch}),
+      Textbook.update(textbookFind, {$set: textbookPatch},{multi: true}),
+    ]).then(() => {
+      return 'Data Updated successfully';
+    }).catch(err => {
+      console.error(err);
+      throw new Error('Something went wrong');
+    });
+  })
+}
+
+export async function deleteSubject(args, context){
+  return Promise.all([
+    SubjectModel(context),
+    TextbookModel(context),
+    ConceptTaxonomyModel(context),
+    ContentMappingModel(context),
+  ]).then( async ([
+    Subject,
+    Textbook,
+    ConceptTaxonomy,
+    ContentMapping,
+  ]) => {
+    
+    // de-activate patch
+    const deActivePatch = { active: false };
+
+    // subject find
+    const subjectFind = { code: args.subjectCode };
+
+    // Textbook Find
+    const textbookFind = { 'refs.subject.code': args.subjectCode };
+    const textbookCodes = await Textbook.distinct('code', textbookFind);
+
+    // Concept taxonomy Find
+    const conceptFind = { 'refs.textbook.code': { $in: textbookCodes } };
+
+    // Content mapping Find
+    const contentFind = { 'refs.textbook.code': { $in: textbookCodes } };
+
+    return Promise.all([
+      Subject.update(subjectFind, {$set: deActivePatch}),
+      Textbook.update(textbookFind, {$set: deActivePatch},{multi: true}),
+      ConceptTaxonomy.update(conceptFind, {$set: deActivePatch},{multi: true}),
+      ContentMapping.update(contentFind, {$set: deActivePatch},{multi: true}),
+    ]).then(() => {
+      return 'Subject removed successfully!!';
+    }).catch(err => {
+      console.error(err);
+      throw new Error('Something went wrong');
+    });
+        
+  }) 
 }
 
 export async function getSubjectTextbookTopic(args, context) {
