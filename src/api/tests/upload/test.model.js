@@ -256,6 +256,10 @@ const TestSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  gaDate:{
+    type: Date,
+    default: null
+  },
   coins: {
     type: Number,
     default: 0
