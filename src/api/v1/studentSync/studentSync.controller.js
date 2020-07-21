@@ -50,7 +50,7 @@ export function student(req, res) {
     return res.status(404).end();
   }
   if (!args.city) {
-    res.statusMessage = 'No state in request body';
+    res.statusMessage = 'No city in request body';
     return res.status(404).end();
   }
   if (!args.branch) {
@@ -74,7 +74,7 @@ export function student(req, res) {
     return res.status(404).end();
   }
   if (!args.digital_content) {
-    res.statusMessage = 'No digital_contentt in request body';
+    res.statusMessage = 'No digital_content in request body';
     return res.status(404).end();
   }
 

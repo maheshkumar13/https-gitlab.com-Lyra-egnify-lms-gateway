@@ -28,6 +28,7 @@ import { practiceSummary } from './api/tests/PracticeAnalysis/practicesummarycro
 import { TestSummary } from './api/tests/upload/testSummary.cron';
 const { ApolloEngine } = require('apollo-engine');
 const morgan = require('morgan');
+const morganCtrl = require('./morgan');
 const cors = require('cors');
 const Sentry = require('@sentry/node');
 
@@ -111,8 +112,18 @@ app.post('/parsing-details',function(req,res){
   }
 })
 
+// Logging all the requests using morgan.
+app.use('/api/v1/studentSync/student',
+  morgan((token, req, res) => {
+    return morganCtrl.morganMessageLogger(token, req, res);
+  }),
+);
+
 app.use('/api', auth.isAuthenticated())
 require('./api').default(app);
+
+
+
 
 app.get('/', (req, res) => res.send('Oh!! Yeah.'));
 
