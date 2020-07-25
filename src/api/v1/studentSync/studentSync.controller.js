@@ -18,10 +18,11 @@ async function insertStudent(context, obj) {
 }
 
 async function createUserForStudent(context, obj) {
-  const url = `${config.services.sso}/api/v1/users/create/studentUser`;
+  let url = `${config.services.sso}/api/v1/users/create/studentUser`;
+  if(context.apitoken) url = `${config.services.sso}/consumer/student/create-user`;
   return fetch(url, {
     method: 'POST',
-    body: JSON.stringify({ studentData: obj }),
+    body: JSON.stringify({ studentData: obj, token: context.apitoken}),
     headers: { 'Content-Type': 'application/json' },//eslint-disable-line
   }, context).then((response) => {
     if (response.status >= 400) {
