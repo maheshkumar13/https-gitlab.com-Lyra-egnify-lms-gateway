@@ -51,6 +51,8 @@ mongoose.connection.on('error', (err) => {
   process.exit(-1); // eslint-disable-line no-process-exit
 });
 
+// mongoose.set('debug', true);
+
 const app = express();
 app.use(Sentry.Handlers.requestHandler());
 app.use(cors());
@@ -119,8 +121,19 @@ app.use('/api/v1/studentSync/student',
   }),
 );
 
+app.use('/consumer', (req, res, next) => {
+  const token = "208b9605-b7f3-4d15-b609-d95eefabb53e";
+  if(!req.body.token || req.body.token !== token) return res.status('401').send();
+  req.user_cxt = {
+    instituteId: 'Egni_u001',
+    apitoken: token,
+  }
+  next();
+})
+
 app.use('/api', auth.isAuthenticated())
 require('./api').default(app);
+
 
 
 
