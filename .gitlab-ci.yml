@@ -141,7 +141,7 @@ deploy-uat:
     - aws ecs register-task-definition --region ${REGION} --cli-input-json file://deploy-ecs-uat.json >> temp.json
     - REV=`grep  '"revision"' temp.json | awk '{print $2}'`
     - echo $REV
-    - aws ecs update-service --cluster Rankguru-UAT --service lms-gateway-UAT-service --task-definition lms-gateway-UAT-tdf:${REV} --region ${REGION}  
+    - aws ecs update-service --cluster Rankguru-UAT --service lms-gateway-UAT-service --task-definition lms-gateway-UAT-tdf --region ${REGION}  
   only:
     - uat
 
