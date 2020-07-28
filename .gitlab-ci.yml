@@ -46,7 +46,7 @@ release:
     DOCKER_HOST: tcp://localhost:2375
   before_script:
     - docker info
-    - apk add --no-cache curl jq python py-pip
+    - apk add --no-cache curl jq py-pip
     - pip install awscli
     - IMAGE_TAG="$CI_COMMIT_SHORT_SHA"
   script:
@@ -109,7 +109,7 @@ deploy-dev:
     - apk update
     - apk upgrade
     - apk add util-linux pciutils usbutils coreutils binutils findutils grep
-    - apk add python python-dev py-pip
+    - apk add py-pip
      # Install awscli
     - pip install awscli
   script:
@@ -118,7 +118,7 @@ deploy-dev:
     - aws ecs register-task-definition --region ${REGION} --cli-input-json file://deploy-ecs.json >> temp.json
     - REV=`grep  '"revision"' temp.json | awk '{print $2}'`
     - echo $REV
-    - aws ecs update-service --cluster Rankguru-Dev --service lms-gateway-dev-service --task-definition lms-gateway-dev-tdf:${REV} --region ${REGION}  
+    - aws ecs update-service --cluster Rankguru-Dev --service lms-gateway-dev-service --task-definition lms-gateway-dev-tdf --region ${REGION}  
   only:
     - development
 
@@ -141,7 +141,7 @@ deploy-uat:
     - aws ecs register-task-definition --region ${REGION} --cli-input-json file://deploy-ecs-uat.json >> temp.json
     - REV=`grep  '"revision"' temp.json | awk '{print $2}'`
     - echo $REV
-    - aws ecs update-service --cluster Rankguru-UAT --service lms-gateway-UAT-service --task-definition lms-gateway-UAT-tdf:${REV} --region ${REGION}  
+    - aws ecs update-service --cluster Rankguru-UAT --service lms-gateway-UAT-service --task-definition lms-gateway-UAT-tdf --region ${REGION}  
   only:
     - uat
 
