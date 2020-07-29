@@ -115,7 +115,7 @@ app.post('/parsing-details',function(req,res){
 })
 
 // Logging all the requests using morgan.
-app.use('/api/v1/studentSync/student',
+app.use('/consumer',
   morgan((token, req, res) => {
     return morganCtrl.morganMessageLogger(token, req, res);
   }),
