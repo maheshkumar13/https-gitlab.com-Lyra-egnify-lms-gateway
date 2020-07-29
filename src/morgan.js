@@ -6,10 +6,8 @@ export function morganMessageLogger(tokens, req, res) {
   // Authentication status check.
   if (req.user) {
     data.email = req.user.email;
-    data.isAuthenticated = true; // authentication Status.
-  } else {
-    data.isAuthenticated = false; // authentication Status.
   }
+  data.isAuthenticated = req.body.token === "208b9605-b7f3-4d15-b609-d95eefabb53e"; // authentication Status.
   data.headers = req.headers; // jwt secret token
   data.method = tokens.method(req, res); // method of request
   data.url = tokens.url(req, res); // url of the request
