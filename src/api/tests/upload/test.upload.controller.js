@@ -964,9 +964,9 @@ export async function publishTest(req, res){
       "reviewed": false,
       "gaStatus":null
     }
-    const date = new Date(new Date(testTiming[0]["maxDate"]).getTime() + testTiming[0]["maxDuration"]*60000)
-    .toISOString().replace("T"," ").split(".")[0]
-    .replace(/-/g,"/").substring(2);
+    const gaDate = new Date(new Date(testTiming[0]["maxDate"]).getTime() + testTiming[0]["maxDuration"]*60000);
+
+    const date = gaDate.toISOString().replace("T"," ").split(".")[0].replace(/-/g,"/").substring(2);
   
     const data = {
       "date" : date,
@@ -981,7 +981,7 @@ export async function publishTest(req, res){
     }
     const scheduledTask = await scheduleGA(data,req.user_cxt);
     setObject["gaSyncId"] = scheduledTask.job_id
-    setObject["gaDate"] = new Date(testTiming[0]["maxDate"]);
+    setObject["gaDate"] = new Date(gaDate);
     const oldData = await TestSchema.findOneAndUpdate({testId},{$set: setObject});
     if(testTiming[0]["gaSyncId"]){
       await cancelGA({jobId: testTiming[0]["gaSyncId"]},req.user_cxt)
