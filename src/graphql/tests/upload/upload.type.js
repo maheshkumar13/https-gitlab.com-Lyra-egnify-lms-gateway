@@ -196,7 +196,7 @@ const Mapping = new ObjectType({
             type: CommonData
         },
         chapter: {
-            type: CommonData
+            type: GraphQLJSON
         }
     }
 })

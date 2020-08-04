@@ -84,7 +84,7 @@ function getFileData(req){
 
 export async function listTest(args, ctx) {
   try {
-    const queries = queryForListTest(args);
+    // const queries = queryForListTest(args);
     let find = {"mapping.textbook.code":{"$in": args.textbookCode}};
     
     if(args.active) {
@@ -348,7 +348,7 @@ export async function uploadTestMapping(req, res){
       textbook.add(data[i]["textbook"]);
       classs.add(data[i]["class"]);
       subject.add(data[i]["subject"]);
-      chapter.add(data[i]["chapter"]);
+      chapter.add(...data[i]["chapter"].split("|"));
     }
     
     const textbooks = Array.from(textbook);
@@ -378,7 +378,7 @@ export async function uploadTestMapping(req, res){
       SubjectSchema.find({subject:{$in:subjects},active:true,"refs.class.code":{$in:classCodes}})
       .select({_id: 0, subject: 1,code: 1, "refs.class.code": 1}).lean(),
       ChapterSchema.find({"refs.textbook.code":{$in:textbookCodes},"child": {$in : chapters} , "levelName":"topic",active:true})
-      .select({_id: 0, childCode: 1, child: 1, refs: 1}).lean()
+      .select({_id: 0, childCode: 1, child: 1, refs: 1, code : 1}).lean()
     ]);
 
     const subjectsData = promiseGetDependentData[0];
@@ -482,18 +482,25 @@ async function validateMappingDataFromDbDataAndCreateMap(data, chapterData, text
         error = true;
         continue;
       }
-  
-      let _chapterKey = data[i]["chapter"]+"_"+indexed_textbook[_textbookKey]["code"];
-      
-      if(!indexed_chapter.hasOwnProperty(_chapterKey)){
-        erroredRow.push("Row "+ rowNumber+ " : Invalid chapter")
-        error = true;
-        continue;
+      let chapters = data[i]["chapter"].split("|")
+      let chapterData = []
+      for(let j = 0 ; j< chapters.length; j++){
+        let _chapterKey = chapters[j]+"_"+indexed_textbook[_textbookKey]["code"];
+        if(!indexed_chapter.hasOwnProperty(_chapterKey)){
+          erroredRow.push("Row "+ rowNumber+ " : Invalid chapter")
+          error = true;
+          continue;
+        }else{
+          let obj = {}
+          obj["name"] = chapters[j];
+          obj["code"] = indexed_chapter[_chapterKey]["code"];
+          chapterData.push(obj)
+        }
       }
       if(!error){
         let testMapping = createTestMappingObject(data[i],indexed_class[data[i]["class"]],
         indexed_subject[_subjectKey],indexed_textbook[_textbookKey],
-        indexed_chapter[_chapterKey])
+        chapterData)
         mapping.push(testMapping);
       }
     }
@@ -578,10 +585,7 @@ function createTestMappingObject(data, classData, subjectData, textBookData, cha
             "code" : textBookData["code"],
             "name" : data["textbook"]
         },
-        "chapter" : {
-            "code" : chapterData["code"],
-            "name" : data["chapter"]
-        }
+        "chapter" : chapterData
     },
     "branches" : textBookData["branches"],
     "orientations" : textBookData["orientations"],
