@@ -66,16 +66,7 @@ const TestMapping = new mongoose.Schema({
       index: true
     }
   },
-  chapter: {
-    code: {
-      type: String,
-      index: true
-    },
-    name: {
-      type: String,
-      index: true
-    }
-  }
+  chapter: {type: Array}
 })
 
 const TestSchema = new mongoose.Schema({
