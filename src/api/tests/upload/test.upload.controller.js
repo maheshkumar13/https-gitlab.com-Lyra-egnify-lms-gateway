@@ -1,20 +1,12 @@
-import {
-  getModel as Tests
-} from './test.model';
-
-import {
-  getModel as TextBook
-} from '../../settings/textbook/textbook.model';
+import {getModel as Tests} from './test.model';
+import {getModel as TextBook} from '../../settings/textbook/textbook.model';
 const xlsx = require('xlsx');
 import {getModel as Questions} from '../questions/questions.model';
 import {getModel as StudentInfoSchema} from '../../settings/student/student.model'
-import {
-  getModel as Chapter
-} from '../../settings/conceptTaxonomy/concpetTaxonomy.model'
+import {getModel as Chapter} from '../../settings/conceptTaxonomy/concpetTaxonomy.model'
 
-import {
-  getModel as TestTimings
-} from '../testTiming/testtiming.model'
+import {getModel as Snapshot} from './testStudentSnapshot.model'
+import {getModel as TestTimings} from '../testTiming/testtiming.model'
 const GA_SCHEDULER_URL = require('../../../config/environment')["config"]["GA_SCHEDULER_URL"];
 const uuidv4 = require("uuid/v4");
 import {getModel as Hierarchy} from '../../settings/instituteHierarchy/instituteHierarchy.model';
@@ -1595,5 +1587,33 @@ export async function deletetests(req, res){
   }catch(err){
     console.error(err);
     return res.status(500).send("internal server error");
+  }
+}
+
+export async function liveStatus(req, res){
+  try{
+    const Promises = await Promise.all([TestTimings(req.user_cxt),Snapshot(req.user_cxt),StudentInfoSchema(req.user_cxt)]);
+    const testId = req.params.testId;
+    const TestTimingSchema = Promises[0]
+    const SnapshotSchema = Promises[1];
+    const StudentInfo = Promises[2];
+    const hierarchies = await TestTimingSchema.distinct("hierarchyId",{testId})
+    
+    if(!hierarchies.length){
+      return res.status(400).send("Bad Req.");
+    }
+
+    const snapshotData = await SnapshotSchema.find({testId}).select({"_id": 0, endTime: 1,studentId:1,"hierarchyLevels.L_5": 1, "status":1}).lean()
+    const allStudentToTakeTheTest = await StudentInfo.find({
+      "hierarchy.childCode":  {$in: hierarchies}
+    }).select({"_id": 0,studentId: 1, "hierarchyLevels.L_5": 1}).lean();
+    const responseData = {
+      snapshotData,
+      allStudentToTakeTheTest
+    }
+    return res.status(200).send(responseData)
+  }catch(err){
+    console.error(err)
+    return res.status(500).send(err);
   }
 }
