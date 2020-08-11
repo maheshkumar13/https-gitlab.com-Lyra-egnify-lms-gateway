@@ -2526,6 +2526,7 @@ export async function uploadPracticeMapping(req, res) {
 
     // PREPARING DATA OBJECT
     let temp = {};
+    temp["reviewed"] = false;
     temp["content.name"] = obj['test name'];
     temp["content.category"] = "Practice";
     if(obj['content type']){
