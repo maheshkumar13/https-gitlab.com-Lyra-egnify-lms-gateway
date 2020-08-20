@@ -8,6 +8,7 @@ const instituteId = "Egni_u001"
 export function TestSummary() {
     cron.schedule('0 0 3 * * *', async () => {
         try{
+            console.log("Cron Started, Test Summary")
             const Textbook = await TextbookSchema({instituteId});
             const MasterResults = await MasterResultSchema({instituteId});
             const TestSummaryModel = await TestSummarySchema({instituteId});
@@ -164,7 +165,14 @@ export function TestSummary() {
                 aggregatedDataFromTests[i]["numberOfStudents"] = indexed_aggregatedDataFromStudentInfo[key];
             }
             await TestSummaryModel.remove({});
-            await TestSummaryModel.create(aggregatedDataFromTests);
+            let chunks = [], chunk = 50000;
+            for(let i = 0 ; i<  aggregatedDataFromTests.length; i+=chunk){
+                chunks.push(aggregatedDataFromTests.slice(i, chunk+i));
+            }
+            for(let i = 0 ; i < chunks.length ; i++){
+                await TestSummaryModel.insertMany(chunks[i]);
+            }
+            console.log("DONE")
         }catch(err){
             console.log(err);
         }
