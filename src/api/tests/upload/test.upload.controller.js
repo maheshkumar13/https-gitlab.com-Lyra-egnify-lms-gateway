@@ -1177,9 +1177,18 @@ export async function testAnalysis(args, context) {
               }
           }
       ]
+      let orOperator = []
+      args.accessibleBranches.forEach(branch=>{
+        let key = `hierarchyLevels.${branch}`
+        orOperator.push({ [key]: {"$exists": true}})
+      })
+
       let matchQuery = {
-          $match: {}
+          $match: {
+            "$or":orOperator
+          }
       }
+
       let project = {
           $project: {
               "studentId": 1,

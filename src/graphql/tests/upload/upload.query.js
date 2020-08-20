@@ -126,6 +126,13 @@ export const TestAnalysis = {
     type: TestAnalysisOutputType,
     async resolve (objects,args,context){
         try{
+            const levelNames = ["Branch"]
+            const Nodes = await fetchNodesWithContext({levelNames},context); //class name and class code
+            const accessibleBranches = Nodes.map( node => {
+                return node.childCode
+            })
+            // console.log(accessibleBranches)
+            args["accessibleBranches"] = accessibleBranches
             return await testAnalysis(args,context)
         }catch(err){
             throw new Error(err);
