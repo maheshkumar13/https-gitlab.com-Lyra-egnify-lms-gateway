@@ -574,7 +574,7 @@ export async function getChildDataFromParent(args, context){
 export async function getBranchFromOrientationAndClass(args, context){
   try{
     const StudentInfoSchema = await StudentInfo(context);
-    const branches = await StudentInfoSchema.distinct("hierarchyLevels.L_5",{"orientation": {$in:args.orientation}, "hierarchyLevels.L_2":{$in:args.className }, active:true})
+    const branches = await StudentInfoSchema.distinct("hierarchyLevels.L_5",{"orientation": {$in:args.orientation}, "hierarchyLevels.L_2":{$in:args.className }, "hierarchy.childCode": {"$in": args.accessibleBranches}, active:true})
     return branches;
   }catch(err){
     console.error(err);

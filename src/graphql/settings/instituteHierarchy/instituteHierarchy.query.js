@@ -21,6 +21,7 @@ import GraphQLJSON from 'graphql-type-json';
 
 import { InstituteHierarchyType,ChildListType ,childLevelEnum,parentLevelEnum} from './instituteHierarchy.type';
 import { LIST } from 'graphql/language/kinds';
+import {fetchNodesWithContext} from '../../../api/settings/instituteHierarchy/instituteHierarchy.controller'
 
 const controller = require('../../../api/settings/instituteHierarchy/instituteHierarchy.controller');
 
@@ -163,6 +164,13 @@ export const BranchFromOrientationAndClass = {
   },
   type: GraphQLJSON,
   async resolve(obj, args , context) {
+    const levelNames = ["Branch"]
+    const Nodes = await fetchNodesWithContext({levelNames},context);
+    const accessibleBranches = Nodes.map( node => {
+        return node.childCode
+    })
+    // console.log(accessibleBranches)
+    args["accessibleBranches"] = accessibleBranches
     return controller.getBranchFromOrientationAndClass(args, context)    
   }
 };
