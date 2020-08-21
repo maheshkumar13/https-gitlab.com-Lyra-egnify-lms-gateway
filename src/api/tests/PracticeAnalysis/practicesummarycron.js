@@ -5,9 +5,10 @@ import { getModel as PracticeSummarySchema } from './practicesummary.model';
 import { getModel as StudentInfoModel } from '../../settings/student/student.model';
 const instituteId = "Egni_u001"
 
-export function practiceSummary() {
+export async function practiceSummary() {
     cron.schedule('0 0 2 * * *', async () => {
         try{
+            console.log("Practice summary cron started.")
             const Textbook = await TextbookSchema({instituteId});
             const MasterResults = await MasterResultSchema({instituteId});
             const PracticeSummaryModel = await PracticeSummarySchema({instituteId});
@@ -165,7 +166,14 @@ export function practiceSummary() {
                 aggregatedDataFromContentMappings[i]["numberOfStudents"] = indexed_aggregatedDataFromStudentInfo[key];
             }
             await PracticeSummaryModel.remove({});
-            await PracticeSummaryModel.create(aggregatedDataFromContentMappings);
+            let chunks = [], chunk = 50000;
+            for(let i = 0 ; i<  aggregatedDataFromContentMappings.length; i+=chunk){
+                chunks.push(aggregatedDataFromContentMappings.slice(i, chunk+i));
+            }
+            for(let i = 0 ; i < chunks.length ; i++){
+                await PracticeSummaryModel.insertMany(chunks[i]);
+            }
+            console.log("DONE")
         }catch(err){
             console.log(err);
         }

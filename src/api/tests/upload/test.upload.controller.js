@@ -1169,9 +1169,18 @@ export async function testAnalysis(args, context) {
               }
           }
       ]
+      let orOperator = []
+      args.accessibleBranches.forEach(branch=>{
+        let key = `hierarchyLevels.${branch}`
+        orOperator.push({ [key]: {"$exists": true}})
+      })
+
       let matchQuery = {
-          $match: {}
+          $match: {
+            "$or":orOperator
+          }
       }
+
       let project = {
           $project: {
               "studentId": 1,
@@ -1599,7 +1608,7 @@ export async function liveStatus(req, res){
       return res.status(400).send("Bad Req.");
     }
 
-    const snapshotData = await SnapshotSchema.find({testId}).select({"_id": 0, endTime: 1,studentId:1,"hierarchyLevels.L_5": 1, "status":1}).lean()
+    const snapshotData = await SnapshotSchema.find({testId}).select({"_id": 0, endTime: 1,studentId:1,"hierarchyLevels.L_5": 1, "status":1, "startedAt": 1}).lean()
     const allStudentToTakeTheTest = await StudentInfo.find({
       "hierarchy.childCode":  {$in: hierarchies}
     }).select({"_id": 0,studentId: 1, "hierarchyLevels.L_5": 1}).lean();
