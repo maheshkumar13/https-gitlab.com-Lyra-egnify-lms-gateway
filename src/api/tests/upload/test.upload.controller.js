@@ -89,6 +89,8 @@ export async function listTest(args, ctx) {
 
     if(args.gaStatus){
       find["gaStatus"] = args.gaStatus
+      find["active"] = true;
+      find["reviewed"] = true;
     }
 
     if(args.reviewed){

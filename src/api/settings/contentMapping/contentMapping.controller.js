@@ -1151,6 +1151,8 @@ export async function getDashboardHeadersAssetCountV2(args, context) {
   if(contentCategoryLength && contentCategoryLength === 1
      && contentCategory[0] === "Practice" && gaStatus){
     contentQuery["gaStatus"] = true
+    args.active = true;
+    args.reviewed = true;
   }
 
   if(args.active === false) contentQuery.active = false;
