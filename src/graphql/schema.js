@@ -10,12 +10,12 @@ import {
 } from 'graphql';
 
 import { Subjects, getSubjectTextbookTopic, TextbooksForEachSubject } from './settings/subject/subject.query';
-import { InstituteHierarchy, InstituteHierarchyPaginated, ChildDataFromParent, BranchFromOrientationAndClass } from './settings/instituteHierarchy/instituteHierarchy.query';
+import { InstituteHierarchy, InstituteHierarchyPaginated, ChildDataFromParent, BranchFromOrientationAndClass, hierarchyFilter } from './settings/instituteHierarchy/instituteHierarchy.query';
 import { Institute } from './settings/institute/institute.query';
 import { InstituteHierarchyGrid } from './settings/instituteHierarchy/instituteHierarchyGrid.query';
 import { updateCategory } from './settings/instituteHierarchy/instituteHierarchy.mutaion';
 import { createSubject, updateSubject, deleteSubject } from './settings/subject/subject.mutation';
-import { Programs } from './settings/programs/programs.query';
+import { Programs, orientationFilter } from './settings/programs/programs.query';
 import { Textbooks, TextbooksInfo, TextbookByPagination, ChapterWiseList} from './settings/textbook/textbook.query';
 import { createTextbook, updateTextbook, deleteTextbook } from './settings/textbook/textbook.mutation';
 import { Students, StudentUniqueValues, StudentsByLastNode, StudentById, studentHeader,StudentListByFilters} from './settings/student/student.query';
@@ -105,7 +105,9 @@ const schema = new Schema({
       TestAnalysis,
       StudyPlanAssets,
       checkS3FileOrFolderExist,
-      BranchFromOrientationAndClass
+      BranchFromOrientationAndClass,
+      hierarchyFilter,
+      orientationFilter,
     },
   }),
   mutation: new ObjectType({
