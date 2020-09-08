@@ -631,14 +631,14 @@ export async function getHierarchies(args, context){
       ]
     }
 
-    let aggregateQuery = [{"$match":query},{$unwind:"$anscetors"},{"$match":{
-      "anscetors.levelName": desiredLevel
-    }},{
+    query["levelName"] = desiredLevel;
+
+    let aggregateQuery = [{"$match":query},{
       "$group":{
         "_id": {
-          "child": "$anscetors.child",
-          "childCode": "$anscetors.childCode",
-          "levelName":"$anscetors.levelName"
+          "child": "$child",
+          "childCode": "$childCode",
+          "levelName":"$levelName"
         }
       }
     },{
