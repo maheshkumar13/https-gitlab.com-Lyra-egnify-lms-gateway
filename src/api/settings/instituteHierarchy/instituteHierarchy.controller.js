@@ -632,7 +632,7 @@ export async function getHierarchies(args, context){
     }
     let matchQuery1;
     let groupQuery;
-    if (levelName === "Section"){
+    if (desiredLevel === "Section"){
       matchQuery1 = {
         "levelName": desiredLevel
       }
