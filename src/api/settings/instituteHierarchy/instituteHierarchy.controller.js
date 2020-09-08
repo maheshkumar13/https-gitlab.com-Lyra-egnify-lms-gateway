@@ -630,17 +630,34 @@ export async function getHierarchies(args, context){
         { 'anscetors.childCode': { $in: codes } }
       ]
     }
-
-    let aggregateQuery = [{"$match":query},{$unwind:"$anscetors"},{"$match":{
-      "anscetors.levelName": desiredLevel
-    }},{
-      "$group":{
+    let matchQuery1;
+    let groupQuery;
+    if (levelName === "Section"){
+      matchQuery1 = {
+        "levelName": desiredLevel
+      }
+      groupQuery = {
+        "_id": {
+          "child": "$child",
+          "childCode": "$childCode",
+          "levelName":"$levelName"
+        }
+      }
+    }else{
+      matchQuery1 = {
+        "anscetors.levelName": desiredLevel
+      }
+      groupQuery = {
         "_id": {
           "child": "$anscetors.child",
           "childCode": "$anscetors.childCode",
           "levelName":"$anscetors.levelName"
         }
       }
+    }
+
+    let aggregateQuery = [{"$match":query},{$unwind:"$anscetors"},{"$match":matchQuery1},{
+      "$group":groupQuery
     },{
       "$project":{
         "child": "$_id.child",
