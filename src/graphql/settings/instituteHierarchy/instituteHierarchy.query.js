@@ -22,7 +22,6 @@ import GraphQLJSON from 'graphql-type-json';
 import {fetchNodesWithContext} from '../../../api/settings/instituteHierarchy/instituteHierarchy.controller'
 import { InstituteHierarchyType,ChildListType ,childLevelEnum,parentLevelEnum} from './instituteHierarchy.type';
 import { LIST } from 'graphql/language/kinds';
-import {fetchNodesWithContext} from '../../../api/settings/instituteHierarchy/instituteHierarchy.controller'
 
 const controller = require('../../../api/settings/instituteHierarchy/instituteHierarchy.controller');
 
