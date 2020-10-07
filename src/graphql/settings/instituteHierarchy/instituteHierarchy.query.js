@@ -19,6 +19,7 @@ import {
 
 import GraphQLJSON from 'graphql-type-json';
 
+import {fetchNodesWithContext} from '../../../api/settings/instituteHierarchy/instituteHierarchy.controller'
 import { InstituteHierarchyType,ChildListType ,childLevelEnum,parentLevelEnum} from './instituteHierarchy.type';
 import { LIST } from 'graphql/language/kinds';
 import {fetchNodesWithContext} from '../../../api/settings/instituteHierarchy/instituteHierarchy.controller'
@@ -175,4 +176,23 @@ export const BranchFromOrientationAndClass = {
   }
 };
 
-export default { InstituteHierarchy, InstituteHierarchyPaginated ,ChildDataFromParent};
+export const hierarchyFilter = {
+  args: {
+    levelName: {type : StringType}, //Class, State, City, Branch, Section
+    classes : {type : new List(StringType)},
+    states: {type : new List(StringType)},
+    cities: {type : new List(StringType)},
+    branches: {type : new List(StringType)},
+  },
+  type: GraphQLJSON,
+  async resolve(obj, args , context) {
+    try{
+      return controller.getHierarchies(args, context)
+    }catch(err){
+      throw new Error(err);
+    }
+        
+  }
+}
+
+export default { InstituteHierarchy, InstituteHierarchyPaginated ,ChildDataFromParent, hierarchyFilter};

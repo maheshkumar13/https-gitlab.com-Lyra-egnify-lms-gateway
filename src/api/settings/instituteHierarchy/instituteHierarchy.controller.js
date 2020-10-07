@@ -582,6 +582,100 @@ export async function getBranchFromOrientationAndClass(args, context){
   }
 }
 
+export async function getHierarchies(args, context){
+  try{
+    const { hierarchy } = context;
+    const desiredLevel = args.levelName || "Class";
+    const classes = args.classes || [];
+    const states = args.states || [];
+    const cities = args.cities || [];
+    const branches = args.branches || [];
+    let query = {"active": true};
+    query["$and"] = []
+    if(classes.length){
+      query["$and"].push({
+        "anscetors.levelName": "Class",
+        "anscetors.child": {"$in":classes}
+      })
+    }
+
+    if (states.length){
+      query["$and"].push({
+        "anscetors.levelName": "State",
+        "anscetors.child": {"$in":states}
+      })
+    }
+
+    if(cities.length){
+      query["$and"].push({
+        "anscetors.levelName": "City",
+        "anscetors.child": {"$in":cities}
+      })
+    }
+
+    if(branches.length){
+      query["$and"].push({
+        "anscetors.levelName": "Branch",
+        "anscetors.child": {"$in":branches}
+      })
+    }
+
+    if(!query["$and"].length){
+      delete query["$and"]
+    }
+    if(hierarchy && hierarchy.length){
+      const codes = hierarchy.map(x => x.childCode);
+      query["$or"] = [
+        { childCode: { $in: codes } },
+        { 'anscetors.childCode': { $in: codes } }
+      ]
+    }
+    let matchQuery1;
+    let groupQuery;
+    if (desiredLevel === "Section"){
+      matchQuery1 = {
+        "levelName": desiredLevel
+      }
+      groupQuery = {
+        "_id": {
+          "child": "$child",
+          "childCode": "$childCode",
+          "levelName":"$levelName"
+        }
+      }
+    }else{
+      matchQuery1 = {
+        "anscetors.levelName": desiredLevel
+      }
+      groupQuery = {
+        "_id": {
+          "child": "$anscetors.child",
+          "childCode": "$anscetors.childCode",
+          "levelName":"$anscetors.levelName"
+        }
+      }
+    }
+
+    let aggregateQuery = [{"$match":query},{$unwind:"$anscetors"},{"$match":matchQuery1},{
+      "$group":groupQuery
+    },{
+      "$project":{
+        "child": "$_id.child",
+        "childCode":"$_id.childCode",
+        "levelName":"$_id.levelName",
+        "_id": 0,
+      }
+    }]
+
+    const InstituteHierarchySchema = await getModel(context);
+    return await InstituteHierarchySchema.aggregate(aggregateQuery)
+    
+  }catch(err){
+    console.log(err);
+    throw err;
+  }
+}
+
 export default {
   fetchNodes,
   getChildDataFromParent,
