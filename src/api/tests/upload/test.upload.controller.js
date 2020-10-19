@@ -910,9 +910,9 @@ export async function publishTest(req, res){
     if(!testTiming.length){
       return res.status(400).send("Test timing not uploaded yet.");
     }
-    if(new Date(testTiming[0]["maxDate"]).getTime() <= new Date().getTime()){
-      return res.status(409).send("You cannot update the test as test has already started.");
-    }
+    // if(new Date(testTiming[0]["maxDate"]).getTime() <= new Date().getTime()){
+    //   return res.status(409).send("You cannot update the test as test has already started.");
+    // }
     if(!questionsCount){
       return res.status(400).send("Invalid question paper id.");
     }
