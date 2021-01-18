@@ -10,6 +10,7 @@ const testUpload = require('./tests/questions');
 const studentLedger = require('./studentLedger');
 const practiceStudent = require('./tests/masterResults');
 const practiceAnalysis = require('./tests/PracticeAnalysis');
+const liveClasses = require('./live')
 // Util modules
 const uploadFile = require('./v1/uploadFile');
 const downloadReports = require('./v1/downloadReports');
@@ -32,6 +33,7 @@ export default function (app) {
   app.use('/api/practice',testUpload);
   app.use('/api/test',test);
   app.use('/api/studentLedger', studentLedger);
+  app.use('/api/class',liveClasses);
 
   // Util APIs
   app.use('/api/v1/converter', converter);

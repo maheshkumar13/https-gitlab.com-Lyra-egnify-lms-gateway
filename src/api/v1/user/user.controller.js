@@ -345,7 +345,7 @@ function validateSheetAndGetData(req, classBranchData, dbOrientations) {
 
   const finaldata = [];
   for (let i = 0; i < data.length; i += 1) {
-    const row = i + 2;
+    const row = i + 2;Roles
     console.log(`${row}/${data.length}`)
     const obj = data[i];
     
