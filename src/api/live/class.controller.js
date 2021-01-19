@@ -15,7 +15,8 @@ export async function createClass(req,res){
 export async function getClass(req,res){
     try {
         const LiveClassSchema = await LiveClassModel(req.user_cxt)
-        const data = await LiveClassSchema.findOne({_id:req.params.classId});
+        const query = {_id:req.params.classId,active:true}
+        const data = await LiveClassSchema.findOne(query);
         return res.status(200).send(data)
     } catch (error) {
         return res.status(500).end(error.message)
@@ -25,7 +26,7 @@ export async function getClassesByStatus(req,res){
     try {
         const LiveClassSchema = await LiveClassModel(req.user_cxt)
         const {status,branch,section,orientation} = req.query;
-        const query ={};
+        const query = {};
         if (status){
             if(status == 'inprogress'){
                 query['startTime'] = {"$lte":new Date()}
@@ -45,9 +46,23 @@ export async function getClassesByStatus(req,res){
         if(orientation){
             query['orientation'] = {"$in":orientation.split(",")}
         }
+        query['active'] = true;
         const data = await LiveClassSchema.find(query);
         return res.status(200).send(data)
     } catch (error) {
         return res.status(500).end(error.message)
     }
 }
+
+export async function deleteClass(req,res){
+    try {
+        const LiveClassSchema = await LiveClassModel(req.user_cxt)
+        const { classId  }= req.params
+        if(!classId) return res.status(400).end('classId is missing')
+        const query = {_id:classId}
+        await LiveClassSchema.findOneAndUpdate(query,{active:false})
+        res.status(200).end('class deleted')
+    } catch (error) {
+        return res.status(500).end(error.message)
+    }
+} 

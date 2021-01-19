@@ -5,7 +5,8 @@ const controller = require('./class.controller');
 
 router.post('/', controller.createClass);
 router.get('/:classId',controller.getClass);
-router.get('/',controller.getClassesByStatus)
+router.get('/',controller.getClassesByStatus);
+router.delete('/:classId',controller.deleteClass);
 
 
 
