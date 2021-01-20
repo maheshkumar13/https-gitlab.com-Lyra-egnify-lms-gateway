@@ -112,7 +112,7 @@ const LiveClassesSchema = new mongoose.Schema({
   name: {type:String,requried:true},
   startTime:{type:Date,required:true},
   endTime:{type:Date,required:true},
-  duration:{type:Number,required:true, default:0},
+  duration:{type:Number,required:true},
   class:{type:Array,required:true},
   branch:{type:Array,required:true},
   section:{type:Array,required:true},

@@ -65,4 +65,15 @@ export async function deleteClass(req,res){
     } catch (error) {
         return res.status(500).end(error.message)
     }
+}
+export async function updateClass(req,res){
+    try {
+        const LiveClassSchema = await LiveClassModel(req.user_cxt)
+        const { classId  }= req.params
+        const query = {_id:classId}
+        await LiveClassSchema.update(query,req.body);
+        res.status(200).end('class updated')
+    } catch (error) {
+        return res.status(500).end(error.message)
+    }
 } 
